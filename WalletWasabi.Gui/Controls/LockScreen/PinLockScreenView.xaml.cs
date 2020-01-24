@@ -1,12 +1,11 @@
-﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
-namespace WalletWasabi.Gui.Controls
+namespace WalletWasabi.Gui.Controls.LockScreen
 {
-	public class SuggestLabelView : UserControl
+	public class PinLockScreenView : UserControl
 	{
-		public SuggestLabelView()
+		public PinLockScreenView()
 		{
 			InitializeComponent();
 		}
