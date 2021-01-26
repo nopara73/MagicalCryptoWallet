@@ -1,11 +1,11 @@
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
-namespace WalletWasabi.Fluent.Views.Login.PasswordFinder
+namespace WalletWasabi.Gui.Tabs
 {
-	public class PasswordNotFoundView : UserControl
+	public class LegalDocumentsView : UserControl
 	{
-		public PasswordNotFoundView()
+		public LegalDocumentsView()
 		{
 			InitializeComponent();
 		}
