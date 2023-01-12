@@ -1,11 +1,11 @@
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
-namespace WalletWasabi.Fluent.Views.Wallets.Send;
+namespace WalletWasabi.Fluent.Views.CoinControl.Core.Cells;
 
-public class CustomFeeRateDialogView : UserControl
+public class SelectionCellView : UserControl
 {
-	public CustomFeeRateDialogView()
+	public SelectionCellView()
 	{
 		InitializeComponent();
 	}
