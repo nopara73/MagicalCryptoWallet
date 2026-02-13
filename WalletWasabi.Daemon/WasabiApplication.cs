@@ -9,7 +9,6 @@ using WalletWasabi.Helpers;
 using WalletWasabi.Logging;
 using WalletWasabi.Services;
 using WalletWasabi.Services.Terminate;
-using WalletWasabi.Userfacing;
 using Constants = WalletWasabi.Helpers.Constants;
 
 namespace WalletWasabi.Daemon;
@@ -74,6 +73,11 @@ public class WasabiApplication
 			await afterStarting();
 			return ExitCode.Ok;
 		}
+		catch (Exception e)
+		{
+			Logger.LogInfo("Exception occurred while the application was starting or running", e);
+			throw;
+		}
 		finally
 		{
 			BeforeStopping();
@@ -86,7 +90,6 @@ public class WasabiApplication
 		TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
 
 		Logger.LogInfo($"{AppConfig.AppName} started ({InstanceGuid}).", callerFilePath: "", callerLineNumber: -1);
-
 	}
 
 	private void BeforeStopping()
@@ -99,9 +102,6 @@ public class WasabiApplication
 		SingleInstanceChecker.Dispose();
 		Logger.LogInfo($"{AppConfig.AppName} stopped gracefully ({InstanceGuid}).", callerFilePath: "", callerLineNumber: -1);
 	}
-
-	private Global CreateGlobal()
-		=> new(Config.DataDir, Config);
 
 	private PersistentConfig LoadOrCreateConfigs()
 	{
@@ -121,6 +121,8 @@ public class WasabiApplication
 			_ => throw new NotSupportedException($"Network '{networkName}' is not supported."),
 		};
 		var configFilePath = Path.Combine(Config.DataDir, configFileName);
+
+		Logger.LogInfo($"Loading config file '{configFilePath}'.");
 		var persistentConfig = PersistentConfigManager.LoadFile(configFilePath);
 
 		if (persistentConfig is PersistentConfig config)
