@@ -7,7 +7,6 @@ using WalletWasabi.Bases;
 using WalletWasabi.Extensions;
 using WalletWasabi.Helpers;
 using WalletWasabi.Logging;
-using WalletWasabi.Services;
 using WalletWasabi.Services.Terminate;
 using Constants = WalletWasabi.Helpers.Constants;
 
@@ -32,7 +31,7 @@ public class WasabiApplication
 		Logger.LogDebug($"Wasabi was started with these argument(s): {string.Join(" ", AppConfig.Arguments.DefaultIfEmpty("none"))}.");
 
 		Global = new Global(Config.DataDir, Config);
-		SingleInstanceChecker = new(Config.Network);
+		SingleInstanceChecker = new(Config.DataDir);
 		TerminateService = new(TerminateApplicationAsync, AppConfig.Terminate);
 	}
 
@@ -51,15 +50,11 @@ public class WasabiApplication
 
 		if (AppConfig.MustCheckSingleInstance)
 		{
-			var instanceResult = await SingleInstanceChecker.CheckSingleInstanceAsync();
-			if (instanceResult == WasabiInstanceStatus.AnotherInstanceIsRunning)
+			var isFirst = SingleInstanceChecker.IsFirstInstance();
+
+			if (!isFirst)
 			{
-				Logger.LogDebug("Wasabi is already running, signaled the first instance.");
-				return ExitCode.FailedAlreadyRunningSignaled;
-			}
-			if (instanceResult == WasabiInstanceStatus.Error)
-			{
-				Logger.LogCritical($"Wasabi is already running, but cannot be signaled");
+				Logger.LogCritical($"Wasabi is already running. Please stop the other instance first.");
 				return ExitCode.FailedAlreadyRunningError;
 			}
 		}
@@ -109,6 +104,8 @@ public class WasabiApplication
 		MigrateConfigFiles();
 
 		var networkFilePath = Path.Combine(Config.DataDir, "network");
+		Logger.LogInfo($"Loading network file '{networkFilePath}'.");
+
 		Config.GetCliArgsValue("network", AppConfig.Arguments, out var networkName);
 		networkName ??= File.ReadAllText(networkFilePath).Trim();
 		var network = Network.GetNetwork(networkName ?? "mainnet");
