@@ -49,7 +49,7 @@ public partial class MainViewModel : ViewModelBase
 		StatusIcon = new StatusIconViewModel(UiContext);
 
 		SettingsPage = new SettingsPageViewModel(UiContext);
-		PrivacyMode = new PrivacyModeViewModel(UiContext, UiContext.ApplicationSettings);
+		LurkingWifeMode = new LurkingWifeModeViewModel(UiContext, UiContext.ApplicationSettings);
 		Notifications = new WalletNotificationsViewModel(UiContext, NavBar);
 
 		NavigationManager.RegisterType(NavBar);
@@ -129,7 +129,7 @@ public partial class MainViewModel : ViewModelBase
 	public NavBarViewModel NavBar { get; }
 	public StatusIconViewModel StatusIcon { get; }
 	public SettingsPageViewModel SettingsPage { get; }
-	public PrivacyModeViewModel PrivacyMode { get; }
+	public LurkingWifeModeViewModel LurkingWifeMode { get; }
 	public WalletNotificationsViewModel Notifications { get; }
 
 	public bool IsDialogOpen()

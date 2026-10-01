@@ -32,6 +32,10 @@ The application ID is `io.github.nopara73.magicalcryptowallet`. Executables are 
 
 The application starts with fresh configuration and does not discover or copy another application's data. Use **Add Wallet → Import Wallet** to choose an existing wallet JSON file explicitly. Wallet formats and recovery procedures remain compatible. Use a synthetic wallet for testing; importing a real wallet creates access to its funds and transaction history.
 
+## Lurking Wife Mode
+
+Use the eye toggle labeled **Lurking Wife Mode** in the sidebar to hide balances, addresses, labels, and transaction details. Hover over a hidden item for a quarter of a second to reveal it briefly. It hides again when the pointer leaves or after ten seconds. The enabled setting is remembered across restarts, including configurations saved under the previous display name.
+
 ## Coordinators
 
 No public coordinator is enabled by default. Choose a coordinator you trust and configure its URI in Settings. The default regtest coordinator listens at `http://localhost:38126/`.

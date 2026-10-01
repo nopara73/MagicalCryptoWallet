@@ -126,11 +126,15 @@
       </ItemsControl.ItemsPanel>
       <ItemsControl.DataTemplates>
         <DataTemplate DataType="vm:NavBarItemViewModel">
-          <NavBarItem Command="{Binding OpenCommand}">
+          <NavBarItem Command="{Binding OpenCommand}"
+                      ToolTip.Tip="{Binding Title}"
+                      AutomationProperties.Name="{Binding Title}">
             <StackPanel>
               <PathIcon Classes="new size24" />
               <LayoutTransformControl>
-                <FadeOutTextControl Text="{Binding Title}" />
+                <TextBlock Text="{Binding Title}" MaxWidth="75"
+                           TextWrapping="Wrap" TextAlignment="Center"
+                           FontSize="{StaticResource FontSizeH9}" />
               </LayoutTransformControl>
             </StackPanel>
           </NavBarItem>

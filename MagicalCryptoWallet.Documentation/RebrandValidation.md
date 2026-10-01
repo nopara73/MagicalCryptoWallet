@@ -6,7 +6,7 @@ The rebrand uses independent application storage, executable names, installer id
 
 | Check | Result |
 |---|---|
-| Wallet unit tests | 1,080 passed, none skipped |
+| Wallet unit tests | 1,082 passed, none skipped |
 | Vendored managed cryptography | 125 passed |
 | Native/managed interoperability | 34 passed on Windows |
 | Standalone cross-language credential exchange | Both directions passed, with 10 assertions |
@@ -22,11 +22,12 @@ The rebrand uses independent application storage, executable names, installer id
 | Update authentication | Valid signatures accepted; tampering, wrong signing keys, wrong announcement authors, forged authors, duplicate tags and wrong destinations rejected |
 | Actual application views | Welcome, About and title bar rendered in both themes at 100, 125, 150 and 200 percent |
 | Restored Chinese password box | Native typing/editing, binding, Unicode paste, IME composition, reveal, clipboard/accessibility protection, all eight original phrases and bundled glyphs pass interactive headless checks |
+| Restored Lurking Wife Mode | Real sidebar click, full label/tooltip/accessibility name, saved-state initialization, setting/icon synchronization, balance/address masking, delayed hover, automatic hiding and explicit reveal pass interactive headless checks |
 | Logo proportions and geometry | Cropped compact/horizontal masks match source artwork at 99.8%/99.6%; tiny icons inspected at 16–64 pixels |
 
 ## CI delivery
 
-The Build and audit workflow builds and extracts `win-x64`, `linux-x64`, `linux-arm64`, `osx-x64`, and `osx-arm64` packages. Each platform runs wallet, managed cryptographic and native interoperability tests, source/generated/assembly/resource/symbol audits, and actual application view rendering. The visual preview also exercises the Chinese password box with real key and clipboard input, and renders creation and authorization dialogs in both themes at four display scales. Windows additionally installs both products on an ephemeral runner and checks independent installer registration. Separate jobs build the coordinator container and the Nix package.
+The Build and audit workflow builds and extracts `win-x64`, `linux-x64`, `linux-arm64`, `osx-x64`, and `osx-arm64` packages. Each platform runs wallet, managed cryptographic and native interoperability tests, source/generated/assembly/resource/symbol audits, and actual application view rendering. The visual preview also exercises the Chinese password box with real key and clipboard input, and Lurking Wife Mode with the actual sidebar and masking controls. Creation, authorization, and Lurking Wife Mode enabled/disabled states render in both themes at four display scales. Windows additionally installs both products on an ephemeral runner and checks independent installer registration. Separate jobs build the coordinator container and the Nix package.
 
 Current results and downloadable artifacts are linked from [draft PR #1 and its checks](https://github.com/nopara73/MagicalCryptoWallet/pull/1/checks). Each successful run uploads its packages, extracted-payload inspection reports, and screenshots. Snapshot packages use the existing development version `99.99.99`; they are not production platform signed.
 
@@ -48,3 +49,5 @@ Original notices, source provenance and audit negative data are the only remaini
 | ![About in the light theme](Screenshots/about-light-100.png) | ![About in the dark theme](Screenshots/about-dark-100.png) |
 | ![Chinese passphrase creation in the light theme](Screenshots/password-create-light-100.png) | ![Chinese passphrase creation in the dark theme](Screenshots/password-create-dark-100.png) |
 | ![Chinese passphrase authorization in the light theme](Screenshots/password-auth-light-100.png) | ![Chinese passphrase authorization in the dark theme](Screenshots/password-auth-dark-100.png) |
+| ![Lurking Wife Mode off, synthetic sidebar and balances, light theme](Screenshots/lurking-wife-mode-off-light-100.png) | ![Lurking Wife Mode off, synthetic sidebar and balances, dark theme](Screenshots/lurking-wife-mode-off-dark-100.png) |
+| ![Lurking Wife Mode on, synthetic sidebar and balances, light theme](Screenshots/lurking-wife-mode-on-light-100.png) | ![Lurking Wife Mode on, synthetic sidebar and balances, dark theme](Screenshots/lurking-wife-mode-on-dark-100.png) |

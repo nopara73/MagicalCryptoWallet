@@ -27,6 +27,7 @@ string destination = args.FirstOrDefault() ?? ".artifacts/rebrand/screenshots";
 Directory.CreateDirectory(destination);
 var context = (UiContext)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(UiContext));
 PasswordBoxChecks.Run();
+using var syntheticWallets = LurkingWifeModeChecks.Run(context, destination);
 foreach (var theme in new[] { ThemeVariant.Light, ThemeVariant.Dark })
 {
     Application.Current!.RequestedThemeVariant = theme;
@@ -48,6 +49,8 @@ foreach (var theme in new[] { ThemeVariant.Light, ThemeVariant.Dark })
                 Password = "synthetic-passphrase"
             }
         }, 640, 440);
+        Render("lurking-wife-mode-off", LurkingWifeModeChecks.CreatePreview(context, false), 640, 300);
+        Render("lurking-wife-mode-on", LurkingWifeModeChecks.CreatePreview(context, true), 640, 300);
         void Render(string name, Control content, int width, int height)
         {
             var panel = new DockPanel();
@@ -68,7 +71,7 @@ foreach (var theme in new[] { ThemeVariant.Light, ThemeVariant.Dark })
         }
     }
 }
-Console.WriteLine("Rendered actual Welcome, About, passphrase creation/authorization, and title bar views in both themes at 100, 125, 150, and 200 percent.");
+Console.WriteLine("Rendered actual Welcome, About, passphrase creation/authorization, Lurking Wife Mode sidebar/masking controls, and title bar views in both themes at 100, 125, 150, and 200 percent.");
 
 // Authorize is never invoked. Any attempt to use a wallet service fails immediately.
 public class InertPreviewWallet : DispatchProxy

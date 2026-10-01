@@ -20,7 +20,7 @@
             </Style>
           </Panel.Styles>
 
-          <!-- Neutral bar sitting under the real one; it shows up once discreet mode fades that one out. -->
+          <!-- Neutral bar sitting under the real one; it shows up once Lurking Wife Mode fades that one out. -->
           <ProgressBar Background="{DynamicResource TextForegroundColor}" Opacity="0.2" />
 
           <!-- VerticalContentAlignment=Stretch keeps the (empty) privacy replacement as tall as the bar,

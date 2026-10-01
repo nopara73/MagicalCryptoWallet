@@ -9,6 +9,30 @@ namespace MagicalCryptoWallet.Tests.UnitTests;
 public class UiConfigTests
 {
 	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public void LurkingWifeModePreservesExistingSavedSetting(bool enabled)
+	{
+		string workDir = Common.GetWorkDir();
+		Directory.CreateDirectory(workDir);
+		string filePath = Path.Combine(workDir, $"{Guid.NewGuid():N}.json");
+		var config = new UiConfig(filePath) { PrivacyMode = enabled };
+		config.ToFile();
+
+		using (var persisted = JsonDocument.Parse(File.ReadAllText(filePath)))
+		{
+			// Keep the existing storage key so a name change never reveals a previously hidden wallet.
+			Assert.Equal(enabled, persisted.RootElement.GetProperty("PrivacyMode").GetBoolean());
+		}
+
+		var reopened = UiConfig.LoadFile(filePath);
+		Assert.Equal(enabled, reopened.PrivacyMode);
+		reopened.PrivacyMode = !enabled;
+		reopened.ToFile();
+		Assert.Equal(!enabled, UiConfig.LoadFile(filePath).PrivacyMode);
+	}
+
+	[Theory]
 	[InlineData(null)]
 	[InlineData("{invalid json")]
 	public void LoadFileCompletesDefaultFileWriteBeforeReturning(string? existingContent)

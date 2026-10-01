@@ -79,7 +79,7 @@ public partial class WalletViewModel : RoutableViewModel, IWalletViewModel
 		walletModel.IsCoinjoinRunning
 			.BindTo(this, x => x.IsCoinJoining);
 
-		 // Keep the send button visible while the discreet mode is on. Otherwise its absence reveals an empty wallet.
+		 // Keep the send button visible while Lurking Wife Mode is on. Otherwise its absence reveals an empty wallet.
 		 this.WhenAnyValue(x => x.IsWalletBalanceZero, x => x.UiContext.ApplicationSettings.PrivacyMode)
 		 	.Subscribe(_ => IsSendButtonVisible = (!IsWalletBalanceZero || UiContext.ApplicationSettings.PrivacyMode) && (!WalletModel.IsWatchOnlyWallet || WalletModel.IsHardwareWallet));
 

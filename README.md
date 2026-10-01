@@ -7,6 +7,8 @@
 
 A privacy-focused, open-source, non-custodial Bitcoin wallet for Windows, Linux, and macOS. Coin control, hardware wallets, Tor, silent payments, and WabiSabi coinjoins are supported.
 
+The original Chinese password box and **Lurking Wife Mode** are back. Use the eye toggle in the sidebar to hide balances, addresses, labels, and transaction details; hover briefly to reveal a hidden item.
+
 This project has its own application storage, installers, update keys, and releases. It starts with fresh data. Import an existing wallet file explicitly through **Add Wallet → Import Wallet**; never copy another application's complete data directory.
 
 - [Downloads](https://github.com/nopara73/MagicalCryptoWallet/releases)
