@@ -16,6 +16,10 @@ function Get-MsiProperty([string] $path, [string] $name) {
     $view.Execute()
     return $view.Fetch().StringData(1)
 }
+function Get-InstalledProductState([string] $productCode) {
+    # PowerShell 7 requires reflection for this COM indexed property.
+    return $taskInstaller.GetType().InvokeMember('ProductState', [Reflection.BindingFlags]::GetProperty, $null, $taskInstaller, @($productCode))
+}
 $taskOldCode = Get-MsiProperty $taskOldMsi 'ProductCode'
 $taskNewCode = Get-MsiProperty $taskNewMsi 'ProductCode'
 if ($taskOldCode -eq $taskNewCode) { throw 'Product identity collision' }
@@ -27,7 +31,7 @@ foreach ($item in @(@($taskOldMsi,$taskOldFolder), @($taskNewMsi,$taskNewFolder)
     $process = Start-Process msiexec.exe -WindowStyle Hidden -ArgumentList @('/i',('"'+$item[0]+'"'),'/qn','/norestart',('INSTALLFOLDER="'+$item[1]+'"'),'/L*v',('"'+$log+'"')) -PassThru -Wait
     if ($process.ExitCode -notin @(0,3010)) { throw "Installer failed: $($process.ExitCode). Inspect $log" }
 }
-if ($taskInstaller.ProductState($taskOldCode) -ne 5 -or $taskInstaller.ProductState($taskNewCode) -ne 5) { throw 'Both products must remain independently installed' }
+if ((Get-InstalledProductState $taskOldCode) -ne 5 -or (Get-InstalledProductState $taskNewCode) -ne 5) { throw 'Both products must remain independently installed' }
 if (-not (Test-Path "$taskNewFolder/magicalcryptowallet.exe") -or -not (Test-Path $taskOldFolder)) { throw 'Missing independent installation' }
 $taskData = Join-Path $taskWork 'synthetic-client'
 & "$taskNewFolder/magicalcryptowalletd.exe" '--help' "--datadir=$taskData" '--network=RegTest' | Out-File (Join-Path $taskWork 'help.txt')
