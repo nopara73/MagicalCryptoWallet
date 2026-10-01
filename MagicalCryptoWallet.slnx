@@ -20,7 +20,6 @@
     <File Path="README.md" />
   </Folder>
   <Project Path="MagicalCryptoWallet.Client/MagicalCryptoWallet.Client.csproj" />
-  <Project Path="MagicalCryptoWallet.Backend/MagicalCryptoWallet.Backend.csproj" />
   <Folder Name="/ThirdParty/WabiSabi/">
     <Project Path="ThirdParty/WabiSabi/csharp/WabiSabi/WabiSabi.csproj" />
     <Project Path="ThirdParty/WabiSabi/csharp/WabiSabi.Tests/WabiSabi.Tests.csproj" />

@@ -26,7 +26,7 @@
           installPhase = "install -Dm755 libwabisabi.so $out/lib/libwabisabi.so";
         };
         gitRev = if (builtins.hasAttr "rev" self) then self.rev else "dirty";
-        buildMagicalCryptoWalletModule = pkgs.buildDotnetModule {
+        buildMagicalCryptoWalletModule = pkgs.buildDotnetModule ({
           pname = "magicalcryptowallet";
           version = "2.0.0-${builtins.substring 0 8 (self.lastModifiedDate or self.lastModified or "19700101")}-${gitRev}";
           nugetDeps = ./deps.json; # nix build .#packages.x86_64-linux.all.passthru.fetch-deps
@@ -35,7 +35,7 @@
           dotnet-runtime = pkgs.dotnetCorePackages.aspnetcore_10_0;
 
           src = ./.;
-        };
+        } // commonBuildAttrs);
 
         # Common build settings for all configurations
         commonBuildAttrs = rec {
@@ -74,6 +74,7 @@
           bundledApps = "./MagicalCryptoWallet/${binaries}";
           bundledAppsIntegrationTest = "./MagicalCryptoWallet.IntegrationTests/${binaries}";
           preBuild = ''
+            mkdir -p ${bundledApps}/Tor ${bundledAppsIntegrationTest}
             cp -r ${pkgs.tor}/bin/tor ${bundledApps}/Tor/tor
             cp ${pkgs.hwi}/bin/hwi ${bundledApps}/hwi
             cp ${pkgs.bitcoind}/bin/bitcoind ${bundledAppsIntegrationTest}/bitcoind
@@ -81,7 +82,7 @@
         };
 
         # Build everything and run unit tests (default CI target)
-        buildWithUnitTests = buildMagicalCryptoWalletModule.overrideAttrs (oldAttrs: commonBuildAttrs // {
+        buildWithUnitTests = buildMagicalCryptoWalletModule.overrideAttrs (oldAttrs: {
           doCheck = true;
           checkPhase = ''
             runHook preCheck
@@ -97,7 +98,7 @@
         });
 
         # Build everything and run integration tests
-        buildWithIntegrationTests = buildMagicalCryptoWalletModule.overrideAttrs (oldAttrs: commonBuildAttrs // {
+        buildWithIntegrationTests = buildMagicalCryptoWalletModule.overrideAttrs (oldAttrs: {
           doCheck = true;
           checkPhase = ''
             runHook preCheck
@@ -112,7 +113,7 @@
         });
 
         # Build everything and run all tests (unit + integration)
-        buildWithAllTests = buildMagicalCryptoWalletModule.overrideAttrs (oldAttrs: commonBuildAttrs // {
+        buildWithAllTests = buildMagicalCryptoWalletModule.overrideAttrs (oldAttrs: {
           doCheck = true;
           checkPhase = ''
             runHook preCheck
