@@ -1,0 +1,54 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:MagicalCryptoWallet.Fluent"
+             xmlns:models="using:MagicalCryptoWallet.Models"
+             xmlns:vm="using:MagicalCryptoWallet.Fluent.ViewModels"
+             xmlns:converters="clr-namespace:MagicalCryptoWallet.Fluent.Converters"
+             x:DataType="vm:ApplicationViewModel"
+             x:CompileBindings="True"
+             x:Class="MagicalCryptoWallet.Fluent.App"
+             RequestedThemeVariant="Dark">
+  <Application.DataTemplates>
+    <local:ViewLocator />
+    <DataTemplate DataType="models:ErrorDescriptor" x:DataType="models:ErrorDescriptor">
+      <TextBlock x:CompileBindings="True" Text="{Binding Message}" Foreground="{DynamicResource SystemControlErrorTextForegroundBrush}" TextWrapping="Wrap" />
+    </DataTemplate>
+  </Application.DataTemplates>
+
+  <Application.Resources>
+    <x:Double x:Key="ToggleSwitchThemeMinWidth">0</x:Double>
+    <converters:BoolStringConverter x:Key="ShowHideBoolConverter" True="Hide" False="Show" />
+    <NativeMenu x:Key="DefaultNativeMenu">
+      <NativeMenuItem Header="{Binding IsMainWindowShown, Converter={StaticResource ShowHideBoolConverter}}" Command="{Binding ShowHideCommand}" />
+      <NativeMenuItemSeparator />
+      <NativeMenuItem Header="Quit" Command="{Binding QuitCommand}" />
+    </NativeMenu>
+  </Application.Resources>
+
+  <Application.Styles>
+    <FluentTheme />
+    <StyleInclude Source="avares://Avalonia.Controls.TreeDataGrid/Themes/Fluent.axaml"/>
+    <StyleInclude Source="avares://MagicalCryptoWallet.Fluent/Styles/Themes/Fluent.axaml" />
+    <StyleInclude Source="avares://MagicalCryptoWallet.Fluent/Icons/Icons.axaml" />
+    <StyleInclude Source="avares://MagicalCryptoWallet.Fluent/Styles/Styles.axaml" />
+  </Application.Styles>
+  <NativeMenu.Menu>
+    <NativeMenu>
+      <NativeMenuItem Header="About Magical Crypto Wallet" Command="{Binding AboutCommand}" />
+    </NativeMenu>
+  </NativeMenu.Menu>
+  <TrayIcon.Icons>
+    <TrayIcons>
+      <TrayIcon Icon="/Assets/MagicalCryptoWalletLogo.ico" Command="{Binding ShowCommand}" ToolTipText="Magical Crypto Wallet">
+        <!-- TODO: This is temporary workaround until https://github.com/WalletWasabi/WalletWasabi/issues/8151 is fixed. -->
+        <!--<NativeMenu.Menu>
+          <NativeMenu>
+            <NativeMenuItem Header="{Binding IsMainWindowShown, Converter={StaticResource ShowHideBoolConverter}}" Command="{Binding ShowHideCommand}" />
+            <NativeMenuItemSeparator />
+            <NativeMenuItem Header="Quit" Command="{Binding QuitCommand}" />
+          </NativeMenu>
+        </NativeMenu.Menu>-->
+      </TrayIcon>
+    </TrayIcons>
+  </TrayIcon.Icons>
+</Application>

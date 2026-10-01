@@ -1,0 +1,220 @@
+using System.Collections.Generic;
+using System.Linq;
+using MagicalCryptoWallet.Blockchain.Transactions;
+using MagicalCryptoWallet.Crypto.Randomness;
+
+namespace MagicalCryptoWallet.Extensions;
+
+public static class LinqExtensions
+{
+	public static T? RandomElement<T>(this IEnumerable<T> source, RandomnessProvider random)
+	{
+		T? current = default;
+		int count = 0;
+		foreach (T element in source)
+		{
+			count++;
+
+			if (random.GetInt(count) == 0)
+			{
+				current = element;
+			}
+		}
+		return current;
+	}
+
+	/// <summary>
+	/// Selects a random element based on order bias.
+	/// </summary>
+	/// <param name="biasPercent">1-100, eg. if 80, then 80% probability for the first element.</param>
+	public static T? BiasedRandomElement<T>(this IEnumerable<T> source, int biasPercent, RandomnessProvider random)
+	{
+		foreach (T element in source)
+		{
+			if (random.GetInt(100) < biasPercent)
+			{
+				return element;
+			}
+		}
+
+		return source.Any() ? source.First() : default;
+	}
+
+	public static T[] Shuffle<T>(this T[] array, RandomnessProvider random)
+	{
+		array.AsSpan().Shuffle(random);
+		return array;
+	}
+
+	public static void Shuffle<T>(this Span<T> span, RandomnessProvider random)
+	{
+		for (var i = span.Length - 1; i > 0; i--)
+		{
+			var j = random.GetInt(i + 1);
+			(span[i], span[j]) = (span[j], span[i]);
+		}
+	}
+
+	public static IList<T> ToShuffled<T>(this IList<T> input, RandomnessProvider random)
+	{
+		var output = input.ToArray();
+		output.Shuffle(random);
+
+		return output;
+	}
+
+	/// <summary>
+	/// Generates all possible combinations of input <paramref name="items"/> with <paramref name="ofLength"/> length.
+	/// </summary>
+	/// <remarks>If you have numbers <c>1, 2, 3, 4</c>, then the output will contain <c>(2, 3, 4)</c> but not, for example, <c>(4, 3, 2)</c>.</remarks>
+	public static IEnumerable<IEnumerable<T>> CombinationsWithoutRepetition<T>(
+		this IEnumerable<T> items,
+		int ofLength)
+	{
+		var itemsArr = items.ToArray();
+		var templates = new Stack<(List<T> Result, ArraySegment<T> Items)>();
+		templates.Push((new List<T>(), itemsArr));
+
+		while (templates.Count > 0)
+		{
+			var (template, rest) = templates.Pop();
+			if (template.Count == ofLength)
+			{
+				yield return template;
+			}
+			else if (template.Count + rest.Count >= ofLength)
+			{
+				for (var i = rest.Count - 1; i >= 0; i--)
+				{
+					var newTemplate = new List<T>(template) { rest[i] };
+					templates.Push((newTemplate, rest[(i + 1)..]));
+				}
+			}
+		}
+	}
+
+	public static IEnumerable<IEnumerable<T>> CombinationsWithoutRepetition<T>(
+		this IEnumerable<T> items,
+		int ofLength,
+		int upToLength)
+	{
+		return Enumerable
+			.Range(ofLength, Math.Max(0, upToLength - ofLength + 1))
+			.SelectMany(len => items.CombinationsWithoutRepetition(ofLength: len));
+	}
+
+	public static IOrderedEnumerable<SmartTransaction> OrderByBlockchain(this IEnumerable<SmartTransaction> me)
+		=> me
+			.OrderBy(x => x.Height)
+			.ThenBy(x => x.BlockIndex)
+			.ThenBy(x => x.FirstSeen);
+
+	public static IOrderedEnumerable<TransactionSummary> OrderByBlockchain(this IEnumerable<TransactionSummary> me)
+		=> me
+			.OrderBy(x => x.Height)
+			.ThenBy(x => x.BlockIndex)
+			.ThenBy(x => x.FirstSeen);
+
+	/// <summary>
+	/// Chunks the source list to sub-lists by the specified chunk size.
+	/// Source: https://stackoverflow.com/a/24087164/2061103
+	/// </summary>
+	public static IEnumerable<IEnumerable<T>> ChunkBy<T>(this IEnumerable<T> source, int chunkSize)
+	{
+		return source
+			.Select((x, i) => new { Index = i, Value = x })
+			.GroupBy(x => x.Index / chunkSize)
+			.Select(x => x.Select(v => v.Value));
+	}
+
+	/// <summary>
+	/// Creates a tuple collection from two collections. If lengths differ, exception is thrown.
+	/// </summary>
+	public static IEnumerable<(T1, T2)> ZipForceEqualLength<T1, T2>(this IEnumerable<T1> source, IEnumerable<T2> otherCollection)
+	{
+		if (source.Count() != otherCollection.Count())
+		{
+			throw new InvalidOperationException($"{nameof(source)} and {nameof(otherCollection)} collections must have the same number of elements. {nameof(source)}:{source.Count()}, {nameof(otherCollection)}:{otherCollection.Count()}.");
+		}
+		return source.Zip(otherCollection);
+	}
+
+	public static IEnumerable<TAccumulate> Scan<TSource, TAccumulate>(
+		this IEnumerable<TSource> source,
+		TAccumulate seed,
+		Func<TAccumulate, TSource, TAccumulate> func)
+	{
+		TAccumulate previous = seed;
+		foreach (var item in source)
+		{
+			previous = func(previous, item);
+			yield return previous;
+		}
+	}
+
+	public static bool IsSuperSetOf<T>(this IEnumerable<T> me, IEnumerable<T> other) =>
+		other.All(x => me.Contains(x));
+
+	public static IEnumerable<T> TakeUntil<T>(this IEnumerable<T> list, Func<T, bool> predicate)
+	{
+		foreach (T el in list)
+		{
+			yield return el;
+			if (predicate(el))
+			{
+				yield break;
+			}
+		}
+	}
+
+	public static IEnumerable<T> DropNulls<T>(this IEnumerable<T?> source) where T: class =>
+		source.Where(x => x is not null).Select(x => x!);
+
+	public static IEnumerable<T> DropNulls<T>(this IEnumerable<T?> source) where T: struct =>
+		source.Where(x => x.HasValue).Select(x => x!.Value);
+
+	public static double WeightedAverage<T>(this IEnumerable<T> source, Func<T, double> value, Func<T, double> weight)
+	{
+		return source.Sum(x => value(x) * weight(x)) / source.Select(weight).DefaultIfEmpty(1).Sum();
+	}
+
+	public static int MaxOrDefault(this IEnumerable<int> me, int defaultValue) =>
+		me.DefaultIfEmpty(defaultValue).Max();
+
+	public static T MinOrDefault<T>(this IEnumerable<T> me) where T: struct =>
+		me.DefaultIfEmpty(default).Min();
+
+	public static T? MinOrDefault<T>(this IEnumerable<T> me, T? defaultValue = default) where T: class, IComparable<T> =>
+		me.DefaultIfEmpty(defaultValue).Min();
+
+	public static double Median(this IEnumerable<double> me)
+	{
+		if (!me.Any())
+		{
+			throw new ArgumentException("Median of an empty set is not defined.", nameof(me));
+		}
+
+		var sorted = me.Order().ToArray();
+		return sorted[sorted.Length / 2];
+	}
+
+	public static (IEnumerable<T>, IEnumerable<T>) Partition<T>(this IEnumerable<T> me, Predicate<T> predicate)
+	{
+		var trueList = new List<T>();
+		var falseList = new List<T>();
+
+		foreach (var item in me)
+		{
+			if (predicate(item))
+			{
+				trueList.Add(item);
+			}
+			else
+			{
+				falseList.Add(item);
+			}
+		}
+
+		return (trueList, falseList);
+	}
+}

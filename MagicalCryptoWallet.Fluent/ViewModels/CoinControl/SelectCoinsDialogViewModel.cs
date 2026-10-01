@@ -1,0 +1,53 @@
+using System.Collections.Generic;
+using System.Linq;
+using System.Reactive.Linq;
+using MagicalCryptoWallet.Blockchain.TransactionOutputs;
+using MagicalCryptoWallet.Fluent.Models.Transactions;
+using MagicalCryptoWallet.Fluent.Models.Wallets;
+using MagicalCryptoWallet.Fluent.ViewModels.Dialogs.Base;
+using MagicalCryptoWallet.Fluent.ViewModels.Wallets.Coins;
+
+namespace MagicalCryptoWallet.Fluent.ViewModels.CoinControl;
+
+[NavigationMetaData(
+	Title = "Coin Control",
+	Caption = "",
+	IconName = "wallet_action_send",
+	NavBarPosition = NavBarPosition.None,
+	Searchable = false,
+	NavigationTarget = NavigationTarget.DialogScreen)]
+public partial class SelectCoinsDialogViewModel : DialogViewModelBase<IEnumerable<SmartCoin>>
+{
+	public SelectCoinsDialogViewModel(UiContext uiContext, IWalletModel wallet, IList<CoinModel> selectedCoins,
+		SendFlowModel sendFlow) : base(uiContext)
+	{
+		var transactionInfo = sendFlow.TransactionInfo ?? throw new InvalidOperationException($"Missing required TransactionInfo.");
+
+		CoinList = new CoinListViewModel(uiContext, sendFlow.CoinList, selectedCoins, allowCoinjoiningCoinSelection: true, ignorePrivacyMode: true, allowSelection: true);
+
+		EnoughSelected = CoinList.Selection.ToObservableChangeSet()
+			.ToCollection()
+			.Select(coinSelection => wallet.Coins.AreEnoughToCreateTransaction(transactionInfo, coinSelection));
+
+		EnableBack = true;
+		NextCommand = ReactiveCommand.Create(OnNext, EnoughSelected);
+
+		SetupCancel(false, true, false);
+	}
+
+	public CoinListViewModel CoinList { get; }
+
+	public IObservable<bool> EnoughSelected { get; }
+
+	protected override void OnNavigatedFrom(bool isInHistory)
+	{
+		CoinList.Dispose();
+
+		base.OnNavigatedFrom(isInHistory);
+	}
+
+	private void OnNext()
+	{
+		Close(DialogResultKind.Normal, CoinList.Selection.GetSmartCoins().ToList());
+	}
+}

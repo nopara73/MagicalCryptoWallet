@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 function config_extract() {
-  jq -r "$1" ~/.walletwasabi/client/Config.json
+  jq -r "$1" ~/.magicalcryptowallet/client/Config.json
 }
 
 CREDENTIALS=$(config_extract '.JsonRpcUser + ":" + .JsonRpcPassword')

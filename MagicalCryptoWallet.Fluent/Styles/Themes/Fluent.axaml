@@ -1,0 +1,48 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Styles.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <MergeResourceInclude Source="avares://MagicalCryptoWallet.Fluent/Styles/Themes/ThemeVariants.axaml" />
+        <MergeResourceInclude Source="avares://MagicalCryptoWallet.Fluent/Controls/CaptionButtons.axaml" />
+        <MergeResourceInclude Source="avares://MagicalCryptoWallet.Fluent/Controls/AdorningContentControl.axaml" />
+        <MergeResourceInclude Source="avares://MagicalCryptoWallet.Fluent/Controls/AnimatedButton.axaml" />
+        <MergeResourceInclude Source="avares://MagicalCryptoWallet.Fluent/Controls/ClipboardCopyButton.axaml" />
+        <MergeResourceInclude Source="avares://MagicalCryptoWallet.Fluent/Controls/ContentArea.axaml" />
+        <MergeResourceInclude Source="avares://MagicalCryptoWallet.Fluent/Controls/CopyableItem.axaml" />
+        <MergeResourceInclude Source="avares://MagicalCryptoWallet.Fluent/Controls/CurrencyEntryBox.axaml" />
+        <MergeResourceInclude Source="avares://MagicalCryptoWallet.Fluent/Controls/Dialog.axaml" />
+        <MergeResourceInclude Source="avares://MagicalCryptoWallet.Fluent/Controls/DualCurrencyEntryBox.axaml" />
+        <MergeResourceInclude Source="avares://MagicalCryptoWallet.Fluent/Controls/FadeOutTextControl.axaml" />
+        <MergeResourceInclude Source="avares://MagicalCryptoWallet.Fluent/Controls/InfoMessage.axaml" />
+        <MergeResourceInclude Source="avares://MagicalCryptoWallet.Fluent/Controls/LabelsItemsPresenter.axaml" />
+        <MergeResourceInclude Source="avares://MagicalCryptoWallet.Fluent/Controls/NavBarItem.axaml" />
+        <MergeResourceInclude Source="avares://MagicalCryptoWallet.Fluent/Controls/PreviewItem.axaml" />
+        <MergeResourceInclude Source="avares://MagicalCryptoWallet.Fluent/Controls/PrivacyBar.axaml" />
+        <MergeResourceInclude Source="avares://MagicalCryptoWallet.Fluent/Controls/PrivacyBarSegment.axaml" />
+        <MergeResourceInclude Source="avares://MagicalCryptoWallet.Fluent/Controls/PrivacyContentControl.axaml" />
+        <MergeResourceInclude Source="avares://MagicalCryptoWallet.Fluent/Controls/ProgressRing.axaml" />
+        <MergeResourceInclude Source="avares://MagicalCryptoWallet.Fluent/Controls/ProgressRingArc.axaml" />
+        <MergeResourceInclude Source="avares://MagicalCryptoWallet.Fluent/Controls/QuestionControl.axaml" />
+        <MergeResourceInclude Source="avares://MagicalCryptoWallet.Fluent/Controls/StatusItem.axaml" />
+        <MergeResourceInclude Source="avares://MagicalCryptoWallet.Fluent/Controls/SuggestionItem.axaml" />
+        <MergeResourceInclude Source="avares://MagicalCryptoWallet.Fluent/Controls/TagControl.axaml" />
+        <MergeResourceInclude Source="avares://MagicalCryptoWallet.Fluent/Controls/TextBox.axaml" />
+        <MergeResourceInclude Source="avares://MagicalCryptoWallet.Fluent/Controls/TileControl.axaml" />
+        <MergeResourceInclude Source="avares://MagicalCryptoWallet.Fluent/Controls/TileButton.axaml" />
+        <MergeResourceInclude Source="avares://MagicalCryptoWallet.Fluent/Controls/TreeDataGrid.axaml" />
+        <MergeResourceInclude Source="avares://MagicalCryptoWallet.Fluent/Controls/AmountControl.axaml" />
+        <MergeResourceInclude Source="avares://MagicalCryptoWallet.Fluent/Controls/DummyRowsControl.axaml" />
+        <MergeResourceInclude Source="avares://MagicalCryptoWallet.Fluent/Controls/Sorting/SortControl.axaml" />
+        <MergeResourceInclude Source="avares://MagicalCryptoWallet.Fluent/Controls/ToggleRadioButton.axaml" />
+        <MergeResourceInclude Source="avares://MagicalCryptoWallet.Fluent/Controls/ScrollBar.axaml" />
+        <MergeResourceInclude Source="avares://MagicalCryptoWallet.Fluent/Controls/ContentControl.axaml" />
+        <MergeResourceInclude Source="avares://MagicalCryptoWallet.Fluent/Controls/WalletIconControl.axaml" />
+        <MergeResourceInclude Source="avares://MagicalCryptoWallet.Fluent/Controls/TagsBoxAutoCompleteBox.axaml" />
+        <MergeResourceInclude Source="avares://MagicalCryptoWallet.Fluent/Controls/TagsBox.axaml" />
+        <MergeResourceInclude Source="avares://MagicalCryptoWallet.Fluent/Controls/SubActionButton.axaml" />
+        <MergeResourceInclude Source="avares://MagicalCryptoWallet.Fluent/Controls/Button.axaml" />
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </Styles.Resources>
+</Styles>

@@ -1,64 +1,37 @@
-<p align="center">
-  <a href="https://wasabiwallet.io">
-    <img src="https://github.com/WalletWasabi/WalletWasabi/blob/master/ui-ww.png">
-  </a>
-</p>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="Contrib/Assets/MagicalCryptoWallet-horizontal-lime.svg">
+  <img alt="Magical Crypto Wallet" src="Contrib/Assets/MagicalCryptoWallet-horizontal-black.svg" width="360">
+</picture>
 
-<h3 align="center">
-    An open-source, non-custodial, privacy-focused Bitcoin wallet for desktop.
-</h3>
+# Magical Crypto Wallet
 
-<h3 align="center">
-  <a href="https://wasabiwallet.io">
-    Website
-  </a>
-  <span> | </span>
-  <a href="https://docs.wasabiwallet.io/">
-    Documentation
-  </a>
-  <span> | </span>
-  <a href="https://github.com/WalletWasabi/WalletWasabi/discussions/5185">
-    Support
-  </a>
-  <span> | </span>
-  <a href="https://www.youtube.com/c/WasabiWallet">
-    YouTube
-  </a>
-  <span> | </span>
-  <a href="https://github.com/WalletWasabi/WalletWasabi/blob/master/PGP.txt">
-    PGP
-  </a>
-</h3>
-<br>
+A privacy-focused, open-source, non-custodial Bitcoin wallet for Windows, Linux, and macOS. Coin control, hardware wallets, Tor, silent payments, and WabiSabi coinjoins are supported.
 
-# [Download Wasabi](https://github.com/WalletWasabi/WalletWasabi/releases)
+This project has its own application storage, installers, update keys, and releases. It starts with fresh data. Import an existing wallet file explicitly through **Add Wallet → Import Wallet**; never copy another application's complete data directory.
 
-<br>
+- [Downloads](https://github.com/nopara73/MagicalCryptoWallet/releases)
+- [Build, installation, configuration, and wallet import](MagicalCryptoWallet.Documentation/README.md)
+- [Support and bug reports](https://github.com/nopara73/MagicalCryptoWallet/issues)
+- [Security reporting](SECURITY.md)
+- [Release signing and recovery](Contrib/Signing/README.md)
 
-# Build From Source Code
-
-### Get The Requirements
-
-1. Get Git: https://git-scm.com/downloads
-2. Get .NET 10.0 SDK: https://dotnet.microsoft.com/download
-3. Optionally disable .NET's telemetry by executing in the terminal `export DOTNET_CLI_TELEMETRY_OPTOUT=1` on Linux and macOS or `setx DOTNET_CLI_TELEMETRY_OPTOUT 1` on Windows.
-
-### Get Wasabi
-
-Clone & Restore & Build
+Build with the .NET SDK selected by `global.json`. Build the native credential library from source before running the wallet:
 
 ```sh
-git clone --depth=1 --single-branch --branch=master https://github.com/WalletWasabi/WalletWasabi.git
-cd WalletWasabi/WalletWasabi.Fluent.Desktop
-dotnet build
+cmake -S ThirdParty/WabiSabi/c -B ThirdParty/WabiSabi/c/build -DCMAKE_BUILD_TYPE=Release
+cmake --build ThirdParty/WabiSabi/c/build --parallel
+dotnet run --project MagicalCryptoWallet.Fluent.Desktop -c Release
 ```
 
-### Run Wasabi
+On Windows use a MinGW C compiler and `c/build-win` as the build directory. For complete platform packages, use `python Contrib/Releases/package.py --rid <rid>`; snapshots use development version `99.99.99` without needing historical Git tags.
 
-Run Wasabi with `dotnet run` from the `WalletWasabi.Fluent.Desktop` folder.
+WabiSabi is vendored as source at a pinned revision. Its protocol, domain-separation constants, serialization, and vectors remain unchanged. See [dependency provenance](ThirdParty/WabiSabi/UPSTREAM.json) and [local changes](ThirdParty/WabiSabi/CHANGES.md).
 
-### Update Wasabi
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="MagicalCryptoWallet.Documentation/Screenshots/welcome-dark-100.png">
+  <img alt="Magical Crypto Wallet welcome screen" src="MagicalCryptoWallet.Documentation/Screenshots/welcome-light-100.png" width="800">
+</picture>
 
-```sh
-git pull
-```
+The [rebrand validation report](MagicalCryptoWallet.Documentation/RebrandValidation.md) records tested behavior, package identities, and remaining platform signing requirements.
+
+Licensed under the [MIT license](LICENSE.md), with original notices retained.

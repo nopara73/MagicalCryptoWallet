@@ -7,7 +7,7 @@ labels: ["bug", "untriaged"]
 
 ### Before anything else
 
-Search for your error. By sure someone else found it before you: https://github.com/WalletWasabi/WalletWasabi/issues?q=is%3Aissue%20state%3Aclosed
+Search for your error. By sure someone else found it before you: https://github.com/nopara73/MagicalCryptoWallet/issues?q=is%3Aissue%20state%3Aclosed
 
 -------
 ### Describe the issue
@@ -20,7 +20,7 @@ Search for your error. By sure someone else found it before you: https://github.
 
 ### Logs
 
-Where to find the logs? https://docs.wasabiwallet.io/FAQ/FAQ-UseWasabi.html#where-can-i-find-the-logs
+Where to find the logs? https://github.com/nopara73/MagicalCryptoWallet/blob/master/MagicalCryptoWallet.Documentation/README.md
 
 ```
 Insert Your Logs Here
@@ -34,7 +34,7 @@ Insert Your Logs Here
 
 <!-- Example: Ubuntu 22.04.3 LTS -->
 
-### Wasabi Version
+### MagicalCryptoWallet Version
 
-<!-- Which wasabi release are you using? Where did you download it from?
-You can figure out which version you are using by choosing `About Wasabi` from the dropdown menu in the search bar. -->
+<!-- Which magicalcryptowallet release are you using? Where did you download it from?
+You can figure out which version you are using by choosing `About Magical Crypto Wallet` from the dropdown menu in the search bar. -->

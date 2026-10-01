@@ -1,11 +1,11 @@
 blank_issues_enabled: false
 contact_links:
   - name: 📃 User documentation
-    url: https://docs.wasabiwallet.io/
-    about: Search for any information about Wasabi.
+    url: https://github.com/nopara73/MagicalCryptoWallet/blob/master/MagicalCryptoWallet.Documentation/README.md
+    about: Search for any information about MagicalCryptoWallet.
   - name: 💪 Community support
-    url: https://github.com/WalletWasabi/WalletWasabi/discussions/categories/support
+    url: https://github.com/nopara73/MagicalCryptoWallet/discussions/categories/support
     about: Feel free to ask anything.
   - name: ❓ Other issue?
-    url: https://github.com/WalletWasabi/WalletWasabi/discussions/
+    url: https://github.com/nopara73/MagicalCryptoWallet/discussions/
     about: Search on the community forum.

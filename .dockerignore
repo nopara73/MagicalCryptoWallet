@@ -1,0 +1,7 @@
+.git
+.artifacts
+packages
+**/bin
+**/obj
+ThirdParty/WabiSabi/c/build*
+**/*.user

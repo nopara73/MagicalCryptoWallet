@@ -1,0 +1,70 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<DisableImplicitNamespaceImports>true</DisableImplicitNamespaceImports>
+		<IsPackable>false</IsPackable>
+		<NoWarn>1701;1702;1705;1591;CA1031;CA1822</NoWarn>
+		<OutputType>Exe</OutputType>
+		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+
+		<!-- https://xunit.net/docs/getting-started/v3/microsoft-testing-platform -->
+		<UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
+		<TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="coverlet.collector">
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+			<PrivateAssets>all</PrivateAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+		<PackageReference Include="Microsoft.CodeAnalysis.Common" />
+		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
+		<PackageReference Include="xunit.v3" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\MagicalCryptoWallet.Coordinator\MagicalCryptoWallet.Coordinator.csproj" />
+		<ProjectReference Include="..\MagicalCryptoWallet.Fluent.Generators\MagicalCryptoWallet.Fluent.Generators.csproj" />
+		<ProjectReference Include="..\MagicalCryptoWallet.Fluent\MagicalCryptoWallet.Fluent.csproj" />
+		<ProjectReference Include="..\MagicalCryptoWallet\MagicalCryptoWallet.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Update="UnitTests\QrDecode\QrResources\AddressTest1.png">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="UnitTests\QrDecode\QrResources\AddressTest2.png">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="UnitTests\QrDecode\QrResources\qr-embed-logos.png">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="UnitTests\QrDecode\QrResources\QrByPhone.jpg">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="UnitTests\QrDecode\QrResources\QRwithZebraBackground.png">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="UnitTests\Data\Slip39TestVectors.json">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Update="./UnitTests/Data/StrobeTestVectors.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="./UnitTests/Data/VerboseBlock.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="UnitTests\Data\SilentPaymentTestVectors.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+
+	<ItemGroup>
+		<RuntimeHostConfigurationOption Include="System.Globalization.Invariant" Value="true" />
+	</ItemGroup>
+
+</Project>

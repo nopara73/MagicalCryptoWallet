@@ -1,0 +1,16 @@
+{
+  "forbidden_pattern": "wasabi|\\bwassabeed?\\b|\\bwcoordinator\\b|zksnacks|\\bWW2(?:\\.\\d+)*\\b|(?:https?://(?:[a-z0-9-]+\\.)*|@)magicalcryptowallet\\.(?:io|co|com)\\b|D8E80773-D8CF-4031-B8B3-AA750AF0B413|50CAF59B-0B66-4CA3-8D92-C96591A707AD|FD3D13B1-AA09-495F-A1DE-0E50A010DDF6|6FB3872B5D42292F59920797856348328949861E|xpub6C13JhXzjAhVRgeTcRSWqKEPe1vHi3Tmh2K9PN1cZaZFVjjSaj76y5NNyqYjc2bugj64LVDFYu8NZWtJsXNYKFb9J94nehLAPAKqKiXcebC|02c8ab8eea76c83788e246a1baee10c04a134ec11be6553946f6ae65e47ae9a608|npub129hpcwy3h7uhpzwzts6utkt2p5st7lf4qpzp3d2j0p6z56lvkpgspngzeq",
+  "old_artwork_sha256": [
+    "038702990ea7e698893490650cb294206caff536ec42477dd56c2bdb207208b5",
+    "0f0548b3e7b41f39ee8823d2febb47ba5b453c14b119a60e575569fb7bc83729",
+    "3349976149a723e12849bcd3145ac464723c59a17ba6ec4f29ed2b69115ae2eb",
+    "398b7c11d1f115fad6fa045b7941cca442584af81e4c6cf235f37290b7dd56d1",
+    "53c8f6c585626539bb3441b03720e90aa8e4b08d5940ff6a67b59a4c833bb090",
+    "7aaef8a24fa70e98d3e277a22cd29ddb05058a6957fae0d0330778ee6f683445",
+    "c1f1d94d3c73cd9d73f0a30879838d36089d571d4166b83aa6daa89ae49c959b",
+    "c572393ae8da08af18f8d78afee5f96c0e087d02b825b3d503f7806a34f30e5a",
+    "d8486cd9e602f93b2fd840dd7f4556ad781d1bf83209eff0cf8293b62405e3d3",
+    "e5342800cd692b87659e947a232bedc40623a1d342d1ea6ce02e29c22aeb2145"
+  ],
+  "purpose": "Forbidden identity tokens, prior trust pins and installer GUIDs, and old artwork/public-key fingerprints are audit negative data."
+}

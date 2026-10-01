@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>MagicalCryptoWallet.ReleaseTools</RootNamespace>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="NBitcoin" />
+    <PackageReference Include="NNostr.Client" />
+    <EmbeddedResource Include="../../Signing/public-keys.json" LogicalName="MagicalCryptoWallet.ReleaseKeys.json" />
+  </ItemGroup>
+</Project>

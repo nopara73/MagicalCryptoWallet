@@ -105,7 +105,7 @@ The script: - Shows initial state - Starts coinjoin automatically - Detects when
 
 ## Setup
 
-#### Enable RPC in Wasabi's Config.json:
+#### Enable RPC in Magical Crypto Wallet's Config.json:
 
 > "JsonRpcServerEnabled": true
 

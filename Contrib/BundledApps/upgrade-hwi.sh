@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #!nix-shell -i bash -p _7zz
 #
-# Downloads, extracts and upgrades Hardware Wallet Interface (HWI) binaries for Wasabi Wallet
+# Downloads, extracts and upgrades Hardware Wallet Interface (HWI) binaries for Magical Crypto Wallet
 #
 # Requirements:
 #   - bash on linux or git bash on Windows
@@ -17,7 +17,7 @@ shopt -s extglob nullglob
 # ──────────────────────────────────────────────────────────────────────────────
 show_help() {
     cat << 'EOF'
-Downloads, extracts and upgrades Hardware Wallet Interface (HWI) binaries for Wasabi Wallet
+Downloads, extracts and upgrades Hardware Wallet Interface (HWI) binaries for Magical Crypto Wallet
 
 Usage:
     ./upgrade-hwi.sh <version> [OPTIONS]
@@ -168,13 +168,13 @@ require_command "$SEVEN_ZIP"
 # ──────────────────────────────────────────────────────────────────────────────
 
 basedir=$(dirname "$0")
-BINARIES_DIR=$(realpath "${basedir}/../../WalletWasabi/BundledApps/Binaries")
+BINARIES_DIR=$(realpath "${basedir}/../../MagicalCryptoWallet/BundledApps/Binaries")
 cd $BINARIES_DIR || { echo "Error: Failed to change directory to '$BINARIES_DIR'" >&2; exit 1; }
 
 info "Change directory to '$BINARIES_DIR'"
 
 if [[ ! -d "linux-x64" || ! -d "osx64" || ! -d "win-x64" ]]; then
-    error "Expected linux-x64, osx64, win-x64, etc. to be present in the folder 'WalletWasabi/BundledApps/Binaries'"
+    error "Expected linux-x64, osx64, win-x64, etc. to be present in the folder 'MagicalCryptoWallet/BundledApps/Binaries'"
 fi
 
 TEMP_DIR="temp/hwi-${VERSION}"
@@ -260,7 +260,7 @@ else
     section "Skipping HWI archive extraction"
 fi
 
-popd >/dev/null # Working directory is 'WalletWasabi/BundledApps/Binaries' again.
+popd >/dev/null # Working directory is 'MagicalCryptoWallet/BundledApps/Binaries' again.
 
 # ─── Replace binaries in repository ──────────────────────────────────────────
 if [[ "$SKIP_REPLACE" != true ]]; then

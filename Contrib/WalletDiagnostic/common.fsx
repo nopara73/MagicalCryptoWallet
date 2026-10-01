@@ -12,14 +12,14 @@ module Config =
     "JsonRpcUser": "",
     "JsonRpcPassword": "",
     "JsonRpcServerPrefixes": [
-      "http://127.0.0.1:37128/"
+      "http://127.0.0.1:38128/"
     ]
   }""">
 
 
   let getConfig () = Config.Load(
     Path.Combine (
-      Environment.ExpandEnvironmentVariables ("%HOME%/.walletwasabi/client/"),
+      Environment.ExpandEnvironmentVariables ("%HOME%/.magicalcryptowallet/client/"),
       "Config.json"))
 
 module Rpc =

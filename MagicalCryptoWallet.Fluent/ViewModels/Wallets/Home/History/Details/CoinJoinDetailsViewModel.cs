@@ -1,0 +1,74 @@
+using System.Reactive.Disposables;
+using System.Reactive.Disposables.Fluent;
+using System.Threading;
+using System.Threading.Tasks;
+using NBitcoin;
+using MagicalCryptoWallet.Fluent.Extensions;
+using MagicalCryptoWallet.Fluent.Models.Wallets;
+using MagicalCryptoWallet.Fluent.ViewModels.Navigation;
+using MagicalCryptoWallet.Fluent.ViewModels.Wallets.Coinjoins;
+
+namespace MagicalCryptoWallet.Fluent.ViewModels.Wallets.Home.History.Details;
+
+[NavigationMetaData(Title = "Coinjoin Details", NavigationTarget = NavigationTarget.DialogScreen)]
+public partial class CoinJoinDetailsViewModel : RoutableViewModel
+{
+	private readonly IWalletModel _wallet;
+	private readonly CoinJoinTransactionModel _transaction;
+
+	[AutoNotify] private string _date = "";
+	[AutoNotify] private uint256? _transactionId;
+	[AutoNotify] private bool _isConfirmed;
+	[AutoNotify] private uint _confirmations;
+	[AutoNotify] private TimeSpan? _confirmationTime;
+	[AutoNotify] private bool _isConfirmationTimeVisible;
+	[AutoNotify] private FeeRate? _feeRate;
+	[AutoNotify] private bool _feeRateVisible;
+
+	public CoinJoinDetailsViewModel(UiContext uiContext, IWalletModel wallet, CoinJoinTransactionModel transaction) : base(uiContext)
+	{
+		InputList = new CoinjoinCoinListViewModel(uiContext, transaction.WalletInputs, wallet.Network, transaction.WalletInputs.Count + transaction.ForeignInputs.Value.Count);
+		OutputList = new CoinjoinCoinListViewModel(uiContext, transaction.WalletOutputs, wallet.Network, transaction.WalletOutputs.Count + transaction.ForeignOutputs.Value.Count);
+
+		_wallet = wallet;
+		_transaction = transaction;
+
+		Costs = new CoinjoinCostsViewModel(wallet.AmountProvider.Create);
+
+		TransactionHex = transaction.Hex.Value;
+
+		SetupCancel(enableCancel: false, enableCancelOnEscape: true, enableCancelOnPressed: true);
+		NextCommand = CancelCommand;
+	}
+
+	public CoinjoinCoinListViewModel InputList { get; }
+	public CoinjoinCoinListViewModel OutputList { get; }
+	public CoinjoinCostsViewModel Costs { get; }
+	public string TransactionHex { get; }
+
+	protected override void OnNavigatedTo(bool isInHistory, CompositeDisposable disposables)
+	{
+		base.OnNavigatedTo(isInHistory, disposables);
+
+		_wallet.Transactions.Cache
+							.Connect()
+							.SubscribeAsync(async _ => await UpdateAsync(CancellationToken.None))
+							.DisposeWith(disposables);
+	}
+
+	private async Task UpdateAsync(CancellationToken cancellationToken)
+	{
+		if (_wallet.Transactions.TryGetById<CoinJoinTransactionModel>(_transaction.Id, out var transaction))
+		{
+			Date = transaction.DateToolTipString;
+			Costs.Update(transaction.CoinjoinCosts, transaction.Amount);
+			Confirmations = transaction.Confirmations;
+			IsConfirmed = Confirmations > 0;
+			TransactionId = transaction.Id;
+			ConfirmationTime = await _wallet.Transactions.TryEstimateConfirmationTimeAsync(transaction.Id, cancellationToken);
+			IsConfirmationTimeVisible = ConfirmationTime.HasValue && ConfirmationTime != TimeSpan.Zero;
+			FeeRate = transaction.FeeRate;
+			FeeRateVisible = FeeRate is not null && FeeRate != FeeRate.Zero;
+		}
+	}
+}

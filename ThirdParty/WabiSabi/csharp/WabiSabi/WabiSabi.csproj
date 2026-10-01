@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>WabiSabi</RootNamespace>
+    <Version>1.3.1</Version>
+    <PackageId>MagicalCryptoWallet.WabiSabi</PackageId>
+    <Description>Source-built WabiSabi anonymous credentials, managed and native implementations.</Description>
+    <PackageProjectUrl>https://github.com/nopara73/MagicalCryptoWallet/tree/master/ThirdParty/WabiSabi</PackageProjectUrl>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="NBitcoin.Secp256k1" />
+    <None Include="../../LICENSE" Pack="true" PackagePath="" />
+    <None Include="../../README.md" Pack="true" PackagePath="" />
+    <!-- Native binaries come exclusively from the C sources, before tests or packaging. -->
+    <None Include="../../c/build/libwabisabi.*" Condition="'$(NativeLibraryPath)' == ''"
+          Link="%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <None Include="$(NativeLibraryPath)" Condition="'$(NativeLibraryPath)' != ''"
+          Link="%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

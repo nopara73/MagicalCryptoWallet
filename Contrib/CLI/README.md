@@ -1,13 +1,13 @@
-# Wasabi CLI
+# MagicalCryptoWallet CLI
 
-A bash script for effortless interaction with the Wasabi RPC Server.
+A bash script for effortless interaction with the MagicalCryptoWallet RPC Server.
 
 USAGE:
 
 ```bash
 $ ./wcli.sh [-wallet=<WALLET-NAME>] command [ARGS,...]
 ```
-The supported RPC commands are listed in the [documentation](https://docs.wasabiwallet.io/using-wasabi/RPC.html).
+The supported RPC commands are listed in the [documentation](https://github.com/nopara73/MagicalCryptoWallet/blob/master/MagicalCryptoWallet.Documentation/README.md).
 
 ## Examples
 
@@ -45,7 +45,7 @@ $ ./wcli.sh -wallet=MyWallet getwalletinfo
 
 {
   "walletName": "MyWallet",
-  "walletFile": "/home/ricardo/.walletwasabi/client/Wallets/MyWallet.json",
+  "walletFile": "/home/ricardo/.magicalcryptowallet/client/Wallets/MyWallet.json",
   "state": "Started",
   "masterKeyFingerprint": "d415c529",
   "anonScoreTarget": 5,

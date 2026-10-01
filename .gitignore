@@ -264,15 +264,15 @@ __pycache__/
 
 # Coverlet
 lcov.info
-/WalletWasabi.Tests/coverage.json
+/MagicalCryptoWallet.Tests/coverage.json
 
 \.DS_Store
 *.DS_Store
 /NuGet.Config
 
 # WindowsInstaller generated files
-/WalletWasabi.WindowsInstaller/ComponentsGenerated.wxs
-/WalletWasabi.WindowsInstaller/*.wixobj
+/MagicalCryptoWallet.WindowsInstaller/ComponentsGenerated.wxs
+/MagicalCryptoWallet.WindowsInstaller/*.wixobj
 
 # This file is created by an F# VS Code plugin
 .ionide/symbolCache.db
@@ -280,3 +280,9 @@ lcov.info
 build/
 result/
 .aider*
+
+# Local validation, downloaded source archives, and package output.
+.artifacts/
+packages/
+ThirdParty/WabiSabi/c/build*/
+ThirdParty/WabiSabi/csharp/WabiSabi/runtimes/

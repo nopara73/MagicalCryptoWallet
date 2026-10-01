@@ -1,0 +1,44 @@
+using System.IO;
+using MagicalCryptoWallet.Tor;
+using Xunit;
+
+namespace MagicalCryptoWallet.Tests.UnitTests.Tor;
+
+/// <summary>
+/// Tests for <see cref="TorSettings"/> class.
+/// </summary>
+public class TorSettingsTests
+{
+	[Fact]
+	public void GetCmdArgumentsTest()
+	{
+		string dataDir = Path.Combine("temp", "tempDataDir");
+		string distributionFolder = "tempDistributionDir";
+
+		TorSettings settings = new(dataDir, distributionFolder, terminateOnExit: true, owningProcessId: 7);
+
+		string arguments = settings.GetCmdArguments();
+
+		string expected = string.Join(
+			" ",
+			$"--LogTimeGranularity 1",
+			$"--TruncateLogFile 1",
+			$"--UseBridges 0",
+			$"--SOCKSPort \"127.0.0.1:38150 ExtendedErrors KeepAliveIsolateSOCKSAuth\"",
+			$"--SocksTimeout 30",
+			$"--CookieAuthentication 1",
+			$"--ControlPort 38151",
+			$"--CookieAuthFile \"{Path.Combine("temp", "tempDataDir", "control_auth_cookie")}\"",
+			$"--DataDirectory \"{Path.Combine("temp", "tempDataDir", "tordata2")}\"",
+			$"--GeoIPFile \"{Path.Combine("tempDistributionDir", "Tor", "Geoip", "geoip")}\"",
+			$"--GeoIPv6File \"{Path.Combine("tempDistributionDir", "Tor", "Geoip", "geoip6")}\"",
+			$"--NumEntryGuards 3",
+			$"--NumPrimaryGuards 3",
+			$"--ConfluxEnabled 1",
+			$"--ConfluxClientUX throughput",
+			$"--Log \"notice file {Path.Combine("temp", "tempDataDir", "TorLogs.txt")}\"",
+			$"__OwningControllerProcess 7");
+
+		Assert.Equal(expected, arguments);
+	}
+}

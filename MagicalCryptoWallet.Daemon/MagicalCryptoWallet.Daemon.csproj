@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<NoWarn>1701;1702;1705;1591;1573;CA1031;CA1822</NoWarn>
+		<RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+		<DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
+		<PathMap>$(MSBuildProjectDirectory)\=MagicalCryptoWallet.Daemon</PathMap>
+		<OutputType>Exe</OutputType>
+		<RuntimeIdentifiers>win-x64;linux-x64;linux-arm64;osx-x64;osx-arm64</RuntimeIdentifiers>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<NeutralLanguage>en-US</NeutralLanguage>
+		<AssemblyTitle>Magical Crypto Wallet Daemon</AssemblyTitle>
+		<Description>
+			Open-source, non-custodial, privacy focused Bitcoin wallet for Windows, Linux, and Mac. Built-in Tor, coinjoin, payjoin and coin control features.
+		</Description>
+		<Copyright>MIT</Copyright>
+		<PackageId>MagicalCryptoWallet.Daemon</PackageId>
+		<PackageTags>bitcoin-wallet;privacy;bitcoin;dotnet;nbitcoin;cross-platform;zerolink;wallet;wabisabi;coinjoin;tor</PackageTags>
+		<PackageProjectUrl>https://github.com/nopara73/MagicalCryptoWallet/</PackageProjectUrl>
+		<PackageLicenseUrl>https://github.com/nopara73/MagicalCryptoWallet/blob/master/LICENSE.md</PackageLicenseUrl>
+		<RepositoryType>git</RepositoryType>
+		<RepositoryUrl>https://github.com/nopara73/MagicalCryptoWallet/</RepositoryUrl>
+		<Product>Magical Crypto Wallet Daemon</Product>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\MagicalCryptoWallet.Client\MagicalCryptoWallet.Client.csproj" />
+	</ItemGroup>
+
+</Project>

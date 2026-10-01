@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #!nix-shell -i bash -p _7zz
 #
-# Downloads, extracts and upgrades bitcoind from Bitcoin Core archives for Wasabi Wallet
+# Downloads, extracts and upgrades bitcoind from Bitcoin Core archives for Magical Crypto Wallet
 #
 # Requirements:
 #   - bash on linux or git bash on Windows
@@ -17,7 +17,7 @@ shopt -s extglob nullglob
 # ──────────────────────────────────────────────────────────────────────────────
 show_help() {
     cat << 'EOF'
-Downloads, extracts and upgrades bitcoind binaries from Bitcoin Core for Wasabi Wallet
+Downloads, extracts and upgrades bitcoind binaries from Bitcoin Core for Magical Crypto Wallet
 
 Usage:
     ./upgrade-bitcoin-core.sh <version> [OPTIONS]
@@ -169,13 +169,13 @@ require_command sha256sum
 # ──────────────────────────────────────────────────────────────────────────────
 
 basedir=$(dirname "$0")
-BINARIES_DIR=$(realpath "${basedir}/../../WalletWasabi.IntegrationTests/BundledApps/Binaries")
+BINARIES_DIR=$(realpath "${basedir}/../../MagicalCryptoWallet.IntegrationTests/BundledApps/Binaries")
 cd $BINARIES_DIR || { echo "Error: Failed to change directory to '$BINARIES_DIR'" >&2; exit 1; }
 
 info "Change directory to '$BINARIES_DIR'"
 
 if [[ ! -d "linux-x64" || ! -d "osx64" || ! -d "win-x64" ]]; then
-    error "Expected linux-x64, osx64, win-x64, etc. to be present in the folder 'WalletWasabi.IntegrationTests/BundledApps/Binaries'"
+    error "Expected linux-x64, osx64, win-x64, etc. to be present in the folder 'MagicalCryptoWallet.IntegrationTests/BundledApps/Binaries'"
 fi
 
 TEMP_DIR="temp/bitcoin-${VERSION}"
@@ -216,7 +216,7 @@ verify_checksums
 if [[ "$SKIP_EXTRACT" != true ]]; then
     section "Extracting Bitcoin binaries"
 
-    # Remove WalletWasabi.IntegrationTests/BundledApps/Binaries/temp/$VERSION/BitcoinCore
+    # Remove MagicalCryptoWallet.IntegrationTests/BundledApps/Binaries/temp/$VERSION/BitcoinCore
     rm -rf BitcoinCore
 
     # Linux arm64
@@ -245,7 +245,7 @@ else
     section "Skipping Bitcoin Core archive extraction"
 fi
 
-popd >/dev/null # Working directory is 'WalletWasabi.IntegrationTests/BundledApps/Binaries' again.
+popd >/dev/null # Working directory is 'MagicalCryptoWallet.IntegrationTests/BundledApps/Binaries' again.
 
 # ─── Replace binaries in repository ─────────────────────────────────────────
 if [[ "$SKIP_REPLACE" != true ]]; then

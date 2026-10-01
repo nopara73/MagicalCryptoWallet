@@ -65,7 +65,7 @@ async
 wpkh
 sats
 args
-wassabee
+magicalcryptowallet
 Metaco
 Circ
 Trezor
@@ -154,7 +154,7 @@ serializer
 regtest
 newtonsoft
 anonscore
-wasabisig
+magicalcryptowalletsig
 privkey
 linux
 digicert
@@ -167,8 +167,8 @@ bitcoind
 chmod
 sudo
 hicolor
-wasabiwallet
-zksnacks
+magicalcryptowallet
+magicalcryptowallet
 policykit
 payjoin
 dpkg
@@ -276,7 +276,7 @@ splitted
 onlybinaries
 generatekeys
 appleid
-wassabeed
+magicalcryptowalletd
 hwi'
 bitcoind'
 optin

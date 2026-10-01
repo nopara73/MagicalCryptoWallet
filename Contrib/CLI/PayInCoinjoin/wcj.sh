@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
-# Wasabi CoinJoin Payment Runner
+# MagicalCryptoWallet CoinJoin Payment Runner
 # Starts coinjoin and monitors payments, adapting to new/cancelled payments
 
 function config_extract() {
-  jq -r "$1" ~/.walletwasabi/client/Config.json
+  jq -r "$1" ~/.magicalcryptowallet/client/Config.json
 }
 
 RPC_CREDENTIALS=$(config_extract '.JsonRpcUser + ":" + .JsonRpcPassword')
@@ -14,8 +14,8 @@ BASIC_AUTH=$([ "$RPC_CREDENTIALS" == ":" ] && echo "" || echo "--user ${RPC_CRED
 # Check RPC connection
 status=$(curl -s $BASIC_AUTH --connect-timeout 3 -d '{"jsonrpc":"2.0","id":"1","method":"getstatus"}' "$RPC_ENDPOINT" 2>/dev/null)
 if [ -z "$status" ]; then
-    echo "Error: Cannot connect to Wasabi RPC at $RPC_ENDPOINT"
-    echo "Make sure Wasabi is running and RPC is enabled in Config.json"
+    echo "Error: Cannot connect to Magical Crypto Wallet RPC at $RPC_ENDPOINT"
+    echo "Make sure MagicalCryptoWallet is running and RPC is enabled in Config.json"
     exit 1
 fi
 

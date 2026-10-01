@@ -1,26 +1,14 @@
-﻿FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
-ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
-WORKDIR /app
-EXPOSE 80
-EXPOSE 443
-
-FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
-ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
+FROM mcr.microsoft.com/dotnet/sdk:10.0.401 AS build
 WORKDIR /src
-COPY ["Directory.Build.props", "./"]
-COPY ["Directory.Packages.props", "./"]
-COPY ["BannedSymbols.txt", "./"]
-COPY ["WalletWasabi.Backend/WalletWasabi.Backend.csproj", "WalletWasabi.Backend/"]
-COPY ["WalletWasabi/WalletWasabi.csproj", "WalletWasabi/"]
-RUN dotnet restore "WalletWasabi.Backend/WalletWasabi.Backend.csproj"
+RUN apt-get update && apt-get install -y --no-install-recommends cmake gcc make ca-certificates && rm -rf /var/lib/apt/lists/*
 COPY . .
-WORKDIR "/src/WalletWasabi.Backend"
-RUN dotnet build "WalletWasabi.Backend.csproj" -c Release -o /app/build
+RUN cmake -S ThirdParty/WabiSabi/c -B ThirdParty/WabiSabi/c/build -DCMAKE_BUILD_TYPE=Release && cmake --build ThirdParty/WabiSabi/c/build --parallel 4 && ctest --test-dir ThirdParty/WabiSabi/c/build --output-on-failure
+RUN dotnet publish MagicalCryptoWallet.Coordinator -c Release --self-contained false -p:NativeLibraryPath=/src/ThirdParty/WabiSabi/c/build/libwabisabi.so -o /app
 
-FROM build AS publish
-RUN dotnet publish "WalletWasabi.Backend.csproj" -c Release -o /app/publish
-
-FROM base AS final
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
-COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "WalletWasabi.Backend.dll"]
+COPY --from=build /app .
+ENV ASPNETCORE_URLS=http://+:38126
+EXPOSE 38126
+USER $APP_UID
+ENTRYPOINT ["dotnet", "MagicalCryptoWallet.Coordinator.dll"]

@@ -1,0 +1,161 @@
+using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.Net.Http;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http.Timeouts;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using NBitcoin;
+using NBitcoin.RPC;
+using MagicalCryptoWallet.BitcoinRpc;
+using MagicalCryptoWallet.Cache;
+using MagicalCryptoWallet.Coordinator.WabiSabi;
+using MagicalCryptoWallet.Discoverability;
+using MagicalCryptoWallet.Extensions;
+using MagicalCryptoWallet.FeeRateEstimation;
+using MagicalCryptoWallet.Helpers;
+using MagicalCryptoWallet.Logging;
+using MagicalCryptoWallet.Models;
+using MagicalCryptoWallet.Serialization;
+using MagicalCryptoWallet.Tor;
+using MagicalCryptoWallet.WabiSabi.Coordinator;
+using MagicalCryptoWallet.WabiSabi.Coordinator.DoSPrevention;
+using MagicalCryptoWallet.WabiSabi.Coordinator.Rounds;
+using MagicalCryptoWallet.WebClients.MagicalCryptoWallet;
+
+[assembly: ApiController]
+
+namespace MagicalCryptoWallet.Coordinator;
+
+public class Startup(IConfiguration configuration)
+{
+	public IConfiguration Configuration { get; } = configuration;
+
+	// This method gets called by the runtime. Use this method to add services to the container.
+	public void ConfigureServices(IServiceCollection services)
+	{
+		string dataDir = Configuration["datadir"] ?? EnvironmentHelpers.GetDataDir(Path.Combine("MagicalCryptoWallet", "Coordinator"));
+		Logger.Configure(Path.Combine(dataDir, "Logs.txt"));
+
+		services.AddMemoryCache();
+
+
+		services.AddMvc(options => {
+			options.InputFormatters.Insert(0, new MagicalCryptoWalletJsonInputFormatter(Decode.CoordinatorMessageFromStreamAsync));
+			options.InputFormatters.RemoveType<SystemTextJsonInputFormatter>();
+			options.OutputFormatters.Insert(0, new MagicalCryptoWalletJsonOutputFormatter(Encode.CoordinatorMessage));
+			options.OutputFormatters.RemoveType<SystemTextJsonOutputFormatter>();
+			options.ModelMetadataDetailsProviders.Add(new SuppressChildValidationMetadataProvider(typeof(Script)));
+		})
+		.AddControllersAsServices();
+
+		services.AddControllers();
+
+		var configFilePath = Path.Combine(dataDir, "Config.json");
+		var config = WabiSabiConfig.TryLoadFile(configFilePath) ??
+			throw new InvalidDataException($"Failed to load '{configFilePath}' config.");
+		config.Validate();
+
+		services.AddSingleton(config);
+
+		var torSetting = new TorSettings(dataDir,
+			distributionFolderPath: EnvironmentHelpers.GetFullBaseDirectory(),
+			true, TorMode.Enabled, 38155, 38156);
+
+		services.AddSingleton(torSetting);
+
+		services.AddSingleton<IdempotencyRequestCache>();
+		services.AddSingleton<IRPCClient>(provider =>
+		{
+		    string host;
+		    if (config.Network == Network.Main)
+		    {
+		        host = config.MainNetBitcoinRpcUri;
+		    }
+		    else if (config.Network == Network.TestNet)
+		    {
+		        host = config.TestNetBitcoinRpcUri;
+		    }
+		    else if (config.Network == Network.RegTest)
+		    {
+		        host = config.RegTestBitcoinRpcUri;
+		    }
+		    else
+		    {
+		        throw new NotSupportedException($"Network {config.Network} is not supported");
+		    }
+
+		    RPCClient rpcClient = new(
+				authenticationString: config.BitcoinRpcConnectionString,
+				hostOrUri: host,
+				network: config.Network);
+
+		    IMemoryCache memoryCache = provider.GetRequiredService<IMemoryCache>();
+		    CachedRpcClient cachedRpc = new(rpcClient, memoryCache);
+		    return cachedRpc;
+		});
+
+		var network = config.Network;
+		services.AddSingleton(_ => network);
+
+		services.AddSingleton<Prison>(s => s.GetRequiredService<Warden>().Prison);
+		services.AddSingleton<Warden>(s => new Warden(Path.Combine(dataDir, "Prison.txt")));
+		services.AddSingleton<RoundParametersFactory>(s =>
+		{
+			var config = s.GetRequiredService<WabiSabiConfig>();
+			return (feeRate, maxSuggestedAmount, minInputCountByRound) => RoundParameters.Create(config, feeRate, maxSuggestedAmount);
+		});
+		services.AddBackgroundService<Arena>();
+
+		if (config.AnnouncerConfig.IsEnabled)
+		{
+			services.AddSingleton<AnnouncerConfig>(_ => config.AnnouncerConfig);
+			services.AddBackgroundService<CoordinatorAnnouncer>();
+		}
+
+		services.AddSingleton<IHttpClientFactory>(s =>
+			config.PublishAsOnionService
+				? new OnionHttpClientFactory(torSetting.SocksEndpoint.ToUri("socks5"))
+				: new HttpClientFactory()
+			);
+
+		services.AddSingleton<FeeRateProvider>(s =>
+		{
+			var httpClientFactory = s.GetRequiredService<IHttpClientFactory>();
+			return FeeRateProviders.Composed([
+				FeeRateProviders.RpcAsync(s.GetRequiredService<IRPCClient>()),
+				FeeRateProviders.MempoolSpaceAsync(httpClientFactory),
+				FeeRateProviders.BlockstreamAsync(httpClientFactory)
+			]);
+		});
+
+		services.AddSingleton<IdempotencyRequestCache>();
+		services.AddStartupTask<StartupTask>();
+		services.AddResponseCompression();
+		services.AddRequestTimeouts(options =>
+			options.DefaultPolicy =
+				new RequestTimeoutPolicy
+				{
+					Timeout = TimeSpan.FromSeconds(5)
+				});
+
+		if (config.PublishAsOnionService)
+		{
+			services.AddBackgroundService<TorManagerService>();
+		}
+	}
+
+	[SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "This method gets called by the runtime. Use this method to configure the HTTP request pipeline")]
+	public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+	{
+		app.UseRouting();
+		app.UseResponseCompression();
+		app.UseEndpoints(endpoints => endpoints.MapControllers());
+		app.UseRequestTimeouts();
+	}
+}

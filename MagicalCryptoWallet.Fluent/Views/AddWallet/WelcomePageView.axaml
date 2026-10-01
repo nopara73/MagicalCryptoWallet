@@ -1,0 +1,139 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:addWallet="clr-namespace:MagicalCryptoWallet.Fluent.ViewModels.AddWallet"
+             mc:Ignorable="d" d:DesignWidth="800"
+             x:Class="MagicalCryptoWallet.Fluent.Views.AddWallet.WelcomePageView"
+             x:DataType="addWallet:WelcomePageViewModel"
+             x:CompileBindings="True">
+  <Interaction.Behaviors>
+    <FocusOnAttachedBehavior />
+  </Interaction.Behaviors>
+
+  <UserControl.Styles>
+    <Style Selector="ContentArea /template/ StackPanel#PART_Header">
+      <Setter Property="Height" Value="32" />
+    </Style>
+  </UserControl.Styles>
+
+  <ContentArea EnableCancel="False"
+                        EnableBack="{Binding CanGoBack^}"
+                        EnableNext="True"
+                        ClipToBounds="False"
+                        NextContent="{Binding NextLabel}"
+                        ScrollViewer.VerticalScrollBarVisibility="Disabled">
+
+    <DockPanel LastChildFill="True">
+
+      <!-- TODO: Uncomment in the case there is more than 1 welcome screen. -->
+      <!-- Indicator & Buttons -->
+      <!-- <ListBox HorizontalAlignment="Center" -->
+      <!--          SelectedIndex="{Binding SelectedIndex}" -->
+      <!--          Background="Transparent" -->
+      <!--          IsHitTestVisible="False" -->
+      <!--          DockPanel.Dock="Bottom"> -->
+      <!--   <ListBox.Styles> -->
+      <!--     <Style Selector="ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter"> -->
+      <!--       <Setter Property="Background" Value="Transparent" /> -->
+      <!--     </Style> -->
+      <!--     <Style Selector="ListBoxItem:selected /template/ ContentPresenter"> -->
+      <!--       <Setter Property="TextBlock.Foreground" Value="{DynamicResource SystemChromeAltLowColor}" /> -->
+      <!--     </Style> -->
+      <!--     <Style Selector="ListBoxItem"> -->
+      <!--       <Setter Property="Opacity" Value="0.3" /> -->
+      <!--     </Style> -->
+      <!--     <Style Selector="ListBoxItem:selected"> -->
+      <!--       <Setter Property="Opacity" Value="1" /> -->
+      <!--     </Style> -->
+      <!--     <Style Selector="Ellipse"> -->
+      <!--       <Setter Property="Fill" Value="{DynamicResource SystemChromeAltLowColor}" /> -->
+      <!--       <Setter Property="Width" Value="9" /> -->
+      <!--       <Setter Property="Height" Value="9" /> -->
+      <!--     </Style> -->
+      <!--   </ListBox.Styles> -->
+      <!--   <ItemsControl.ItemsPanel> -->
+      <!--     <ItemsPanelTemplate> -->
+      <!--       <StackPanel Orientation="Horizontal" Spacing="5" /> -->
+      <!--     </ItemsPanelTemplate> -->
+      <!--   </ItemsControl.ItemsPanel> -->
+      <!--   <Ellipse /> -->
+      <!-- </ListBox> -->
+
+      <!-- Pages -->
+      <Carousel SelectedIndex="{Binding SelectedIndex}"
+                DockPanel.Dock="Top"
+                Margin="0 10">
+        <Interaction.Behaviors>
+          <ExecuteCommandOnKeyDownBehavior Command="{Binding BackCommand}"
+                                           IsEnabled="{Binding CanGoBack^}" Key="Left" />
+          <ExecuteCommandOnKeyDownBehavior Command="{Binding NextCommand}"
+                                           IsEnabled="{Binding EnableNextKey}" Key="Right" />
+        </Interaction.Behaviors>
+        <Carousel.Styles>
+          <Style Selector="TextBlock.text">
+            <Setter Property="Opacity" Value="0.5" />
+            <Setter Property="FontWeight" Value="Light" />
+            <Setter Property="FontSize" Value="14" />
+          </Style>
+
+          <Style Selector="TextBlock.title2">
+            <Setter Property="TextWrapping" Value="Wrap" />
+            <Setter Property="HorizontalAlignment" Value="Left" />
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="Padding" Value="0 4 8 4" />
+          </Style>
+
+          <Style Selector="TextBlock.title1">
+            <Setter Property="TextWrapping" Value="Wrap" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="FontSize" Value="31" />
+          </Style>
+
+          <Style Selector="Viewbox.icon">
+            <Setter Property="MaxHeight" Value="50" />
+            <Setter Property="DockPanel.Dock" Value="Bottom" />
+            <Setter Property="HorizontalAlignment" Value="Left" />
+          </Style>
+
+          <Style Selector="Grid TextBlock">
+            <Setter Property="TextAlignment" Value="Left" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+          </Style>
+
+          <Style Selector="Grid StackPanel">
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Width" Value="230" />
+          </Style>
+        </Carousel.Styles>
+        <Carousel.PageTransition>
+          <PageSlide Duration="0:0:0.5" SlideOutEasing="{StaticResource FluentEasing}"
+                     SlideInEasing="{StaticResource FluentEasing}" />
+        </Carousel.PageTransition>
+
+        <!-- Get started -->
+        <DockPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+          <StackPanel DockPanel.Dock="Bottom" Spacing="10">
+            <TextBlock Text="Welcome to Magical Crypto Wallet" FontSize="30" HorizontalAlignment="Center" />
+
+            <TextBlock TextAlignment="Center" Text="An easy to use, privacy focused, open source Bitcoin wallet" FontWeight="Light" />
+          </StackPanel>
+          <Panel Height="120" HorizontalAlignment="Center" DockPanel.Dock="Bottom" Margin="0 0 0 20">
+            <ExperimentalAcrylicBorder Margin="2">
+              <ExperimentalAcrylicBorder.Material>
+                <ExperimentalAcrylicMaterial BackgroundSource="Digger"
+                                             TintColor="White"
+                                             TintOpacity="0"
+                                             FallbackColor="White"
+                                             MaterialOpacity="0" />
+              </ExperimentalAcrylicBorder.Material>
+            </ExperimentalAcrylicBorder>
+            <Image Source="{DynamicResource magicalcryptowallet_logo_dynamic}" Stretch="Uniform"
+                   AutomationProperties.Name="Magical Crypto Wallet" />
+          </Panel>
+        </DockPanel>
+      </Carousel>
+    </DockPanel>
+  </ContentArea>
+</UserControl>

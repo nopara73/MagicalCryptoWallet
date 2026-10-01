@@ -1,0 +1,275 @@
+[
+  {
+    "path": "Contrib/Rebrand/audit.py",
+    "line": 43,
+    "line_sha256": "d5e0c798fc8a1205154479c2faf4897054851990d932173e589f62a1d94c41d2",
+    "category": "audit forbidden-token data",
+    "text": "target=ROOT/'ThirdParty/WabiSabi'/name.replace('WasabiRandom','WalletRandom')"
+  },
+  {
+    "path": "Contrib/Rebrand/audit.py",
+    "line": 46,
+    "line_sha256": "4f21702c5be7a53024d2b9df7388311c113335c31c3b14412549e8e66753a5b2",
+    "category": "audit forbidden-token data",
+    "text": "normalized=raw.decode().replace('WalletRandom','WasabiRandom')"
+  },
+  {
+    "path": "Contrib/Rebrand/audit.py",
+    "line": 48,
+    "line_sha256": "d75c65689a453fcaeeacfd6dcc9c770fdd8fc7a6134f30754f34ceeaca557a03",
+    "category": "audit forbidden-token data",
+    "text": "normalized=normalized.replace('Magical Crypto Wallet','WalletWasabi').replace('MagicalCryptoWallet','WalletWasabi')"
+  },
+  {
+    "path": "Contrib/Rebrand/coexist-baseline.json",
+    "line": 3,
+    "line_sha256": "0a5985e30c9f7d57212fdd949751f2529fe7cb14ee846681d905993130b4a482",
+    "category": "source provenance",
+    "text": "\"url\": \"https://github.com/WalletWasabi/WalletWasabi/releases/download/v2.8.3/Wasabi-2.8.3.msi\","
+  },
+  {
+    "path": "LICENSE.md",
+    "line": 3,
+    "line_sha256": "4c6c5588ec31be9fb7c7a43dd91af3a88d7f53fc68528a8bd8fc3e3c219f9377",
+    "category": "original copyright notice",
+    "text": "Copyright (c) 2026 The Wasabi Wallet Developers"
+  },
+  {
+    "path": "MagicalCryptoWallet.Coordinator/WabiSabi/Arena.cs",
+    "line": 254,
+    "line_sha256": "1595227a2190947d79ec9e23b759166ad14a8f8ad915029ca5ddec1597e47170",
+    "category": "source provenance",
+    "text": "// See https://github.com/WalletWasabi/WalletWasabi/pull/11028."
+  },
+  {
+    "path": "MagicalCryptoWallet.Fluent/App.axaml",
+    "line": 43,
+    "line_sha256": "93ec766a6e7f911e2194bab9cc3ab876bc8f1ca9572887e9c456b6ec59198792",
+    "category": "source provenance",
+    "text": "<!-- TODO: This is temporary workaround until https://github.com/WalletWasabi/WalletWasabi/issues/8151 is fixed. -->"
+  },
+  {
+    "path": "MagicalCryptoWallet.Fluent/App.axaml.cs",
+    "line": 79,
+    "line_sha256": "55f1173279705e787d0b60dd99fa60270482fe1056d1a688d1a1685d0a78ad51",
+    "category": "source provenance",
+    "text": "// TODO: This is temporary workaround until https://github.com/WalletWasabi/WalletWasabi/issues/8151 is fixed."
+  },
+  {
+    "path": "MagicalCryptoWallet.Fluent/Behaviors/TreeDataGridMissingCellsWorkaroundBehavior.cs",
+    "line": 16,
+    "line_sha256": "fb3437c72b81349ef9371150d2eeb09d44fa9846f051777f36f20ca2ffb7ac7f",
+    "category": "source provenance",
+    "text": "/// See https://github.com/WalletWasabi/WalletWasabi/issues/14632."
+  },
+  {
+    "path": "MagicalCryptoWallet.Fluent/MathNet/CubicSpline.cs",
+    "line": 1,
+    "line_sha256": "a241374bb8437c84596db1bbe30fc1551b6f5b0194f51daf77e61b3a1d252844",
+    "category": "original copyright notice",
+    "text": "// Copyright (c) 2009-2014 Math.NET Taken from http://github.com/mathnet/mathnet-numerics and modified for Wasabi Wallet"
+  },
+  {
+    "path": "MagicalCryptoWallet.Fluent/MathNet/Precision.Equality.cs",
+    "line": 1,
+    "line_sha256": "c9f9c3f70e37a66b4d948123c5bd592b2e2a8abbd98f04b5dbf7f54d6ea571a6",
+    "category": "original copyright notice",
+    "text": "// Copyright (c) 2009-2013 Math.NET Taken from http://github.com/mathnet/mathnet-numerics and modified for Wasabi Wallet"
+  },
+  {
+    "path": "MagicalCryptoWallet.Fluent/MathNet/Precision.cs",
+    "line": 1,
+    "line_sha256": "613736648299207e4d8a294f6f900f203ecef1cc9c97040a7b177e9c59a800ce",
+    "category": "original copyright notice",
+    "text": "// Copyright (c) 2009-2015 Math.NET Taken from http://github.com/mathnet/mathnet-numerics and modified for Wasabi Wallet"
+  },
+  {
+    "path": "MagicalCryptoWallet.Fluent/MathNet/SplineBoundaryCondition.cs",
+    "line": 1,
+    "line_sha256": "a77cf930f69a3999b524c39d0e0b9f24141bd574908fbdbb71f47e30853361f0",
+    "category": "original copyright notice",
+    "text": "// Copyright (c) 2009-2010 Math.NET Taken from http://github.com/mathnet/mathnet-numerics and modified for Wasabi Wallet"
+  },
+  {
+    "path": "MagicalCryptoWallet.Fluent/Styles/ToggleSwitch.axaml",
+    "line": 25,
+    "line_sha256": "315aaf7f57f2b3277f397320992df51c87a1c29623f63a463d8cfcaca59ffb92",
+    "category": "source provenance",
+    "text": "<!-- Fix for https://github.com/WalletWasabi/WalletWasabi/issues/9436 -->"
+  },
+  {
+    "path": "MagicalCryptoWallet.Fluent/ViewModels/NavBar/INavBarButton.cs",
+    "line": 1,
+    "line_sha256": "38e0b090530b2fecc885f98a166f8c1c5cd1042d3fe2d4e6060ff214a3d92372",
+    "category": "source provenance",
+    "text": "#pragma warning disable IDE0130 // Namespace does not match folder structure (see https://github.com/WalletWasabi/WalletWasabi/pull/10576#issuecomment-1552750543)"
+  },
+  {
+    "path": "MagicalCryptoWallet.Fluent/ViewModels/NavBar/INavBarItem.cs",
+    "line": 1,
+    "line_sha256": "38e0b090530b2fecc885f98a166f8c1c5cd1042d3fe2d4e6060ff214a3d92372",
+    "category": "source provenance",
+    "text": "#pragma warning disable IDE0130 // Namespace does not match folder structure (see https://github.com/WalletWasabi/WalletWasabi/pull/10576#issuecomment-1552750543)"
+  },
+  {
+    "path": "MagicalCryptoWallet.Fluent/ViewModels/NavBar/INavBarToggle.cs",
+    "line": 1,
+    "line_sha256": "38e0b090530b2fecc885f98a166f8c1c5cd1042d3fe2d4e6060ff214a3d92372",
+    "category": "source provenance",
+    "text": "#pragma warning disable IDE0130 // Namespace does not match folder structure (see https://github.com/WalletWasabi/WalletWasabi/pull/10576#issuecomment-1552750543)"
+  },
+  {
+    "path": "MagicalCryptoWallet.Fluent/ViewModels/NavBar/NavBarPosition.cs",
+    "line": 1,
+    "line_sha256": "38e0b090530b2fecc885f98a166f8c1c5cd1042d3fe2d4e6060ff214a3d92372",
+    "category": "source provenance",
+    "text": "#pragma warning disable IDE0130 // Namespace does not match folder structure (see https://github.com/WalletWasabi/WalletWasabi/pull/10576#issuecomment-1552750543)"
+  },
+  {
+    "path": "MagicalCryptoWallet.Fluent/ViewModels/NavBar/NavBarSelectionMode.cs",
+    "line": 1,
+    "line_sha256": "38e0b090530b2fecc885f98a166f8c1c5cd1042d3fe2d4e6060ff214a3d92372",
+    "category": "source provenance",
+    "text": "#pragma warning disable IDE0130 // Namespace does not match folder structure (see https://github.com/WalletWasabi/WalletWasabi/pull/10576#issuecomment-1552750543)"
+  },
+  {
+    "path": "MagicalCryptoWallet.Fluent/ViewModels/NavBar/NavigationMetaData.cs",
+    "line": 1,
+    "line_sha256": "38e0b090530b2fecc885f98a166f8c1c5cd1042d3fe2d4e6060ff214a3d92372",
+    "category": "source provenance",
+    "text": "#pragma warning disable IDE0130 // Namespace does not match folder structure (see https://github.com/WalletWasabi/WalletWasabi/pull/10576#issuecomment-1552750543)"
+  },
+  {
+    "path": "MagicalCryptoWallet.Fluent/ViewModels/NavBar/NavigationMetaDataAttribute.cs",
+    "line": 1,
+    "line_sha256": "38e0b090530b2fecc885f98a166f8c1c5cd1042d3fe2d4e6060ff214a3d92372",
+    "category": "source provenance",
+    "text": "#pragma warning disable IDE0130 // Namespace does not match folder structure (see https://github.com/WalletWasabi/WalletWasabi/pull/10576#issuecomment-1552750543)"
+  },
+  {
+    "path": "MagicalCryptoWallet.Fluent/ViewModels/NavBar/NavigationTarget.cs",
+    "line": 1,
+    "line_sha256": "38e0b090530b2fecc885f98a166f8c1c5cd1042d3fe2d4e6060ff214a3d92372",
+    "category": "source provenance",
+    "text": "#pragma warning disable IDE0130 // Namespace does not match folder structure (see https://github.com/WalletWasabi/WalletWasabi/pull/10576#issuecomment-1552750543)"
+  },
+  {
+    "path": "MagicalCryptoWallet.Fluent/ViewModels/Wallets/Coins/CoinListItem.cs",
+    "line": 34,
+    "line_sha256": "b3b0c3c76af99dd6f28e1e85aa68bdaa4a85df376447cff03aff29510cac4b52",
+    "category": "source provenance",
+    "text": "// Should be again restricted once https://github.com/WalletWasabi/WalletWasabi/issues/9972 is implemented."
+  },
+  {
+    "path": "MagicalCryptoWallet.IntegrationTests/BitcoinCore/CoreNode.cs",
+    "line": 134,
+    "line_sha256": "806bfb628ae203af8b7aceb85cd54334809158764f59ee8505ddae4422b1cc12",
+    "category": "source provenance",
+    "text": "$\"{configPrefix}.daemon\t\t\t= 0\", // https://github.com/WalletWasabi/WalletWasabi/issues/3588"
+  },
+  {
+    "path": "MagicalCryptoWallet.Tests/UnitTests/BlockchainAnalysis/CoinJoinAnonscoreTests.cs",
+    "line": 302,
+    "line_sha256": "905d546ba08b8db03cc941db4ef81eccb937730f05ead5b931311a591927c29f",
+    "category": "source provenance",
+    "text": "// Input merging and large unique denomination in current results in maximum anonymity punishment in relation to the largest inputs: https://github.com/WalletWasabi/WalletWasabi/pull/10699/"
+  },
+  {
+    "path": "MagicalCryptoWallet.Tests/UnitTests/BlockchainAnalysis/CoinJoinAnonscoreTests.cs",
+    "line": 330,
+    "line_sha256": "905d546ba08b8db03cc941db4ef81eccb937730f05ead5b931311a591927c29f",
+    "category": "source provenance",
+    "text": "// Input merging and large unique denomination in current results in maximum anonymity punishment in relation to the largest inputs: https://github.com/WalletWasabi/WalletWasabi/pull/10699/"
+  },
+  {
+    "path": "MagicalCryptoWallet.Tests/UnitTests/BlockchainAnalysis/CoinJoinAnonscoreTests.cs",
+    "line": 357,
+    "line_sha256": "19b3c1a301edd39e3a687463a2762b994ad3a33a26d36a1e168eccaf53c5f305",
+    "category": "source provenance",
+    "text": "// Input merging and large unique denominations in current results in maximum anonymity punishment in relation to the largest inputs: https://github.com/WalletWasabi/WalletWasabi/pull/10699/"
+  },
+  {
+    "path": "MagicalCryptoWallet.Tests/UnitTests/BlockchainAnalysis/PubKeyReuseAnonScoreTests.cs",
+    "line": 217,
+    "line_sha256": "66a590a1122a2b420b78f3a3d83079ddedaff23e3c70e1f83b79daa186585487",
+    "category": "source provenance",
+    "text": "// https://github.com/WalletWasabi/WalletWasabi/pull/4724/commits/6f5893ca57e35eadb6e20f164bdf0696bb14eea1#r530847724"
+  },
+  {
+    "path": "MagicalCryptoWallet.Tests/UnitTests/Transactions/SmartTransactionTests.cs",
+    "line": 41,
+    "line_sha256": "c82dbce1e8741b51bd42a7aa6c764bb35a78c9076758b146a14f78d5f1fa5dbf",
+    "category": "source provenance",
+    "text": "// https://github.com/WalletWasabi/WalletWasabi/issues/11119"
+  },
+  {
+    "path": "MagicalCryptoWallet.Tests/UnitTests/Transactions/TransactionProcessorTests.cs",
+    "line": 1482,
+    "line_sha256": "223e0ab3fbc365c3b3dfe9ec6fc82239a8315e77cff09f69688dceb51a97627f",
+    "category": "source provenance",
+    "text": "// Repro of issue 11101 https://github.com/WalletWasabi/WalletWasabi/issues/11101"
+  },
+  {
+    "path": "MagicalCryptoWallet/Blockchain/Analysis/BlockchainAnalyzer.cs",
+    "line": 80,
+    "line_sha256": "5328ad2d93f638df4438c061cd148df48ab5f6f8d6f3ae87762c127f70e7a0ba",
+    "category": "source provenance",
+    "text": "/// <remarks>Context: https://github.com/WalletWasabi/WalletWasabi/issues/7453</remarks>"
+  },
+  {
+    "path": "MagicalCryptoWallet/Blockchain/TransactionProcessing/TransactionProcessor.cs",
+    "line": 273,
+    "line_sha256": "5328ad2d93f638df4438c061cd148df48ab5f6f8d6f3ae87762c127f70e7a0ba",
+    "category": "source provenance",
+    "text": "/// <remarks>Context: https://github.com/WalletWasabi/WalletWasabi/issues/7453</remarks>"
+  },
+  {
+    "path": "MagicalCryptoWallet/Helpers/ImportWalletHelper.cs",
+    "line": 62,
+    "line_sha256": "6cf20c704b383dc28933ddcf013ef24a5093be8e4f3a32f13515786f792de068",
+    "category": "source provenance",
+    "text": "// https://github.com/WalletWasabi/WalletWasabi/pull/1663#issuecomment-508073066"
+  },
+  {
+    "path": "MagicalCryptoWallet/Hwi/Parsers/HwiParser.cs",
+    "line": 318,
+    "line_sha256": "a0365bafd2c10de654346d931b264a0fe8de018169e5bc15440bb8a7dfcd6c2d",
+    "category": "source provenance",
+    "text": "// Order matters! https://github.com/WalletWasabi/WalletWasabi/pull/1905/commits/cecefcc50af140cc06cb93961cda86f9b21db11b"
+  },
+  {
+    "path": "MagicalCryptoWallet/ModuleInitializer.cs",
+    "line": 9,
+    "line_sha256": "3d9c38c6a691182654160a762187b2ae5a920052ce985c2f5492019dedfe11f1",
+    "category": "source provenance",
+    "text": "#pragma warning disable CA2255 // The 'ModuleInitializer' attribute should not be used in libraries -- Moving this initializer to the apps did not work (https://github.com/WalletWasabi/WalletWasabi/pull/14364)."
+  },
+  {
+    "path": "MagicalCryptoWallet/WabiSabi/Client/CoinJoin/Client/CoinJoinClient.cs",
+    "line": 895,
+    "line_sha256": "6507d57ba0e3ec10fa044ba51abca94bbdd7cc1b65701140bbca4e691086b502",
+    "category": "source provenance",
+    "text": "// see more: https://github.com/WalletWasabi/WalletWasabi/issues/8171"
+  },
+  {
+    "path": "MagicalCryptoWallet/WabiSabi/Coordinator/WabiSabiConfig.cs",
+    "line": 179,
+    "line_sha256": "045231395f6315745f75e8aa6b814bfcffbb77faa5fdf31c421d2cd8e7c173d4",
+    "category": "source provenance",
+    "text": "// https://github.com/WalletWasabi/WalletWasabi/issues/5440"
+  },
+  {
+    "path": "ThirdParty/WabiSabi/UPSTREAM.json",
+    "line": 2,
+    "line_sha256": "108d5886be4de93d31e156d5ed1de0d5095689ac415f7352c6612e226dd6b058",
+    "category": "source provenance",
+    "text": "\"repository\": \"https://github.com/WalletWasabi/NWabiSabi\","
+  },
+  {
+    "path": "ThirdParty/WabiSabi/UPSTREAM.json",
+    "line": 95,
+    "line_sha256": "36f4da022ef644c835b967e204df10dc8453ac64dab6dca214d77336aacb058d",
+    "category": "source provenance",
+    "text": "\"csharp/WabiSabi/Crypto/Randomness/WasabiRandom.cs\": \"3f0a3d8d688629bd25bae9a0fd23ba12ef61c0ef77fd205c9acdf1306d2a8733\","
+  }
+]

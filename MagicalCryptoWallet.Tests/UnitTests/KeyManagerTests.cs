@@ -1,0 +1,333 @@
+using NBitcoin;
+using System.IO;
+using System.Linq;
+using MagicalCryptoWallet.Blockchain.Analysis.Clustering;
+using MagicalCryptoWallet.Blockchain.BlockFilters;
+using MagicalCryptoWallet.Blockchain.Keys;
+using MagicalCryptoWallet.CoinJoinProfiles;
+using MagicalCryptoWallet.Models;
+using MagicalCryptoWallet.Tests.Helpers;
+using MagicalCryptoWallet.WabiSabi.Client;
+using Xunit;
+
+namespace MagicalCryptoWallet.Tests.UnitTests;
+
+public class KeyManagerTests
+{
+	[Fact]
+	public void CanCreateNew()
+	{
+		string password = "password";
+		var manager = KeyManager.CreateNew(out Mnemonic mnemonic, password, Network.Main);
+		var manager2 = KeyManager.CreateNew(out Mnemonic mnemonic2, "", Network.Main);
+		var manager3 = KeyManager.CreateNew(out Mnemonic mnemonic3, "P@ssw0rdé", Network.Main);
+
+		Assert.Equal(12, mnemonic.ToString().Split(' ').Length);
+		Assert.Equal(12, mnemonic2.ToString().Split(' ').Length);
+		Assert.Equal(12, mnemonic3.ToString().Split(' ').Length);
+
+		Assert.NotNull(manager.ChainCode);
+		Assert.NotNull(manager.EncryptedSecret);
+		Assert.NotNull(manager.SegwitExtPubKey);
+		Assert.NotNull(manager.TaprootExtPubKey);
+		Assert.NotNull(manager.SilentPaymentScanExtPubKey);
+		Assert.NotNull(manager.SilentPaymentSpendExtPubKey);
+
+		Assert.NotNull(manager2.ChainCode);
+		Assert.NotNull(manager2.EncryptedSecret);
+		Assert.NotNull(manager2.SegwitExtPubKey);
+		Assert.NotNull(manager2.TaprootExtPubKey);
+		Assert.NotNull(manager2.SilentPaymentScanExtPubKey);
+		Assert.NotNull(manager2.SilentPaymentSpendExtPubKey);
+
+		Assert.NotNull(manager3.ChainCode);
+		Assert.NotNull(manager3.EncryptedSecret);
+		Assert.NotNull(manager3.SegwitExtPubKey);
+		Assert.NotNull(manager3.TaprootExtPubKey);
+		Assert.NotNull(manager3.SilentPaymentScanExtPubKey);
+		Assert.NotNull(manager3.SilentPaymentSpendExtPubKey);
+
+		var sameManager = new KeyManager(manager.EncryptedSecret, manager.ChainCode, manager.MasterFingerprint, manager.SegwitExtPubKey, manager.TaprootExtPubKey,
+			manager.SilentPaymentScanExtPubKey, manager.SilentPaymentSpendExtPubKey, null, new BlockchainState(Network.Main));
+
+		Assert.Equal(manager.ChainCode, sameManager.ChainCode);
+		Assert.Equal(manager.EncryptedSecret, sameManager.EncryptedSecret);
+		Assert.Equal(manager.SegwitExtPubKey, sameManager.SegwitExtPubKey);
+		Assert.Equal(manager.TaprootExtPubKey, sameManager.TaprootExtPubKey);
+		Assert.Equal(manager.SilentPaymentScanExtPubKey, sameManager.SilentPaymentScanExtPubKey);
+		Assert.Equal(manager.SilentPaymentSpendExtPubKey, sameManager.SilentPaymentSpendExtPubKey);
+	}
+
+	[Fact]
+	public void CanRecover()
+	{
+		string password = "password";
+		var manager = KeyManager.CreateNew(out Mnemonic mnemonic, password, Network.Main);
+		var sameManager = KeyManager.Recover(mnemonic, password, Network.Main, KeyManager.GetAccountKeyPath(Network.Main, ScriptPubKeyType.Segwit));
+
+		Assert.Equal(manager.ChainCode, sameManager.ChainCode);
+		Assert.Equal(manager.EncryptedSecret, sameManager.EncryptedSecret);
+		Assert.Equal(manager.SegwitExtPubKey, sameManager.SegwitExtPubKey);
+		Assert.Equal(manager.TaprootExtPubKey, sameManager.TaprootExtPubKey);
+		Assert.Equal(manager.SilentPaymentScanExtPubKey, sameManager.SilentPaymentScanExtPubKey);
+		Assert.Equal(manager.SilentPaymentSpendExtPubKey, sameManager.SilentPaymentSpendExtPubKey);
+
+		var differentManager = KeyManager.Recover(mnemonic, "differentPassword", Network.Main, KeyPath.Parse("m/999'/999'/999'"), null, null, 55);
+		Assert.NotEqual(manager.ChainCode, differentManager.ChainCode);
+		Assert.NotEqual(manager.EncryptedSecret, differentManager.EncryptedSecret);
+		Assert.NotEqual(manager.SegwitExtPubKey, differentManager.SegwitExtPubKey);
+		Assert.NotEqual(manager.TaprootExtPubKey, differentManager.TaprootExtPubKey);
+		Assert.NotEqual(manager.SilentPaymentScanExtPubKey, differentManager.SilentPaymentScanExtPubKey);
+		Assert.NotEqual(manager.SilentPaymentSpendExtPubKey, differentManager.SilentPaymentSpendExtPubKey);
+
+		var newKey = differentManager.GenerateNewKey("some-label", KeyState.Clean, true);
+		Assert.Equal(newKey.Index, differentManager.MinGapLimit);
+		Assert.Equal("999'/999'/999'/1/55", newKey.FullKeyPath.ToString());
+	}
+
+	[Fact]
+	public void CanHandleGap()
+	{
+		string password = "password";
+		var manager = KeyManager.CreateNew(out _, password, Network.Main);
+
+		var lastKey = manager.GetKeys(KeyState.Clean, isInternal: false).Last();
+		manager.SetKeyState(KeyState.Used, lastKey);
+
+		var newLastKey = manager.GetKeys(KeyState.Clean, isInternal: false).Last();
+		Assert.Equal(manager.MinGapLimit, newLastKey.Index - lastKey.Index);
+	}
+
+	[Fact]
+	public void OnlyUsePrivateFundsForPaymentsIsOffByDefault()
+	{
+		Assert.False(KeyManager.CreateNew(out _, "", Network.Main).OnlyUsePrivateFundsForPayments);
+		Assert.True(new PrivacyProfiles.MaximizePrivacy().OnlyUsePrivateFundsForPayments);
+	}
+
+	[Fact]
+	public void CanSerialize()
+	{
+		string password = "password";
+
+		var filePath = Path.Combine(Common.GetWorkDir(), "Wallet.json");
+		DeleteFileAndDirectoryIfExists(filePath);
+
+		Assert.Throws<FileNotFoundException>(() => KeyManager.FromFile(filePath));
+
+		var manager = KeyManager.CreateNew(out _, password, Network.Main, filePath);
+		KeyManager.FromFile(filePath);
+
+		manager.ToFile();
+
+		manager.ToFile(); // assert it does not throw
+
+		void Generate500keys(ScriptPubKeyType scriptPubKeyType)
+		{
+			for (int i = 0; i < 500; i++)
+			{
+				var isInternal = Random.Shared.Next(2) == 0;
+				var label = RandomString.AlphaNumeric(21);
+				var keyState = (KeyState)Random.Shared.Next(3);
+				manager.GenerateNewKey(label, keyState, isInternal, scriptPubKeyType);
+			}
+
+			manager.ToFile();
+		}
+
+		Generate500keys(ScriptPubKeyType.Segwit);
+		Generate500keys(ScriptPubKeyType.TaprootBIP86);
+
+		Assert.True(File.Exists(filePath));
+
+		var sameManager = KeyManager.FromFile(filePath);
+
+		Assert.Equal(manager.ChainCode, sameManager.ChainCode);
+		Assert.Equal(manager.EncryptedSecret, sameManager.EncryptedSecret);
+		Assert.Equal(manager.SegwitExtPubKey, sameManager.SegwitExtPubKey);
+		Assert.Equal(manager.TaprootExtPubKey, sameManager.TaprootExtPubKey);
+		Assert.Equal(manager.SilentPaymentScanExtPubKey, sameManager.SilentPaymentScanExtPubKey);
+		Assert.Equal(manager.SilentPaymentSpendExtPubKey, sameManager.SilentPaymentSpendExtPubKey);
+
+		DeleteFileAndDirectoryIfExists(filePath);
+	}
+
+	[Fact]
+	public void CanSerializeCoinjoinCosts()
+	{
+		var filePath = "wallet-coinjoin-costs.json";
+		var manager = KeyManager.CreateNew(out _, "", Network.Main, filePath);
+		var transactionId = uint256.Parse("0000000000000000000000000000000000000000000000000000000000000001");
+
+		manager.AddCoinjoinCosts(transactionId, new CoinjoinCosts(Money.Satoshis(690), Money.Satoshis(10), Money.Satoshis(50_000)));
+
+		var sameManager = KeyManager.FromFile(filePath);
+
+		var (sameTransactionId, costs) = Assert.Single(sameManager.CoinjoinCosts);
+		Assert.Equal(transactionId, sameTransactionId);
+		Assert.Equal(Money.Satoshis(690), costs.MiningFee);
+		Assert.Equal(Money.Satoshis(10), costs.WastedDust);
+		Assert.Equal(Money.Satoshis(50_000), costs.PaymentsTotal);
+
+		DeleteFileAndDirectoryIfExists(filePath);
+	}
+
+	[Fact]
+	public void RecordingTheCostsOfTheSameCoinjoinTwiceKeepsOneRecord()
+	{
+		// A round can be reported more than once - the costs belong to the transaction, so the last word wins.
+		var manager = KeyManager.CreateNew(out _, "", Network.Main);
+		var transactionId = uint256.Parse("0000000000000000000000000000000000000000000000000000000000000002");
+
+		manager.AddCoinjoinCosts(transactionId, new CoinjoinCosts(Money.Satoshis(100), Money.Zero, Money.Zero));
+		manager.AddCoinjoinCosts(transactionId, new CoinjoinCosts(Money.Satoshis(200), Money.Zero, Money.Zero));
+
+		var (_, costs) = Assert.Single(manager.CoinjoinCosts);
+		Assert.Equal(Money.Satoshis(200), costs.MiningFee);
+	}
+
+	[Fact]
+	public void WalletsWithoutRecordedCoinjoinCostsCanStillBeLoaded()
+	{
+		// Coinjoins made before the costs were recorded have no record, and the details screen falls back to a single figure.
+		var filePath = "wallet-without-coinjoin-costs.json";
+		KeyManager.CreateNew(out _, "", Network.Main, filePath).ToFile();
+
+		var json = File.ReadAllText(filePath);
+		Assert.Contains("\"CoinjoinCosts\"", json);
+		File.WriteAllText(filePath, json.Replace("\"CoinjoinCosts\": [],", ""));
+
+		Assert.Empty(KeyManager.FromFile(filePath).CoinjoinCosts);
+
+		DeleteFileAndDirectoryIfExists(filePath);
+	}
+
+	[Fact]
+	public void CanSerializeHeightCorrectly()
+	{
+		var filePath = "wallet-serialization.json";
+		var manager = KeyManager.CreateNew(out _, "", Network.Main, filePath);
+		manager.SetBestHeight(500_000);
+		manager.ToFile();
+
+		var sameManager = KeyManager.FromFile(filePath);
+		Assert.Equal(new Height.ChainHeight(499_899), sameManager.GetBestHeight());
+
+		DeleteFileAndDirectoryIfExists(filePath);
+	}
+
+	[Fact]
+	public void CanSerializeHeightBelowResyncMargin()
+	{
+		// The resync margin is subtracted when persisting the height. Networks whose first filter
+		// is the genesis block can legitimately sit below that margin, so the subtraction must not
+		// wrap around instead of being floored at zero.
+		var filePath = "wallet-serialization-below-resync-margin.json";
+		var manager = KeyManager.CreateNew(out _, "", Network.RegTest, filePath);
+		manager.SetBestHeight(0);
+		manager.ToFile();
+
+		var sameManager = KeyManager.FromFile(filePath);
+		Assert.Equal(new Height.ChainHeight(0), sameManager.GetBestHeight());
+
+		DeleteFileAndDirectoryIfExists(filePath);
+	}
+
+	[Fact]
+	public void BestHeightNeverPrecedesFirstFilter()
+	{
+		// Filters are only available from the first checkpoint onwards, and the wallet asks for the
+		// filter right after its best height, so a lower height makes that filter unfetchable.
+		var firstFilterHeight = FilterCheckpoints.GetMagicalCryptoWalletGenesisFilter(Network.Main).Header.Height;
+		var manager = KeyManager.CreateNew(out _, "", Network.Main);
+
+		manager.SetBestHeight(0);
+
+		Assert.Equal(firstFilterHeight, manager.GetBestHeight());
+	}
+
+	[Fact]
+	public void CanGenerateKeys()
+	{
+		string password = "password";
+		var network = Network.Main;
+		var manager = KeyManager.CreateNew(out _, password, network);
+
+		var k1 = manager.GenerateNewKey(LabelsArray.Empty, KeyState.Clean, true);
+		Assert.Equal(LabelsArray.Empty, k1.Labels);
+
+		for (int i = 0; i < 1000; i++)
+		{
+			var isInternal = Random.Shared.Next(2) == 0;
+			var label = RandomString.AlphaNumeric(21);
+			var keyState = (KeyState)Random.Shared.Next(3);
+			var generatedKey = manager.GenerateNewKey(label, keyState, isInternal);
+
+			Assert.Equal(isInternal, generatedKey.IsInternal);
+			Assert.Equal(label, generatedKey.Labels);
+			Assert.Equal(keyState, generatedKey.KeyState);
+			Assert.StartsWith(KeyManager.GetAccountKeyPath(network, ScriptPubKeyType.Segwit).ToString(), generatedKey.FullKeyPath.ToString());
+		}
+	}
+
+	[Fact]
+	public void CanGenerateRealKeys()
+	{
+		string password = "password";
+		var network = Network.Main;
+		var manager = KeyManager.CreateNew(out _, password, network);
+
+		var labels = new LabelsArray("who-knows");
+		var segwitKey = manager.GetNextReceiveKey(labels, ScriptPubKeyType.Segwit);
+		var taprootKey = manager.GetNextReceiveKey(labels, ScriptPubKeyType.TaprootBIP86);
+		var silentPaymentScanKey = manager.GetNextReceiveKey(labels, KeyPurpose.Scan);
+		var silentPaymentSpendKey = manager.GetNextReceiveKey(labels, KeyPurpose.Spend);
+		Assert.Equal("84'/0'/0'/0/0", segwitKey.FullKeyPath.ToString());
+		Assert.Equal("86'/0'/0'/0/0", taprootKey.FullKeyPath.ToString());
+		Assert.Equal("352'/0'/0'/1'/0", silentPaymentScanKey.FullKeyPath.ToString());
+		Assert.Equal("352'/0'/0'/0'/0", silentPaymentSpendKey.FullKeyPath.ToString());
+	}
+
+	[Fact]
+	public void AlternatesScriptTypeForChange()
+	{
+		var keyManager = KeyManager.CreateNew(out _, "", Network.Main);
+		var keysForChange = Enumerable
+			.Range(0, 10)
+			.Select(_ =>
+			{
+				var key = keyManager.GetNextChangeKey();
+				keyManager.SetKeyState(KeyState.Used, key);
+				return key;
+			})
+			.ToList();
+
+		static bool IsScriptType(HdPubKey key, ScriptPubKeyType scriptType) =>
+			key.FullKeyPath.GetScriptTypeFromKeyPath() == scriptType;
+
+		static bool IsTaproot(HdPubKey key) => IsScriptType(key, ScriptPubKeyType.TaprootBIP86);
+		static bool IsSegwit(HdPubKey key) => IsScriptType(key, ScriptPubKeyType.Segwit);
+
+		Assert.Contains(keysForChange, IsTaproot);
+		Assert.Contains(keysForChange, IsSegwit);
+		Assert.Equal(keysForChange.Count(IsTaproot), keysForChange.Count(IsSegwit));
+	}
+
+	private static void DeleteFileAndDirectoryIfExists(string filePath)
+	{
+		var dir = Path.GetDirectoryName(filePath);
+
+		if (File.Exists(filePath))
+		{
+			File.Delete(filePath);
+		}
+
+		if (dir is not null && Directory.Exists(dir))
+		{
+			if (Directory.GetFiles(dir).Length == 0)
+			{
+				Directory.Delete(dir);
+			}
+		}
+	}
+}

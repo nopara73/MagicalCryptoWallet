@@ -1,0 +1,240 @@
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using System.Reactive.Disposables;
+using System.Reactive.Disposables.Fluent;
+using Avalonia.Controls;
+using Avalonia.Controls.Models.TreeDataGrid;
+using Avalonia.Controls.Templates;
+using Avalonia.Threading;
+using NBitcoin;
+using MagicalCryptoWallet.Blockchain.Analysis.Clustering;
+using MagicalCryptoWallet.Fluent.Controls.Sorting;
+using MagicalCryptoWallet.Fluent.Infrastructure;
+using MagicalCryptoWallet.Fluent.Models.Wallets;
+using MagicalCryptoWallet.Fluent.TreeDataGrid;
+using MagicalCryptoWallet.Fluent.ViewModels.Wallets.Home.History.HistoryItems;
+using MagicalCryptoWallet.Fluent.Views.Wallets.Home.History.Columns;
+
+namespace MagicalCryptoWallet.Fluent.ViewModels.Wallets.Home.History;
+
+[AppLifetime]
+public partial class HistoryViewModel : ActivatableViewModel
+{
+	private readonly IWalletModel _wallet;
+
+	[AutoNotify(SetterModifier = AccessModifier.Private)]
+	private HierarchicalTreeDataGridSource<HistoryItemViewModelBase>? _source; // This will get its value as soon as this VM is activated.
+
+	[AutoNotify(SetterModifier = AccessModifier.Private)]
+	private bool _isTransactionHistoryEmpty;
+
+	public HistoryViewModel(UiContext uiContext, IWalletModel wallet) : base(uiContext)
+	{
+		_wallet = wallet;
+
+		_wallet.Transactions.Cache.Connect()
+			.Transform(x => CreateViewModel(x))
+			.SortAndBind(
+				Transactions,
+				SortExpressionComparer<HistoryItemViewModelBase>
+					.Ascending(x => x.Transaction.IsConfirmed)
+					.ThenByDescending(x => x.Transaction.OrderIndex)
+			)
+		.Subscribe();
+
+		_wallet.Transactions.IsEmpty
+			.BindTo(this, x => x.IsTransactionHistoryEmpty);
+	}
+
+	public IObservableCollection<HistoryItemViewModelBase> Transactions { get; } = new ObservableCollectionExtended<HistoryItemViewModelBase>();
+
+	public IEnumerable<SortableItem> Sortables { get; private set; } = [];
+
+	private static IColumn<HistoryItemViewModelBase> IndicatorsColumn()
+	{
+		return new HierarchicalExpanderColumn<HistoryItemViewModelBase>(
+			new TemplateColumn<HistoryItemViewModelBase>(
+				null,
+				new FuncDataTemplate<HistoryItemViewModelBase>((node, ns) => new IndicatorsColumnView(), true),
+				null,
+				options: new TemplateColumnOptions<HistoryItemViewModelBase>
+				{
+					CanUserResizeColumn = false,
+					CanUserSortColumn = true,
+					CompareAscending = HistoryItemViewModelBase.SortAscending(x => x.Transaction is CoinJoinTransactionModel or CoinJoinTransactionGroupModel),
+					CompareDescending = HistoryItemViewModelBase.SortDescending(x => x.Transaction is CoinJoinTransactionModel or CoinJoinTransactionGroupModel),
+				},
+				width: new GridLength(0, GridUnitType.Auto)),
+			x => x.Children,
+			x => x.HasChildren(),
+			x => x.IsExpanded);
+	}
+
+	private static IColumn<HistoryItemViewModelBase> DateColumn()
+	{
+		return new PrivacyTextColumn<HistoryItemViewModelBase>(
+			"Date / Time",
+			x => x.Transaction.DateString,
+			type: PrivacyCellType.Date,
+			options: new ColumnOptions<HistoryItemViewModelBase>
+			{
+				CanUserResizeColumn = false,
+				CanUserSortColumn = true,
+				CompareAscending = HistoryItemViewModelBase.SortAscending(x => x.Transaction.Date),
+				CompareDescending = HistoryItemViewModelBase.SortDescending(x => x.Transaction.Date),
+			},
+			width: new GridLength(0, GridUnitType.Auto),
+			numberOfPrivacyChars: 8);
+	}
+
+	private static IColumn<HistoryItemViewModelBase> LabelsColumn()
+	{
+		return new TemplateColumn<HistoryItemViewModelBase>(
+			"Labels",
+			new FuncDataTemplate<HistoryItemViewModelBase>((node, ns) => new LabelsColumnView(), true),
+			null,
+			options: new TemplateColumnOptions<HistoryItemViewModelBase>
+			{
+				CanUserResizeColumn = false,
+				CanUserSortColumn = true,
+				CompareAscending = HistoryItemViewModelBase.SortAscending(x => x.Transaction.Labels, LabelsArrayComparer.OrdinalIgnoreCase),
+				CompareDescending = HistoryItemViewModelBase.SortDescending(x => x.Transaction.Labels, LabelsArrayComparer.OrdinalIgnoreCase),
+				MinWidth = new GridLength(100, GridUnitType.Pixel)
+			},
+			width: new GridLength(1, GridUnitType.Star));
+	}
+
+	private static IColumn<HistoryItemViewModelBase> AmountColumn()
+	{
+		return new TemplateColumn<HistoryItemViewModelBase>(
+			null,
+			new FuncDataTemplate<HistoryItemViewModelBase>((x, _) => new AmountColumnView(), true),
+			null,
+			new GridLength(170, GridUnitType.Pixel),
+			new TemplateColumnOptions<HistoryItemViewModelBase>
+			{
+				CanUserResizeColumn = false,
+				CanUserSortColumn = true,
+				CompareAscending = HistoryItemViewModelBase.SortAscending(x => x.Transaction.Amount),
+				CompareDescending = HistoryItemViewModelBase.SortDescending(x => x.Transaction.Amount),
+			});
+	}
+
+	private IColumn<HistoryItemViewModelBase> ActionsColumn()
+	{
+		return new TemplateColumn<HistoryItemViewModelBase>(
+			"Actions",
+			new FuncDataTemplate<HistoryItemViewModelBase>((node, ns) => new ActionsColumnView(), true),
+			options: new TemplateColumnOptions<HistoryItemViewModelBase>
+			{
+				CanUserResizeColumn = false,
+				CanUserSortColumn = false,
+			},
+			width: new GridLength(0, GridUnitType.Auto));
+	}
+
+	public void SelectTransaction(uint256 txid)
+	{
+		var transactionsSnapshot = Transactions.ToArray();
+		var txnItem = transactionsSnapshot.FirstOrDefault(item =>
+		{
+			if (item is CoinJoinsHistoryItemViewModel cjGroup)
+			{
+				return cjGroup.Children.Any(x => x.Transaction.Id == txid);
+			}
+
+			return item.Transaction.Id == txid;
+		});
+
+		if (txnItem is { } && Source?.RowSelection is { } selection)
+		{
+			// Clear the selection so re-selection will work.
+			Dispatcher.UIThread.Post(() => selection.Clear());
+
+			// TDG has a visual glitch, if the item is not visible in the list, it will be glitched when gets expanded.
+			// Selecting first the root item, then the child solves the issue.
+			var index = transactionsSnapshot.IndexOf(txnItem);
+			Dispatcher.UIThread.Post(() => selection.SelectedIndex = new IndexPath(index));
+
+			if (txnItem is CoinJoinsHistoryItemViewModel cjGroup &&
+			    cjGroup.Children.FirstOrDefault(x => x.Transaction.Id == txid) is { } child)
+			{
+				txnItem.IsExpanded = true;
+				child.IsFlashing = true;
+
+				var childIndex = cjGroup.Children.IndexOf(child);
+				Dispatcher.UIThread.Post(() => selection.SelectedIndex = new IndexPath(index, childIndex));
+			}
+			else
+			{
+				txnItem.IsFlashing = true;
+			}
+		}
+	}
+
+	protected override void OnActivated(CompositeDisposable disposables)
+	{
+		base.OnActivated(disposables);
+
+		// [Column]			[View]						[Header]		[Width]		[MinWidth]		[MaxWidth]	[CanUserSort]
+		// Indicators		IndicatorsColumnView		-				Auto		80				-			true
+		// Date				DateColumnView				Date / Time		Auto		150				-			true
+		// Labels			LabelsColumnView			Labels			*			75				-			true
+		// Received			ReceivedColumnView			Received (BTC)	Auto		145				210			true
+		// Sent				SentColumnView				Sent (BTC)		Auto		145				210			true
+		// Balance			BalanceColumnView			Balance (BTC)	Auto		145				210			true
+
+		// NOTE: When changing column width or min width please also change HistoryPlaceholderPanel column widths.
+#pragma warning disable CA2000 // Dispose objects before losing scope - disposed with the disposables
+		Source = new HierarchicalTreeDataGridSource<HistoryItemViewModelBase>(Transactions)
+		{
+			Columns =
+			{
+				IndicatorsColumn(),
+				DateColumn(),
+				AmountColumn(),
+				LabelsColumn(),
+				ActionsColumn(),
+			}
+		}.DisposeWith(disposables);
+#pragma warning restore CA2000 // Dispose objects before losing scope
+
+		Source.RowSelection!.SingleSelect = true;
+
+		Sortables =
+		[
+			new SortableItem("Status") { SortByAscendingCommand = ReactiveCommand.Create(() => Source!.SortBy(Source.Columns[0], ListSortDirection.Ascending)), SortByDescendingCommand = ReactiveCommand.Create(() => Source!.SortBy(Source.Columns[0], ListSortDirection.Descending)) },
+			new SortableItem("Date") { SortByAscendingCommand = ReactiveCommand.Create(() => Source!.SortBy(Source.Columns[1], ListSortDirection.Ascending)), SortByDescendingCommand = ReactiveCommand.Create(() => Source!.SortBy(Source.Columns[1], ListSortDirection.Descending)) },
+			new SortableItem("Amount") { SortByAscendingCommand = ReactiveCommand.Create(() => Source!.SortBy(Source.Columns[2], ListSortDirection.Ascending)), SortByDescendingCommand = ReactiveCommand.Create(() => Source!.SortBy(Source.Columns[2], ListSortDirection.Descending)) },
+			new SortableItem("Label") { SortByAscendingCommand = ReactiveCommand.Create(() => Source!.SortBy(Source.Columns[3], ListSortDirection.Ascending)), SortByDescendingCommand = ReactiveCommand.Create(() => Source!.SortBy(Source.Columns[3], ListSortDirection.Descending)) },
+		];
+	}
+
+	public HistoryItemViewModelBase CreateViewModel(TransactionModel transaction, HistoryItemViewModelBase? parent = null)
+	{
+		HistoryItemViewModelBase viewModel = transaction switch
+		{
+			CoinJoinTransactionModel coinjoin => new CoinJoinHistoryItemViewModel(UiContext, _wallet, coinjoin),
+			CoinJoinTransactionGroupModel coinjoinGroup => new CoinJoinsHistoryItemViewModel(UiContext, _wallet, coinjoinGroup),
+			RegularTransactionModel { Type: TransactionType.CPFP } cpfp => new SpeedUpHistoryItemViewModel(UiContext, _wallet, cpfp, parent),
+			RegularTransactionModel regular => new TransactionHistoryItemViewModel(UiContext, _wallet, regular),
+			_ => throw new NotSupportedException($"Unknown kind of history row: {transaction.GetType().Name}.")
+		};
+
+		IReadOnlyList<TransactionModel> children = transaction switch
+		{
+			CoinJoinTransactionGroupModel coinjoinGroup => coinjoinGroup.Children,
+			SpeedUpTransactionGroupModel speedUpGroup => speedUpGroup.Children,
+			_ => []
+		};
+
+		foreach (var child in children.Reverse())
+		{
+			var historyItemViewModelBase = CreateViewModel(child, viewModel);
+			viewModel.Children.Add(historyItemViewModelBase);
+		}
+
+		return viewModel;
+	}
+}

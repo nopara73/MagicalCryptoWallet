@@ -1,0 +1,143 @@
+using System.Collections.Generic;
+using System.Linq;
+
+namespace MagicalCryptoWallet.Helpers;
+
+public record Unit
+{
+	public static readonly Unit Instance = new();
+}
+
+public record Result<TValue,TError>
+{
+	private readonly TValue? _value;
+	private readonly TError? _error;
+
+	protected Result(TValue value)
+	{
+		IsOk = true;
+		_value = value;
+		_error = default;
+	}
+
+	protected Result(TError error)
+	{
+		IsOk = false;
+		_value = default;
+		_error = error;
+	}
+
+	public static Result<TValue, TError> Ok(TValue value) => value;
+	public static Result<TValue, TError> Fail(TError error) => error;
+	public static implicit operator Result<TValue, TError>(TValue value) => new(value);
+	public static implicit operator Result<TValue, TError> (TError error) => new(error);
+
+	public delegate T SuccessAction<out T>(TValue s);
+	public delegate T FailureAction<out T>(TError e);
+
+	public T Match<T>(SuccessAction<T> success, FailureAction<T> failure) =>
+		IsOk
+			? success(_value!)
+			: failure(_error!);
+
+	public void MatchDo(Action<TValue> success, Action<TError> failure)
+	{
+		if (IsOk)
+		{
+			success(_value!);
+		}
+		else
+		{
+			failure(_error!);
+		}
+	}
+
+	public bool IsOk { get; }
+
+	public Result<T, TError> Map<T>(Func<TValue, T> f) =>
+		Match(v => Result<T, TError>.Ok(f(v)), e => e);
+
+	public Result<TValue, TE> MapError<TE>(Func<TError, TE> f) =>
+		Match(v => v, e => Result<TValue, TE>.Fail(f(e)));
+
+	public Result<T, TError> Then<T>(Func<TValue, Result<T, TError>> f) =>
+		Match(v => f(v), e => e);
+
+	public Result<TValue, TE> ThenError<TE>(Func<TError, TE> f) =>
+		Match(v => v, e => Result<TValue, TE>.Fail(f(e)));
+
+	public static Result<TValue[], TError[]> Sequence(IEnumerable<Result<TValue, TError>> results)
+	{
+		Result<TValue[], TError[]> initialState = Array.Empty<TValue>();
+
+		return results.Aggregate(initialState, (acc, s) =>
+			(acc.IsOk, s.IsOk) switch
+			{
+				(true, true) => acc._value!.Append(s._value!).ToArray(),
+				(true, false) => new[] {s._error!},
+				(false, true) => acc._error!,
+				(false, false) => acc._error!.Append(s._error!).ToArray()
+			});
+	}
+
+	public TValue Value =>
+		Match(
+			v => v,
+			_ => throw new InvalidOperationException("Failed result don't have value."));
+
+	public TError Error =>
+		Match(
+			_ => throw new InvalidOperationException("Successful result don't have error."),
+			e => e);
+
+	public static Result<T, Exception> Catch<T>(Func<T> func)
+	{
+		try
+		{
+			return func();
+		}
+		catch (Exception e)
+		{
+			return Result<T, Exception>.Fail(e);
+		}
+	}
+
+	public TValue? AsNullable () =>
+		IsOk
+			? Value
+			: default;
+}
+
+public record Result<TError> : Result<Unit, TError>
+{
+	private Result(Unit value) : base(value)
+	{
+	}
+
+	private Result(TError error) : base(error)
+	{
+	}
+
+	public static implicit operator Result<TError> (TError error) => new(error);
+	public static Result<TError> Ok() => new(Unit.Instance);
+	public static new Result<TError> Fail(TError error) => new(error);
+
+	public static Result<TError[]> Sequence(IEnumerable<Result<TError>> results) =>
+		Result<Unit, TError>.Sequence(results)
+			.Match(
+				_ => Result<TError[]>.Ok(),
+				es => Result<TError[]>.Fail(es));
+
+	public new Result<T> ThenError<T>(Func<TError, T> f) =>
+		Match(_=> Result<T>.Ok(), e => Result<T>.Fail(f(e)));
+}
+
+public static class ResultExtensions
+{
+	public static Result<TValue[], TError[]>
+		SequenceResults<TValue, TError>(this IEnumerable<Result<TValue, TError>> results) =>
+		Result<TValue, TError>.Sequence(results);
+
+	public static Result<TError[]> SequenceResults<TError>(this IEnumerable<Result<TError>> results) =>
+		Result<TError>.Sequence(results);
+}
