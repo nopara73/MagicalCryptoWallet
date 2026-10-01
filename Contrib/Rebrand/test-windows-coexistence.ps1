@@ -13,7 +13,7 @@ $taskInstaller = New-Object -ComObject WindowsInstaller.Installer
 function Get-MsiProperty([string] $path, [string] $name) {
     $database = $taskInstaller.OpenDatabase($path, 0)
     $view = $database.OpenView("SELECT ``Value`` FROM ``Property`` WHERE ``Property`` = '$name'")
-    $view.Execute()
+    [void]$view.Execute()
     return $view.Fetch().StringData(1)
 }
 function Get-InstalledProductState([string] $productCode) {

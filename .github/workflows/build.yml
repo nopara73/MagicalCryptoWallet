@@ -34,7 +34,7 @@ permissions:
   contents: read
   actions: read
 concurrency:
-  group: build-${{ github.event.pull_request.head.ref || github.ref_name }}-${{ inputs.production || false }}
+  group: build-${{ github.event.pull_request.head.ref || github.ref_name }}-${{ inputs.production || false }}-${{ inputs.coexistence_run || 'full' }}
   cancel-in-progress: true
 jobs:
   platform:
