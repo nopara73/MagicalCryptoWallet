@@ -1,3 +1,4 @@
+using System.Reflection;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
@@ -8,10 +9,15 @@ using Avalonia.Styling;
 using Avalonia.Threading;
 using MagicalCryptoWallet.Fluent;
 using MagicalCryptoWallet.Fluent.Models.UI;
+using MagicalCryptoWallet.Fluent.Models.Wallets;
 using MagicalCryptoWallet.Fluent.ViewModels.AddWallet;
 using MagicalCryptoWallet.Fluent.ViewModels.HelpAndSupport;
+using MagicalCryptoWallet.Fluent.ViewModels.Dialogs;
+using MagicalCryptoWallet.Fluent.ViewModels.Dialogs.Authorization;
 using MagicalCryptoWallet.Fluent.Views.AddWallet;
 using MagicalCryptoWallet.Fluent.Views.HelpAndSupport;
+using MagicalCryptoWallet.Fluent.Views.Dialogs;
+using MagicalCryptoWallet.Fluent.Views.Dialogs.Authorization;
 using MagicalCryptoWallet.Fluent.Views.Shell;
 
 // Render the actual application views and resources with an inert context.
@@ -20,6 +26,7 @@ AppBuilder.Configure<App>().WithInterFont().With(new FontManagerOptions { Defaul
 string destination = args.FirstOrDefault() ?? ".artifacts/rebrand/screenshots";
 Directory.CreateDirectory(destination);
 var context = (UiContext)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(UiContext));
+PasswordBoxChecks.Run();
 foreach (var theme in new[] { ThemeVariant.Light, ThemeVariant.Dark })
 {
     Application.Current!.RequestedThemeVariant = theme;
@@ -27,6 +34,20 @@ foreach (var theme in new[] { ThemeVariant.Light, ThemeVariant.Dark })
     {
         Render("welcome", new WelcomePageView { DataContext = new WelcomePageViewModel(context) }, 1024, 680);
         Render("about", new AboutView { DataContext = new AboutViewModel(context) }, 640, 560);
+        Render("password-create", new CreatePasswordDialogView
+        {
+            DataContext = new CreatePasswordDialogViewModel(context, "Add Passphrase")
+            {
+                Password = "synthetic-passphrase", ConfirmPassword = "synthetic-passphrase"
+            }
+        }, 640, 440);
+        Render("password-auth", new PasswordAuthDialogView
+        {
+            DataContext = new PasswordAuthDialogViewModel(context, DispatchProxy.Create<IWalletModel, InertPreviewWallet>())
+            {
+                Password = "synthetic-passphrase"
+            }
+        }, 640, 440);
         void Render(string name, Control content, int width, int height)
         {
             var panel = new DockPanel();
@@ -47,4 +68,11 @@ foreach (var theme in new[] { ThemeVariant.Light, ThemeVariant.Dark })
         }
     }
 }
-Console.WriteLine("Rendered actual Welcome, About, and title bar views in both themes at 100, 125, 150, and 200 percent.");
+Console.WriteLine("Rendered actual Welcome, About, passphrase creation/authorization, and title bar views in both themes at 100, 125, 150, and 200 percent.");
+
+// Authorize is never invoked. Any attempt to use a wallet service fails immediately.
+public class InertPreviewWallet : DispatchProxy
+{
+    protected override object? Invoke(MethodInfo? targetMethod, object?[]? args) => targetMethod?.Name == "get_IsHardwareWallet"
+        ? false : throw new InvalidOperationException("Wallet services are unavailable in the visual preview.");
+}

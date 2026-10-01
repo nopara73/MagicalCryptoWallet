@@ -1,7 +1,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia;
+using Avalonia.Automation;
+using Avalonia.Automation.Peers;
+using Avalonia.Automation.Provider;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 
@@ -9,6 +13,9 @@ namespace MagicalCryptoWallet.Fluent.Controls;
 
 public partial class CopyablePasswordTextBox : TextBox
 {
+	public static readonly StyledProperty<string?> FixedPasswordTextProperty =
+		AvaloniaProperty.Register<CopyablePasswordTextBox, string?>(nameof(FixedPasswordText));
+
 	public static readonly DirectProperty<CopyablePasswordTextBox, bool> CanCutModifiedProperty =
 		AvaloniaProperty.RegisterDirect<CopyablePasswordTextBox, bool>(
 			nameof(CanCutModified),
@@ -27,8 +34,22 @@ public partial class CopyablePasswordTextBox : TextBox
 	private bool _canCutModified;
 	private bool _canCopyModified;
 	private bool _canPasteModified;
+	private ChinesePasswordTextPresenter? _passwordPresenter;
+
+	public CopyablePasswordTextBox()
+	{
+		CopyingToClipboard += (_, e) => e.Handled |= !RevealPassword;
+		CuttingToClipboard += (_, e) => e.Handled |= !RevealPassword || IsReadOnly;
+		PastingFromClipboard += (_, e) => e.Handled |= IsReadOnly;
+	}
 
 	protected override Type StyleKeyOverride => typeof(TextBox);
+
+	public string? FixedPasswordText
+	{
+		get => GetValue(FixedPasswordTextProperty);
+		set => SetValue(FixedPasswordTextProperty, value);
+	}
 
 	public bool CanCutModified
 	{
@@ -39,13 +60,13 @@ public partial class CopyablePasswordTextBox : TextBox
 	public bool CanCopyModified
 	{
 		get => _canCopyModified;
-		private set => SetAndRaise(CanCopyProperty, ref _canCopyModified, value);
+		private set => SetAndRaise(CanCopyModifiedProperty, ref _canCopyModified, value);
 	}
 
 	public bool CanPasteModified
 	{
 		get => _canPasteModified;
-		private set => SetAndRaise(CanPasteProperty, ref _canPasteModified, value);
+		private set => SetAndRaise(CanPasteModifiedProperty, ref _canPasteModified, value);
 	}
 
 	private string GetSelection()
@@ -132,11 +153,24 @@ public partial class CopyablePasswordTextBox : TextBox
 		{
 			UpdateCommandStates();
 		}
+		else if (change.Property == IsReadOnlyProperty)
+		{
+			UpdateCommandStates();
+		}
+		else if (change.Property == FixedPasswordTextProperty)
+		{
+			_passwordPresenter?.ResetMask();
+		}
 	}
 
 	protected override void OnGotFocus(GotFocusEventArgs e)
 	{
 		base.OnGotFocus(e);
+
+		if (string.IsNullOrEmpty(Text))
+		{
+			_passwordPresenter?.ResetMask();
+		}
 
 		UpdateCommandStates();
 	}
@@ -146,5 +180,32 @@ public partial class CopyablePasswordTextBox : TextBox
 		base.OnLostFocus(e);
 
 		UpdateCommandStates();
+	}
+
+	protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+	{
+		base.OnApplyTemplate(e);
+		_passwordPresenter = e.NameScope.Find<ChinesePasswordTextPresenter>("PART_TextPresenter");
+		UpdateCommandStates();
+	}
+
+	protected override AutomationPeer OnCreateAutomationPeer() => new PasswordAutomationPeer(this);
+
+	private sealed class PasswordAutomationPeer(CopyablePasswordTextBox owner) : ControlAutomationPeer(owner), IValueProvider
+	{
+		public bool IsReadOnly => owner.IsReadOnly;
+		public string? Value => owner.RevealPassword ? owner.Text : string.Empty;
+
+		public void SetValue(string? value)
+		{
+			if (!owner.IsEffectivelyEnabled || IsReadOnly)
+			{
+				throw new InvalidOperationException("The passphrase field cannot be edited.");
+			}
+			owner.SetCurrentValue(TextProperty, value);
+		}
+
+		protected override AutomationControlType GetAutomationControlTypeCore() => AutomationControlType.Edit;
+		protected override string? GetPlaceholderTextCore() => owner.Watermark;
 	}
 }

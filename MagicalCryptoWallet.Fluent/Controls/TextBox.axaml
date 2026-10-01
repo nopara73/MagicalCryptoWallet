@@ -52,7 +52,7 @@
                                  IsVisible="{TemplateBinding Text, Converter={x:Static StringConverters.IsNullOrEmpty}}"
                                  HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                  VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
-                      <TextPresenter Name="PART_TextPresenter"
+                      <ChinesePasswordTextPresenter Name="PART_TextPresenter"
                                      Text="{TemplateBinding Text, Mode=TwoWay}"
                                      CaretIndex="{TemplateBinding CaretIndex}"
                                      SelectionStart="{TemplateBinding SelectionStart}"
