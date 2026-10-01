@@ -10,11 +10,14 @@ namespace MagicalCryptoWallet.Helpers;
 
 public static class ImportWalletHelper
 {
-	private const string WalletExistsErrorMessage = "Wallet with the same fingerprint already exists!";
-
 	public static async Task<KeyManager> ImportWalletAsync(WalletManager walletManager, string walletName, string filePath)
 	{
-		var walletFullPath = walletManager.WalletDirectories.GetWalletFilePaths(walletName);
+		walletManager.EnsureCanAddWallet();
+		if (walletManager.ValidateWalletName(walletName) is { } error)
+		{
+			throw new InvalidOperationException(error.Message);
+		}
+		var walletFullPath = walletManager.WalletDirectories.GetWalletFilePaths(walletName + ".json");
 
 		string jsonString = await File.ReadAllTextAsync(filePath).ConfigureAwait(false);
 		var jsonWallet = JObject.Parse(jsonString);
@@ -23,33 +26,29 @@ public static class ImportWalletHelper
 		var isColdcardJson = jsonWallet.Count <= 3;
 
 		KeyManager km = isColdcardJson
-			? GetKeyManagerByColdcardJson(walletManager, jsonWallet, walletFullPath)
-			: GetKeyManagerByMagicalCryptoWalletJson(walletManager, filePath, walletFullPath);
+			? GetKeyManagerByColdcardJson(walletManager, jsonWallet)
+			: GetKeyManagerByMagicalCryptoWalletJson(filePath);
 
 		if (isColdcardJson)
 		{
 			km.SetIcon(WalletType.Coldcard);
 		}
 
-		km.SetBestHeight(0);
+		km.SetBestHeight(0, toFile: false);
+		km.SetFilePath(walletFullPath);
 		return km;
 	}
 
-	private static KeyManager GetKeyManagerByMagicalCryptoWalletJson(WalletManager manager, string filePath, string walletFullPath)
+	private static KeyManager GetKeyManagerByMagicalCryptoWalletJson(string filePath)
 	{
 		var km = KeyManager.FromFile(filePath);
 
-		if (manager.WalletExists(km.MasterFingerprint))
-		{
-			throw new InvalidOperationException(WalletExistsErrorMessage);
-		}
-
-		km.SetFilePath(walletFullPath);
+		km.SetFilePath(null);
 
 		return km;
 	}
 
-	private static KeyManager GetKeyManagerByColdcardJson(WalletManager manager, JObject jsonWallet, string walletFullPath)
+	private static KeyManager GetKeyManagerByColdcardJson(WalletManager manager, JObject jsonWallet)
 	{
 		var segwitXpubString = jsonWallet["ExtPubKey"]?.ToString()
 			?? throw new ArgumentNullException($"Can't get KeyManager, ExtPubKey was null.");
@@ -83,17 +82,13 @@ public static class ImportWalletHelper
 		var bytes = Convert.FromHexString(mfpString);
 		HDFingerprint mfp = reverseByteOrder ? new HDFingerprint(bytes.Reverse().ToArray()) : new HDFingerprint(bytes);
 
-		if (manager.WalletExists(mfp))
-		{
-			throw new InvalidOperationException(WalletExistsErrorMessage);
-		}
 
 		ExtPubKey segwitExtPubKey = NBitcoinHelpers.BetterParseExtPubKey(segwitXpubString);
 		ExtPubKey? taprootExtPubKey = taprootXpubString is { }
 			? NBitcoinHelpers.BetterParseExtPubKey(taprootXpubString)
 			: null;
 
-		var km = KeyManager.CreateNewHardwareWalletWatchOnly(mfp, segwitExtPubKey, taprootExtPubKey, null, null, manager.Network, walletFullPath);
+		var km = KeyManager.CreateNewHardwareWalletWatchOnly(mfp, segwitExtPubKey, taprootExtPubKey, null, null, manager.Network);
 		km.PreferPsbtWorkflow = true;
 		return km;
 	}

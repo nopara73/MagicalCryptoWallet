@@ -1,7 +1,4 @@
-using System.Collections.ObjectModel;
 using System.Linq;
-using System.Reactive.Disposables;
-using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -36,12 +33,6 @@ public partial class WalletCoinJoinSettingsViewModel : RoutableViewModel
 
 	[AutoNotify] private bool _autoCoinJoin;
 	[AutoNotify] private string _plebStopThreshold;
-	[AutoNotify] private bool _isOutputWalletSelectionEnabled = true;
-	[AutoNotify] private IWalletModel _selectedOutputWallet;
-	[AutoNotify] private ReadOnlyObservableCollection<IWalletModel> _wallets = ReadOnlyObservableCollection<IWalletModel>.Empty;
-
-	private CompositeDisposable _disposable = new();
-
 	public WalletCoinJoinSettingsViewModel(UiContext uiContext, IWalletModel walletModel) : base(uiContext)
 	{
 		_wallet = walletModel;
@@ -50,8 +41,6 @@ public partial class WalletCoinJoinSettingsViewModel : RoutableViewModel
 		_anonScoreTarget = _wallet.Settings.AnonScoreTarget.ToString();
 		_nonPrivateCoinIsolation = _wallet.Settings.NonPrivateCoinIsolation;
 		_onlyUsePrivateFundsForPayments = _wallet.Settings.OnlyUsePrivateFundsForPayments;
-
-		_selectedOutputWallet = UiContext.WalletRepository.Wallets.Items.First(x => x.Id == _wallet.Settings.OutputWalletId);
 
 		SetupCancel(enableCancel: false, enableCancelOnEscape: true, enableCancelOnPressed: true);
 
@@ -120,16 +109,7 @@ public partial class WalletCoinJoinSettingsViewModel : RoutableViewModel
 					}
 				});
 
-		this.WhenAnyValue(x => x.SelectedOutputWallet)
-			.Skip(1)
-			.ObserveOn(RxApp.TaskpoolScheduler)
-			.Subscribe(x => _wallet.Settings.OutputWalletId = x.Id);
 
-		walletModel.IsCoinjoinStarted
-			.Select(isRunning => !isRunning)
-			.BindTo(this, x => x.IsOutputWalletSelectionEnabled);
-
-		ManuallyUpdateOutputWalletList();
 	}
 
 	public ICommand SetAutoCoinJoin { get; }
@@ -138,23 +118,6 @@ public partial class WalletCoinJoinSettingsViewModel : RoutableViewModel
 	public ICommand SelectMaximizePrivacySettings { get; }
 	public ICommand SelectDefaultSettings { get; }
 	public ICommand SelectEconomicalSettings { get; }
-
-	public void ManuallyUpdateOutputWalletList()
-	{
-		_disposable.Dispose();
-		_disposable = new CompositeDisposable();
-
-		UiContext.WalletRepository.Wallets
-			.Connect()
-			.AutoRefresh(x => x.IsLoaded)
-			.Filter(x => (x.Id == _wallet.Id || x.Settings.OutputWalletId != _wallet.Id) && x.IsLoaded)
-			.SortBy(i => i.Name)
-			.Bind(out var wallets)
-			.Subscribe()
-			.DisposeWith(_disposable);
-
-		_wallets = wallets;
-	}
 
 	private void ValidateAnonScoreTarget(IValidationErrors errors)
 	{

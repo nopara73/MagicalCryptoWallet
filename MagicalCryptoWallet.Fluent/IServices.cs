@@ -38,9 +38,8 @@ public interface IServices
 	bool TryGetTransaction(uint256 hash, [NotNullWhen(true)] out SmartTransaction? tx);
 
 	Network GetNetwork();
-	IEnumerable<Wallet> GetWallets();
+	Wallet GetWallet();
 	bool HasWallet();
-	Wallet GetWalletByName(string walletName);
 	void RenameWallet(Wallet wallet, string newWalletName);
 	string GetWalletsDir();
 	string GetNextWalletName(string prefix);
@@ -59,8 +58,6 @@ public interface IServices
 	double? GetWindowHeight();
 	void SetWindowWidth(double? width);
 	void SetWindowHeight(double? height);
-	string? GetLastSelectedWallet();
-	void SetLastSelectedWallet(string? walletName);
 	bool GetPrivacyMode();
 	bool GetAutocopy();
 	bool GetAutoPaste();

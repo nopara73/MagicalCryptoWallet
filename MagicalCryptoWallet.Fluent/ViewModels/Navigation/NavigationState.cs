@@ -49,6 +49,9 @@ public class NavigationState : ReactiveObject, INavigate
 
 	public UiContext UiContext { get; }
 
+	public IWalletViewModel? Wallet => _walletNavigation.Wallet;
+	public IWalletModel? WalletModel => _walletNavigation.WalletModel;
+
 	public INavigationStack<RoutableViewModel> HomeScreen { get; }
 
 	public INavigationStack<RoutableViewModel> DialogScreen { get; }

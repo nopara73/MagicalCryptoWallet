@@ -71,6 +71,16 @@ public class NavBarItem : ContentControl
 		}
 	}
 
+	protected override void OnKeyDown(KeyEventArgs e)
+	{
+		base.OnKeyDown(e);
+		if (!e.Handled && e.Key is Key.Enter or Key.Space && Command is { } command && command.CanExecute(default))
+		{
+			command.Execute(default);
+			e.Handled = true;
+		}
+	}
+
 	private void UpdateIndicatorOrientationPseudoClasses(Orientation orientation)
 	{
 		PseudoClasses.Set(":horizontal", orientation == Orientation.Horizontal);

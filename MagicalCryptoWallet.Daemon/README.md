@@ -42,25 +42,21 @@ There are a few special switches that are not present in the `Config.json` file 
 Run MagicalCryptoWallet and connect to the testnet Bitcoin network with Tor disabled and accept JSON RPC calls. Store everything in `$HOME/temp/magicalcryptowallet-1`.
 
 ```bash
-$ magicalcryptowallet.daemon --usetor=false --datadir="$HOME/temp/magicalcryptowallet-1" --network=testnet --jsonrpcserverenabled=true --blockonly=true
+$ magicalcryptowalletd --usetor=false --datadir="$HOME/temp/magicalcryptowallet-1" --network=testnet --jsonrpcserverenabled=true --blockonly=true
 ```
 
 Run MagicalCryptoWallet Daemon and connect to the testnet Bitcoin network.
 
 ```bash
-$ MAGICALCRYPTOWALLET_NETWORK=testnet magicalcryptowallet.daemon
+$ MAGICALCRYPTOWALLET_NETWORK=testnet magicalcryptowalletd
 ```
 
-Run MagicalCryptoWallet and open two wallets: AliceWallet and BobWallet
-
-```bash
-$ magicalcryptowallet.daemon --wallet=AliceWallet --wallet=BobWallet
-```
+The daemon automatically starts the configured wallet. Create or recover the initial wallet through the GUI or the root RPC endpoint; `loadwallet` starts it without a wallet-name parameter. Adding another wallet and named-wallet CLI selection are unsupported.
 
 ### Version
 
 ```bash
-$ magicalcryptowallet.daemon --version
+$ magicalcryptowalletd --version
 MagicalCryptoWallet Daemon 2.0.3.0
 ```
 

@@ -134,9 +134,7 @@ Here you will have to build from source, follow [these instructions here](https:
 5. Generate a wallet in Magical Crypto Wallet named: R1.
 6. Generate a receive address in Magical Crypto Wallet, now go to Bitcoin Core to the Send tab.
 7. Send 1 BTC to that address.
-8. Generate a wallet in Magical Crypto Wallet named: R2.
-9. Generate a receive address in Magical Crypto Wallet, now go to Bitcoin Core to the Send tab.
-10. Send 1 BTC to that address.
-11. Now let the coinjoin happen automatically in both wallets.
-12. If you see `Waiting for confirmed funds` in the music box you can generate a block in Bitcoin Core to continue coinjoining:
+8. For another participant, start a separate client with its own data directory and RPC/Tor ports, then set up and fund its one wallet. The [regtest test harness](../Contrib/Tests/README.md) does this for five independent clients.
+9. Let coinjoin run in each client.
+10. If you see `Waiting for confirmed funds` in the music box you can generate a block in Bitcoin Core to continue coinjoining:
 `generatetoaddress 1 <replace_new_address_here>`

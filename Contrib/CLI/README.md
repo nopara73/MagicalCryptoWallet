@@ -1,11 +1,11 @@
 # MagicalCryptoWallet CLI
 
-A bash script for effortless interaction with the MagicalCryptoWallet RPC Server.
+A bash script for interaction with the Magical Crypto Wallet RPC server. Every wallet operation uses the root endpoint and the one configured wallet. `loadwallet` takes no parameters. Set `MAGICALCRYPTOWALLET_DATADIR` to use an explicit client data directory.
 
 USAGE:
 
 ```bash
-$ ./wcli.sh [-wallet=<WALLET-NAME>] command [ARGS,...]
+$ ./wcli.sh command [ARGS,...]
 ```
 The supported RPC commands are listed in the [documentation](https://github.com/nopara73/MagicalCryptoWallet/blob/master/MagicalCryptoWallet.Documentation/README.md).
 
@@ -41,7 +41,7 @@ $ ./wcli.sh getstatus
 ```
 
 ```bash
-$ ./wcli.sh -wallet=MyWallet getwalletinfo
+$ ./wcli.sh getwalletinfo
 
 {
   "walletName": "MyWallet",
@@ -71,7 +71,7 @@ $ ./wcli.sh -wallet=MyWallet getwalletinfo
 ```
 
 ```bash
-$ ./wcli.sh -wallet=MyWallet listkeys | head -10
+$ ./wcli.sh listkeys | head -10
 
 fullkeypath       internal  keystate  label             scriptpubkey                                                      pubkey                                                              pubkeyhash                                 address
 84'/0'/0'/1/0     true      2         x-known-by        cc74ebb140b0ba6314bacd1f908eb2b9eb041717                          039d1e562f46ed0ac30e3abf6f05906f2e42004677f67f2c7c3dd17796553211d3  b41708eb2b9ecc74e0b04a6bb143110bbacd1f97   tb1qkzaxhv2rzjav68us36etnmx8fc9sg9chgzqa3y
@@ -86,7 +86,7 @@ fullkeypath       internal  keystate  label             scriptpubkey            
 ```
 
 ```bash
-$ ./wcli.sh -wallet=MyWallet gethistory | head -10
+$ ./wcli.sh gethistory | head -10
 
 datetime                   height   amount     label        tx                                                                islikelycoinjoin
 2018-06-27T17:39:40+00:00  1326503  1000       x-known-by   b2cc6a4f437d915abfd7b851d382102037c3abe7932138fcfb92bc4b5eddd08c  false
@@ -101,7 +101,7 @@ datetime                   height   amount     label        tx                  
 ```
 
 ```bash
-$ ./wcli.sh -wallet=MyWallet getnewaddress "Ricardo"
+$ ./wcli.sh getnewaddress "Ricardo"
 
 {
   "address": "tb1qvxvhvnsfx2vwmnum2erzn6k95m8qc7nh5w4hr5",

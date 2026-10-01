@@ -11,7 +11,7 @@ using MagicalCryptoWallet.Logging;
 namespace MagicalCryptoWallet.Fluent.ViewModels.AddWallet;
 
 [NavigationMetaData(
-	Title = "Add Wallet",
+	Title = "Set Up Wallet",
 	Caption = "Create, connect, import or recover",
 	Order = 2,
 	Category = "General",
@@ -20,8 +20,9 @@ namespace MagicalCryptoWallet.Fluent.ViewModels.AddWallet;
 	IconName = "nav_add_circle_24_regular",
 	IconNameFocused = "nav_add_circle_24_filled",
 	NavigationTarget = NavigationTarget.DialogScreen,
-	NavBarPosition = NavBarPosition.Bottom,
-	NavBarSelectionMode = NavBarSelectionMode.Button)]
+	NavBarPosition = NavBarPosition.None,
+	NavBarSelectionMode = NavBarSelectionMode.Button,
+	Searchable = false)]
 public partial class AddWalletPageViewModel : DialogViewModelBase<Unit>
 {
 	public AddWalletPageViewModel(UiContext uiContext) : base(uiContext)
@@ -97,8 +98,8 @@ public partial class AddWalletPageViewModel : DialogViewModelBase<Unit>
 	{
 		base.OnNavigatedTo(isInHistory, disposables);
 
-		var enableCancel = UiContext.WalletRepository.HasWallet;
-		SetupCancel(enableCancel: enableCancel, enableCancelOnEscape: enableCancel, enableCancelOnPressed: enableCancel);
+		UiContext.Services.WalletManager.EnsureCanAddWallet();
+		SetupCancel(enableCancel: false, enableCancelOnEscape: false, enableCancelOnPressed: false);
 	}
 
 	public async Task Activate()

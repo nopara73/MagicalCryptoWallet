@@ -32,7 +32,7 @@ public class MagicalCryptoWalletJsonRpcService : IJsonRpcService
 	}
 
 	private Global Global { get; }
-	private Wallet? ActiveWallet { get; set; }
+	private Wallet? ActiveWallet => Global?.WalletManager.GetWallet();
 
 	[JsonRpcMethod("listunspentcoins")]
 	public JsonRpcResultList GetUnspentCoinList()
@@ -86,9 +86,10 @@ public class MagicalCryptoWalletJsonRpcService : IJsonRpcService
 	[JsonRpcMethod("createwallet", initializable: false)]
 	public object CreateWallet(string walletName, string password)
 	{
+		Global.WalletManager.EnsureCanAddWallet();
 		var walletGenerator = new WalletGenerator(Global.WalletManager.WalletDirectories.WalletsDir, Global.Network);
 		walletGenerator.TipHeight = Global.FilterHeaders.TipHeight;
-		var (keyManager, mnemonic) = walletGenerator.GenerateWallet(walletName, password, mnemonic: null);
+		var (keyManager, mnemonic) = walletGenerator.GenerateWallet(walletName, password, mnemonic: null, toFile: false);
 		Global.WalletManager.AddWallet(keyManager);
 		return mnemonic.ToString();
 	}
@@ -96,6 +97,7 @@ public class MagicalCryptoWalletJsonRpcService : IJsonRpcService
 	[JsonRpcMethod("recoverwallet", initializable: false)]
 	public void RecoverWallet(string walletName, string mnemonicStr, string password = "")
 	{
+		Global.WalletManager.EnsureCanAddWallet();
 		var walletGenerator = new WalletGenerator(Global.WalletManager.WalletDirectories.WalletsDir, Global.Network);
 		walletGenerator.TipHeight = 0;
 		if (!TryParseMnemonic(mnemonicStr, out var mnemonic))
@@ -103,14 +105,15 @@ public class MagicalCryptoWalletJsonRpcService : IJsonRpcService
 			throw new ArgumentException("Invalid value for mnemonic");
 		}
 
-		var (keyManager, _) = walletGenerator.GenerateWallet(walletName, password, mnemonic);
+		var (keyManager, _) = walletGenerator.GenerateWallet(walletName, password, mnemonic, toFile: false);
 		Global.WalletManager.AddWallet(keyManager);
 	}
 
 	[JsonRpcMethod("loadwallet", initializable: false)]
-	public void LoadWallet(string walletName)
+	public async Task LoadWalletAsync()
 	{
-		SelectWallet(walletName, ensureLoaded: true);
+		var wallet = ActiveWallet ?? throw new InvalidOperationException("No wallet is configured.");
+		await Global.WalletManager.StartWalletAsync(wallet).ConfigureAwait(false);
 	}
 
 	[JsonRpcMethod("getwalletinfo")]
@@ -479,37 +482,7 @@ public class MagicalCryptoWalletJsonRpcService : IJsonRpcService
 
 		AssertWalletIsLoaded();
 		AssertWalletIsLoggedIn(activeWallet, password ?? "");
-		coinJoinManager.RequestCoinJoinStart(activeWallet, activeWallet, stopWhenAllMixed, overridePlebStop);
-	}
-
-	[JsonRpcMethod("startcoinjoinsweep")]
-	public void StartCoinjoinSweeping(string? password = null, string? outputWalletName = null)
-	{
-		var activeWallet = Guard.NotNull(nameof(ActiveWallet), ActiveWallet);
-		var coinJoinManager = GetCoinJoinManager();
-
-		AssertWalletIsLoaded();
-		AssertWalletIsLoggedIn(activeWallet, password ?? "");
-
-		if (outputWalletName is null || outputWalletName == activeWallet.WalletName)
-		{
-			throw new InvalidOperationException("Output wallet name is invalid.");
-		}
-
-		var outputWallet = Global.WalletManager.GetWalletByName(outputWalletName);
-
-		StartCoinjoinSweepAsync(coinJoinManager, activeWallet, outputWallet).ConfigureAwait(false);
-	}
-
-	private async Task StartCoinjoinSweepAsync(CoinJoinManager coinJoinManager, Wallet activeWallet, Wallet outputWallet)
-	{
-		// If output wallet isn't initialized, then load it.
-		if (!outputWallet.Loaded)
-		{
-			await Global.WalletManager.StartWalletAsync(outputWallet).ConfigureAwait(false);
-		}
-
-		coinJoinManager.RequestCoinJoinStart(activeWallet, outputWallet, stopWhenAllMixed: false, overridePlebStop: true);
+		coinJoinManager.RequestCoinJoinStart(activeWallet, stopWhenAllMixed, overridePlebStop);
 	}
 
 	[JsonRpcMethod("stopcoinjoin")]
@@ -532,18 +505,6 @@ public class MagicalCryptoWalletJsonRpcService : IJsonRpcService
 		}
 
 		return new Dictionary<int, int>();
-	}
-
-	[JsonRpcMethod("listwallets", initializable: false)]
-	public async Task<JsonRpcResultList> ListWalletsAsync()
-	{
-		var wallets = await Global.WalletManager.GetWalletsAsync().ConfigureAwait(false);
-		return wallets
-			.Select(x => new JsonRpcResult
-			{
-				["walletName"] = x.WalletName
-			})
-			.ToImmutableArray();
 	}
 
 	[JsonRpcMethod("query", initializable: false)]
@@ -594,25 +555,6 @@ public class MagicalCryptoWalletJsonRpcService : IJsonRpcService
 		};
 	}
 
-	private void SelectWallet(string walletName, bool ensureLoaded = false)
-	{
-		walletName = Guard.NotNullOrEmptyOrWhitespace(nameof(walletName), walletName);
-		try
-		{
-			var wallet = Global.WalletManager.GetWalletByName(walletName);
-
-			ActiveWallet = wallet;
-			if (ensureLoaded &&!wallet.Loaded)
-			{
-				Global.WalletManager.StartWalletAsync(wallet).ConfigureAwait(false);
-			}
-		}
-		catch (InvalidOperationException) // wallet not found
-		{
-			throw new Exception($"Wallet '{walletName}' not found.");
-		}
-	}
-
 	private void AssertWalletIsLoaded()
 	{
 		if (ActiveWallet is not {Loaded: true})
@@ -632,15 +574,13 @@ public class MagicalCryptoWalletJsonRpcService : IJsonRpcService
 	[JsonRpcInitialization]
 	public void Initialize(string path, bool needsWallet)
 	{
-		var parts = path.Split("/", StringSplitOptions.RemoveEmptyEntries);
-		var walletName = parts.Length == 1 ? parts[0] : string.Empty;
-		if (needsWallet && !string.IsNullOrEmpty(walletName))
+		if (path != "/" && path != "")
 		{
-			SelectWallet(walletName);
+			throw new InvalidOperationException("Wallet-specific RPC paths are not supported. Use the root endpoint.");
 		}
-		else
+		if (needsWallet && ActiveWallet is null)
 		{
-			throw new InvalidOperationException("Wallet name is invalid or not allowed.");
+			throw new InvalidOperationException("No wallet is configured.");
 		}
 	}
 

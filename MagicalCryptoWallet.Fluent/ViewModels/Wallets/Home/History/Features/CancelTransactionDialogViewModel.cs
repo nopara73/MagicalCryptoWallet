@@ -58,7 +58,7 @@ public partial class CancelTransactionDialogViewModel : RoutableViewModel
 				var mainViewModel = UiContext.MainViewModel
 					?? throw new InvalidOperationException("MainViewModel is not initialized.");
 
-				var wallet = mainViewModel.NavBar.Wallets.First(x => x.Wallet.WalletName == _wallet.Name).Wallet;
+				var wallet = UiContext.Services.GetWallet();
 
 				UiContext.Navigate().To().SendSuccess(cancellingTransaction.CancelTransaction.Transaction, title, caption, NavigationTarget.CompactDialogScreen);
 			}

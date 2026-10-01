@@ -172,11 +172,9 @@ public partial class MainViewModel : ViewModelBase
 
 	public void Initialize()
 	{
-		UiContext.WalletRepository.Wallets
-			.Connect()
-			.FilterOnObservable(x => x.IsCoinjoinRunning)
-			.ToCollection()
-			.Select(x => x.Count != 0)
+		UiContext.WalletRepository.WhenAnyValue(x => x.Wallet)
+			.Select(wallet => wallet?.IsCoinjoinRunning ?? Observable.Return(false))
+			.Switch()
 			.BindTo(this, x => x.IsCoinJoinActive);
 
 		UiContext.Services.EventBus.AsObservable<RpcStatusChanged>()

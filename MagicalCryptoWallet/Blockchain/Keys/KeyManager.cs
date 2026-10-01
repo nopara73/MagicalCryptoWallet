@@ -700,15 +700,18 @@ public class KeyManager
 		}
 	}
 
-	public void SetIcon(string icon)
+	public void SetIcon(string icon, bool toFile = true)
 	{
 		Icon = icon;
-		ToFile();
+		if (toFile)
+		{
+			ToFile();
+		}
 	}
 
-	public void SetIcon(WalletType type)
+	public void SetIcon(WalletType type, bool toFile = true)
 	{
-		SetIcon(type.ToString());
+		SetIcon(type.ToString(), toFile);
 	}
 
 	#endregion _blockchainState

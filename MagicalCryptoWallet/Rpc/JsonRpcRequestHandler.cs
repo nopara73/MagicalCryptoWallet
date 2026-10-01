@@ -99,6 +99,10 @@ public class JsonRpcRequestHandler<TService>
 
 			if (jsonRpcRequest.Parameters is JArray jArray)
 			{
+				if (jArray.Count > methodParameters.Count)
+				{
+					return Error(JsonRpcErrorCodes.InvalidParams, "Too many parameters were supplied.", jsonRpcRequest.Id);
+				}
 				var count = methodParameters.Count < jArray.Count ? methodParameters.Count : jArray.Count;
 				for (int i = 0; i < count; i++)
 				{
@@ -110,6 +114,10 @@ public class JsonRpcRequestHandler<TService>
 			}
 			else if (jsonRpcRequest.Parameters is JObject jObj)
 			{
+				if (jObj.Properties().Any(property => methodParameters.All(parameter => parameter.name != property.Name)))
+				{
+					return Error(JsonRpcErrorCodes.InvalidParams, "An unknown parameter was supplied.", jsonRpcRequest.Id);
+				}
 				for (int i = 0; i < methodParameters.Count; i++)
 				{
 					var parameter = methodParameters[i];
@@ -159,7 +167,7 @@ public class JsonRpcRequestHandler<TService>
 			var missingParameters = methodParameters.Count - parameters.Count;
 			parameters.AddRange(methodParameters.TakeLast(missingParameters).Select(x => x.defaultValue));
 
-			if (procedureMetadata.RequiresInitialization && _metadataProvider.TryGetInitializer(out var initializer))
+			if (_metadataProvider.TryGetInitializer(out var initializer))
 			{
 				initializer.Invoke(_service, new object[] { path, procedureMetadata.RequiresInitialization });
 			}

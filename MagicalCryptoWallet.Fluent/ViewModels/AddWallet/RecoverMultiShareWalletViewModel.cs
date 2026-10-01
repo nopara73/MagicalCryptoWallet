@@ -162,8 +162,6 @@ public partial class RecoverMultiShareWalletViewModel : RoutableViewModel
 				if (filterMinHeight is { } minHeight && BirthHeight < minHeight)
 				{
 					UiContext.WalletRepository.SaveWallet(walletSettings);
-
-					UiContext.Services.SetLastSelectedWallet(walletName);
 					UiContext.Services.UiConfig.ToFile();
 
 					await ShowErrorAsync(

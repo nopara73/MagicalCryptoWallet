@@ -17,20 +17,23 @@ module Config =
   }""">
 
 
-  let getConfig () = Config.Load(
-    Path.Combine (
-      Environment.ExpandEnvironmentVariables ("%HOME%/.magicalcryptowallet/client/"),
-      "Config.json"))
+  let getConfig () =
+    let dataDir =
+      match Environment.GetEnvironmentVariable "MAGICALCRYPTOWALLET_DATADIR" with
+      | null | "" ->
+        if OperatingSystem.IsWindows() then
+          Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "MagicalCryptoWallet", "Client")
+        else
+          Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".magicalcryptowallet", "client")
+      | path -> path
+    Config.Load(Path.Combine(dataDir, "Config.json"))
 
 module Rpc =
   open System.Net.Http
 
   let config =  Config.getConfig ()
   let http = new HttpClient()
-  let makeRpcRequestAsync (walletName: string) (methodName: string) = async {
-    let content = new StringContent ($"{{\"jsonrpc\":\"2.0\", \"id\":\"id\", \"method\":\"selectwallet\", \"params\":[\"{walletName}\"]}}")
-    let! response = http.PostAsync(config.JsonRpcServerPrefixes[0], content) |> Async.AwaitTask
-
+  let makeRpcRequestAsync (methodName: string) = async {
     let content = new StringContent ($"{{\"jsonrpc\":\"2.0\", \"id\":\"id\", \"method\":\"{methodName}\"}}")
     let! response = http.PostAsync(config.JsonRpcServerPrefixes[0], content) |> Async.AwaitTask
     let! jsonResult = response.Content.ReadAsStringAsync() |> Async.AwaitTask
@@ -51,15 +54,15 @@ module Rpc =
     ]
   }""">
 
-  let getListOfKeys (walletName: string) =
-    makeRpcRequestAsync walletName "listkeys"
+  let getListOfKeys () =
+    makeRpcRequestAsync "listkeys"
     |> Async.RunSynchronously 
     |> ListKeysRpcResponse.Parse
     |> fun x -> x.Result
 
-  let getListOfCoins (walletName: string) =
-    makeRpcRequestAsync walletName "listcoins"
+  let getListOfCoins () =
+    makeRpcRequestAsync "listcoins"
     |> Async.RunSynchronously 
     |> ListCoinsRpcResponse.Parse
     |> fun x -> x.Result
-    
+

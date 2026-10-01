@@ -4,7 +4,7 @@
 # Starts coinjoin and monitors payments, adapting to new/cancelled payments
 
 function config_extract() {
-  jq -r "$1" ~/.magicalcryptowallet/client/Config.json
+  jq -r "$1" "${MAGICALCRYPTOWALLET_DATADIR:-$HOME/.magicalcryptowallet/client}/Config.json"
 }
 
 RPC_CREDENTIALS=$(config_extract '.JsonRpcUser + ":" + .JsonRpcPassword')
@@ -19,38 +19,19 @@ if [ -z "$status" ]; then
     exit 1
 fi
 
-# Get wallet list
-wallets=$(curl -s $BASIC_AUTH -d '{"jsonrpc":"2.0","id":"1","method":"listwallets"}' "$RPC_ENDPOINT" | jq -r '.result')
-wallet_count=$(echo "$wallets" | jq 'length')
-
-if [ "$wallet_count" -eq 0 ]; then
-    echo "No wallets found."
+# Use the one configured wallet.
+info=$(curl -s $BASIC_AUTH -d '{"jsonrpc":"2.0","id":"1","method":"getwalletinfo"}' "$RPC_ENDPOINT")
+info_error=$(echo "$info" | jq -r '.error.message // empty')
+if [ -n "$info_error" ]; then
+    echo "Error: $info_error"
     exit 1
 fi
-
-# Select wallet
-echo "Wallets:"
-echo ""
-for i in $(seq 0 $((wallet_count - 1))); do
-    num=$((i + 1))
-    name=$(echo "$wallets" | jq -r ".[$i].walletName")
-    echo "  [$num] $name"
-done
-echo ""
-read -p "Select wallet: " wallet_choice
-
-idx=$((wallet_choice - 1))
-if [ "$idx" -lt 0 ] || [ "$idx" -ge "$wallet_count" ]; then
-    echo "Invalid selection."
-    exit 1
-fi
-
-WALLET=$(echo "$wallets" | jq -r ".[$idx].walletName")
+WALLET=$(echo "$info" | jq -r '.result.walletName')
 
 # Load wallet if not already loaded
 echo ""
 echo "Loading wallet $WALLET (this may take a moment)..."
-load_result=$(curl -s $BASIC_AUTH -d '{"jsonrpc":"2.0","id":"1","method":"loadwallet","params":["'"$WALLET"'"]}' "$RPC_ENDPOINT")
+load_result=$(curl -s $BASIC_AUTH -d '{"jsonrpc":"2.0","id":"1","method":"loadwallet","params":[]}' "$RPC_ENDPOINT")
 load_error=$(echo "$load_result" | jq -r '.error.message // empty')
 
 if [ -n "$load_error" ] && [[ "$load_error" != *"already"* ]]; then
@@ -63,14 +44,14 @@ echo "Wallet ready."
 cleanup() {
     echo ""
     echo "Stopping coinjoin..."
-    curl -s $BASIC_AUTH -d '{"jsonrpc":"2.0","id":"1","method":"stopcoinjoin"}' "$RPC_ENDPOINT/$WALLET" > /dev/null
+    curl -s $BASIC_AUTH -d '{"jsonrpc":"2.0","id":"1","method":"stopcoinjoin"}' "$RPC_ENDPOINT" > /dev/null
     echo "CoinJoin stopped."
     exit 0
 }
 trap cleanup SIGINT
 
 get_pending() {
-    curl -s $BASIC_AUTH -d '{"jsonrpc":"2.0","id":"1","method":"listpaymentsincoinjoin"}' "$RPC_ENDPOINT/$WALLET" \
+    curl -s $BASIC_AUTH -d '{"jsonrpc":"2.0","id":"1","method":"listpaymentsincoinjoin"}' "$RPC_ENDPOINT" \
         | jq '[.result[] | select(.state[0].status == "Pending")] | sort_by(.address)'
 }
 
@@ -103,7 +84,7 @@ fi
 
 # Start coinjoin
 echo ""
-curl -s $BASIC_AUTH -d '{"jsonrpc":"2.0","id":"1","method":"startcoinjoin","params":["",false,true]}' "$RPC_ENDPOINT/$WALLET" > /dev/null
+curl -s $BASIC_AUTH -d '{"jsonrpc":"2.0","id":"1","method":"startcoinjoin","params":["",false,true]}' "$RPC_ENDPOINT" > /dev/null
 echo "=== CoinJoin started ==="
 echo ""
 
@@ -161,5 +142,5 @@ done
 echo ""
 echo "=== All payments done ==="
 
-curl -s $BASIC_AUTH -d '{"jsonrpc":"2.0","id":"1","method":"stopcoinjoin"}' "$RPC_ENDPOINT/$WALLET" > /dev/null
+curl -s $BASIC_AUTH -d '{"jsonrpc":"2.0","id":"1","method":"stopcoinjoin"}' "$RPC_ENDPOINT" > /dev/null
 echo "CoinJoin stopped"

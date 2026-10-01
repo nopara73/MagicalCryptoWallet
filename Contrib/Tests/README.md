@@ -9,8 +9,8 @@ The script performs the following operations:
 1. Starts a Bitcoin Core node in regtest mode
 2. Generates initial blocks to create spendable coins
 3. Starts a MagicalCryptoWallet Coordinator
-4. Starts a Magical Crypto Wallet client daemon
-5. Creates multiple wallets and funds them
+4. Starts five independent Magical Crypto Wallet daemons, with separate data directories and RPC ports
+5. Creates and funds one wallet in each daemon
 6. Initiates CoinJoin operations across all wallets
 7. Monitors the coordinator logs for successful CoinJoin completion
 
@@ -25,8 +25,8 @@ The script uses the following default configuration (editable at the top of the 
 - `BITCOIN_RPC_PORT` - `18443` - Bitcoin RPC port
 - `BITCOIN_P2P_PORT` - `18444` - Bitcoin P2P port
 - `COORDINATOR_PORT` - `38126` - MagicalCryptoWallet Coordinator port
-- `MAGICALCRYPTOWALLET_WALLET_RPC_PORT` - `38128` - Magical Crypto Wallet RPC port
-- `NUM_WALLETS` - `5` - Number of wallets to create
+- `MAGICALCRYPTOWALLET_WALLET_RPC_PORT` - `38128` - First client RPC port; the next clients use consecutive ports
+- `NUM_CLIENTS` - `5` - Number of independent single-wallet clients
 - `ADDRESSES_PER_WALLET` - `4` - Addresses per wallet to fund
 - `TEST_TIMEOUT` - `600` - Timeout in seconds (10 minutes)
 

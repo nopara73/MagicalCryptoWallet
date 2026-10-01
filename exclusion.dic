@@ -146,9 +146,7 @@ getstatus
 gethistory
 listkeys
 startcoinjoin
-startcoinjoinsweep
 stopcoinjoin
-selectwallet
 Userfacing
 serializer
 regtest

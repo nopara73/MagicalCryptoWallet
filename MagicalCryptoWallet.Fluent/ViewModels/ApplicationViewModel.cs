@@ -105,6 +105,6 @@ public partial class ApplicationViewModel : ViewModelBase, ICanShutdownProvider
 		// - no open dialog
 		// - or no wallets available
 		return !MainViewModel.IsDialogOpen()
-			   || !MainViewModel.NavBar.Wallets.Any();
+			   || MainViewModel.NavBar.Wallet is null;
 	}
 }

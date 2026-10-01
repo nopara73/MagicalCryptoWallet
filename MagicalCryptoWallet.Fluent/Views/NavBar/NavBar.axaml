@@ -90,17 +90,6 @@
       <Setter Property="Fill" Value="{DynamicResource CoinjoinActiveColor}" />
     </Style>
 
-    <Style Selector="ListBoxItem">
-      <Setter Property="Padding" Value="0"/>
-      <Setter Property="ClipToBounds" Value="False"/>
-    </Style>
-    <Style Selector="ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter">
-      <Setter Property="Background" Value="Transparent"/>
-    </Style>
-    <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-      <Setter Property="Background" Value="Transparent" />
-    </Style>
-
     <!-- Selected State -->
     <Style Selector="NavBarItem.selected /template/ Border#SelectionBackground">
       <Setter Property="Opacity" Value="0.1" />
@@ -145,45 +134,32 @@
     <!-- Separator -->
     <Separator DockPanel.Dock="Bottom" />
 
-    <!-- Wallet List -->
-    <DockPanel MaxWidth="75" LastChildFill="True">
-      <ListBox ItemsSource="{Binding Wallets}"
-               SelectedItem="{Binding SelectedWallet}"
-               Background="Transparent"
-               SelectingItemsControlBehavior.EnableSelectionAnimation="True">
-        <Interaction.Behaviors>
-          <ListBoxReselectingBehavior />
-        </Interaction.Behaviors>
-        <ListBox.ItemsPanel>
-          <ItemsPanelTemplate>
-            <StackPanel />
-          </ItemsPanelTemplate>
-        </ListBox.ItemsPanel>
-        <ListBox.DataTemplates>
-          <DataTemplate DataType="vmw:WalletPageViewModel">
-            <NavBarItem Classes.selected="{Binding IsSelected}">
-              <ToolTip.Tip>
-                <StackPanel>
-                  <TextBlock Text="{Binding Title}" />
-                </StackPanel>
-              </ToolTip.Tip>
-              <Panel>
-                <Ellipse Classes="loadingindicator"
-                         Classes.isLoading="{Binding IsLoading}"
-                         Classes.isLoggedIn="{Binding IsLoggedIn}"
-                         Classes.isCoinjoining="{Binding WalletViewModel.IsCoinJoining}" />
-                <StackPanel VerticalAlignment="Center" Spacing="2">
-                  <PathIcon Classes="new size24 wallet"
-                            Classes.isfocused="{Binding $parent[ListBoxItem].IsSelected}" />
-                  <LayoutTransformControl>
-                    <FadeOutTextControl Text="{Binding Title}" HorizontalAlignment="Center" FontSize="{StaticResource FontSizeH9}" />
-                  </LayoutTransformControl>
-                </StackPanel>
-              </Panel>
-            </NavBarItem>
-          </DataTemplate>
-        </ListBox.DataTemplates>
-      </ListBox>
-    </DockPanel>
+    <!-- The application has one wallet, with a home button instead of a selector. -->
+    <ContentControl Content="{Binding Wallet}" HorizontalContentAlignment="Center"
+                    VerticalContentAlignment="Top">
+      <ContentControl.DataTemplates>
+        <DataTemplate DataType="vmw:WalletPageViewModel" x:DataType="vmw:WalletPageViewModel">
+          <NavBarItem Command="{Binding OpenCommand}"
+                      Focusable="True"
+                      Classes.selected="{Binding IsSelected}"
+                      ToolTip.Tip="{Binding Title}"
+                      AutomationProperties.Name="{Binding Title}">
+            <Panel>
+              <Ellipse Classes="loadingindicator"
+                       Classes.isLoading="{Binding IsLoading}"
+                       Classes.isLoggedIn="{Binding IsLoggedIn}"
+                       Classes.isCoinjoining="{Binding WalletViewModel.IsCoinJoining}" />
+              <StackPanel VerticalAlignment="Center" Spacing="2">
+                <PathIcon Classes="new size24 wallet" Classes.isfocused="{Binding IsSelected}" />
+                <LayoutTransformControl>
+                  <FadeOutTextControl Text="{Binding Title}" HorizontalAlignment="Center"
+                                      FontSize="{StaticResource FontSizeH9}" />
+                </LayoutTransformControl>
+              </StackPanel>
+            </Panel>
+          </NavBarItem>
+        </DataTemplate>
+      </ContentControl.DataTemplates>
+    </ContentControl>
   </DockPanel>
 </UserControl>

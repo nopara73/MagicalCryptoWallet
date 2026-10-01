@@ -25,6 +25,10 @@ public class Config
 
 	public Config(PersistentConfig persistentConfig, string[] cliArgs)
 	{
+		if (ArgumentHelpers.GetValues("wallet", cliArgs).Length != 0)
+		{
+			throw new ArgumentException("Wallet selection is no longer supported. The configured wallet opens automatically.", nameof(cliArgs));
+		}
 		PersistentConfig = persistentConfig;
 		CliArgs = cliArgs;
 

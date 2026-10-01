@@ -57,7 +57,7 @@ public class Scheme
 		RegisterNativeFunction<object>("native->string", o => o?.ToString() ?? "");
 		RegisterNativeFunction<Script>("script->address", s => s.GetDestinationAddress(global.Network)!);
 		RegisterNativeFunction<ExtPubKey?>("extpubkey->string", e => e?.ToString(global.Network) ?? "");
-		RegisterNativeFunction("wallets", () => global.WalletManager.GetWallets());
+		RegisterNativeFunction("wallet", () => global.WalletManager.GetWallet() ?? throw new InvalidOperationException("No wallet is configured."));
 		RegisterNativeFunction<Wallet>("wallet-coins", w => w.Coins.AsAllCoinsView());
 
 		RegisterNativeFunction<Wallet>("wallet-hdpubkeys", w => w.KeyManager.GetKeys());

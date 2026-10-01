@@ -12,22 +12,23 @@ namespace MagicalCryptoWallet.Fluent.ViewModels.Wallets.Notifications;
 [AppLifetime]
 public partial class WalletNotificationsViewModel : ViewModelBase
 {
-	private readonly IWalletSelector _walletSelector;
+	private readonly IWalletNavigation _walletNavigation;
 	[AutoNotify] private bool _isBusy;
 
-	public WalletNotificationsViewModel(UiContext uiContext, IWalletSelector walletSelector) : base(uiContext)
+	public WalletNotificationsViewModel(UiContext uiContext, IWalletNavigation walletNavigation) : base(uiContext)
 	{
-		_walletSelector = walletSelector;
+		_walletNavigation = walletNavigation;
 	}
 
 	public void StartListening()
 	{
-		UiContext.WalletRepository.Wallets
-			.Connect()
-			.AutoRefresh(x => x.IsLoggedIn)
-			.Filter(x => x.IsLoggedIn)
-			.FilterOnObservable(x => x.Loaded.Select(s => s))
-			.MergeMany(x => x.Transactions.NewTransactionArrived)
+		UiContext.WalletRepository.WhenAnyValue(x => x.Wallet)
+			.WhereNotNull()
+			.Select(wallet => wallet.WhenAnyValue(x => x.IsLoggedIn)
+				.CombineLatest(wallet.Loaded, (loggedIn, loaded) => loggedIn && loaded)
+				.Select(ready => wallet.Transactions.NewTransactionArrived.Where(_ => ready))
+				.Switch())
+			.Switch()
 			.Where(x => !UiContext.ApplicationSettings.PrivacyMode)
 			.Where(x => x.EventArgs.IsNews)
 			.DoAsync(x => OnNotificationReceivedAsync(x.Wallet, x.EventArgs))
@@ -45,17 +46,17 @@ public partial class WalletNotificationsViewModel : ViewModelBase
 					return;
 				}
 
-				var wvm = _walletSelector.To(wallet);
+				var wvm = _walletNavigation.To(wallet);
 				wvm?.SelectTransaction(e.Transaction.GetHash());
 			}
 
 			NotificationHelpers.Show(wallet, e, OnClick);
 		}
 
-		if (_walletSelector.SelectedWalletModel == wallet && (e.NewlyReceivedCoins.Count != 0 || e.NewlyConfirmedReceivedCoins.Count != 0))
+		if (_walletNavigation.WalletModel == wallet && (e.NewlyReceivedCoins.Count != 0 || e.NewlyConfirmedReceivedCoins.Count != 0))
 		{
 			await Task.Delay(200);
-			_walletSelector.SelectedWallet?.SelectTransaction(e.Transaction.GetHash());
+			_walletNavigation.Wallet?.SelectTransaction(e.Transaction.GetHash());
 		}
 	}
 }

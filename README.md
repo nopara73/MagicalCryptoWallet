@@ -9,7 +9,7 @@ A privacy-focused, open-source, non-custodial Bitcoin wallet for Windows, Linux,
 
 The original Chinese password box and **Lurking Wife Mode** are back. Use the eye toggle in the sidebar to hide balances, addresses, labels, and transaction details; hover briefly to reveal a hidden item.
 
-This project has its own application storage, installers, update keys, and releases. It starts with fresh data. Import an existing wallet file explicitly through **Add Wallet → Import Wallet**; never copy another application's complete data directory.
+This project has its own application storage, installers, update keys, and releases. It starts with fresh data and manages [one wallet](MagicalCryptoWallet.Documentation/SingleWallet.md). Import an existing wallet file through **Set Up Wallet → Import a wallet** during initial setup; never copy another application's complete data directory.
 
 - [Downloads](https://github.com/nopara73/MagicalCryptoWallet/releases)
 - [Build, installation, configuration, and wallet import](MagicalCryptoWallet.Documentation/README.md)

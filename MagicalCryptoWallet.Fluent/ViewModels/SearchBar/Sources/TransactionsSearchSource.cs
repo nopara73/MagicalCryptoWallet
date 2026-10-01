@@ -57,16 +57,7 @@ public class TransactionsSearchSource : ReactiveObject, ISearchSource, IDisposab
 
 	private Task NavigateTo(WalletViewModel wallet, HistoryItemViewModelBase item)
 	{
-		var walletPageViewModel = _navBarViewModel.Wallets.FirstOrDefault(x => x.WalletViewModel == wallet);
-		if (walletPageViewModel == _navBarViewModel.SelectedWallet)
-		{
-			wallet.SelectTransaction(item.Transaction.Id);
-		}
-		else
-		{
-			_navBarViewModel.SelectedWallet = walletPageViewModel;
-			wallet.NavigateAndHighlight(item.Transaction.Id);
-		}
+		wallet.NavigateAndHighlight(item.Transaction.Id);
 
 		return Task.CompletedTask;
 	}
@@ -82,11 +73,6 @@ public class TransactionsSearchSource : ReactiveObject, ISearchSource, IDisposab
 		};
 	}
 
-	private static IEnumerable<(WalletViewModel, HistoryItemViewModelBase)> Flatten(IEnumerable<(WalletViewModel Wallet, IEnumerable<HistoryItemViewModelBase> Transactions)> walletTransactions)
-	{
-		return walletTransactions.SelectMany(t => t.Transactions.Select(item => (t.Wallet, HistoryItem: item)));
-	}
-
 	private ISearchItem ToSearchItem(WalletViewModel wallet, HistoryItemViewModelBase item)
 	{
 		return new ActionableItem(
@@ -100,17 +86,15 @@ public class TransactionsSearchSource : ReactiveObject, ISearchSource, IDisposab
 		};
 	}
 
-	private IEnumerable<(WalletViewModel Wallet, IEnumerable<HistoryItemViewModelBase> Transactions)> GetTransactionsByWallet()
+	private IEnumerable<(WalletViewModel Wallet, HistoryItemViewModelBase Transaction)> GetTransactions()
 	{
-		// TODO: This is a workaround to get all the transactions from currently loaded wallets. REMOVE after UIDecoupling #26
-
-		return _navBarViewModel.Wallets
-			.Where(x => x is {IsLoggedIn: true, Wallet.Loaded: true})
-			.Select(x => x.WalletViewModel)
-			.WhereNotNull()
-			.Select(
-				x => (Wallet: x,
-					x.History.Transactions.Concat(x.History.Transactions.OfType<CoinJoinsHistoryItemViewModel>().SelectMany(y => y.Children))));
+		if (_navBarViewModel.Wallet is { IsLoggedIn: true, Wallet.Loaded: true, WalletViewModel: { } wallet })
+		{
+			foreach (var transaction in wallet.History.Transactions.Concat(wallet.History.Transactions.OfType<CoinJoinsHistoryItemViewModel>().SelectMany(x => x.Children)))
+			{
+				yield return (wallet, transaction);
+			}
+		}
 	}
 
 	private IEnumerable<ISearchItem> Search(string query)
@@ -122,7 +106,7 @@ public class TransactionsSearchSource : ReactiveObject, ISearchSource, IDisposab
 
 	private IEnumerable<(WalletViewModel, HistoryItemViewModelBase)> Filter(string queryStr)
 	{
-		return Flatten(GetTransactionsByWallet())
+		return GetTransactions()
 		.Where(tuple => TryParseBitcoinAddress(tuple.Item1.WalletModel.Network, queryStr, out var address) ?
 			ContainsDestinationAddress(tuple.Item1, tuple.Item2, address) :
 			ContainsId(tuple.Item2, queryStr));

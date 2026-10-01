@@ -34,7 +34,7 @@ public partial class SendSuccessViewModel : RoutableViewModel
 		var mainViewModel = UiContext.MainViewModel
 			?? throw new InvalidOperationException("MainViewModel is not initialized.");
 
-		mainViewModel.NavBar.SelectedWallet?.WalletViewModel?.SelectTransaction(_finalTransaction.GetHash());
+		mainViewModel.NavBar.Wallet?.WalletViewModel?.SelectTransaction(_finalTransaction.GetHash());
 	}
 
 	protected override void OnNavigatedTo(bool isInHistory, CompositeDisposable disposables)

@@ -1,6 +1,7 @@
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
+using System.Windows.Input;
 using MagicalCryptoWallet.Fluent.Infrastructure;
 using MagicalCryptoWallet.Fluent.Models.Wallets;
 using MagicalCryptoWallet.Fluent.ViewModels.Login;
@@ -29,7 +30,15 @@ public partial class WalletPageViewModel : ViewModelBase, IDisposable
 
 		// TODO: Finish partial refactor
 		// Wallet property must be removed
-		Wallet = UiContext.Services.GetWalletByName(walletModel.Name);
+		Wallet = UiContext.Services.GetWallet();
+		OpenCommand = ReactiveCommand.Create(() =>
+		{
+			IsSelected = true;
+			if (CurrentPage is { } page)
+			{
+				UiContext.Navigate().To(page, NavigationTarget.HomeScreen, NavigationMode.Clear);
+			}
+		});
 
 		// Show Login Page when wallet is not logged in
 		this.WhenAnyValue(x => x.IsLoggedIn)
@@ -78,6 +87,7 @@ public partial class WalletPageViewModel : ViewModelBase, IDisposable
 	public IWalletModel WalletModel { get; }
 
 	public Wallet Wallet { get; }
+	public ICommand OpenCommand { get; }
 
 	private void ShowLogin()
 	{

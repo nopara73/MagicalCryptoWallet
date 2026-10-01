@@ -11,7 +11,7 @@ namespace MagicalCryptoWallet.Helpers;
 
 public static class HardwareWalletOperationHelpers
 {
-	public static async Task<KeyManager> GenerateWalletAsync(HwiEnumerateEntry device, string walletFilePath, Network network, CancellationToken cancelToken)
+	public static async Task<KeyManager> GenerateWalletAsync(HwiEnumerateEntry device, string walletFilePath, Network network, CancellationToken cancelToken, bool toFile = true)
 	{
 		if (device.Fingerprint is null)
 		{
@@ -30,7 +30,9 @@ public static class HardwareWalletOperationHelpers
 			KeyManager.GetAccountKeyPath(network, ScriptPubKeyType.Segwit),
 			genCts.Token).ConfigureAwait(false);
 
-		return KeyManager.CreateNewHardwareWalletWatchOnly(fingerPrint, segwitExtPubKey, null, null, null, network, walletFilePath);
+		var keyManager = KeyManager.CreateNewHardwareWalletWatchOnly(fingerPrint, segwitExtPubKey, null, null, null, network, toFile ? walletFilePath : null);
+		keyManager.SetFilePath(walletFilePath);
+		return keyManager;
 	}
 
 	public static async Task InitHardwareWalletAsync(HwiEnumerateEntry device, Network network, CancellationToken cancelToken)

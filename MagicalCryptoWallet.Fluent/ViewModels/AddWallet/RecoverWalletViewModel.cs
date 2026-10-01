@@ -83,8 +83,6 @@ public partial class RecoverWalletViewModel : RoutableViewModel
 			{
 				// Save the wallet so its birth height is picked up by CalculateSafestHeight on restart.
 				UiContext.WalletRepository.SaveWallet(walletSettings);
-
-				UiContext.Services.SetLastSelectedWallet(walletName);
 				UiContext.Services.UiConfig.ToFile();
 
 				await ShowErrorAsync(

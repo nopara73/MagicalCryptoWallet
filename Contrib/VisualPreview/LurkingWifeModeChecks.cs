@@ -1,6 +1,7 @@
 using System.Reflection;
 using System.Diagnostics;
 using System.Reactive.Linq;
+using System.Reactive.Disposables;
 using System.Runtime.CompilerServices;
 using Avalonia;
 using Avalonia.Automation.Peers;
@@ -12,7 +13,6 @@ using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
-using DynamicData;
 using ReactiveUI;
 using MagicalCryptoWallet.Wallets;
 using MagicalCryptoWallet.Fluent;
@@ -35,8 +35,6 @@ internal static class LurkingWifeModeChecks
 		SetBackingField(services, nameof(Services.UiConfig), _config);
 		typeof(Services).GetProperty(nameof(Services.Instance))!.SetValue(null, services);
 		var repository = (WalletRepository)RuntimeHelpers.GetUninitializedObject(typeof(WalletRepository));
-		var emptyWallets = new SourceCache<IWalletModel, WalletId>(_ => throw new InvalidOperationException("No wallets are available in this preview."));
-		SetBackingField(repository, nameof(WalletRepository.Wallets), emptyWallets);
 		SetBackingField(context, nameof(UiContext.WalletRepository), repository);
 
 		foreach (bool initiallyEnabled in new[] { false, true })
@@ -118,7 +116,7 @@ internal static class LurkingWifeModeChecks
 			window.Close();
 		}
 		Console.WriteLine("Lurking Wife Mode checks passed: saved-state initialization, setting/icon synchronization, actual sidebar click, full label/tooltip/accessibility name, masking, delayed hover, automatic hiding and explicit reveal.");
-		return emptyWallets;
+		return Disposable.Empty;
 	}
 
 	public static Control CreatePreview(UiContext context, bool enabled)
@@ -142,7 +140,7 @@ internal static class LurkingWifeModeChecks
 		var settings = NewSettings(enabled);
 		settings.WhenAnyValue(x => x.PrivacyMode).Subscribe(value => _config.PrivacyMode = value);
 		var item = new NavBarItemViewModel(context, new LurkingWifeModeViewModel(context, settings));
-		// Render the actual sidebar template with one real toggle and an empty synthetic wallet list.
+		// Render the actual sidebar template with one real toggle and no configured wallet.
 		var model = new NavBarViewModel(context);
 		model.BottomItems.Add(item);
 		return (new NavBarView { DataContext = model }, item);

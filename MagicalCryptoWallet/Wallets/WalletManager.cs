@@ -1,8 +1,6 @@
 using NBitcoin;
 using Nito.AsyncEx;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MagicalCryptoWallet.Blockchain.Keys;
@@ -15,173 +13,169 @@ namespace MagicalCryptoWallet.Wallets;
 
 public class WalletManager
 {
-	/// <remarks>All access must be guarded by <see cref="_lock"/> object.</remarks>
-	private volatile bool _disposedValue = false;
+	private readonly Lock _lock = new();
+	private readonly AsyncLock _startStopWalletLock = new();
+	private readonly CancellationTokenSource _cancelTasks = new();
+	private readonly CancellationToken _cancelTasksToken;
+	private readonly WalletFactory _createWallet;
+	private Wallet? _wallet;
+	private bool _disposed;
 
-	public WalletManager(
-		Network network,
-		WalletDirectories walletDirectories,
-		WalletFactory createWallet)
+	public WalletManager(Network network, WalletDirectories walletDirectories, WalletFactory createWallet)
 	{
 		Network = network;
 		WalletDirectories = walletDirectories;
 		_createWallet = createWallet;
-		_cancelAllTasksToken = _cancelAllTasks.Token;
+		_cancelTasksToken = _cancelTasks.Token;
 
-		LoadWalletListFromFileSystem();
+		if (walletDirectories.GetConfiguredWalletName() is { } walletName)
+		{
+			// A missing or corrupt configured wallet must never silently open a different wallet.
+			var wallet = _createWallet(KeyManager.FromFile(walletDirectories.GetWalletFilePaths(walletName + ".json")));
+			try
+			{
+				walletDirectories.SetConfiguredWalletName(walletName);
+				_wallet = wallet;
+			}
+			catch
+			{
+				wallet.Dispose();
+				_cancelTasks.Dispose();
+				throw;
+			}
+		}
 	}
 
-	/// <summary>
-	/// Triggered if a wallet added to the Wallet collection. The sender of the event will be the WalletManager and the argument is the added Wallet.
-	/// </summary>
 	public event EventHandler<Wallet>? WalletAdded;
-
-	/// <summary>Cancels initialization of wallets.</summary>
-	private readonly CancellationTokenSource _cancelAllTasks = new();
-
-	/// <summary>Token from <see cref="_cancelAllTasks"/>.</summary>
-	/// <remarks>Accessing the token of <see cref="_cancelAllTasks"/> can lead to <see cref="ObjectDisposedException"/>. So we copy the token and no exception can be thrown.</remarks>
-	private readonly CancellationToken _cancelAllTasksToken;
-
-	/// <remarks>All access must be guarded by <see cref="_lock"/> object.</remarks>
-	private readonly HashSet<Wallet> _wallets = new();
-
-	private readonly Lock _lock = new();
-	private readonly AsyncLock _startStopWalletLock = new();
-
-	private readonly WalletFactory _createWallet;
 	public Network Network { get; }
 	public WalletDirectories WalletDirectories { get; }
 
-	private void LoadWalletListFromFileSystem()
+	public Wallet? GetWallet()
 	{
-		var walletFileNames = WalletDirectories.EnumerateWalletFiles().Select(fi => Path.GetFileNameWithoutExtension(fi.FullName));
-
-		string[]? walletNamesToLoad = null;
 		lock (_lock)
 		{
-			walletNamesToLoad = walletFileNames.Where(walletFileName => !_wallets.Any(wallet => wallet.WalletName == walletFileName)).ToArray();
+			return _wallet;
 		}
+	}
 
-		if (walletNamesToLoad.Length == 0)
+	public bool HasWallet() => GetWallet() is not null;
+
+	public void EnsureCanAddWallet()
+	{
+		lock (_lock)
 		{
-			return;
+			ObjectDisposedException.ThrowIf(_disposed, this);
+			if (_wallet is not null)
+			{
+				throw new InvalidOperationException("A wallet is already configured. Magical Crypto Wallet supports one wallet per data directory.");
+			}
 		}
+	}
 
-		List<Task<Wallet>> walletLoadTasks = walletNamesToLoad.Select(walletName => Task.Run(() => LoadWalletByNameFromDisk(walletName), _cancelAllTasksToken)).ToList();
-
-		while (walletLoadTasks.Count > 0)
+	public Wallet AddWallet(KeyManager keyManager)
+	{
+		Wallet wallet;
+		lock (_lock)
 		{
-			var tasksArray = walletLoadTasks.ToArray();
-			var finishedTaskIndex = Task.WaitAny(tasksArray, _cancelAllTasksToken);
-			var finishedTask = tasksArray[finishedTaskIndex];
-			walletLoadTasks.Remove(finishedTask);
+			// Reject extra wallets before constructing one or writing its keys, including concurrent RPC requests.
+			EnsureCanAddWallet();
+			var expectedPath = WalletDirectories.GetWalletFilePaths(keyManager.WalletName + ".json");
+			if (keyManager.FilePath is not { } filePath || !string.Equals(Path.GetFullPath(filePath), Path.GetFullPath(expectedPath), OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal))
+			{
+				throw new InvalidOperationException("The wallet file must be inside the application wallet directory.");
+			}
+			if (File.Exists(expectedPath))
+			{
+				throw new InvalidOperationException("A wallet file already exists at the requested path.");
+			}
+			wallet = _createWallet(keyManager);
 			try
 			{
-				var wallet = finishedTask.Result;
-				AddWallet(wallet);
+				keyManager.ToFile();
+				WalletDirectories.SetConfiguredWalletName(wallet.WalletName);
+				_wallet = wallet;
 			}
-			catch (Exception ex)
+			catch
 			{
-				Logger.LogWarning(ex);
+				wallet.Dispose();
+				throw;
 			}
 		}
+
+		WalletAdded?.Invoke(this, wallet);
+		return wallet;
 	}
 
 	public void RenameWallet(Wallet wallet, string newWalletName)
 	{
-		if (newWalletName == wallet.WalletName)
+		lock (_lock)
 		{
-			return;
+			AssertConfiguredWallet(wallet);
+			if (newWalletName == wallet.WalletName)
+			{
+				return;
+			}
+			if (ValidateWalletName(newWalletName) is { } error)
+			{
+				throw new InvalidOperationException($"Invalid name {newWalletName} - {error.Message}");
+			}
+
+			var oldPath = WalletDirectories.GetWalletFilePaths(wallet.WalletName + ".json");
+			var newPath = WalletDirectories.GetWalletFilePaths(newWalletName + ".json");
+			File.Move(oldPath, newPath);
+			try
+			{
+				WalletDirectories.SetConfiguredWalletName(newWalletName);
+			}
+			catch
+			{
+				File.Move(newPath, oldPath);
+				throw;
+			}
+			wallet.KeyManager.SetFilePath(newPath);
 		}
-
-		if (ValidateWalletName(newWalletName) is { } error)
-		{
-			Logger.LogWarning($"Invalid name '{newWalletName}' when attempting to rename '{error.Message}'");
-			throw new InvalidOperationException($"Invalid name {newWalletName} - {error.Message}");
-		}
-
-		var currentWalletFilePath = WalletDirectories.GetWalletFilePaths(wallet.WalletName);
-		var newWalletFilePath = WalletDirectories.GetWalletFilePaths(newWalletName);
-
-		Logger.LogInfo($"Renaming file {currentWalletFilePath} to {newWalletFilePath}");
-		File.Move(currentWalletFilePath, newWalletFilePath);
-
-		wallet.KeyManager.SetFilePath(newWalletFilePath);
 	}
 
 	public (ErrorSeverity Severity, string Message)? ValidateWalletName(string walletName)
 	{
-		string walletFilePath = Path.Combine(WalletDirectories.WalletsDir, $"{walletName}.json");
-
 		if (string.IsNullOrEmpty(walletName))
 		{
 			return (ErrorSeverity.Error, "The name cannot be empty");
 		}
-
 		if (walletName.IsTrimmable())
 		{
 			return (ErrorSeverity.Error, "Leading and trailing white spaces are not allowed!");
 		}
-
-		if (File.Exists(walletFilePath))
-		{
-			return (ErrorSeverity.Error, $"A wallet named {walletName} already exists. Please try a different name.");
-		}
-
 		if (!WalletGenerator.ValidateWalletName(walletName))
 		{
 			return (ErrorSeverity.Error, "Selected wallet name is not valid. Please try a different name.");
 		}
-
+		if (File.Exists(WalletDirectories.GetWalletFilePaths(walletName + ".json")))
+		{
+			return (ErrorSeverity.Error, $"A wallet named {walletName} already exists. Please try a different name.");
+		}
 		return null;
-	}
-
-	public Task<IEnumerable<Wallet>> GetWalletsAsync() => Task.FromResult<IEnumerable<Wallet>>(GetWallets());
-
-	public IEnumerable<Wallet> GetWallets()
-	{
-		lock (_lock)
-		{
-			return _wallets.ToList();
-		}
-	}
-
-	public bool HasWallet()
-	{
-		lock (_lock)
-		{
-			return _wallets.Count > 0;
-		}
 	}
 
 	public async Task<Wallet> StartWalletAsync(Wallet wallet)
 	{
-		lock (_lock)
+		using (await _startStopWalletLock.LockAsync(_cancelTasksToken).ConfigureAwait(false))
 		{
-			if (_disposedValue)
+			lock (_lock)
 			{
-				Logger.LogError("Object was already disposed.");
-				throw new OperationCanceledException("Object was already disposed.");
+				AssertConfiguredWallet(wallet);
+				_cancelTasksToken.ThrowIfCancellationRequested();
 			}
-
-			if (_cancelAllTasks.IsCancellationRequested)
+			if (wallet.Loaded)
 			{
-				throw new OperationCanceledException($"Stopped loading {wallet}, because cancel was requested.");
+				return wallet;
 			}
-
-			// Throw an exception if the wallet was not added to the WalletManager.
-			_ = _wallets.Single(x => x == wallet);
-		}
-
-		using (await _startStopWalletLock.LockAsync(_cancelAllTasks.Token).ConfigureAwait(false))
-		{
 			try
 			{
 				Logger.LogInfo(FormatLog("Starting wallet...", wallet));
-				await wallet.StartAsync(_cancelAllTasksToken).ConfigureAwait(false);
+				await wallet.StartAsync(_cancelTasksToken).ConfigureAwait(false);
+				_cancelTasksToken.ThrowIfCancellationRequested();
 				Logger.LogInfo(FormatLog("Wallet started.", wallet));
-				_cancelAllTasksToken.ThrowIfCancellationRequested();
 				return wallet;
 			}
 			catch
@@ -192,126 +186,61 @@ public class WalletManager
 		}
 	}
 
-	public Wallet AddWallet(KeyManager keyManager)
-	{
-		Wallet wallet =  _createWallet(keyManager);
-		AddWallet(wallet);
-		return wallet;
-	}
-
-	private Wallet LoadWalletByNameFromDisk(string walletName)
-	{
-		string walletFullPath = WalletDirectories.GetWalletFilePaths(walletName);
-		try
-		{
-			return _createWallet(KeyManager.FromFile(walletFullPath));
-		}
-		catch (Exception ex)
-		{
-			Logger.LogWarning($"Wallet got corrupted.\n" +
-				$"Wallet file path: {walletFullPath}\n" +
-				$"Exception: {ex}");
-
-			throw;
-		}
-	}
-
-	private void AddWallet(Wallet wallet)
+	public async Task RemoveAndStopAsync(CancellationToken cancel)
 	{
 		lock (_lock)
 		{
-			if (_wallets.Any(w => w.WalletId == wallet.WalletId))
-			{
-				throw new InvalidOperationException($"Wallet with the same name was already added: {wallet.WalletName}.");
-			}
-			_wallets.Add(wallet);
-		}
-
-		if (!File.Exists(WalletDirectories.GetWalletFilePaths(wallet.WalletName)))
-		{
-			wallet.KeyManager.ToFile();
-		}
-
-		WalletAdded?.Invoke(this, wallet);
-	}
-
-	public bool WalletExists(HDFingerprint? fingerprint) => GetWallets().Any(x => fingerprint is { } && x.KeyManager.MasterFingerprint == fingerprint);
-
-	public async Task RemoveAndStopAllAsync(CancellationToken cancel)
-	{
-		lock (_lock)
-		{
-			// Already disposed.
-			if (_disposedValue)
+			if (_disposed)
 			{
 				return;
 			}
-
-			_disposedValue = true;
+			_disposed = true;
 		}
-
-		_cancelAllTasks.Cancel();
-
+		_cancelTasks.Cancel();
 		using (await _startStopWalletLock.LockAsync(cancel).ConfigureAwait(false))
 		{
-			foreach (var wallet in GetWallets())
+			Wallet? wallet;
+			lock (_lock)
 			{
-				cancel.ThrowIfCancellationRequested();
-
-				lock (_lock)
-				{
-					if (!_wallets.Remove(wallet))
-					{
-						throw new InvalidOperationException("Wallet service doesn't exist.");
-					}
-				}
-
+				wallet = _wallet;
+				_wallet = null;
+			}
+			if (wallet is not null)
+			{
 				try
 				{
 					if (wallet.Loaded)
 					{
 						await wallet.StopAsync(cancel).ConfigureAwait(false);
-						Logger.LogInfo(FormatLog("is stopped.", wallet));
+						Logger.LogInfo(FormatLog("Wallet stopped.", wallet));
 					}
-
-					wallet.Dispose();
 				}
-				catch (Exception ex)
+				finally
 				{
-					Logger.LogError(FormatLog(ex.ToString(), wallet));
+					wallet.Dispose();
 				}
 			}
 		}
-
-		_cancelAllTasks.Dispose();
+		_cancelTasks.Dispose();
 	}
 
 	public void SetMaxBestHeight(uint bestHeight)
 	{
-		foreach (var km in GetWallets().Select(x => x.KeyManager).Where(x => x.GetNetwork() == Network))
+		if (GetWallet() is { } wallet && wallet.KeyManager.GetNetwork() == Network)
 		{
-			km.SetMaxBestHeight(bestHeight);
+			wallet.KeyManager.SetMaxBestHeight(bestHeight);
 		}
 	}
 
-	public ChainHeight? GetEarliestBirthHeight() =>
-		GetWallets()
-			.Where(w => w.KeyManager.GetNetwork() == Network)
-			.Select(w => w.KeyManager.GetBirthHeight())
-			.Where(b => b is not null && b > 0)
-			.MinBy(b => b);
+	public ChainHeight? GetBirthHeight() => GetWallet() is { } wallet && wallet.KeyManager.GetNetwork() == Network && wallet.KeyManager.GetBirthHeight() is { } height && height > 0 ? height : null;
+	public ChainHeight? GetBestHeight() => GetWallet() is { } wallet && wallet.KeyManager.GetNetwork() == Network ? wallet.KeyManager.GetBestHeight() : null;
 
-	public ChainHeight? GetWorstBestHeight() =>
-		GetWallets()
-			.Where(w => w.KeyManager.GetNetwork() == Network)
-			.Select(w => w.KeyManager.GetBestHeight())
-			.MinBy(b => b);
-
-	public Wallet GetWalletByName(string walletName)
+	private void AssertConfiguredWallet(Wallet wallet)
 	{
-		lock (_lock)
+		ObjectDisposedException.ThrowIf(_disposed, this);
+		if (!ReferenceEquals(_wallet, wallet))
 		{
-			return _wallets.Single(x => x.KeyManager.WalletName == walletName);
+			throw new InvalidOperationException("This is not the configured wallet.");
 		}
 	}
 }

@@ -96,13 +96,12 @@ public class Services : IServices
 
 	// WalletManager info
 	public Network GetNetwork() => WalletManager.Network;
-	public IEnumerable<Wallet> GetWallets() => WalletManager.GetWallets();
+	public Wallet GetWallet() => WalletManager.GetWallet() ?? throw new InvalidOperationException("No wallet is configured.");
 	public bool HasWallet() => WalletManager.HasWallet();
-	public Wallet GetWalletByName(string walletName) => WalletManager.GetWalletByName(walletName);
 	public void RenameWallet(Wallet wallet, string newWalletName) => WalletManager.RenameWallet(wallet, newWalletName);
 	public string GetWalletsDir() => WalletManager.WalletDirectories.WalletsDir;
 	public string GetNextWalletName(string prefix) => WalletManager.WalletDirectories.GetNextWalletName(prefix);
-	public string GetWalletFilePath(string walletName) => WalletManager.WalletDirectories.GetWalletFilePaths(walletName);
+	public string GetWalletFilePath(string walletName) => WalletManager.WalletDirectories.GetWalletFilePaths(walletName + ".json");
 	public (ErrorSeverity Severity, string Message)? ValidateWalletName(string walletName) => WalletManager.ValidateWalletName(walletName);
 	public Task StartWalletAsync(Wallet wallet) => WalletManager.StartWalletAsync(wallet);
 	public void AddWallet(KeyManager keyManager) => WalletManager.AddWallet(keyManager);
@@ -120,8 +119,6 @@ public class Services : IServices
 	public double? GetWindowHeight() => UiConfig.WindowHeight;
 	public void SetWindowWidth(double? width) => UiConfig.WindowWidth = width;
 	public void SetWindowHeight(double? height) => UiConfig.WindowHeight = height;
-	public string? GetLastSelectedWallet() => UiConfig.LastSelectedWallet;
-	public void SetLastSelectedWallet(string? walletName) => UiConfig.LastSelectedWallet = walletName;
 	public bool GetPrivacyMode() => UiConfig.PrivacyMode;
 	public bool GetAutocopy() => UiConfig.Autocopy;
 	public bool GetAutoPaste() => UiConfig.AutoPaste;

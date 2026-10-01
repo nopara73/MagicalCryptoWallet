@@ -176,12 +176,6 @@ public static class MagicalCryptoWalletLibGenerator
 		         (let ((hi (string->number (native->string native-height))))
 		           (or hi (native->string native-height))))
 
-		       (define (get-wallet-by-name name)
-		         (find (lambda (w) (string=? name (wallet-name w))) (wallets)))
-
-		       (define (get-opened-wallets)
-		         (filter wallet-loaded? (wallets)))
-
 		       ;; Sum amounts from a list of coins
 		       (define (sum-amounts coins)
 		         (foldl + 0 (map coin-amount coins)))

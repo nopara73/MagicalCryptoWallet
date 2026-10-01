@@ -11,11 +11,11 @@ public static class LabelHelpers
 	{
 		var labelPool = new Dictionary<string, int>(); // int: score.
 
-		var labelsByWalletId = WalletHelpers.GetLabelsByWallets(services.GetWallets());
+		var (changeLabels, receiveLabels) = wallet.KeyManager.GetLabels();
 
 		// Make recent and receive labels count more for the current wallet.
 		var multiplier = 100;
-		var currentWalletReceiveLabels = labelsByWalletId.First(x => x.WalletId == wallet.WalletId).ReceiveLabels;
+		var currentWalletReceiveLabels = receiveLabels;
 		for (var i = currentWalletReceiveLabels.Count - 1; i >= 0; i--) // Iterate in reverse order.
 		{
 			var label = currentWalletReceiveLabels[i];
@@ -32,7 +32,7 @@ public static class LabelHelpers
 		}
 
 		// Receive addresses should be more dominant.
-		foreach (var label in labelsByWalletId.SelectMany(x => x.ReceiveLabels))
+		foreach (var label in receiveLabels)
 		{
 			var score = intent == Intent.Receive ? 100 : 1;
 			if (!labelPool.TryAdd(label, score))
@@ -42,7 +42,7 @@ public static class LabelHelpers
 		}
 
 		// Change addresses shouldn't be much dominant, but should be present.
-		foreach (var label in labelsByWalletId.SelectMany(x => x.ChangeLabels))
+		foreach (var label in changeLabels)
 		{
 			var score = 1;
 			if (!labelPool.TryAdd(label, score))

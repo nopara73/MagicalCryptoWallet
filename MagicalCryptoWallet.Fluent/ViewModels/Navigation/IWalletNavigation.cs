@@ -6,11 +6,6 @@ namespace MagicalCryptoWallet.Fluent.ViewModels.Navigation;
 public interface IWalletNavigation
 {
 	IWalletViewModel? To(IWalletModel wallet);
-}
-
-public interface IWalletSelector : IWalletNavigation
-{
-	IWalletViewModel? SelectedWallet { get; }
-
-	IWalletModel? SelectedWalletModel { get; }
+	IWalletViewModel? Wallet { get; }
+	IWalletModel? WalletModel { get; }
 }

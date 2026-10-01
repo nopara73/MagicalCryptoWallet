@@ -103,7 +103,7 @@ public partial class WalletModel : ReactiveObject, IWalletModel
 		{
 			var coinJoinManager = services.GetHostedService<CoinJoinManager>();
 			return coinJoinManager is not null
-				? new WalletCoinjoinModel(services, Wallet, coinJoinManager, Settings)
+				? new WalletCoinjoinModel(Wallet, coinJoinManager, Settings)
 				: null;
 		});
 

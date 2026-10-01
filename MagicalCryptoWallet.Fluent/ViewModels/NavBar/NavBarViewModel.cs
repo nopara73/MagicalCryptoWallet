@@ -9,82 +9,47 @@ using MagicalCryptoWallet.Fluent.ViewModels.Wallets;
 
 namespace MagicalCryptoWallet.Fluent.ViewModels.NavBar;
 
-/// <summary>
-/// The ViewModel that represents the structure of the sidebar.
-/// </summary>
 [AppLifetime]
-public partial class NavBarViewModel : ViewModelBase, IWalletSelector
+public partial class NavBarViewModel : ViewModelBase, IWalletNavigation
 {
-	[AutoNotify] private WalletPageViewModel? _selectedWallet;
+	[AutoNotify] private WalletPageViewModel? _wallet;
 
 	public NavBarViewModel(UiContext uiContext) : base(uiContext)
 	{
 		BottomItems = new ObservableCollection<NavBarItemViewModel>();
-
-		UiContext.WalletRepository
-			.Wallets
-			.Connect()
-			.Transform(newWallet => new WalletPageViewModel(UiContext, newWallet))
-			.AutoRefresh(x => x.IsLoggedIn)
-			.SortAndBind(
-				out var wallets,
-				SortExpressionComparer< WalletPageViewModel>
-					.Descending(i => i.IsLoggedIn)
-					.ThenByAscending(x => x.WalletModel.Name)
-			)
-			.Subscribe();
-
-		Wallets = wallets;
+		UiContext.WalletRepository.WhenAnyValue(x => x.Wallet)
+			.WhereNotNull()
+			.ObserveOn(RxApp.MainThreadScheduler)
+			.Subscribe(wallet => Wallet = new WalletPageViewModel(UiContext, wallet));
 	}
 
 	public ObservableCollection<NavBarItemViewModel> BottomItems { get; }
 
-	public ReadOnlyObservableCollection<WalletPageViewModel> Wallets { get; }
-
-	// AutoInterfaces (such as IWalletModel) cannot be seen by AutoNotifyGenerator.
-	public IWalletModel? SelectedWalletModel
+	// AutoInterfaces cannot be seen by AutoNotifyGenerator.
+	public IWalletModel? WalletModel
 	{
 		get;
-		set => this.RaiseAndSetIfChanged(ref field, value);
+		private set => this.RaiseAndSetIfChanged(ref field, value);
 	}
 
-	IWalletViewModel? IWalletSelector.SelectedWallet => SelectedWallet?.WalletViewModel;
+	IWalletViewModel? IWalletNavigation.Wallet => Wallet?.WalletViewModel;
 
 	public void Activate()
 	{
-		this.WhenAnyValue(x => x.SelectedWallet)
-			.Buffer(2, 1)
-			.Select(buffer => (OldValue: buffer[0], NewValue: buffer[1]))
-			.ObserveOn(RxApp.MainThreadScheduler)
-			.Do(x =>
+		this.WhenAnyValue(x => x.Wallet)
+			.WhereNotNull()
+			.Subscribe(wallet =>
 			{
-				if (x.OldValue is { } a)
-				{
-					a.IsSelected = false;
-				}
-
-				if (x.NewValue is { } b)
-				{
-					b.IsSelected = true;
-					UiContext.WalletRepository.StoreLastSelectedWallet(b.WalletModel);
-				}
-			})
-			.Subscribe();
-
-		this.WhenAnyValue(x => x.SelectedWallet!.WalletModel)
-			.BindTo(this, x => x.SelectedWalletModel);
-
-		SelectedWallet = Wallets.FirstOrDefault(x => x.WalletModel.Name == UiContext.WalletRepository.DefaultWalletName) ?? Wallets.FirstOrDefault();
+				WalletModel = wallet.WalletModel;
+				wallet.IsSelected = true;
+			});
 	}
 
 	public async Task InitialiseAsync()
 	{
-		var bottomItems = NavigationManager.MetaData.Where(x => x.NavBarPosition == NavBarPosition.Bottom);
-
-		foreach (var item in bottomItems)
+		foreach (var item in NavigationManager.MetaData.Where(x => x.NavBarPosition == NavBarPosition.Bottom))
 		{
 			var viewModel = await NavigationManager.MaterializeViewModelAsync(item);
-
 			if (viewModel is INavBarItem navBarItem)
 			{
 				BottomItems.Add(new NavBarItemViewModel(UiContext, navBarItem));
@@ -94,7 +59,11 @@ public partial class NavBarViewModel : ViewModelBase, IWalletSelector
 
 	IWalletViewModel? IWalletNavigation.To(IWalletModel wallet)
 	{
-		SelectedWallet = Wallets.First(x => x.WalletModel.Name == wallet.Name);
-		return SelectedWallet.WalletViewModel;
+		if (Wallet is not { } page || !ReferenceEquals(page.WalletModel, wallet))
+		{
+			throw new InvalidOperationException("This is not the configured wallet.");
+		}
+		page.OpenCommand.Execute(default);
+		return page.WalletViewModel;
 	}
 }

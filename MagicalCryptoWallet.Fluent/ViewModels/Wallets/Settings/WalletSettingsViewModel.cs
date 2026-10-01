@@ -179,6 +179,5 @@ public partial class WalletSettingsViewModel : RoutableViewModel
 
         WalletName = _wallet.Name;
 
-        WalletCoinJoinSettings.ManuallyUpdateOutputWalletList();
     }
 }

@@ -34,10 +34,6 @@ public static class UiConfigEncode
 				yield return ("WindowHeight", Double(height));
 			}
 
-			if (cfg.LastSelectedWallet is not null)
-			{
-				yield return ("LastSelectedWallet", String(cfg.LastSelectedWallet));
-			}
 		}
 		return Object(Properties());
 	}
@@ -60,14 +56,13 @@ public static class UiConfigDecode
 	        var isCustomChangeAddress = get.Required("IsCustomChangeAddress", Decode.Bool);
 	        var privacyMode = get.Required("PrivacyMode", Decode.Bool);
 	        var darkModeEnabled = get.Required("DarkModeEnabled", Decode.Bool);
-	        var lastSelectedWallet = get.Optional("LastSelectedWallet", Decode.String);
 	        var runOnSystemStartup = get.Required("RunOnSystemStartup", Decode.Bool);
 	        var hideOnClose = get.Required("HideOnClose", Decode.Bool);
 	        var sendAmountConversionReversed = get.Required("SendAmountConversionReversed", Decode.Bool);
 	        var windowWidth = get.Optional("WindowWidth", Decode.Double, 0);
 	        var windowHeight = get.Optional("WindowHeight", Decode.Double, 0);
 	        return new UiConfig(filePath, privacyMode, isCustomChangeAddress, autocopy, darkModeEnabled,
-		        lastSelectedWallet, windowState, runOnSystemStartup, oobe, lastVersionHighlightsDisplayed, hideOnClose,
+		        windowState, runOnSystemStartup, oobe, lastVersionHighlightsDisplayed, hideOnClose,
 		        autoPaste, feeTarget, sendAmountConversionReversed, windowWidth > 0 ? windowWidth : null, windowHeight > 0 ? windowHeight : null);
         });
 }

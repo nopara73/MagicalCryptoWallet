@@ -9,6 +9,8 @@ BITCOIN_RPC_PORT=18443
 BITCOIN_P2P_PORT=18444
 COORDINATOR_PORT=38126
 MAGICALCRYPTOWALLET_WALLET_RPC_PORT=38128
+NUM_CLIENTS=5
+WALLET_PIDS=()
 
 # Colors for output
 RED='\033[0;31m'
@@ -18,9 +20,9 @@ NC='\033[0m' # No Color
 
 cleanup() {
     kill $COORDINATOR_PID
-    kill $WALLET_PID
+    for pid in "${WALLET_PIDS[@]}"; do kill "$pid"; done
     bitcoin-cli -regtest -rpcport=$BITCOIN_RPC_PORT -rpcuser=regtest -rpcpassword=regtest stop
-    rm -rf $MAGICALCRYPTOWALLET_DATADIR/Client/Wallets
+
     rm -rf $BITCOIN_DATADIR
     exit
 }
@@ -147,50 +149,50 @@ COORDINATOR_PID=$!
 sleep 5
 echo -e "${GREEN}✓ Coordinator started (PID: $COORDINATOR_PID; Directory: $MAGICALCRYPTOWALLET_COORDINATOR_DATADIR)${NC}"
 
-echo -e "${YELLOW}Starting Magical Crypto Wallet Client${NC}"
-
-mkdir -p "$MAGICALCRYPTOWALLET_DATADIR/Client"
-
-# Start wallet daemon
-dotnet run --project MagicalCryptoWallet.Daemon -- \
-  --loglevel=trace \
-  --network=regtest \
-  --coordinatorUri="http://127.0.0.1:$COORDINATOR_PORT" \
-  --bitcoinrpcendpoint="http://127.0.0.1:$BITCOIN_RPC_PORT/" \
-  --bitcoinrpccredentialstring="regtest:regtest" \
-  --rpcport=$MAGICALCRYPTOWALLET_WALLET_RPC_PORT \
-  --datadir="$MAGICALCRYPTOWALLET_DATADIR/Client" \
-  --jsonrpcserverenabled=true \
-  --maxcoinjoinminingfeerate=500 \
-  --absolutemininputcount=4 \
-  --usetor="disabled" &> "$MAGICALCRYPTOWALLET_DATADIR/Client/stdout.log" &
-
-WALLET_PID=$!
-
-echo -e "${YELLOW}Wait for Magical Crypto Wallet Daemon (PID $WALLET_PID) to fully start...${NC}"
+echo -e "${YELLOW}Starting independent single-wallet clients${NC}"
+for (( client = 0; client < NUM_CLIENTS; client++ )); do
+  client_dir="$MAGICALCRYPTOWALLET_DATADIR/Client$client"
+  port=$((MAGICALCRYPTOWALLET_WALLET_RPC_PORT + client))
+  mkdir -p "$client_dir"
+  dotnet run --project MagicalCryptoWallet.Daemon --no-build -- \
+    --loglevel=trace \
+    --network=regtest \
+    --coordinatorUri="http://127.0.0.1:$COORDINATOR_PORT" \
+    --bitcoinrpcendpoint="http://127.0.0.1:$BITCOIN_RPC_PORT/" \
+    --bitcoinrpccredentialstring="regtest:regtest" \
+    --jsonrpcserverprefixes="http://127.0.0.1:$port/" \
+    --datadir="$client_dir" \
+    --jsonrpcserverenabled=true \
+    --maxcoinjoinminingfeerate=500 \
+    --absolutemininputcount=4 \
+    --usetor="disabled" > "$client_dir/stdout.log" 2>&1 &
+  WALLET_PIDS+=("$!")
+done
 sleep 5
 
 echo -e "${YELLOW}Creating Magical Crypto Wallets${NC}"
 
 # Function to start a wallet and perform coinjoin
 create_and_fund_wallet() {
-  local wallet_name=$1
+  local client=$1
+  local wallet_name="wallet$client"
+  local port=$((MAGICALCRYPTOWALLET_WALLET_RPC_PORT + client))
 
   echo -e "${YELLOW}Creating MagicalCryptoWallet wallet $wallet_name...${NC}"
   local request="{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"createwallet\",\"params\":[\"$wallet_name\", \"\"]}"
   echo "→ $request"
 
-  local response=$(curl -s -X POST "http://127.0.0.1:$MAGICALCRYPTOWALLET_WALLET_RPC_PORT/" -H "Content-Type: application/json" -d "$request")
+  local response=$(curl -s -X POST "http://127.0.0.1:$port/" -H "Content-Type: application/json" -d "$request")
   echo "← $response"
 
   echo -e "${YELLOW}Generating a block to make sure wallet loading will succeed...${NC}"
   bitcoin-cli -regtest -rpcport=$BITCOIN_RPC_PORT -rpcuser=regtest -rpcpassword=regtest generatetoaddress 1 $(bitcoin-cli -regtest -rpcport=$BITCOIN_RPC_PORT -rpcuser=regtest -rpcpassword=regtest -rpcwallet="default" getnewaddress) > /dev/null
 
   echo -e "${YELLOW}Loading wallet $wallet_name...${NC}"
-  local request="{\"jsonrpc\":\"2.0\",\"id\":\"2\",\"method\":\"loadwallet\",\"params\":[\"$wallet_name\"]}"
+  local request="{\"jsonrpc\":\"2.0\",\"id\":\"2\",\"method\":\"loadwallet\",\"params\":[]}"
   echo "→ $request"
 
-  local response=$(curl -s -X POST "http://127.0.0.1:$MAGICALCRYPTOWALLET_WALLET_RPC_PORT/" -H "Content-Type: application/json" -d "$request")
+  local response=$(curl -s -X POST "http://127.0.0.1:$port/" -H "Content-Type: application/json" -d "$request")
   echo "← $response"
 
   local i
@@ -198,7 +200,7 @@ create_and_fund_wallet() {
     echo -e "${YELLOW}Generating address #$i for $wallet_name...${NC}"
     local request='{"jsonrpc":"2.0","id":"3","method":"getnewaddress","params":["label"]}'
     echo "→ $request"
-    local response=$(curl -s -X POST http://127.0.0.1:$MAGICALCRYPTOWALLET_WALLET_RPC_PORT/$wallet_name -H "Content-Type: application/json" -d "$request")
+    local response=$(curl -s -X POST http://127.0.0.1:$port/ -H "Content-Type: application/json" -d "$request")
     echo "← $response"
 
     local address=$(echo "$response" | jq -r '.result.address')
@@ -216,20 +218,22 @@ create_and_fund_wallet() {
 
 start_coinjoin()
 {
-  local wallet_name=$1
+  local client=$1
+  local wallet_name="wallet$client"
+  local port=$((MAGICALCRYPTOWALLET_WALLET_RPC_PORT + client))
   echo -e "${YELLOW}Starting coinjoin...${NC}"
-  curl -s -X POST http://127.0.0.1:$MAGICALCRYPTOWALLET_WALLET_RPC_PORT/$wallet_name \
+  curl -s -X POST http://127.0.0.1:$port/ \
       -H "Content-Type: application/json" \
       -d '{"jsonrpc":"2.0","id":"1","method":"startcoinjoin","params":[]}' > /dev/null
 
   echo -e "${GREEN}✓ Coinjoin initiated for $wallet_name${NC}"
 }
 
-# Start multiple wallets and initiate coinjoins
-echo -e "${YELLOW}Starting multiple wallets and initiating coinjoins...${NC}"
+# Set up one wallet per client and initiate coinjoins
+echo -e "${YELLOW}Setting up one wallet in each independent client...${NC}"
 
-for (( i = 0; i < 5; i++ )); do
-  create_and_fund_wallet "wallet$i"
+for (( i = 0; i < NUM_CLIENTS; i++ )); do
+  create_and_fund_wallet "$i"
   sleep 2
 done
 
@@ -243,15 +247,15 @@ bitcoin-cli -regtest -rpcport=$BITCOIN_RPC_PORT -rpcuser=regtest -rpcpassword=re
 sleep 2
 
 echo -e "${YELLOW}Starting coinjoins...${NC}"
-for (( i = 0; i < 5; i++ )); do
-  start_coinjoin "wallet$i" &
+for (( i = 0; i < NUM_CLIENTS; i++ )); do
+  start_coinjoin "$i" &
   sleep 2
 done
 
-echo -e "${GREEN}✓ All wallets started and coinjoins initiated${NC}"
+echo -e "${GREEN}✓ All single-wallet clients started and coinjoins initiated${NC}"
 echo -e "${YELLOW}Bitcoin node PID: $BITCOIN_PID${NC}"
 echo -e "${YELLOW}Coordinator PID: $COORDINATOR_PID${NC}"
-echo -e "${YELLOW}Magical Crypto Wallet Daemon PID: $WALLET_PID${NC}"
+echo -e "${YELLOW}Magical Crypto Wallet Daemon PID: ${WALLET_PIDS[*]}${NC}"
 echo -e "${YELLOW}Bitcoin datadir: $BITCOIN_DATADIR${NC}"
 echo -e "${YELLOW}MagicalCryptoWallet datadir: $MAGICALCRYPTOWALLET_DATADIR${NC}"
 

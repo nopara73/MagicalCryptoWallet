@@ -555,7 +555,7 @@ public class Global
 		}
 		catch (Exception ex) when (ex is not OperationCanceledException)
 		{
-			Logger.LogError($"Bitcoin storage got corrupted. Resetting wallet(s) to the first block to rescan. Exception: {ex}");
+			Logger.LogError($"Bitcoin storage got corrupted. Resetting the wallet to the first block to rescan. Exception: {ex}");
 			WalletManager.SetMaxBestHeight(CalculateSafestHeight());
 			throw;
 		}
@@ -569,8 +569,8 @@ public class Global
 				? h - Constants.ResyncHeightMargin
 				: h
 			: checkpointHeight;
-		var birthHeight = WalletManager.GetEarliestBirthHeight();
-		var worstBestHeight = WalletManager.GetWorstBestHeight();
+		var birthHeight = WalletManager.GetBirthHeight();
+		var worstBestHeight = WalletManager.GetBestHeight();
 		return (ChainHeight) Height.Min(checkpointHeight, ((ChainHeight?[]) [transactionHeight, birthHeight, worstBestHeight]).DropNulls());
 	}
 
@@ -741,7 +741,7 @@ public class Global
 
 		Func<string, WabiSabiHttpApiClient> wabiSabiHttpClientFactory = (identity) => new WabiSabiHttpApiClient(identity, coordinatorHttpClientFactory);
 		var coinJoinConfiguration = new CoinJoinConfiguration(Config.CoordinatorIdentifier, Config.MaxCoinjoinMiningFeeRate, Config.AbsoluteMinInputCount, AllowSoloCoinjoining: false);
-		HostedServices.Register<CoinJoinManager>(() => new CoinJoinManager(WalletManager.GetWalletsAsync, new RoundStateProvider(roundUpdater), wabiSabiHttpClientFactory, coinJoinConfiguration, _coinPrison, CreateInputVerifier(), EventBus), "CoinJoin Manager");
+		HostedServices.Register<CoinJoinManager>(() => new CoinJoinManager(WalletManager.GetWallet, new RoundStateProvider(roundUpdater), wabiSabiHttpClientFactory, coinJoinConfiguration, _coinPrison, CreateInputVerifier(), EventBus), "CoinJoin Manager");
 	}
 
 	private List<IBroadcaster> CreateBroadcasters(P2pNodeListProvider p2PNodeListProvider, MempoolService mempoolService)
@@ -803,12 +803,12 @@ public class Global
 				try
 				{
 					using var dequeueCts = new CancellationTokenSource(TimeSpan.FromMinutes(6));
-					await WalletManager.RemoveAndStopAllAsync(dequeueCts.Token).ConfigureAwait(false);
+					await WalletManager.RemoveAndStopAsync(dequeueCts.Token).ConfigureAwait(false);
 					Logger.LogInfo($"{nameof(WalletManager)} is stopped.");
 				}
 				catch (Exception ex)
 				{
-					Logger.LogError($"Error during {nameof(WalletManager.RemoveAndStopAllAsync)}: {ex}");
+					Logger.LogError($"Error during {nameof(WalletManager.RemoveAndStopAsync)}: {ex}");
 				}
 
 				if (Network != Network.RegTest && _blockHeaders.Tip is not null)

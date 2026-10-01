@@ -55,7 +55,7 @@ public class RebrandIdentityTests
 		Assert.False(duplicate.IsFirstInstance());
 		using var independent = new SingleInstanceChecker(Path.GetDirectoryName(otherWallet)!);
 		Assert.True(independent.IsFirstInstance());
-		await manager.RemoveAndStopAllAsync(CancellationToken.None);
+		await manager.RemoveAndStopAsync(CancellationToken.None);
 	}
 
 	[Fact]

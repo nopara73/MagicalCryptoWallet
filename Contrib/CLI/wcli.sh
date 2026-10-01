@@ -1,22 +1,12 @@
 #!/usr/bin/env bash
 
 function config_extract() {
-  jq -r "$1" ~/.magicalcryptowallet/client/Config.json
+  jq -r "$1" "${MAGICALCRYPTOWALLET_DATADIR:-$HOME/.magicalcryptowallet/client}/Config.json"
 }
 
 CREDENTIALS=$(config_extract '.JsonRpcUser + ":" + .JsonRpcPassword')
 ENDPOINT=$(config_extract '.JsonRpcServerPrefixes[0]')
 BASIC_AUTH=$([ "$CREDENTIALS" == ":" ] && echo "" || echo "--user ${CREDENTIALS}")
-
-WALLETNAME=""
-
-if [ $# -ge 1 ]; then
-    ARG="${1%=*}"
-    if [[ "$ARG" == "-wallet" ]]; then
-        WALLETNAME="${1#*=}/"
-        shift
-    fi
-fi
 
 METHOD=$1
 shift
@@ -39,7 +29,7 @@ if [ $# -ge 1 ]; then
 fi
 
 REQUEST="{\"jsonrpc\":\"2.0\", \"id\":\"curltext\", \"method\":\"$METHOD\", \"params\":[$PARAMS]}"
-RESULT=$(curl -s $BASIC_AUTH --data-binary "$REQUEST" -H -- "content-type: text/plain;" "$ENDPOINT$WALLETNAME")
+RESULT=$(curl -s $BASIC_AUTH --data-binary "$REQUEST" -H "Content-Type: application/json" "$ENDPOINT")
 CURL_ERRORCODE=$?
 RESULT_ERROR=$(echo "$RESULT" | jq -r .error)
 CURL_FAIL_TO_CONNECT_ERRORCODE=7

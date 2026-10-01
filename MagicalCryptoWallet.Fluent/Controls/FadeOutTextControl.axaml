@@ -18,11 +18,11 @@
           <TextBlock Name="PART_TrimmedTextBlock"
                      Text="{TemplateBinding Text}"
                      TextTrimming="CharacterEllipsis"
-                     TextAlignment="{TemplateBinding HorizontalAlignment}"
+                     TextAlignment="Center"
                      FontSize="{TemplateBinding FontSize}"
                      Opacity="0" />
           <FadeOutTextBlock Name="PART_NoTrimTextBlock"
-                              TextAlignment="{TemplateBinding HorizontalAlignment}"
+                              TextAlignment="Center"
                               FontSize="{TemplateBinding FontSize}"
                               Text="{TemplateBinding Text}"
                               TextTrimming="None" />

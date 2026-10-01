@@ -24,7 +24,6 @@ public partial class WalletSettingsModel : ReactiveObject
 	[AutoNotify] private int _anonScoreTarget;
 	[AutoNotify] private bool _nonPrivateCoinIsolation;
 	[AutoNotify] private bool _onlyUsePrivateFundsForPayments;
-	[AutoNotify] private WalletId? _outputWalletId;
 	[AutoNotify] private ScriptType _defaultReceiveScriptType;
 	[AutoNotify] private PreferredScriptPubKeyType _changeScriptPubKeyType;
 	[AutoNotify] private SendWorkflow _defaultSendWorkflow;
@@ -44,11 +43,6 @@ public partial class WalletSettingsModel : ReactiveObject
 		_anonScoreTarget = _keyManager.AnonScoreTarget;
 		_nonPrivateCoinIsolation = _keyManager.NonPrivateCoinIsolation;
 		_onlyUsePrivateFundsForPayments = _keyManager.OnlyUsePrivateFundsForPayments;
-
-		if (!isNewWallet)
-		{
-			_outputWalletId = services.GetWalletByName(_keyManager.WalletName).WalletId;
-		}
 
 		_defaultReceiveScriptType = ScriptType.FromEnum(_keyManager.DefaultReceiveScriptType);
 		_changeScriptPubKeyType = _keyManager.ChangeScriptPubKeyType;
@@ -89,19 +83,20 @@ public partial class WalletSettingsModel : ReactiveObject
 	{
 		if (_isDirty)
 		{
-			_keyManager.ToFile();
-
 			if (IsNewWallet)
 			{
 				_services.AddWallet(_keyManager);
 				IsNewWallet = false;
-				OutputWalletId = _services.GetWalletByName(_keyManager.WalletName).WalletId;
+			}
+			else
+			{
+				_keyManager.ToFile();
 			}
 
 			_isDirty = false;
 		}
 
-		return _services.GetWalletByName(_keyManager.WalletName).WalletId;
+		return _services.GetWallet().WalletId;
 	}
 
 	private void SetValues()

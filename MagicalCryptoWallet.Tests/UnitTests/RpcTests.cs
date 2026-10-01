@@ -68,7 +68,7 @@ public class RpcTests
 				},
 				{
 					// Valid request but internal server error
-					"""{"jsonrpc":"2.0","method":"fail","params":["c:"],"id":"1"}""",
+					"""{"jsonrpc":"2.0","method":"fail","params":[],"id":"1"}""",
 					"""{"jsonrpc":"2.0","error":{"code":-32603,"message":"the error"},"id":"1"}"""
 				},
 				{

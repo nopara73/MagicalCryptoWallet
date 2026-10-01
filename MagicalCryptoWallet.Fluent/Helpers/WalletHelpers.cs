@@ -19,18 +19,4 @@ public static class WalletHelpers
 		return keyManager.IsHardwareWallet ? WalletType.Hardware : WalletType.Normal;
 	}
 
-	public static List<LabelsByWallet> GetLabelsByWallets(IEnumerable<Wallet> wallets)
-	{
-		var result = new List<LabelsByWallet>();
-
-		foreach (var wallet in wallets)
-		{
-			var (changeLabels, receiveLabels) = wallet.KeyManager.GetLabels();
-			result.Add(new LabelsByWallet(wallet.WalletId, changeLabels, receiveLabels));
-		}
-
-		return result;
-	}
-
-	public record LabelsByWallet(WalletId WalletId, List<string> ChangeLabels, List<string> ReceiveLabels);
 }

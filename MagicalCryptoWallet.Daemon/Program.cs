@@ -1,6 +1,5 @@
 using System;
 using System.Collections.ObjectModel;
-using System.Linq;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using MagicalCryptoWallet.Client;
@@ -49,26 +48,6 @@ public static class MagicalCryptoWalletAppExtensions
 {
 	public static async Task<ExitCode> RunAsConsoleAsync(this MagicalCryptoWalletApplication app)
 	{
-		void ProcessCommands()
-		{
-			var arguments = app.AppConfig.Arguments;
-			var walletNames = ArgumentHelpers
-				.GetValues("wallet", arguments)
-				.Distinct();
-
-			foreach (var walletName in walletNames)
-			{
-				try
-				{
-					var wallet = app.Global.WalletManager.GetWalletByName(walletName);
-					app.Global.WalletManager.StartWalletAsync(wallet).ConfigureAwait(false);
-				}
-				catch (InvalidOperationException)
-				{
-					Logger.LogWarning($"Wallet '{walletName}' was not found. Ignoring...");
-				}
-			}
-		}
 
 		return await app.RunAsync(
 			async () =>
@@ -84,7 +63,10 @@ public static class MagicalCryptoWalletAppExtensions
 
 				if (!app.TerminateService.CancellationToken.IsCancellationRequested)
 				{
-					ProcessCommands();
+					if (app.Global.WalletManager.GetWallet() is { } wallet)
+					{
+						await app.Global.WalletManager.StartWalletAsync(wallet).ConfigureAwait(false);
+					}
 					await app.TerminateService.ForcefulTerminationRequestedTask.ConfigureAwait(false);
 				}
 			}).ConfigureAwait(false);
