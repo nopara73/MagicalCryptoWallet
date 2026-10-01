@@ -45,7 +45,7 @@ jobs:
         env:
           MAGICALCRYPTOWALLET_NOSTR_ANNOUNCEMENT_KEY: ${{ secrets.MAGICALCRYPTOWALLET_NOSTR_ANNOUNCEMENT_KEY }}
           MAGICALCRYPTOWALLET_VERSION: ${{ inputs.version }}
-        run: dotnet run --project Contrib/Releases/Publisher -c Release -- prepare-announcement "$MAGICALCRYPTOWALLET_VERSION" MagicalCryptoWallet.Fluent/Assets/ReleaseHighlights.md packages
+        run: dotnet run --project Contrib/Releases/Publisher -c Release -- prepare-announcement "$MAGICALCRYPTOWALLET_VERSION" MagicalCryptoWallet/Announcements/ReleaseHighlights.md packages
       - uses: actions/upload-artifact@v4
         with:
           name: signed-release-artifacts
