@@ -16,6 +16,9 @@ on:
         description: Authenticate package manifests and prepare an announcement without publishing
         type: boolean
         default: false
+      coexistence_run:
+        description: Temporary installer diagnostic artifact run
+        default: ''
   workflow_call:
     inputs:
       version:
@@ -29,11 +32,13 @@ on:
         default: false
 permissions:
   contents: read
+  actions: read
 concurrency:
   group: build-${{ github.event.pull_request.head.ref || github.ref_name }}-${{ inputs.production || false }}
   cancel-in-progress: true
 jobs:
   platform:
+    if: inputs.coexistence_run == ''
     name: ${{ matrix.rid }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 35
@@ -115,6 +120,7 @@ jobs:
           compression-level: 0
           if-no-files-found: error
   container:
+    if: inputs.coexistence_run == ''
     name: Coordinator container
     runs-on: ubuntu-24.04
     timeout-minutes: 25
@@ -123,6 +129,7 @@ jobs:
       - run: docker build --file Contrib/Containers/Dockerfile --tag magicalcryptowallet-coordinator:test .
       - run: docker run --rm --entrypoint sh magicalcryptowallet-coordinator:test -c 'test -f MagicalCryptoWallet.Coordinator.dll && test -f libwabisabi.so && dotnet --info'
   nix:
+    if: inputs.coexistence_run == ''
     name: Nix source build and wallet tests
     runs-on: ubuntu-24.04
     timeout-minutes: 45
@@ -168,3 +175,22 @@ jobs:
           path: packages/*
           compression-level: 0
           if-no-files-found: error
+  installation-diagnostic:
+    if: inputs.coexistence_run != ''
+    runs-on: windows-2025
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: packages-win-x64
+          path: .
+          run-id: ${{ inputs.coexistence_run }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - shell: pwsh
+        run: ./Contrib/Rebrand/test-windows-coexistence.ps1
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: installer-diagnostics
+          path: .artifacts/installed-coexistence/*.log
+          compression-level: 0

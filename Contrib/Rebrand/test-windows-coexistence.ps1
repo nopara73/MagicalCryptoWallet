@@ -22,6 +22,7 @@ function Get-InstalledProductState([string] $productCode) {
 }
 $taskOldCode = Get-MsiProperty $taskOldMsi 'ProductCode'
 $taskNewCode = Get-MsiProperty $taskNewMsi 'ProductCode'
+Write-Output "Installer product codes: baseline=$taskOldCode new=$taskNewCode"
 if ($taskOldCode -eq $taskNewCode) { throw 'Product identity collision' }
 if ((Get-MsiProperty $taskOldMsi 'UpgradeCode') -eq (Get-MsiProperty $taskNewMsi 'UpgradeCode')) { throw 'Upgrade identity collision' }
 $taskOldFolder = Join-Path $taskWork 'baseline'
@@ -29,9 +30,17 @@ $taskNewFolder = Join-Path $taskWork 'MagicalCryptoWallet'
 foreach ($item in @(@($taskOldMsi,$taskOldFolder), @($taskNewMsi,$taskNewFolder))) {
     $log = Join-Path $taskWork ((Split-Path $item[1] -Leaf)+'.log')
     $process = Start-Process msiexec.exe -WindowStyle Hidden -ArgumentList @('/i',('"'+$item[0]+'"'),'/qn','/norestart',('INSTALLFOLDER="'+$item[1]+'"'),'/L*v',('"'+$log+'"')) -PassThru -Wait
+    Write-Output "Installer $($item[0]) exited $($process.ExitCode); target exists: $(Test-Path $item[1])"
     if ($process.ExitCode -notin @(0,3010)) { throw "Installer failed: $($process.ExitCode). Inspect $log" }
 }
-if ((Get-InstalledProductState $taskOldCode) -ne 5 -or (Get-InstalledProductState $taskNewCode) -ne 5) { throw 'Both products must remain independently installed' }
+$taskInstaller = New-Object -ComObject WindowsInstaller.Installer
+$taskOldState = Get-InstalledProductState $taskOldCode
+$taskNewState = Get-InstalledProductState $taskNewCode
+Write-Output "Installer registration: baseline=$taskOldState new=$taskNewState"
+if ($taskOldState -ne 5 -or $taskNewState -ne 5) {
+    Get-ChildItem "$taskWork/*.log" | ForEach-Object { Get-Content $_.FullName -Tail 100 }
+    throw 'Both products must remain independently installed'
+}
 if (-not (Test-Path "$taskNewFolder/magicalcryptowallet.exe") -or -not (Test-Path $taskOldFolder)) { throw 'Missing independent installation' }
 $taskData = Join-Path $taskWork 'synthetic-client'
 & "$taskNewFolder/magicalcryptowalletd.exe" '--help' "--datadir=$taskData" '--network=RegTest' | Out-File (Join-Path $taskWork 'help.txt')
