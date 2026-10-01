@@ -4,12 +4,27 @@ on:
     branches: [master, 'codex/**']
   pull_request:
   workflow_dispatch:
+    inputs:
+      version:
+        description: Numeric snapshot or release version
+        default: '99.99.99'
+      production:
+        description: Require Windows and macOS production certificates
+        type: boolean
+        default: false
+      prepare_release:
+        description: Authenticate package manifests and prepare an announcement without publishing
+        type: boolean
+        default: false
   workflow_call:
     inputs:
       version:
         type: string
         default: '99.99.99'
       production:
+        type: boolean
+        default: false
+      prepare_release:
         type: boolean
         default: false
 permissions:
@@ -117,3 +132,39 @@ jobs:
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
       - run: nix build .#unit-tests --print-build-logs
+  sign-manifests:
+    name: Authenticate package manifests
+    if: inputs.prepare_release
+    needs: [platform, container, nix]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: packages-*
+          path: .artifacts/downloaded
+      - name: Collect platform packages
+        run: |
+          mkdir packages
+          find .artifacts/downloaded -type f \( -name '*.msi' -o -name '*.deb' -o -name '*.dmg' -o -name '*.zip' -o -name '*.tar.gz' -o -name '*.AppImage' \) -exec cp {} packages/ \;
+      - name: Sign and verify manifests against repository public keys
+        env:
+          MAGICALCRYPTOWALLET_GPG_PRIVATE_KEY: ${{ secrets.MAGICALCRYPTOWALLET_GPG_PRIVATE_KEY }}
+          MAGICALCRYPTOWALLET_GPG_PASSPHRASE: ${{ secrets.MAGICALCRYPTOWALLET_GPG_PASSPHRASE }}
+          MAGICALCRYPTOWALLET_UPDATE_SIGNING_KEY: ${{ secrets.MAGICALCRYPTOWALLET_UPDATE_SIGNING_KEY }}
+        run: python3 Contrib/Signing/sign-release.py packages
+      - name: Prepare authenticated announcement without sending
+        env:
+          MAGICALCRYPTOWALLET_NOSTR_ANNOUNCEMENT_KEY: ${{ secrets.MAGICALCRYPTOWALLET_NOSTR_ANNOUNCEMENT_KEY }}
+          MAGICALCRYPTOWALLET_VERSION: ${{ inputs.version || '99.99.99' }}
+        run: dotnet run --project Contrib/Releases/Publisher -c Release -- prepare-announcement "$MAGICALCRYPTOWALLET_VERSION" MagicalCryptoWallet/Announcements/ReleaseHighlights.md packages
+      - uses: actions/upload-artifact@v4
+        with:
+          name: signed-release-artifacts
+          path: packages/*
+          compression-level: 0
+          if-no-files-found: error

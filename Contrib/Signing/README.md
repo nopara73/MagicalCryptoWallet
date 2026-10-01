@@ -29,3 +29,5 @@ sha256sum --check SHA256SUMS
 ```
 
 The publisher tool prepares a signed Nostr note locally, using the files that actually exist in the package directory. It does not broadcast notes or publish GitHub releases. Publication remains an explicit, separate operation.
+
+The **Build and audit** workflow can prepare authenticated snapshots from a selected branch: enable its `prepare_release` input and leave `production` disabled. It signs only after all five platform checks, the coordinator container, and Nix tests pass. The **Prepare signed release artifacts** workflow uses the same build and signing jobs. Both upload `signed-release-artifacts` without publishing anything.
