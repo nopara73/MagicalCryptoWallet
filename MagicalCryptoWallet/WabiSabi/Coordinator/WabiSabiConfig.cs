@@ -183,6 +183,14 @@ public class WabiSabiConfig : ConfigBase
 
 	public static WabiSabiConfig? TryLoadFile(string filePath)
 	{
+		lock (GetFileLock(filePath))
+		{
+			return TryLoadFileCore(filePath);
+		}
+	}
+
+	private static WabiSabiConfig? TryLoadFileCore(string filePath)
+	{
 		try
 		{
 			using var cfgFile = File.Open(filePath, FileMode.Open, FileAccess.Read);

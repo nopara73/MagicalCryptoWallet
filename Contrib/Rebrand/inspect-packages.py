@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Extract the produced installers and audit their payloads and independent identities."""
-import argparse, hashlib, json, os, plistlib, shutil, subprocess, tarfile, zipfile
+import argparse, hashlib, json, os, plistlib, shutil, subprocess, tarfile, time, zipfile
 from pathlib import Path
 import xml.etree.ElementTree as ET
 ROOT=Path(__file__).resolve().parents[2]
@@ -8,6 +8,17 @@ APP_ID='io.github.nopara73.magicalcryptowallet'
 NAME='Magical Crypto Wallet'
 def run(*args,**kwargs): return subprocess.run([str(x) for x in args],check=True,**kwargs)
 def sha(path):return hashlib.sha256(path.read_bytes()).hexdigest()
+
+def detach_dmg(mount):
+    # Spotlight can briefly hold the read-only inspection image after copying its payload.
+    for attempt in range(5):
+        result=subprocess.run(['hdiutil','detach',str(mount)],stdout=subprocess.DEVNULL,stderr=subprocess.PIPE,text=True)
+        if result.returncode==0:return
+        if result.returncode!=16:
+            raise subprocess.CalledProcessError(result.returncode,result.args,stderr=result.stderr)
+        if attempt<4:time.sleep(1)
+    # This is exclusively our temporary read-only mount; its payload was copied before cleanup.
+    run('hdiutil','detach','-force',mount,stdout=subprocess.DEVNULL)
 def extract_zip(path, destination):
     with zipfile.ZipFile(path) as archive:
         for item in archive.infolist():
@@ -75,7 +86,7 @@ else:
         assert sha(app/'Contents/Resources/MagicalCryptoWalletLogo.icns')==sha(ROOT/'Contrib/Assets/MagicalCryptoWalletLogo.icns')
         extracted=work/'app';shutil.copytree(app,extracted,symlinks=True,dirs_exist_ok=True);payloads.append(extracted)
         identities={k:plist[k] for k in ('CFBundleIdentifier','CFBundleDisplayName','CFBundleExecutable','CFBundleVersion')}
-    finally:run('hdiutil','detach',mount,stdout=subprocess.DEVNULL)
+    finally:detach_dmg(mount)
 for executable in ('magicalcryptowallet','magicalcryptowalletd','magicalcryptowallet-coordinator'):
     assert (dist/(executable+('.exe' if args.rid.startswith('win') else ''))).is_file()
 run(sys_executable:=__import__('sys').executable,ROOT/'Contrib/Rebrand/audit.py','--artifacts',*payloads)

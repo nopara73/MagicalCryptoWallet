@@ -59,6 +59,7 @@ public class UiConfig : ConfigBase
 		_windowWidth = windowWidth;
 		_windowHeight = windowHeight;
 
+		// Persist actual changes only; constructing or loading a config must not schedule writes.
 		this.WhenAnyValue(
 				x => x.Autocopy,
 				x => x.AutoPaste,
@@ -73,11 +74,13 @@ public class UiConfig : ConfigBase
 				x => x.HideOnClose,
 				x => x.FeeTarget,
 				(_, _, _, _, _, _, _, _, _, _, _, _) => Unit.Default)
+			.Skip(1)
 			.Throttle(TimeSpan.FromMilliseconds(1000))
 			.ObserveOn(RxApp.MainThreadScheduler)
 			.Subscribe(_ => ToFile());
 
 		this.WhenAnyValue(x => x.SendAmountConversionReversed)
+			.Skip(1)
 			.Throttle(TimeSpan.FromMilliseconds(1000))
 			.ObserveOn(RxApp.MainThreadScheduler)
 			.Subscribe(_ => ToFile());
@@ -85,6 +88,7 @@ public class UiConfig : ConfigBase
 		this.WhenAnyValue(
 				x => x.WindowWidth,
 				x => x.WindowHeight)
+			.Skip(1)
 			.Throttle(TimeSpan.FromMilliseconds(1000))
 			.ObserveOn(RxApp.TaskpoolScheduler)
 			.Subscribe(_ => ToFile());
@@ -202,6 +206,14 @@ public class UiConfig : ConfigBase
 	}
 
 	public static UiConfig LoadFile(string filePath)
+	{
+		lock (GetFileLock(filePath))
+		{
+			return LoadFileCore(filePath);
+		}
+	}
+
+	private static UiConfig LoadFileCore(string filePath)
 	{
 		try
 		{

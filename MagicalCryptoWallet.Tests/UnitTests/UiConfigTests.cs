@@ -1,5 +1,6 @@
 using System.IO;
 using System.Text.Json;
+using System.Threading.Tasks;
 using MagicalCryptoWallet.Fluent;
 using MagicalCryptoWallet.Tests.Helpers;
 using Xunit;
@@ -8,6 +9,47 @@ namespace MagicalCryptoWallet.Tests.UnitTests;
 
 public class UiConfigTests
 {
+	[Fact]
+	public async Task LoadingSettingsDoesNotScheduleUnrequestedWritesAsync()
+	{
+		string workDir = Common.GetWorkDir();
+		Directory.CreateDirectory(workDir);
+		string filePath = Path.Combine(workDir, $"{Guid.NewGuid():N}.json");
+		new UiConfig(filePath).ToFile();
+		var originalWrite = File.GetLastWriteTimeUtc(filePath);
+
+		_ = UiConfig.LoadFile(filePath);
+		await Task.Delay(1500);
+
+		Assert.Equal(originalWrite, File.GetLastWriteTimeUtc(filePath));
+	}
+
+	[Fact]
+	public async Task ConcurrentReadsAndSavesPreserveHiddenSettingsAsync()
+	{
+		string workDir = Common.GetWorkDir();
+		Directory.CreateDirectory(workDir);
+		string filePath = Path.Combine(workDir, $"{Guid.NewGuid():N}.json");
+		var config = new UiConfig(filePath) { PrivacyMode = true };
+		config.ToFile();
+
+		await Task.WhenAll(
+			Task.Run(() =>
+			{
+				for (int i = 0; i < 100; i++) { config.ToFile(); }
+			}),
+			Task.Run(() =>
+			{
+				for (int i = 0; i < 100; i++)
+				{
+					var loaded = UiConfig.LoadFile(filePath);
+					Assert.True(loaded.PrivacyMode);
+					loaded.ToFile();
+				}
+			}));
+		Assert.True(UiConfig.LoadFile(filePath).PrivacyMode);
+	}
+
 	[Theory]
 	[InlineData(false)]
 	[InlineData(true)]

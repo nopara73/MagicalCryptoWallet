@@ -6,7 +6,7 @@ The rebrand uses independent application storage, executable names, installer id
 
 | Check | Result |
 |---|---|
-| Wallet unit tests | 1,082 passed, none skipped |
+| Wallet unit tests | 1,084 passed, none skipped |
 | Vendored managed cryptography | 125 passed |
 | Native/managed interoperability | 34 passed on Windows |
 | Standalone cross-language credential exchange | Both directions passed, with 10 assertions |
@@ -23,6 +23,7 @@ The rebrand uses independent application storage, executable names, installer id
 | Actual application views | Welcome, About and title bar rendered in both themes at 100, 125, 150 and 200 percent |
 | Restored Chinese password box | Native typing/editing, binding, Unicode paste, IME composition, reveal, clipboard/accessibility protection, all eight original phrases and bundled glyphs pass interactive headless checks |
 | Restored Lurking Wife Mode | Real sidebar click, full label/tooltip/accessibility name, saved-state initialization, setting/icon synchronization, balance/address masking, delayed hover, automatic hiding and explicit reveal pass interactive headless checks |
+| Concurrent settings reads/saves | Loading does not schedule unrequested writes; reads and saves share a path lock across configuration instances, preserving the saved hidden state |
 | Logo proportions and geometry | Cropped compact/horizontal masks match source artwork at 99.8%/99.6%; tiny icons inspected at 16–64 pixels |
 
 ## CI delivery
