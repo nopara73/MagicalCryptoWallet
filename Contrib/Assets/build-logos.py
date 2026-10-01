@@ -54,12 +54,12 @@ def trace(variant: str) -> dict:
         vector = Path(temporary) / "mark.svg"
         mask.save(bitmap)
         if shutil.which("potrace"):
-            command = ["potrace", str(bitmap), "--svg", "--tight", "--opttolerance", "0.2", "--output", str(vector)]
+            command = ["potrace", str(bitmap), "--svg", "--opttolerance", "0.2", "--output", str(vector)]
         elif sys.platform == "win32" and shutil.which("wsl"):
             def linux_path(path: Path) -> str:
                 return "/mnt/" + path.drive[0].lower() + path.as_posix()[2:]
             command = ["wsl", "-d", "Ubuntu", "--", "potrace", linux_path(bitmap),
-                       "--svg", "--tight", "--opttolerance", "0.2", "--output", linux_path(vector)]
+                       "--svg", "--opttolerance", "0.2", "--output", linux_path(vector)]
         else:
             raise RuntimeError("Install Potrace to rebuild the vector masters")
         subprocess.run(command, check=True)
@@ -103,8 +103,6 @@ def export_icons(compact: dict) -> None:
         f'<g transform="translate({dx:.3f} {dy:.3f}) scale({scale:.6f})" '
         f'fill="#000000">{paths}</g>\n</svg>\n', encoding="utf-8")
     destinations = [ASSETS, ROOT / "MagicalCryptoWallet.Fluent.Desktop/Assets"]
-    if not destinations[1].parent.exists():
-        destinations[1] = ROOT / "MagicalCryptoWallet.Fluent.Desktop/Assets"
     for size in SIZES:
         png = ASSETS / f"MagicalCryptoWalletLogo{size}.png"
         subprocess.run(["magick", "-background", "none", str(icon_svg),
@@ -115,8 +113,6 @@ def export_icons(compact: dict) -> None:
                     "-define", "icon:auto-resize=256,128,64,48,32,24,16", str(ico)], check=True)
     shutil.copyfile(ico, destinations[1] / ico.name)
     fluent = ROOT / "MagicalCryptoWallet.Fluent/Assets"
-    if not fluent.exists():
-        fluent = ROOT / "MagicalCryptoWallet.Fluent/Assets"
     shutil.copyfile(ico, fluent / ico.name)
     # ICNS stores the unmodified PNG exports in Apple's standard size chunks.
     chunks = []

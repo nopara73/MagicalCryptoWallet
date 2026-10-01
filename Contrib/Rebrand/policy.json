@@ -12,5 +12,10 @@
     "d8486cd9e602f93b2fd840dd7f4556ad781d1bf83209eff0cf8293b62405e3d3",
     "e5342800cd692b87659e947a232bedc40623a1d342d1ea6ce02e29c22aeb2145"
   ],
+  "immutable_wallet_fixtures": {
+    "MagicalCryptoWallet.Tests/UnitTests/Data/SilentPaymentTestVectors.json": "a108fee6ecd26cc51710bdcfe001a6486d30a4706fdb10f35bb02f5dae7e697a",
+    "MagicalCryptoWallet.Tests/UnitTests/Data/Slip39TestVectors.json": "2cec14895c4acdc29161545f7bf0895b3f835762fb6f8d5380fe48adc7fa3e56",
+    "MagicalCryptoWallet.Tests/UnitTests/Data/VerboseBlock.json": "10e1cadab43140ba7d200b0b05a98113052d98ffc1c49a92e0d8b7e9ce1f2bc9"
+  },
   "purpose": "Forbidden identity tokens, prior trust pins and installer GUIDs, and old artwork/public-key fingerprints are audit negative data."
 }

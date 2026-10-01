@@ -76,6 +76,8 @@ jobs:
         run: dotnet test --project ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests -c Release --no-progress --no-ansi --output Normal
       - name: Tracked source, generated code, assembly metadata, resources and symbols
         run: python Contrib/Rebrand/audit.py --artifacts .artifacts/packages/${{ matrix.rid }}/MagicalCryptoWallet
+      - name: Audit rejects retired identity and trust material
+        run: python Contrib/Rebrand/test-audit.py
       - name: Install alongside the checksum-pinned upstream baseline on the ephemeral runner
         if: matrix.rid == 'win-x64'
         shell: pwsh

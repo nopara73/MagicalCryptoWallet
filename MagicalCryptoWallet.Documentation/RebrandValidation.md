@@ -11,12 +11,14 @@ The rebrand uses independent application storage, executable names, installer id
 | Native/managed interoperability | 34 passed on Windows |
 | Source-built native C tests | Passed on Windows and Linux |
 | Immutable cryptographic sources and published vectors | 56 files match the pinned source, allowing the randomness identifier and attribution comments |
-| Tracked source and current generated code | Passed; 39 individually recorded old-name exceptions |
+| Immutable wallet fixtures | All three inherited JSON fixtures match the original source |
+| Tracked source and current generated code | Passed; 41 individually recorded old-name exceptions |
 | Windows MSI and ZIP | Built, extracted, and audited; 455 MSI payload files match published files |
 | Application metadata, resources and symbols | Seven application assemblies and five symbol sets passed per extracted Windows payload |
 | Fresh storage, explicit synthetic wallet import, independent locks, startup entries, fee defaults | Covered by passing wallet tests |
 | Update authentication | Valid signatures accepted; tampering, wrong signing keys, wrong announcement authors, forged authors, duplicate tags and wrong destinations rejected |
 | Actual application views | Welcome, About and title bar rendered in both themes at 100, 125, 150 and 200 percent |
+| Logo proportions and geometry | Cropped compact/horizontal masks match source artwork at 99.8%/99.6%; tiny icons inspected at 16–64 pixels |
 
 ## CI delivery
 

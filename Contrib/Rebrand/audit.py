@@ -35,6 +35,9 @@ def audit(artifacts):
         if not path.exists() or e['line_sha256'] not in {digest(l.encode()) for l in path.read_text(encoding='utf-8-sig').splitlines()}:
             failures.append('Stale exception: '+e['path']+':'+str(e['line']))
     upstream=json.loads((ROOT/'ThirdParty/WabiSabi/UPSTREAM.json').read_text())
+    for name, expected in policy.get('immutable_wallet_fixtures', {}).items():
+        if digest((ROOT/name).read_bytes().replace(b'\r\n', b'\n')) != expected:
+            failures.append('Wallet fixture drift: '+name)
     # Algorithms and published vectors are immutable; only the randomness identifier
     # and attribution comments differ from source. Build and test adapters are listed.
     immutable=0
@@ -77,7 +80,7 @@ def audit(artifacts):
                 if forbidden.search(text) or port.search(text): failures.append('Package text: '+str(path))
         subprocess.run(['dotnet','run','--project',str(HERE/'AssemblyAudit'),'-c','Release','--',str(HERE/'policy.json'),str(folder)],check=True,cwd=ROOT)
     for problem in failures: print(problem,file=sys.stderr)
-    print(json.dumps({'tracked_files':count,'recorded_exceptions':len(exceptions),'immutable_protocol_files':immutable,'generated_sources':generated,'artifact_folders':len(artifacts),'failures':len(failures)}))
+    print(json.dumps({'tracked_files':count,'recorded_exceptions':len(exceptions),'immutable_protocol_files':immutable,'immutable_wallet_fixtures':len(policy.get('immutable_wallet_fixtures', {})),'generated_sources':generated,'artifact_folders':len(artifacts),'failures':len(failures)}))
     return 1 if failures else 0
 
 if __name__=='__main__':
