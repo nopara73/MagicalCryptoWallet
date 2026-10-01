@@ -15,6 +15,8 @@ tests = {
     'retired update signing key': policy['forbidden_pattern'].split('|')[-2],
 }
 original = README.read_bytes()
+coin_source = ROOT/'MagicalCryptoWallet.Fluent/ViewModels/Wallets/Coins/CoinListViewModel.cs'
+original_coin_source = coin_source.read_bytes()
 try:
     subprocess.run([sys.executable, str(AUDIT)], cwd=ROOT, check=True)
     for label, token in tests.items():
@@ -23,6 +25,13 @@ try:
         if result.returncode != 1 or 'Content: README.md:' not in result.stderr:
             raise RuntimeError('Audit did not reject '+label+': '+result.stdout+result.stderr)
         print('Rejected '+label)
+    README.write_bytes(original)
+    coin_source.write_bytes(original_coin_source+b'\n// ManualControlDialogViewModel\n')
+    result = subprocess.run([sys.executable, str(AUDIT)], cwd=ROOT, capture_output=True, text=True)
+    if result.returncode != 1 or 'Removed coin selection control:' not in result.stderr:
+        raise RuntimeError('Audit did not reject reintroduced manual input selection: '+result.stdout+result.stderr)
+    print('Rejected reintroduced manual input selection')
 finally:
     README.write_bytes(original)
+    coin_source.write_bytes(original_coin_source)
 subprocess.run([sys.executable, str(AUDIT)], cwd=ROOT, check=True)

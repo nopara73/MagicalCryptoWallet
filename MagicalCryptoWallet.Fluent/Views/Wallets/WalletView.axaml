@@ -39,31 +39,15 @@
             </Button>
 
             <!-- Send button -->
-            <SubActionButton Content="Send"
-                             Command="{Binding DefaultSendCommand}"
-                             IsVisible="{Binding IsSendButtonVisible}"
-                             Icon="{StaticResource wallet_action_send}">
-              <SubActionButton.SubCommands>
-                <UICommandCollection>
-                  <UICommand Name="Automatic"
-                             Command="{Binding SendCommand}"
-                             IsDefault="{Binding Settings.IsAutomaticDefaultSendWorkflow}">
-                    <UICommand.Icon>
-                      <PathIcon Data="{StaticResource automatic_control}"
-                                Classes="Icon"/>
-                    </UICommand.Icon>
-                  </UICommand>
-                  <UICommand Name="Manual Control"
-                             Command="{Binding SendManualControlCommand}"
-                             IsDefault="{Binding Settings.IsAutomaticDefaultSendWorkflow, Converter={x:Static BoolConverters.Not}}">
-                    <UICommand.Icon>
-                      <PathIcon Data="{StaticResource manual_control}"
-                                Classes="Icon" />
-                    </UICommand.Icon>
-                  </UICommand>
-                </UICommandCollection>
-              </SubActionButton.SubCommands>
-            </SubActionButton>
+            <Button Classes="function"
+                    Command="{Binding SendCommand}"
+                    IsVisible="{Binding IsSendButtonVisible}"
+                    AutomationProperties.Name="Send">
+              <StackPanel Orientation="Horizontal">
+                <PathIcon Data="{StaticResource wallet_action_send}" />
+                <TextBlock Text="Send" />
+              </StackPanel>
+            </Button>
 
             <!-- Receive button -->
             <Button

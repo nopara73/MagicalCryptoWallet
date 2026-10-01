@@ -168,13 +168,6 @@
     "text": "#pragma warning disable IDE0130 // Namespace does not match folder structure (see https://github.com/WalletWasabi/WalletWasabi/pull/10576#issuecomment-1552750543)"
   },
   {
-    "path": "MagicalCryptoWallet.Fluent/ViewModels/Wallets/Coins/CoinListItem.cs",
-    "line": 34,
-    "line_sha256": "b3b0c3c76af99dd6f28e1e85aa68bdaa4a85df376447cff03aff29510cac4b52",
-    "category": "source provenance",
-    "text": "// Should be again restricted once https://github.com/WalletWasabi/WalletWasabi/issues/9972 is implemented."
-  },
-  {
     "path": "MagicalCryptoWallet.IntegrationTests/BitcoinCore/CoreNode.cs",
     "line": 134,
     "line_sha256": "806bfb628ae203af8b7aceb85cd54334809158764f59ee8505ddae4422b1cc12",

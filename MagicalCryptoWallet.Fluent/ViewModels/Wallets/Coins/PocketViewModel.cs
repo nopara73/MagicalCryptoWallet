@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
-using DynamicData.Aggregation;
 using MagicalCryptoWallet.Blockchain.TransactionOutputs;
 using MagicalCryptoWallet.Fluent.Models.Wallets;
 
@@ -10,13 +9,12 @@ namespace MagicalCryptoWallet.Fluent.ViewModels.Wallets.Coins;
 
 public class PocketViewModel : CoinListItem
 {
-	public PocketViewModel(UiContext uiContext, Pocket pocket, ICoinListModel availableCoins, bool canSelectCoinjoiningCoins, bool ignorePrivacyMode) : base(uiContext)
+	public PocketViewModel(UiContext uiContext, Pocket pocket, ICoinListModel availableCoins) : base(uiContext)
 	{
 		var pocketCoins = pocket.Coins.ToList();
 
 		var unconfirmedCount = pocketCoins.Count(x => !x.Confirmed);
 		IsConfirmed = unconfirmedCount == 0;
-		IgnorePrivacyMode = ignorePrivacyMode;
 		ConfirmationStatus = IsConfirmed ? "All coins are confirmed" : $"{unconfirmedCount} coins are waiting for confirmation";
 		IsBanned = pocketCoins.Any(x => x.IsBanned);
 		BannedUntilUtcToolTip = IsBanned ? "Some coins can't participate in coinjoin" : null;
@@ -28,15 +26,8 @@ public class PocketViewModel : CoinListItem
 			pocketCoins
 				.Select(availableCoins.GetCoinModel)
 				.OrderByDescending(x => x.AnonScore)
-				.Select(coin => new CoinViewModel(uiContext, "", coin, canSelectCoinjoiningCoins, ignorePrivacyMode) { IsChild = true })
+				.Select(coin => new CoinViewModel(uiContext, "", coin) { IsChild = true })
 				.ToList();
-
-		Children
-			.AsObservableChangeSet()
-			.AutoRefresh(x => IsExcludedFromCoinJoin)
-			.Select(_ => Children.All(x => x.IsExcludedFromCoinJoin))
-			.BindTo(this, x => x.IsExcludedFromCoinJoin)
-			.DisposeWith(_disposables);
 
 		Children
 			.AsObservableChangeSet()
@@ -46,55 +37,11 @@ public class PocketViewModel : CoinListItem
 			.DisposeWith(_disposables);
 
 		ScriptType = null;
-
-		Children
-			.AsObservableChangeSet()
-			.WhenPropertyChanged(x => x.IsSelected)
-			.Select(c => Children.Where(x => x.Coin.IsSameAddress(c.Sender.Coin) && x.IsSelected != c.Sender.IsSelected))
-			.Do(coins =>
-			{
-				// Select/deselect all the coins on the same address.
-				foreach (var coin in coins)
-				{
-					coin.IsSelected = !coin.IsSelected;
-				}
-			})
-			.Select(_ =>
-			{
-				var totalCount = Children.Count;
-				var selectedCount = Children.Count(x => x.IsSelected == true);
-				return (bool?)(selectedCount == totalCount ? true : selectedCount == 0 ? false : null);
-			})
-			.BindTo(this, x => x.IsSelected)
-			.DisposeWith(_disposables);
-
-		this.WhenAnyValue(x => x.IsSelected)
-			.Do(isSelected =>
-			{
-				if (isSelected is null)
-				{
-					return;
-				}
-
-				foreach (var item in Children)
-				{
-					item.IsSelected = isSelected.Value;
-				}
-			})
-			.Subscribe()
-			.DisposeWith(_disposables);
-
-		ThereAreSelectableCoins()
-			.BindTo(this, x => x.CanBeSelected)
-			.DisposeWith(_disposables);
+		foreach (var child in Children)
+		{
+			_disposables.Add(child);
+		}
 	}
-
-	private IObservable<bool> ThereAreSelectableCoins() => Children
-		.AsObservableChangeSet()
-		.AutoRefresh(x => x.CanBeSelected)
-		.Filter(x => x.CanBeSelected)
-		.Count()
-		.Select(i => i > 0);
 
 	private static int? GetAnonScore(IEnumerable<SmartCoin> pocketCoins)
 	{

@@ -26,7 +26,6 @@ public partial class WalletSettingsModel : ReactiveObject
 	[AutoNotify] private bool _onlyUsePrivateFundsForPayments;
 	[AutoNotify] private ScriptType _defaultReceiveScriptType;
 	[AutoNotify] private PreferredScriptPubKeyType _changeScriptPubKeyType;
-	[AutoNotify] private SendWorkflow _defaultSendWorkflow;
 
 	public WalletSettingsModel(IServices services, KeyManager keyManager, bool isNewWallet = false, bool isCoinJoinPaused = false)
 	{
@@ -46,7 +45,6 @@ public partial class WalletSettingsModel : ReactiveObject
 
 		_defaultReceiveScriptType = ScriptType.FromEnum(_keyManager.DefaultReceiveScriptType);
 		_changeScriptPubKeyType = _keyManager.ChangeScriptPubKeyType;
-		_defaultSendWorkflow = _keyManager.DefaultSendWorkflow;
 
 		WalletType = WalletHelpers.GetType(_keyManager);
 
@@ -62,7 +60,6 @@ public partial class WalletSettingsModel : ReactiveObject
 			.Subscribe();
 
 		this.WhenAnyValue(
-				x => x.DefaultSendWorkflow,
 				x => x.DefaultReceiveScriptType,
 				x => x.ChangeScriptPubKeyType)
 			.Do(_ => SetValues())
@@ -107,7 +104,6 @@ public partial class WalletSettingsModel : ReactiveObject
 		_keyManager.AnonScoreTarget = AnonScoreTarget;
 		_keyManager.NonPrivateCoinIsolation = NonPrivateCoinIsolation;
 		_keyManager.OnlyUsePrivateFundsForPayments = OnlyUsePrivateFundsForPayments;
-		_keyManager.DefaultSendWorkflow = DefaultSendWorkflow;
 		_keyManager.DefaultReceiveScriptType = ScriptType.ToScriptPubKeyType(DefaultReceiveScriptType);
 		_keyManager.ChangeScriptPubKeyType = ChangeScriptPubKeyType;
 		_isDirty = true;

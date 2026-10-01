@@ -97,14 +97,6 @@ public static partial class Encode
 			_ => throw new ArgumentOutOfRangeException(nameof(w))
 		};
 
-	public static JsonNode SendWorkflow(SendWorkflow w) =>
-		w switch
-		{
-			Models.SendWorkflow.Automatic => "Automatic",
-			Models.SendWorkflow.Manual => "Manual",
-			_ => throw new ArgumentOutOfRangeException(nameof(w))
-		};
-
 	public static JsonNode SerializableException(SerializableException e) =>
 		Object([
 			("ExceptionType", Optional(e.ExceptionType, String)),
@@ -199,14 +191,6 @@ public static partial class Decode
 			"Segwit" => NBitcoin.ScriptPubKeyType.Segwit,
 			"Taproot" => NBitcoin.ScriptPubKeyType.TaprootBIP86,
 			_ => throw new Exception($"Unknown ScriptPubKeyType '{s}'")
-		}).Catch();
-
-	public static Decoder<SendWorkflow> SendWorkflow =>
-		String.Map(s => s switch
-		{
-			"Automatic" => Models.SendWorkflow.Automatic,
-			"Manual" => Models.SendWorkflow.Manual,
-			_ => throw new Exception($"Unknown SendWorkflow value '{s}'")
 		}).Catch();
 
 	public static Decoder<SerializableException> SerializableException =>

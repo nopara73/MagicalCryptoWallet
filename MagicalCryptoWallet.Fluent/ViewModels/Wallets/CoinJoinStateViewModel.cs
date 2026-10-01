@@ -43,7 +43,6 @@ public partial class CoinJoinStateViewModel : ViewModelBase
 	private const string WaitingForConfirmedFunds = "Awaiting confirmed funds";
 	private const string CoinsRejectedMessage = "Some funds are rejected from coinjoining";
 	private const string OnlyImmatureCoinsAvailableMessage = "Only immature funds are available";
-	private const string OnlyExcludedCoinsAvailableMessage = "Only excluded funds are available";
 	private const string CoordinatorLiedMessage = "Coordinator lied and might be malicious!";
 
 	private readonly IWalletModel _wallet;
@@ -171,7 +170,6 @@ public partial class CoinJoinStateViewModel : ViewModelBase
 
 		NavigateToSettingsCommand = coinJoinSettingsCommand;
 		CanNavigateToCoinjoinSettings = coinJoinSettingsCommand.CanExecute;
-		NavigateToExcludedCoinsCommand = ReactiveCommand.Create(() => UiContext.Navigate().To().ExcludedCoins(_wallet));
 		NavigateToCoordinatorSettingsCommand = ReactiveCommand.CreateFromTask(async () =>
 		{
 			if (UiContext.MainViewModel is { } mainViewModel)
@@ -213,7 +211,6 @@ public partial class CoinJoinStateViewModel : ViewModelBase
 
 	public ICommand NavigateToSettingsCommand { get; }
 
-	public ICommand NavigateToExcludedCoinsCommand { get; }
 
 	public bool IsAutoCoinJoinEnabled => _wallet.Settings.AutoCoinjoin;
 
@@ -399,7 +396,6 @@ public partial class CoinJoinStateViewModel : ViewModelBase
 					CoinjoinError.UserWasntInRound => RoundFinishedMessage,
 					CoinjoinError.CoinsRejected => CoinsRejectedMessage,
 					CoinjoinError.OnlyImmatureCoinsAvailable => OnlyImmatureCoinsAvailableMessage,
-					CoinjoinError.OnlyExcludedCoinsAvailable => OnlyExcludedCoinsAvailableMessage,
 					CoinjoinError.MiningFeeRateTooHigh => CoinjoinMiningFeeRateTooHighMessage,
 					CoinjoinError.MinInputCountTooLow => MinInputCountTooLowMessage,
 					CoinjoinError.CoordinatorLiedAboutInputs => CoordinatorLiedMessage,

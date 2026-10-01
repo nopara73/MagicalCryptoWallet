@@ -1,11 +1,5 @@
-using System.Collections.Generic;
 using System.Linq;
-using System.Reactive.Linq;
-using System.Threading.Tasks;
-using MagicalCryptoWallet.Blockchain.TransactionBuilding;
-using MagicalCryptoWallet.Blockchain.TransactionOutputs;
 using MagicalCryptoWallet.Fluent.Helpers;
-using MagicalCryptoWallet.Fluent.ViewModels.Wallets.Send;
 using MagicalCryptoWallet.Wallets;
 
 namespace MagicalCryptoWallet.Fluent.Models.Wallets;
@@ -13,26 +7,6 @@ namespace MagicalCryptoWallet.Fluent.Models.Wallets;
 public partial class WalletCoinsModel(Wallet wallet, IWalletModel walletModel, IServices services)
 	: CoinListModel(wallet, walletModel, services)
 {
-	public async Task UpdateExcludedCoinsFromCoinjoinAsync(CoinModel[] coinsToExclude)
-	{
-		await Task.Run(() =>
-		{
-			var outPoints = coinsToExclude.Select(x => x.GetSmartCoin().Outpoint).ToArray();
-			Wallet.UpdateExcludedCoinsFromCoinJoin(outPoints);
-		});
-	}
-
-	public List<CoinModel> GetSpentCoins(BuildTransactionResult? transaction)
-	{
-		var coins = (transaction?.SpentCoins ?? new List<SmartCoin>()).ToList();
-		return coins.Select(GetCoinModel).ToList();
-	}
-
-	public bool AreEnoughToCreateTransaction(TransactionInfo transactionInfo, IEnumerable<CoinModel> coins)
-	{
-		return TransactionHelpers.TryBuildTransactionWithoutPrevTx(Wallet.KeyManager, transactionInfo, Wallet.Coins, coins.GetSmartCoins(), Wallet.Password, out _);
-	}
-
 	protected override Pocket[] GetPockets()
 	{
 		return Wallet.GetPockets().ToArray();

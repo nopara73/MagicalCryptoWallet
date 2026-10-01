@@ -16,8 +16,6 @@ public abstract partial class CoinListItem : ViewModelBase, ITreeDataGridExpande
 {
 	protected readonly CompositeDisposable _disposables = new();
 
-	private bool? _isSelected;
-
 	[AutoNotify] private bool _isParentSelected;
 	[AutoNotify] private bool _isParentPointerOver;
 	[AutoNotify] private bool _isControlSelected;
@@ -25,16 +23,9 @@ public abstract partial class CoinListItem : ViewModelBase, ITreeDataGridExpande
 	[AutoNotify] private bool _isControlPointerOver;
 	[AutoNotify] private bool _isExpanded;
 	[AutoNotify] private bool _isCoinjoining;
-	[AutoNotify] private bool _isExcludedFromCoinJoin;
-	[AutoNotify] private bool _canBeSelected;
 
 	protected CoinListItem(UiContext uiContext) : base(uiContext)
 	{
-		// Temporarily enable the selection no matter what.
-		// Should be again restricted once https://github.com/WalletWasabi/WalletWasabi/issues/9972 is implemented.
-		// CanBeSelected = !IsCoinjoining;
-		CanBeSelected = true;
-
 		ClipboardCopyCommand = ReactiveCommand.CreateFromTask<string>(text => UiContext.Clipboard.SetTextAsync(text));
 
 		this.WhenAnyValue(x => x.IsControlPointerOver)
@@ -105,13 +96,6 @@ public abstract partial class CoinListItem : ViewModelBase, ITreeDataGridExpande
 
 	public bool IsLastChild { get; set; }
 
-	public bool IgnorePrivacyMode { get; protected set; }
-
-	public bool? IsSelected
-	{
-		get => _isSelected;
-		set => this.RaiseAndSetIfChanged(ref _isSelected, value);
-	}
 
 	public ScriptType? ScriptType { get; protected set; }
 

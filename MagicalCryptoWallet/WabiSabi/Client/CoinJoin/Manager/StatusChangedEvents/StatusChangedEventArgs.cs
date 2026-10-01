@@ -24,8 +24,7 @@ public enum CoinjoinError
 	NoConfirmedCoinsEligibleToMix,
 	CoinsRejected,
 	OnlyImmatureCoinsAvailable,
-	OnlyExcludedCoinsAvailable,
-	MiningFeeRateTooHigh,
+	MiningFeeRateTooHigh = 10, // Preserve the existing error numbers.
 	MinInputCountTooLow,
 	CoordinatorLiedAboutInputs,
 	NotEnoughConfirmedUnprivateBalance

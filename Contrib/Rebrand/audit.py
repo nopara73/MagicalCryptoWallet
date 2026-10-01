@@ -10,6 +10,7 @@ def audit(artifacts):
     policy = json.loads((HERE / 'policy.json').read_text())
     exceptions = json.loads((HERE / 'exceptions.json').read_text())
     forbidden = re.compile(policy['forbidden_pattern'], re.I)
+    removed_controls = re.compile(policy['removed_coin_control_pattern'], re.I)
     port = re.compile(r'(?<![A-Za-z0-9.])371\d\d(?![A-Za-z0-9.])')
     allowed = {(e['path'], e['line_sha256']) for e in exceptions}
     data_files = {'Contrib/Rebrand/policy.json', 'Contrib/Rebrand/exceptions.json'}
@@ -29,6 +30,9 @@ def audit(artifacts):
         if name in data_files: continue
         try: text=raw.decode('utf-8-sig')
         except UnicodeDecodeError: continue
+        is_application_source = name.startswith('MagicalCryptoWallet') and not name.split('/')[0].endswith('Tests') and path.suffix in ('.cs', '.axaml')
+        if is_application_source and (removed_controls.search(name) or removed_controls.search(text)):
+            failures.append('Removed coin selection control: '+name)
         for number,line in enumerate(text.splitlines(),1):
             if forbidden.search(line) or port.search(line):
                 key=(name,digest(line.encode()))
@@ -64,7 +68,9 @@ def audit(artifacts):
                 if not generator.startswith('MagicalCryptoWallet.'):
                     continue # Inactive caches from an earlier checkout are not compiler inputs.
             generated+=1
-            if forbidden.search(path.read_text(encoding='utf-8-sig')): failures.append('Generated identity: '+str(path.relative_to(ROOT)))
+            text = path.read_text(encoding='utf-8-sig')
+            if forbidden.search(text): failures.append('Generated identity: '+str(path.relative_to(ROOT)))
+            if not folder.parent.name.endswith('Tests') and removed_controls.search(text): failures.append('Removed generated coin selection control: '+str(path.relative_to(ROOT)))
     for artifact in artifacts:
         folder=Path(artifact).resolve()
         if not folder.is_dir(): failures.append('Missing extracted package: '+str(folder)); continue

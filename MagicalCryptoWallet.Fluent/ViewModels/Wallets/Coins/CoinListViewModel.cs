@@ -18,15 +18,9 @@ public class CoinListViewModel : ViewModelBase, IDisposable
 {
 	private readonly CompositeDisposable _disposables = new();
 	private readonly ReadOnlyObservableCollection<CoinListItem> _itemsCollection;
-	private readonly bool _ignorePrivacyMode;
-	private readonly bool _allowCoinjoiningCoinSelection;
-
 	[System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Uses DisposeWith()")]
-	public CoinListViewModel(UiContext uiContext, ICoinListModel availableCoins, IList<CoinModel> initialCoinSelection, bool allowCoinjoiningCoinSelection, bool ignorePrivacyMode, bool allowSelection = true) : base(uiContext)
+	public CoinListViewModel(UiContext uiContext, ICoinListModel availableCoins) : base(uiContext)
 	{
-		_ignorePrivacyMode = ignorePrivacyMode;
-		_allowCoinjoiningCoinSelection = allowCoinjoiningCoinSelection;
-
 		var viewModels = new SourceList<CoinListItem>().DisposeWith(_disposables);
 
 		var changes = viewModels.Connect();
@@ -61,31 +55,20 @@ public class CoinListViewModel : ViewModelBase, IDisposable
 			.Subscribe()
 			.DisposeWith(_disposables);
 
-		coinItems.AutoRefresh(x => x.IsSelected)
-			.Filter(x => x.IsSelected == true)
-			.Transform(x => x.Coin)
-			.Bind(out var selection)
-			.Subscribe()
-			.DisposeWith(_disposables);
-
-		Selection = selection;
-
 		availableCoins.Pockets
 			.Connect(suppressEmptyChangeSets: false)
 			.ToCollection()
 			.Do(
 				pockets =>
 				{
-					IList<CoinModel> oldSelection = Selection.ToArray();
 					var oldExpandedItemsLabel = _itemsCollection.Where(x => x.IsExpanded).Select(x => x.Labels).ToArray();
 					Rebuild(viewModels, pockets, availableCoins);
-					UpdateSelection(coinItemsCollection, oldSelection);
 					RestoreExpandedRows(oldExpandedItemsLabel);
 				})
 			.Subscribe()
 			.DisposeWith(_disposables);
 
-		TreeDataGridSource = CoinListDataGridSource.Create(_itemsCollection, allowSelection);
+		TreeDataGridSource = CoinListDataGridSource.Create(_itemsCollection);
 		TreeDataGridSource.DisposeWith(_disposables);
 		CoinItems = coinItemsCollection;
 
@@ -101,30 +84,15 @@ public class CoinListViewModel : ViewModelBase, IDisposable
 		Sortables =
 		[
 			new SortableItem("Status") { SortByAscendingCommand = ReactiveCommand.Create(() => TreeDataGridSource.SortBy(TreeDataGridSource.Columns[0], ListSortDirection.Ascending)), SortByDescendingCommand = ReactiveCommand.Create(() => TreeDataGridSource.SortBy(TreeDataGridSource.Columns[0], ListSortDirection.Descending)) },
-			new SortableItem("Date") { SortByAscendingCommand = ReactiveCommand.Create(() => TreeDataGridSource.SortBy(TreeDataGridSource.Columns[1], ListSortDirection.Ascending)), SortByDescendingCommand = ReactiveCommand.Create(() => TreeDataGridSource.SortBy(TreeDataGridSource.Columns[1], ListSortDirection.Descending)) },
+			new SortableItem("Privacy") { SortByAscendingCommand = ReactiveCommand.Create(() => TreeDataGridSource.SortBy(TreeDataGridSource.Columns[1], ListSortDirection.Ascending)), SortByDescendingCommand = ReactiveCommand.Create(() => TreeDataGridSource.SortBy(TreeDataGridSource.Columns[1], ListSortDirection.Descending)) },
 			new SortableItem("Amount") { SortByAscendingCommand = ReactiveCommand.Create(() => TreeDataGridSource.SortBy(TreeDataGridSource.Columns[2], ListSortDirection.Ascending)), SortByDescendingCommand = ReactiveCommand.Create(() => TreeDataGridSource.SortBy(TreeDataGridSource.Columns[2], ListSortDirection.Descending)) },
 			new SortableItem("Label") { SortByAscendingCommand = ReactiveCommand.Create(() => TreeDataGridSource.SortBy(TreeDataGridSource.Columns[3], ListSortDirection.Ascending)), SortByDescendingCommand = ReactiveCommand.Create(() => TreeDataGridSource.SortBy(TreeDataGridSource.Columns[3], ListSortDirection.Descending)) },
 		];
-
-		SetInitialSelection(initialCoinSelection);
-	}
-
-	private void SetInitialSelection(IEnumerable<CoinModel> initialSelection)
-	{
-		var initialSmartCoins = initialSelection.GetSmartCoins().ToList();
-		var coinsToSelect = CoinItems.Where(x => initialSmartCoins.Contains(x.Coin.GetSmartCoin()));
-
-		foreach (var coinItem in coinsToSelect)
-		{
-			coinItem.IsSelected = true;
-		}
 	}
 
 	public ReadOnlyObservableCollection<CoinViewModel> CoinItems { get; }
 
 	public ReactiveCommand<Unit, Unit> ExpandAllCommand { get; set; }
-
-	public ReadOnlyObservableCollection<CoinModel> Selection { get; }
 
 	public HierarchicalTreeDataGridSource<CoinListItem> TreeDataGridSource { get; }
 
@@ -133,18 +101,6 @@ public class CoinListViewModel : ViewModelBase, IDisposable
 	public void Dispose()
 	{
 		_disposables.Dispose();
-	}
-
-	private static void UpdateSelection(IEnumerable<CoinViewModel> coinItems, IList<CoinModel> selectedCoins)
-	{
-		var selectedSmartCoins = selectedCoins.GetSmartCoins().ToList();
-
-		var coinsToSelect = coinItems.Where(x => selectedSmartCoins.Contains(x.Coin.GetSmartCoin()));
-
-		foreach (var coinItem in coinsToSelect)
-		{
-			coinItem.IsSelected = true;
-		}
 	}
 
 	private void Rebuild(ISourceList<CoinListItem> source, IEnumerable<Pocket> pockets, ICoinListModel availableCoins)
@@ -158,10 +114,10 @@ public class CoinListViewModel : ViewModelBase, IDisposable
 					var coin = pocket.Coins.First();
 					var coinModel = availableCoins.GetCoinModel(coin);
 
-					return (CoinListItem)new CoinViewModel(UiContext, pocket.Labels, coinModel, _ignorePrivacyMode, _allowCoinjoiningCoinSelection);
+					return (CoinListItem)new CoinViewModel(UiContext, pocket.Labels, coinModel);
 				}
 
-				return new PocketViewModel(UiContext, pocket, availableCoins, _allowCoinjoiningCoinSelection, _ignorePrivacyMode);
+				return new PocketViewModel(UiContext, pocket, availableCoins);
 			});
 
 		source.EditDiff(newItems, new LambdaComparer<CoinListItem>((a, b) => Equals(a?.Key, b?.Key)));

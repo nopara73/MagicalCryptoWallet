@@ -104,7 +104,7 @@ public class RpcTests
 		};
 
 		void BuildTransaction(int? feeTarget = null, decimal? feeRate = null) =>
-			service.BuildTransaction(new[] { paymentInfo }, [], feeTarget, feeRate);
+			service.BuildTransaction(new[] { paymentInfo }, feeTarget, feeRate);
 
 		// No fee information is provided
 		Assert.Throws<ArgumentException>(() => BuildTransaction());

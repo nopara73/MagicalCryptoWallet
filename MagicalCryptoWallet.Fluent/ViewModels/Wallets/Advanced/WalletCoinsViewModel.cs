@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using MagicalCryptoWallet.Fluent.Models.Wallets;
@@ -26,7 +25,7 @@ public partial class WalletCoinsViewModel : RoutableViewModel
 		_wallet = wallet;
 		SetupCancel(enableCancel: false, enableCancelOnEscape: true, enableCancelOnPressed: true);
 		NextCommand = CancelCommand;
-		CoinList = new CoinListViewModel(uiContext, _wallet.Coins, new List<CoinModel>(), allowCoinjoiningCoinSelection: false, ignorePrivacyMode: false, allowSelection: false);
+		CoinList = new CoinListViewModel(uiContext, _wallet.Coins);
 	}
 
 	public CoinListViewModel CoinList { get; }

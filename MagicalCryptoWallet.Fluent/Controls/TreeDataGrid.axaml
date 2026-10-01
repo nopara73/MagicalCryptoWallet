@@ -10,8 +10,8 @@
       <TreeDataGridRow />
       <!-- HistoryTable -->
       <TreeDataGridRow Theme="{StaticResource HistoryTableTreeDataGridRow}" />
-      <!-- SelectCoinsDialogView -->
-      <TreeDataGridRow Theme="{StaticResource SelectCoinsDialogViewTreeDataGridRow}" />
+      <!-- Wallet coins -->
+      <TreeDataGridRow Theme="{StaticResource WalletCoinsTreeDataGridRow}" />
       <!-- WalletCoinsView -->
       <TreeDataGridRow Theme="{StaticResource WalletCoinsViewTreeDataGridRow}" />
       <!-- ReceiveAddressesView -->
@@ -238,9 +238,9 @@
     </Setter>
   </ControlTheme>
 
-  <!-- TreeDataGridExpanderCell: SelectCoinsDialogView.axaml -->
+  <!-- TreeDataGridExpanderCell: CoinListView.axaml -->
 
-  <ControlTheme x:Key="SelectCoinsDialogViewTreeDataGridExpanderCell" TargetType="TreeDataGridExpanderCell">
+  <ControlTheme x:Key="WalletCoinsTreeDataGridExpanderCell" TargetType="TreeDataGridExpanderCell">
 
     <Setter Property="Template">
       <ControlTemplate>
@@ -262,9 +262,9 @@
     </Setter>
   </ControlTheme>
 
-  <!-- TreeDataGridRow: SelectCoinsDialogView.axaml -->
+  <!-- TreeDataGridRow: CoinListView.axaml -->
 
-  <ControlTheme x:Key="SelectCoinsDialogViewTreeDataGridRow" TargetType="TreeDataGridRow" BasedOn="{StaticResource GenericTreeDataGridRow}">
+  <ControlTheme x:Key="WalletCoinsTreeDataGridRow" TargetType="TreeDataGridRow" BasedOn="{StaticResource GenericTreeDataGridRow}">
     <Setter Property="Focusable" Value="False" />
 
     <Setter Property="Template">

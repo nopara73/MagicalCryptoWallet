@@ -6,7 +6,7 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:DataType="coins:CoinListItem"
              x:CompileBindings="True"
-             x:Class="MagicalCryptoWallet.Fluent.Views.CoinControl.Core.Cells.IndicatorsCellView">
+             x:Class="MagicalCryptoWallet.Fluent.Views.Wallets.Coins.Cells.IndicatorsCellView">
 
   <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Spacing="3" Margin="0 0 20 0">
 
@@ -26,14 +26,8 @@
                 ToolTip.Tip="Pending" />
     </Panel>
 
-    <Panel>
+    <Panel IsVisible="{Binding !IsBanned}">
       <!-- CJ active -->
-      <Panel.IsVisible>
-        <MultiBinding Converter="{x:Static BoolConverters.And}">
-          <Binding Path="!IsBanned"/>
-          <Binding Path="!IsExcludedFromCoinJoin"/>
-        </MultiBinding>
-      </Panel.IsVisible>
       <PathIcon IsVisible="{Binding IsCoinjoining}"
                 Data="{StaticResource wallet_action_coinjoin}"
                 Foreground="{DynamicResource SystemAccentColor}"
@@ -51,20 +45,8 @@
     <PathIcon Data="{StaticResource warning_circle}"
               Foreground="{DynamicResource SystemControlErrorTextForegroundBrush}"
               Height="14"
-              ToolTip.Tip="{Binding BannedUntilUtcToolTip}">
-      <PathIcon.IsVisible>
-        <MultiBinding Converter="{x:Static BoolConverters.And}">
-          <Binding Path="IsBanned"/>
-          <Binding Path="!IsExcludedFromCoinJoin"/>
-        </MultiBinding>
-      </PathIcon.IsVisible>
-    </PathIcon>
-
-    <PathIcon IsVisible="{Binding IsExcludedFromCoinJoin}"
-              Data="{StaticResource forbidden}"
-              Foreground="{DynamicResource CoinjoinActiveColor}"
-              Height="14"
-              ToolTip.Tip="Excluded from coinjoins" />
+              ToolTip.Tip="{Binding BannedUntilUtcToolTip}"
+              IsVisible="{Binding IsBanned}" />
 
     <Border BorderThickness="1"
             VerticalAlignment="Center"

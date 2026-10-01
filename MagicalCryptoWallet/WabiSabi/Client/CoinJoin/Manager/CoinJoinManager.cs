@@ -269,9 +269,9 @@ public class CoinJoinManager : BackgroundService
 		}
 	}
 
-	private record CoinSelectionResult(SmartCoin[] CandidateCoins, SmartCoin[] BannedCoins, SmartCoin[] ImmatureCoins, SmartCoin[] UnconfirmedCoins, SmartCoin[] ExcludedCoins)
+	private record CoinSelectionResult(SmartCoin[] CandidateCoins, SmartCoin[] BannedCoins, SmartCoin[] ImmatureCoins, SmartCoin[] UnconfirmedCoins)
 	{
-		public CoinSelectionResult() : this([], [], [], [], []) { }
+		public CoinSelectionResult() : this([], [], [], []) { }
 	}
 
 	private CoinSelectionResult GetCoinSelection(Wallet wallet)
@@ -291,21 +291,18 @@ public class CoinJoinManager : BackgroundService
 			? coinCandidates.Where(x => x.Transaction.IsImmature(_serverTipHeight)).ToArray()
 			: [];
 		var unconfirmedCoins = coinCandidates.Where(x => !x.Confirmed).ToArray();
-		var excludedCoins = coinCandidates.Where(x => x.IsExcludedFromCoinJoin).ToArray();
 
 		var availableCoins = coinCandidates
 			.Except(bannedCoins)
 			.Except(immatureCoins)
 			.Except(unconfirmedCoins)
-			.Except(excludedCoins)
 			.ToArray();
 
 		return new CoinSelectionResult(
 			availableCoins,
 			bannedCoins,
 			immatureCoins,
-			unconfirmedCoins,
-			excludedCoins);
+			unconfirmedCoins);
 	}
 
 	private CoinSelectionResult SelectCandidateCoins(Wallet wallet)
@@ -333,11 +330,6 @@ public class CoinJoinManager : BackgroundService
 		if (AnyNonPrivate(result.ImmatureCoins))
 		{
 			return CoinjoinError.OnlyImmatureCoinsAvailable;
-		}
-
-		if (AnyNonPrivate(result.ExcludedCoins))
-		{
-			return CoinjoinError.OnlyExcludedCoinsAvailable;
 		}
 
 		if (AnyNonPrivate(result.BannedCoins))

@@ -72,7 +72,6 @@ public static class MagicalCryptoWalletLibGenerator
 		DefineAccessorWithGetter("wallet-auto-coinjoin?", (KeyManager km) => km.AutoCoinJoin, "wallet-keymanager");
 		DefineAccessorWithGetter("wallet-non-private-coin-isolation?", (KeyManager km) => km.NonPrivateCoinIsolation, "wallet-keymanager");
 		DefineAccessorWithGetter("wallet-anonscore-target", (KeyManager km) => km.AnonScoreTarget, "wallet-keymanager");
-		DefineAccessorWithGetter("wallet-excluded-coins-from-coinjoin", (KeyManager km) => km.ExcludedCoinsFromCoinJoin, "wallet-keymanager");
 
 		// Additional KeyManager accessors (chained via wallet-keymanager)
 		DefineAccessorWithGetter("wallet-master-fingerprint", (KeyManager km) => km.MasterFingerprint, "wallet-keymanager");
@@ -119,7 +118,6 @@ public static class MagicalCryptoWalletLibGenerator
 		DefineAccessor("coin-banned-until", (SmartCoin c) => c.BannedUntilUtc);
 		DefineAccessor("coin-script-pubkey", (SmartCoin c) => c.ScriptPubKey);
 		DefineAccessor("coin-script-pubkey-type", (SmartCoin c) => c.ScriptType);
-		DefineAccessor("coin-excluded-from-coinjoin?", (SmartCoin c) => c.IsExcludedFromCoinJoin);
 		DefineAccessor("coin-pubkey", (SmartCoin c) => c.HdPubKey);
 
 		// Additional SmartCoin accessors
@@ -377,10 +375,7 @@ public static class MagicalCryptoWalletLibGenerator
 
 		       ;; Number of confirmations for a coin
 		       (define (coin-confirmations coin)
-		         (let ((h (coin-height coin)))
-		           (if (number? h)
-		               (- (remote-tip-height) h)
-		               0)))
+		         (transaction-confirmations (coin-tx coin)))
 
 		       ;; Check if coin meets wallet's anonymity target
 		       (define (coin-private? coin wallet)
@@ -426,10 +421,7 @@ public static class MagicalCryptoWalletLibGenerator
 
 		       ;; Number of confirmations for a transaction
 		       (define (transaction-confirmations tx)
-		         (let ((h (transaction-height tx)))
-		           (if (number? h)
-		               (- (remote-tip-height) h)
-		               0)))
+		         (__transaction_confirmations tx))
 
 		       ;; Filter transactions by status
 		       (define (wallet-pending-transactions wallet)
@@ -756,15 +748,14 @@ public static class MagicalCryptoWalletLibGenerator
 		           ("amount"         ,(bitcoin->satoshi (coin-amount coin)))
 		           ("anonymityScore" ,(coin-anonymityset coin))
 		           ("confirmed"      ,(coin-confirmed? coin))
-		           ("confirmations"  ,(- (remote-tip-height) (coin-height coin)))
+		           ("confirmations"  ,(coin-confirmations coin))
 		           ("keypath"        ,(native->string (coin-keypath coin)))
 		           ("address"        ,(coin-address coin))))
 
 		       (define (unspent-coins wallet)
 		         (map (lambda (coin)
 		                (append (coin->rpc_info coin)
-		                        `(("labels"             ,(string-join ", " (coin-labels coin)))
-		                          ("excludeFromCoinjoin" ,(coin-excluded-from-coinjoin? coin)))))
+		                        `(("labels" ,(string-join ", " (coin-labels coin))))))
 		              (wallet-unspent-coins wallet)))
 
 		       (define (full-wallet-info wallet)

@@ -53,7 +53,6 @@ public class MagicalCryptoWalletJsonRpcService : IJsonRpcService
 				["label"] = x.HdPubKey.Labels.ToString(),
 				["keyPath"] = x.HdPubKey.FullKeyPath.ToString(),
 				["address"] = x.HdPubKey.GetAddress(Global.Network).ToString(),
-				["excludedFromCoinjoin"] = x.IsExcludedFromCoinJoin
 			}).ToImmutableArray();
 	}
 
@@ -222,10 +221,9 @@ public class MagicalCryptoWalletJsonRpcService : IJsonRpcService
 	}
 
 	[JsonRpcMethod("build")]
-	public string BuildTransaction(PaymentInfo[] payments, OutPoint[] coins, int? feeTarget = null, decimal? feeRate = null, string? password = null)
+	public string BuildTransaction(PaymentInfo[] payments, int? feeTarget = null, decimal? feeRate = null, string? password = null)
 	{
 		Guard.NotNull(nameof(payments), payments);
-		Guard.NotNull(nameof(coins), coins);
 		password = Guard.Correct(password);
 
 		var feeStrategy = GetFeeStrategy(feeTarget, feeRate);
@@ -239,8 +237,7 @@ public class MagicalCryptoWalletJsonRpcService : IJsonRpcService
 			password,
 			payment,
 			feeStrategy,
-			allowUnconfirmed: true,
-			allowedInputs: coins);
+			allowUnconfirmed: true);
 		var smartTx = result.Transaction;
 
 		return smartTx.Transaction.ToHex();
@@ -251,10 +248,9 @@ public class MagicalCryptoWalletJsonRpcService : IJsonRpcService
 	/// Potentially, the user can burn his money using this method, so be careful!
 	/// </summary>
 	[JsonRpcMethod("buildunsafetransaction")]
-	public string BuildUnsafeTransaction(PaymentInfo[] payments, OutPoint[] coins, int? feeTarget = null, decimal? feeRate = null, string? password = null)
+	public string BuildUnsafeTransaction(PaymentInfo[] payments, int? feeTarget = null, decimal? feeRate = null, string? password = null)
 	{
 		Guard.NotNull(nameof(payments), payments);
-		Guard.NotNull(nameof(coins), coins);
 		password = Guard.Correct(password);
 
 		var feeStrategy = GetFeeStrategy(feeTarget, feeRate);
@@ -268,8 +264,7 @@ public class MagicalCryptoWalletJsonRpcService : IJsonRpcService
 			password,
 			payment,
 			feeStrategy,
-			allowUnconfirmed: true,
-			allowedInputs: coins);
+			allowUnconfirmed: true);
 		var smartTx = result.Transaction;
 
 		return smartTx.Transaction.ToHex();
@@ -361,10 +356,10 @@ public class MagicalCryptoWalletJsonRpcService : IJsonRpcService
 	}
 
 	[JsonRpcMethod("send")]
-	public async Task<JsonRpcResult> SendTransactionAsync(PaymentInfo[] payments, OutPoint[] coins, int? feeTarget = null, int? feeRate = null, string? password = null)
+	public async Task<JsonRpcResult> SendTransactionAsync(PaymentInfo[] payments, int? feeTarget = null, int? feeRate = null, string? password = null)
 	{
 		password = Guard.Correct(password);
-		var txHex = BuildTransaction(payments, coins, feeTarget, feeRate, password);
+		var txHex = BuildTransaction(payments, feeTarget, feeRate, password);
 		var smartTx = new SmartTransaction(Transaction.Parse(txHex, Global.Network), Height.Mempool);
 
 		await Global.TransactionBroadcaster.SendTransactionAsync(smartTx).ConfigureAwait(false);
@@ -441,16 +436,6 @@ public class MagicalCryptoWalletJsonRpcService : IJsonRpcService
 				["tx"] = x.GetHash(),
 				["islikelycoinjoin"] = x.IsOwnCoinjoin()
 			}).ToImmutableArray();
-	}
-
-	[JsonRpcMethod("excludefromcoinjoin")]
-	public void ExcludeCoinsFromCoinjoin(uint256 transactionId, int n, bool exclude = true)
-	{
-		var activeWallet = Guard.NotNull(nameof(ActiveWallet), ActiveWallet);
-
-		AssertWalletIsLoaded();
-
-		activeWallet.ExcludeCoinFromCoinJoin(new OutPoint(transactionId, n), exclude);
 	}
 
 	[JsonRpcMethod("listkeys")]

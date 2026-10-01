@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 
 var policy = JsonDocument.Parse(File.ReadAllText(args[0]));
 var forbidden = new Regex(policy.RootElement.GetProperty("forbidden_pattern").GetString()!, RegexOptions.IgnoreCase);
+var removedControls = new Regex(policy.RootElement.GetProperty("removed_coin_control_pattern").GetString()!, RegexOptions.IgnoreCase);
 int assemblies = 0, symbols = 0, failures = 0;
 foreach (string folder in args.Skip(1))
 foreach (string file in Directory.EnumerateFiles(folder, "MagicalCryptoWallet*.dll", SearchOption.AllDirectories))
@@ -79,7 +80,7 @@ foreach (string file in Directory.EnumerateFiles(folder, "MagicalCryptoWallet*.d
     }
     void Check(string value)
     {
-        if (!forbidden.IsMatch(value)) return;
+        if (!forbidden.IsMatch(value) && !removedControls.IsMatch(value)) return;
         Console.Error.WriteLine($"Stale assembly/resource/symbol identity: {Path.GetFileName(file)}: {value}");
         failures++;
     }

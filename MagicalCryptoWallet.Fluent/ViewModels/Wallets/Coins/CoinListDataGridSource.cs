@@ -5,21 +5,19 @@ using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Templates;
 using MagicalCryptoWallet.Fluent.Helpers;
 using MagicalCryptoWallet.Fluent.TreeDataGrid;
-using MagicalCryptoWallet.Fluent.ViewModels.CoinControl;
-using MagicalCryptoWallet.Fluent.Views.CoinControl.Core.Cells;
+using MagicalCryptoWallet.Fluent.Views.Wallets.Coins.Cells;
 
 namespace MagicalCryptoWallet.Fluent.ViewModels.Wallets.Coins;
 
 public static class CoinListDataGridSource
 {
-	public static HierarchicalTreeDataGridSource<CoinListItem> Create(IEnumerable<CoinListItem> source, bool allowSelection)
+	public static HierarchicalTreeDataGridSource<CoinListItem> Create(IEnumerable<CoinListItem> source)
 	{
 		// [Column]			[View]					[Header]	[Width]		[MinWidth]		[MaxWidth]	[CanUserSort]
 		// Indicators		IndicatorsColumnView	-			Auto		-				-			true
 		// AnonymityScore	AnonymityColumnView		<custom>	50			-				-			true
 		// Amount			AmountColumnView		Amount		Auto		-				-			true
 		// Labels			LabelsColumnView		Labels		*			-				-			true
-		// Selection		SelectionColumnView		-			Auto		-				-			false
 		var result = new HierarchicalTreeDataGridSource<CoinListItem>(source)
 		{
 			Columns =
@@ -30,11 +28,6 @@ public static class CoinListDataGridSource
 				LabelsColumn(),
 			}
 		};
-
-		if (allowSelection)
-		{
-			result.Columns.Add(SelectionColumn());
-		}
 
 		return result;
 	}
@@ -56,12 +49,7 @@ public static class CoinListDataGridSource
 			return 3;
 		}
 
-		if (!x.IsExcludedFromCoinJoin)
-		{
-			return 4;
-		}
-
-		return 0;
+		return 4;
 	}
 
 	private static IColumn<CoinListItem> IndicatorsColumn()
@@ -80,17 +68,6 @@ public static class CoinListDataGridSource
 			group => group.Children,
 			node => node.HasChildren(),
 			node => node.IsExpanded);
-	}
-
-	private static TemplateColumn<CoinListItem> SelectionColumn()
-	{
-		return new TemplateColumn<CoinListItem>(
-			null,
-			new FuncDataTemplate<CoinListItem>(
-				(_, _) => new SelectionCellView(),
-				true),
-			null,
-			GridLength.Auto);
 	}
 
 	private static IColumn<CoinListItem> AmountColumn()
@@ -130,8 +107,8 @@ public static class CoinListDataGridSource
 			GridLength.Star,
 			new TemplateColumnOptions<CoinListItem>
 			{
-				CompareAscending = CoinControlLabelComparer.Ascending,
-				CompareDescending = CoinControlLabelComparer.Descending
+				CompareAscending = CoinLabelComparer.Ascending,
+				CompareDescending = CoinLabelComparer.Descending
 			});
 	}
 }

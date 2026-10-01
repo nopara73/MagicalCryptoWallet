@@ -7,6 +7,7 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Styling;
 using Avalonia.Threading;
+using ReactiveUI.Avalonia;
 using MagicalCryptoWallet.Fluent;
 using MagicalCryptoWallet.Fluent.Models.UI;
 using MagicalCryptoWallet.Fluent.Models.Wallets;
@@ -22,13 +23,14 @@ using MagicalCryptoWallet.Fluent.Views.Shell;
 
 // Render the actual application views and resources with an inert context.
 // No wallet services, networking, navigation, or user data are initialized.
-AppBuilder.Configure<App>().WithInterFont().With(new FontManagerOptions { DefaultFamilyName = "fonts:Inter#Inter, $Default" }).UseSkia().UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false }).SetupWithoutStarting();
+AppBuilder.Configure<App>().WithInterFont().With(new FontManagerOptions { DefaultFamilyName = "fonts:Inter#Inter, $Default" }).UseSkia().UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false }).UseReactiveUI().SetupWithoutStarting();
 string destination = args.FirstOrDefault() ?? ".artifacts/rebrand/screenshots";
 Directory.CreateDirectory(destination);
 var context = (UiContext)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(UiContext));
 PasswordBoxChecks.Run();
 using var syntheticWallets = LurkingWifeModeChecks.Run(context, destination);
 SingleWalletChecks.Run(context);
+AutomaticCoinSelectionChecks.Run(context);
 foreach (var theme in new[] { ThemeVariant.Light, ThemeVariant.Dark })
 {
     Application.Current!.RequestedThemeVariant = theme;
@@ -52,8 +54,13 @@ foreach (var theme in new[] { ThemeVariant.Light, ThemeVariant.Dark })
         }, 640, 440);
         Render("lurking-wife-mode-off", LurkingWifeModeChecks.CreatePreview(context, false), 640, 300);
         Render("lurking-wife-mode-on", LurkingWifeModeChecks.CreatePreview(context, true), 640, 300);
+        Services.Instance.UiConfig.PrivacyMode = false;
         Render("single-wallet", SingleWalletChecks.CreatePreview(context), 800, 600);
         Render("wallet-setup", new AddWalletPageView { DataContext = new AddWalletPageViewModel(context) }, 800, 600);
+        Render("wallet-actions", AutomaticCoinSelectionChecks.CreateWalletActions(context), 900, 650);
+        Render("transaction-preview", AutomaticCoinSelectionChecks.CreateTransactionPreview(context), 900, 650);
+        Render("wallet-coins", AutomaticCoinSelectionChecks.CreateWalletCoins(context), 900, 650);
+        Render("wallet-general-settings", AutomaticCoinSelectionChecks.CreateWalletSettings(context), 900, 650);
         void Render(string name, Control content, int width, int height)
         {
             var panel = new DockPanel();
@@ -74,7 +81,7 @@ foreach (var theme in new[] { ThemeVariant.Light, ThemeVariant.Dark })
         }
     }
 }
-Console.WriteLine("Rendered actual Welcome, About, passphrase creation/authorization, Lurking Wife Mode, single-wallet sidebar/login, first-run setup, and title bar views in both themes at 100, 125, 150, and 200 percent.");
+Console.WriteLine("Rendered actual Welcome, About, passphrase creation/authorization, Lurking Wife Mode, single-wallet sidebar/login, first-run setup, wallet actions, transaction preview, read-only coins, wallet settings, and title bar views in both themes at 100, 125, 150, and 200 percent.");
 
 // Authorize is never invoked. Any attempt to use a wallet service fails immediately.
 public class InertPreviewWallet : DispatchProxy

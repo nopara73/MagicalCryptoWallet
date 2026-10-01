@@ -32,8 +32,6 @@ public partial class WalletSettingsViewModel : RoutableViewModel
     [AutoNotify] private ScriptType _defaultReceiveScriptType;
     [AutoNotify] private bool _isSegWitDefaultReceiveScriptType;
     [AutoNotify] private PreferredScriptPubKeyType _changeScriptPubKeyType;
-    [AutoNotify] private SendWorkflow _defaultSendWorkflow;
-    [AutoNotify] private bool _isAutomaticDefaultSendWorkflow;
 
     public WalletSettingsViewModel(UiContext uiContext, IWalletModel walletModel) : base(uiContext)
     {
@@ -102,10 +100,6 @@ public partial class WalletSettingsViewModel : RoutableViewModel
             _ => walletModel.Settings.ChangeScriptPubKeyType
         };
 
-        DefaultSendWorkflow = walletModel.Settings.DefaultSendWorkflow;
-        this.WhenAnyValue(x => x.DefaultSendWorkflow)
-            .Subscribe(value => IsAutomaticDefaultSendWorkflow = value == SendWorkflow.Automatic);
-
         WalletCoinJoinSettings = new WalletCoinJoinSettingsViewModel(UiContext, walletModel);
 
         VerifyRecoveryWordsCommand = ReactiveCommand.Create(() => Navigate().To().WalletVerifyRecoveryWords(walletModel));
@@ -120,14 +114,6 @@ public partial class WalletSettingsViewModel : RoutableViewModel
                 AppLifetimeHelper.Shutdown(withShutdownPrevention: true, restart: true);
             }
         });
-
-        this.WhenAnyValue(x => x.DefaultSendWorkflow)
-            .Skip(1)
-            .Subscribe(value =>
-            {
-                walletModel.Settings.DefaultSendWorkflow = value;
-                walletModel.Settings.Save();
-            });
 
         this.WhenAnyValue(x => x.DefaultReceiveScriptType)
             .Skip(1)
@@ -157,7 +143,6 @@ public partial class WalletSettingsViewModel : RoutableViewModel
     public bool IsHardwareWallet { get; }
     public bool IsWatchOnly { get; }
     public bool SeveralReceivingScriptTypes => _wallet.SeveralReceivingScriptTypes;
-    public bool IsDefaultSendWorkflowSettingVisible => !(IsWatchOnly || IsHardwareWallet);
 
     public IEnumerable<ScriptType> ReceiveScriptTypes { get; } = [ScriptType.SegWit, ScriptType.Taproot];
     public IEnumerable<PreferredScriptPubKeyType> ChangeScriptPubKeyTypes { get; } =
@@ -167,7 +152,6 @@ public partial class WalletSettingsViewModel : RoutableViewModel
         PreferredScriptPubKeyType.Specified.Taproot
     ];
 
-    public IEnumerable<SendWorkflow> SendWorkflows { get; } = Enum.GetValues<SendWorkflow>();
 
     public WalletCoinJoinSettingsViewModel WalletCoinJoinSettings { get; private set; }
     public ICommand VerifyRecoveryWordsCommand { get; }

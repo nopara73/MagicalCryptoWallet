@@ -1,5 +1,7 @@
 # Magical Crypto Wallet
 
+The app manages [one wallet](SingleWallet.md) and uses [automatic coin selection](AutomaticCoinSelection.md). Wallet creation, hardware connection, recovery and explicit file import are available during setup.
+
 ## Build
 
 Install the .NET SDK selected by `global.json`, CMake 3.22 or newer, and a C11 compiler (MinGW on Windows, GCC on Linux, Clang on macOS).

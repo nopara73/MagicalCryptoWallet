@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:coins="clr-namespace:MagicalCryptoWallet.Fluent.ViewModels.Wallets.Coins"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="MagicalCryptoWallet.Fluent.Views.CoinControl.Core.Cells.AmountCellView"
+             x:Class="MagicalCryptoWallet.Fluent.Views.Wallets.Coins.Cells.AmountCellView"
              x:DataType="coins:CoinListItem"
              x:CompileBindings="True">
 
@@ -12,7 +12,6 @@
                          VerticalAlignment="Center"
                          UseOpacity="True"
                          MaxPrivacyChars="14"
-                         ForceShow="{Binding IgnorePrivacyMode}"
                          ToolTip.Tip="{Binding BtcAddress}">
     <AmountControl Amount="{Binding Amount}"/>
   </PrivacyContentControl>

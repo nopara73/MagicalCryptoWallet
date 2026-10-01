@@ -1,11 +1,11 @@
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
-namespace MagicalCryptoWallet.Fluent.Views.Wallets.Settings;
+namespace MagicalCryptoWallet.Fluent.Views.Wallets.Coins.Cells;
 
-public partial class ExcludedCoinsView : UserControl
+public class LabelsCellView : UserControl
 {
-	public ExcludedCoinsView()
+	public LabelsCellView()
 	{
 		InitializeComponent();
 	}

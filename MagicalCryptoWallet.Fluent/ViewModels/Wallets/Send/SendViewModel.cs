@@ -90,10 +90,7 @@ public partial class SendViewModel : RoutableViewModel
 		_exchangeRate = UiContext.Services.GetUsdExchangeRate();
 		UiContext.Services.EventBus.Subscribe<ExchangeRateChanged>(er => _exchangeRate = er.UsdBtcRate);
 
-		Balance =
-			_parameters.IsManual
-			? Observable.Return(_walletModel.AmountProvider.Create(_parameters.AvailableAmount))
-			: _walletModel.Balances;
+		Balance = _walletModel.Balances;
 
 		_suggestionLabels = new SuggestionLabelsViewModel(uiContext, _walletModel, Intent.Send, 3);
 
@@ -104,7 +101,7 @@ public partial class SendViewModel : RoutableViewModel
 
 		SetupCancel(enableCancel: true, enableCancelOnEscape: true, enableCancelOnPressed: true);
 
-		EnableBack = parameters.IsManual;
+		EnableBack = false;
 
 		this.ValidateProperty(x => x.To, ValidateToField);
 		this.ValidateProperty(x => x.AmountBtc, ValidateAmount);

@@ -54,7 +54,6 @@ public partial class TransactionInfo
 
 	public bool IsOtherPocketSelectionPossible { get; set; }
 
-	public bool IsSelectedCoinModificationEnabled { get; set; } = true;
 
 	public bool IsFixedAmount { get; init; }
 
@@ -103,7 +102,6 @@ public partial class TransactionInfo
 			IsCustomFeeUsed = IsCustomFeeUsed,
 			SubtractFee = SubtractFee,
 			IsOtherPocketSelectionPossible = IsOtherPocketSelectionPossible,
-			IsSelectedCoinModificationEnabled = IsSelectedCoinModificationEnabled,
 			IsFixedAmount = IsFixedAmount,
 			AdditionalRecipients = AdditionalRecipients
 		};

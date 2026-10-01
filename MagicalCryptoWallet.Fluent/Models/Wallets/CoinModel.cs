@@ -14,7 +14,6 @@ public partial class CoinModel : ReactiveObject
 	private readonly IServices _services;
 	private bool _subscribedToCoinChanges;
 
-	[AutoNotify] private bool _isExcludedFromCoinJoin;
 	[AutoNotify] private bool _isCoinJoinInProgress;
 	[AutoNotify] private bool _isBanned;
 	[AutoNotify] private string? _bannedUntilUtcToolTip;
@@ -36,7 +35,6 @@ public partial class CoinModel : ReactiveObject
 		BannedUntilUtc = coin.BannedUntilUtc;
 		ScriptType = ScriptType.FromEnum(coin.ScriptType);
 
-		IsExcludedFromCoinJoin = coin.IsExcludedFromCoinJoin;
 		IsConfirmed = coin.Confirmed;
 		AnonScore = (int)coin.AnonymitySet;
 		IsCoinJoinInProgress = coin.CoinJoinInProgress;
@@ -81,7 +79,6 @@ public partial class CoinModel : ReactiveObject
 
 		disposable.Add(Disposable.Create(() => _subscribedToCoinChanges = false));
 
-		this.WhenAnyValue(c => c.Coin.IsExcludedFromCoinJoin).BindTo(this, x => x.IsExcludedFromCoinJoin).DisposeWith(disposable);
 		this.WhenAnyValue(c => c.Coin.Confirmed).BindTo(this, x => x.IsConfirmed).DisposeWith(disposable);
 		this.WhenAnyValue(c => c.Coin.AnonymitySet).Select(x => (int)x).BindTo(this, x => x.AnonScore).DisposeWith(disposable);
 		this.WhenAnyValue(c => c.Coin.CoinJoinInProgress).BindTo(this, x => x.IsCoinJoinInProgress).DisposeWith(disposable);
@@ -98,9 +95,7 @@ public partial class CoinModel : ReactiveObject
 		_subscribedToCoinChanges = true;
 	}
 
-	public bool IsSameAddress(CoinModel anotherCoin) => anotherCoin.Coin.HdPubKey == Coin.HdPubKey;
 
-	public bool IsSame(CoinModel anotherCoin) => anotherCoin.Coin.Outpoint == Coin.Outpoint;
 
 	// TODO: Leaky abstraction. This shouldn't exist.
 	public SmartCoin GetSmartCoin() => Coin;

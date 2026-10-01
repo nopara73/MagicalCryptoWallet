@@ -252,33 +252,11 @@ public class Wallet : BackgroundService
 		Logger.LogTrace(FormatLog("State is loaded.", this));
 
 		LoadDummyMempool();
-		LoadExcludedCoins();
 
 		await base.StartAsync(cancellationToken).ConfigureAwait(false);
 
 		Loaded = true;
 		_eventBus.Publish(new WalletLoaded(this));
-	}
-
-	private void LoadExcludedCoins()
-	{
-		bool isUpdateRequired = false;
-		foreach (var excludedCoin in KeyManager.ExcludedCoinsFromCoinJoin)
-		{
-			var coin = Coins.SingleOrDefault(c => c.Outpoint == excludedCoin);
-			if (coin != null)
-			{
-				coin.IsExcludedFromCoinJoin = true;
-			}
-			else
-			{
-				isUpdateRequired = true;
-			}
-		}
-		if (isUpdateRequired)
-		{
-			UpdateExcludedCoinFromCoinJoin();
-		}
 	}
 
 	/// <inheritdoc />
@@ -405,33 +383,6 @@ public class Wallet : BackgroundService
 		{
 			TransactionProcessor.Process(TransactionStore.MempoolStore.GetTransactions());
 		}
-	}
-
-	public void ExcludeCoinFromCoinJoin(OutPoint outpoint, bool exclude = true)
-	{
-		if (!Coins.TryGetByOutPoint(outpoint, out var coin))
-		{
-			throw new InvalidOperationException($"Coin '{outpoint}' doesn't belong to the wallet or is spent.");
-		}
-
-		coin.IsExcludedFromCoinJoin = exclude;
-		UpdateExcludedCoinFromCoinJoin();
-	}
-
-	public void UpdateExcludedCoinsFromCoinJoin(OutPoint[] outPointsToExclude)
-	{
-		foreach (var coin in Coins)
-		{
-			coin.IsExcludedFromCoinJoin = outPointsToExclude.Contains(coin.Outpoint);
-		}
-
-		UpdateExcludedCoinFromCoinJoin();
-	}
-
-	private void UpdateExcludedCoinFromCoinJoin()
-	{
-		var excludedOutpoints = Coins.Where(c => c.IsExcludedFromCoinJoin).Select(c => c.Outpoint);
-		KeyManager.SetExcludedCoinsFromCoinJoin(excludedOutpoints);
 	}
 
 	public void UpdateUsedHdPubKeysLabels(Dictionary<HdPubKey, LabelsArray> hdPubKeysWithLabels)

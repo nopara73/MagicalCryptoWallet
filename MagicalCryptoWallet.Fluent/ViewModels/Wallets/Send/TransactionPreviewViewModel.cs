@@ -38,7 +38,6 @@ public partial class TransactionPreviewViewModel : RoutableViewModel
 	[AutoNotify] private string _nextButtonText;
 	[AutoNotify] private TransactionSummaryViewModel? _displayedTransactionSummary;
 	[AutoNotify] private bool _canUndo;
-	[AutoNotify] private bool _isCoinControlVisible;
 	[AutoNotify] private bool _isFeeAdjustable = true;
 	[AutoNotify] private string _feeAdjustToolTip = "Change transaction fee or confirmation time";
 
@@ -95,7 +94,6 @@ public partial class TransactionPreviewViewModel : RoutableViewModel
 					}
 				});
 
-		ChangeCoinsCommand = ReactiveCommand.CreateFromTask(OnChangeCoinsAsync);
 	}
 
 	public TransactionSummaryViewModel CurrentTransactionSummary { get; }
@@ -110,7 +108,6 @@ public partial class TransactionPreviewViewModel : RoutableViewModel
 
 	public ICommand AdjustFeeCommand { get; }
 
-	public ICommand ChangeCoinsCommand { get; }
 
 	public ICommand UndoCommand { get; }
 
@@ -218,24 +215,6 @@ public partial class TransactionPreviewViewModel : RoutableViewModel
 		if (newTransaction is { })
 		{
 			UpdateTransaction(CurrentTransactionSummary, newTransaction);
-		}
-	}
-
-	private async Task OnChangeCoinsAsync()
-	{
-		var currentCoins = _walletModel.Coins.GetSpentCoins(Transaction);
-
-		var selectedCoins = await Navigate().To().SelectCoinsDialog(_walletModel, currentCoins, _sendFlow).GetResultAsync();
-
-		if (selectedCoins is { })
-		{
-			if (currentCoins.GetSmartCoins().ToHashSet().SetEquals(selectedCoins))
-			{
-				return;
-			}
-
-			_info.Coins = selectedCoins;
-			await BuildAndUpdateAsync();
 		}
 	}
 
@@ -509,12 +488,6 @@ public partial class TransactionPreviewViewModel : RoutableViewModel
 
 	private async Task CheckChangePocketAvailableAsync(BuildTransactionResult transaction)
 	{
-		if (!_info.IsSelectedCoinModificationEnabled)
-		{
-			_info.IsOtherPocketSelectionPossible = false;
-			return;
-		}
-
 		var cjManager = UiContext.Services.GetHostedService<CoinJoinManager>();
 
 		var usedCoins = transaction.SpentCoins;

@@ -9,7 +9,6 @@ using MagicalCryptoWallet.Fluent.Models.Wallets;
 using MagicalCryptoWallet.Fluent.ViewModels.AddWallet;
 using MagicalCryptoWallet.Fluent.ViewModels.AddWallet.Create;
 using MagicalCryptoWallet.Fluent.ViewModels.AddWallet.HardwareWallet;
-using MagicalCryptoWallet.Fluent.ViewModels.CoinControl;
 using MagicalCryptoWallet.Fluent.ViewModels.Dialogs;
 using MagicalCryptoWallet.Fluent.ViewModels.Dialogs.Authorization;
 using MagicalCryptoWallet.Fluent.ViewModels.Dialogs.ReleaseHighlights;
@@ -183,15 +182,6 @@ public partial class FluentNavigate
 		UiContext.Navigate(navigationTarget).To(new PrivacyRingViewModel(UiContext, wallet), navigationMode);
 	}
 
-	public FluentDialog<IEnumerable<SmartCoin>> SelectCoinsDialog(IWalletModel wallet, IList<CoinModel> selectedCoins, SendFlowModel sendFlow, NavigationTarget navigationTarget = NavigationTarget.DialogScreen, NavigationMode navigationMode = NavigationMode.Normal)
-	{
-		var dialog = new SelectCoinsDialogViewModel(UiContext, wallet, selectedCoins, sendFlow);
-		var target = UiContext.Navigate(navigationTarget);
-		target.To(dialog, navigationMode);
-
-		return new FluentDialog<IEnumerable<SmartCoin>>(target.NavigateDialogAsync(dialog, navigationMode));
-	}
-
 	public void BitcoinTabSettings(ApplicationSettings settings, NavigationTarget navigationTarget = NavigationTarget.DialogScreen, NavigationMode navigationMode = NavigationMode.Normal)
 	{
 		UiContext.Navigate(navigationTarget).To(new BitcoinTabSettingsViewModel(UiContext, settings), navigationMode);
@@ -338,15 +328,6 @@ public partial class FluentNavigate
 		UiContext.Navigate(navigationTarget).To(new ConfirmMultiShareViewModel(UiContext, options, wordsDictionary), navigationMode);
 	}
 
-	public FluentDialog<IEnumerable<SmartCoin>> ManualControlDialog(IWalletModel walletModel, Wallet wallet, NavigationTarget navigationTarget = NavigationTarget.DialogScreen, NavigationMode navigationMode = NavigationMode.Normal)
-	{
-		var dialog = new ManualControlDialogViewModel(UiContext, walletModel, wallet);
-		var target = UiContext.Navigate(navigationTarget);
-		target.To(dialog, navigationMode);
-
-		return new FluentDialog<IEnumerable<SmartCoin>>(target.NavigateDialogAsync(dialog, navigationMode));
-	}
-
 	public void AddCoinJoinPayment(IWalletModel walletModel, Wallet wallet, NavigationTarget navigationTarget = NavigationTarget.DialogScreen, NavigationMode navigationMode = NavigationMode.Normal)
 	{
 		var viewModel = new AddCoinJoinPaymentViewModel(UiContext, walletModel, wallet, ShowQrCodeCameraDialogAsync);
@@ -419,15 +400,6 @@ public partial class FluentNavigate
 	public void LurkingWifeMode(ApplicationSettings applicationSettings, NavigationTarget navigationTarget = NavigationTarget.DialogScreen, NavigationMode navigationMode = NavigationMode.Normal)
 	{
 		UiContext.Navigate(navigationTarget).To(new LurkingWifeModeViewModel(UiContext, applicationSettings), navigationMode);
-	}
-
-	public FluentDialog<System.Reactive.Unit> ExcludedCoins(IWalletModel wallet, NavigationTarget navigationTarget = NavigationTarget.DialogScreen, NavigationMode navigationMode = NavigationMode.Normal)
-	{
-		var dialog = new ExcludedCoinsViewModel(UiContext, wallet);
-		var target = UiContext.Navigate(navigationTarget);
-		target.To(dialog, navigationMode);
-
-		return new FluentDialog<System.Reactive.Unit>(target.NavigateDialogAsync(dialog, navigationMode));
 	}
 
 	public void AddedWalletPage(WalletSettingsModel walletSettings, WalletCreationOptions options, NavigationTarget navigationTarget = NavigationTarget.DialogScreen, NavigationMode navigationMode = NavigationMode.Normal)

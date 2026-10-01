@@ -41,7 +41,6 @@ public partial class WalletViewModel : RoutableViewModel, IWalletViewModel
 	[AutoNotify] private bool _isMusicBoxFlyoutDisplayed;
 
 	[AutoNotify] private ICommand _defaultReceiveCommand;
-	[AutoNotify] private ICommand _defaultSendCommand;
 
 	// This proxy fixes a stack overflow bug in Avalonia
 	public bool IsMusicBoxFlyoutOpenedProxy
@@ -117,12 +116,7 @@ public partial class WalletViewModel : RoutableViewModel, IWalletViewModel
 			 });
 
 
-		SendCommand = ReactiveCommand.Create(() => Navigate().To().Send(walletModel, new SendFlowModel(wallet, walletModel)));
-		SendManualControlCommand = ReactiveCommand.Create(() => Navigate().To().ManualControlDialog(walletModel, wallet));
-		_defaultSendCommand = SendCommand;
-
-		this.WhenAnyValue(x => x.Settings.DefaultSendWorkflow)
-			.Subscribe(value => DefaultSendCommand = value == SendWorkflow.Automatic ? SendCommand : SendManualControlCommand);
+		SendCommand = ReactiveCommand.Create(() => Navigate().To().Send(walletModel, new SendFlowModel(wallet)));
 
 		SegwitReceiveCommand = ReactiveCommand.Create(() => Navigate().To().Receive(WalletModel, ScriptType.SegWit));
 		TaprootReceiveCommand = SeveralReceivingScriptTypes ?
@@ -186,8 +180,6 @@ public partial class WalletViewModel : RoutableViewModel, IWalletViewModel
 
 		CoordinatorHelpCommand = ReactiveCommand.CreateFromTask(() => UiContext.OpenBrowserAsync("https://github.com/nopara73/MagicalCryptoWallet/blob/master/MagicalCryptoWallet.Documentation/README.md"));
 
-		NavigateToExcludedCoinsCommand = ReactiveCommand.Create(() => UiContext.Navigate().To().ExcludedCoins(WalletModel));
-
 		Tiles = GetTiles().ToList();
 
 		this.WhenAnyValue(x => x.Settings.PreferPsbtWorkflow)
@@ -222,8 +214,6 @@ public partial class WalletViewModel : RoutableViewModel, IWalletViewModel
 
 	public ICommand SendCommand { get; private set; }
 
-	public ICommand SendManualControlCommand { get; }
-
 	public ICommand? BroadcastPsbtCommand { get; set; }
 	public ICommand SegwitReceiveCommand { get; private set; }
 	public ICommand? TaprootReceiveCommand { get; private set; }
@@ -243,8 +233,6 @@ public partial class WalletViewModel : RoutableViewModel, IWalletViewModel
 	public ICommand NavigateToCoordinatorSettingsCommand { get; }
 
 	public ICommand CoordinatorHelpCommand { get; }
-
-	public ICommand NavigateToExcludedCoinsCommand { get; }
 
 	public override string Title
 	{
@@ -289,7 +277,6 @@ public partial class WalletViewModel : RoutableViewModel, IWalletViewModel
 			new ActionableItem("Receive", "Display wallet receive dialog", () => { DefaultReceiveCommand.ExecuteIfCan(); return Task.CompletedTask; }, "Wallet", new[] { "Wallet", "Receive", "Action", }) { Icon = "wallet_action_receive", IsDefault = true, Priority = 2 },
 			new ActionableItem("Coinjoin Settings", "Display wallet coinjoin settings", () => { CoinJoinSettingsCommand.ExecuteIfCan(); return Task.CompletedTask; }, "Wallet", new[] { "Wallet", "Settings", }) { Icon = "wallet_action_coinjoin", IsDefault = true, Priority = 3 },
 			new ActionableItem("Wallet Settings", "Display wallet settings", () => { WalletSettingsCommand.ExecuteIfCan(); return Task.CompletedTask; }, "Wallet", new[] { "Wallet", "Settings", }) { Icon = "settings_wallet_regular", IsDefault = true, Priority = 4 },
-			new ActionableItem("Exclude Coins", "Display exclude coins", () => { NavigateToExcludedCoinsCommand.ExecuteIfCan(); return Task.CompletedTask; }, "Wallet", new[] { "Wallet", "Exclude", "Coins", "Coinjoin", "Freeze", "UTXO", }) { Icon = "exclude_coins", IsDefault = true, Priority = 5 },
 			new ActionableItem("Wallet Coins", "Display wallet coins", () => { WalletCoinsCommand.ExecuteIfCan(); return Task.CompletedTask; }, "Wallet", new[] { "Wallet", "Coins", "UTXO", }) { Icon = "wallet_coins", IsDefault = true, Priority = 6 },
 			new ActionableItem("Wallet Stats", "Display wallet stats", () => { WalletStatsCommand.ExecuteIfCan(); return Task.CompletedTask; }, "Wallet", new[] { "Wallet", "Stats", }) { Icon = "stats_wallet_regular", IsDefault = true, Priority = 7 },
 			new ActionableItem("Wallet Info", "Display wallet info", () => { WalletInfoCommand.ExecuteIfCan(); return Task.CompletedTask; }, "Wallet", new[] { "Wallet", "Info", }) { Icon = "info_regular", IsDefault = true, Priority = 8 },
@@ -298,7 +285,7 @@ public partial class WalletViewModel : RoutableViewModel, IWalletViewModel
 
 	private ISearchItem CreateSendItem()
 	{
-		return new ActionableItem("Send", "Display wallet send dialog", () => { DefaultSendCommand.ExecuteIfCan(); return Task.CompletedTask; }, "Wallet", new[] { "Wallet", "Send", "Action", }) { Icon = "wallet_action_send", IsDefault = true, Priority = 1 };
+		return new ActionableItem("Send", "Display wallet send dialog", () => { SendCommand.ExecuteIfCan(); return Task.CompletedTask; }, "Wallet", new[] { "Wallet", "Send", "Action", }) { Icon = "wallet_action_send", IsDefault = true, Priority = 1 };
 	}
 
 

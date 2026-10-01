@@ -31,19 +31,6 @@
 
     <!-- Amount -->
     <DockPanel>
-      <Button Classes="activeHyperLink"
-              Command="{Binding Parent.ChangeCoinsCommand}"
-              Content="Review coins"
-              Margin="10 0"
-              VerticalAlignment="Center"
-              DockPanel.Dock="Right">
-        <Button.IsVisible>
-          <MultiBinding Converter="{x:Static BoolConverters.And}">
-            <Binding Path="Parent.IsCoinControlVisible" />
-            <Binding Path="!IsPreview" />
-          </MultiBinding>
-        </Button.IsVisible>
-      </Button>
       <PreviewItem Icon="{StaticResource btc_logo}"
                      Label="Amount" HorizontalContentAlignment="Stretch"
                      CopyableContent="{Binding Amount.Btc}">

@@ -6,7 +6,7 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:DataType="coins:CoinListItem"
              x:CompileBindings="True"
-             x:Class="MagicalCryptoWallet.Fluent.Views.CoinControl.Core.Cells.AnonymityScoreCellView">
+             x:Class="MagicalCryptoWallet.Fluent.Views.Wallets.Coins.Cells.AnonymityScoreCellView">
   <InvalidatingStackPanel IsVisible="{Binding !!AnonymityScore}" Orientation="Horizontal" Margin="20 0" Spacing="2" HorizontalAlignment="Left" ToolTip.Tip="Anonymity Score">
     <PathIcon Data="{StaticResource anonscore}" VerticalAlignment="Center" Opacity="0.6" Height="15" />
     <TextBlock Text="{Binding AnonymityScore}" VerticalAlignment="Center" FontWeight="Bold" />

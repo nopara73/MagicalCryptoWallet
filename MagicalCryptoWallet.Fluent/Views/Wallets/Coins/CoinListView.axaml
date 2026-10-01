@@ -35,10 +35,10 @@
           <Setter Property="Foreground" Value="{DynamicResource TextForegroundColor}" />
         </Style>
         <Style Selector="TreeDataGridExpanderCell">
-          <Setter Property="Theme" Value="{StaticResource SelectCoinsDialogViewTreeDataGridExpanderCell}" />
+          <Setter Property="Theme" Value="{StaticResource WalletCoinsTreeDataGridExpanderCell}" />
         </Style>
         <Style Selector="TreeDataGridRow" x:DataType="coins:CoinListItem">
-          <Setter Property="Theme" Value="{StaticResource SelectCoinsDialogViewTreeDataGridRow}" />
+          <Setter Property="Theme" Value="{StaticResource WalletCoinsTreeDataGridRow}" />
           <Setter Property="IsPointerOver" Value="{Binding IsPointerOverProxy, Mode=OneWayToSource}" />
           <Setter Property="IsSelected" Value="{Binding IsSelectedProxy, Mode=OneWayToSource}" />
           <Setter Property="ContextMenu" Value="{StaticResource AddressContextMenu}" />

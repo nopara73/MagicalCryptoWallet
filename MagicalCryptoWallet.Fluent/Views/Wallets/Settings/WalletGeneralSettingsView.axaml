@@ -26,18 +26,6 @@
       <ToggleSwitch IsChecked="{Binding PreferPsbtWorkflow}" />
     </DockPanel>
 
-    <DockPanel IsVisible="{Binding IsDefaultSendWorkflowSettingVisible}">
-      <TextBlock Text="Default Send Workflow" />
-      <ComboBox ItemsSource="{Binding SendWorkflows}"
-                SelectedItem="{Binding DefaultSendWorkflow}">
-        <ComboBox.ItemTemplate>
-          <DataTemplate x:DataType="models:SendWorkflow">
-            <TextBlock Text="{Binding Converter={x:Static conv:EnumConverters.ToFriendlyName}}" />
-          </DataTemplate>
-        </ComboBox.ItemTemplate>
-      </ComboBox>
-    </DockPanel>
-
     <DockPanel IsVisible="{Binding SeveralReceivingScriptTypes}">
       <TextBlock Text="Default Receive Address Type" />
       <ComboBox ItemsSource="{Binding ReceiveScriptTypes}"

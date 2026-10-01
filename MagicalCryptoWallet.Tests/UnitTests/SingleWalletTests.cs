@@ -271,7 +271,7 @@ public class SingleWalletTests
 		return keys;
 	}
 
-	private sealed class SyntheticApplication : IAsyncDisposable
+	internal sealed class SyntheticApplication : IAsyncDisposable
 	{
 		private readonly AllTransactionStore _transactions;
 		private readonly FilterStore _filters;
@@ -290,6 +290,7 @@ public class SingleWalletTests
 			var factory = MagicalCryptoWallet.Wallets.Wallet.CreateFactory(Network.RegTest, _filters, _transactions, headers, new MempoolService(events), config.ServiceConfiguration, blocks, events, new CpfpInfoProvider(_cpfp));
 			Manager = new WalletManager(Network.RegTest, new WalletDirectories(Network.RegTest, root), factory);
 			Global = (Global)RuntimeHelpers.GetUninitializedObject(typeof(Global));
+			SetGlobalProperty(nameof(Global.DataDir), root);
 			SetGlobalProperty(nameof(Global.Config), config);
 			SetGlobalProperty(nameof(Global.FilterHeaders), headers);
 			SetGlobalProperty(nameof(Global.WalletManager), Manager);

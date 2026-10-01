@@ -1,5 +1,6 @@
 {
   "forbidden_pattern": "wasabi|\\bwassabeed?\\b|\\bwcoordinator\\b|zksnacks|\\bWW2(?:\\.\\d+)*\\b|(?:https?://(?:[a-z0-9-]+\\.)*|@)magicalcryptowallet\\.(?:io|co|com)\\b|D8E80773-D8CF-4031-B8B3-AA750AF0B413|50CAF59B-0B66-4CA3-8D92-C96591A707AD|FD3D13B1-AA09-495F-A1DE-0E50A010DDF6|6FB3872B5D42292F59920797856348328949861E|xpub6C13JhXzjAhVRgeTcRSWqKEPe1vHi3Tmh2K9PN1cZaZFVjjSaj76y5NNyqYjc2bugj64LVDFYu8NZWtJsXNYKFb9J94nehLAPAKqKiXcebC|02c8ab8eea76c83788e246a1baee10c04a134ec11be6553946f6ae65e47ae9a608|npub129hpcwy3h7uhpzwzts6utkt2p5st7lf4qpzp3d2j0p6z56lvkpgspngzeq",
+  "removed_coin_control_pattern": "CoinControl|ManualControl|SelectCoinsDialog|UserSelectionCoinListModel|DefaultSendWorkflow|ExcludedCoinsFromCoinJoin|IsExcludedFromCoinJoin|OnlyExcludedCoinsAvailable|ChangeCoinsCommand|NavigateToExcludedCoinsCommand|ExcludeCoinsFromCoinjoin|ExcludeCoinFromCoinJoin",
   "old_artwork_sha256": [
     "038702990ea7e698893490650cb294206caff536ec42477dd56c2bdb207208b5",
     "0f0548b3e7b41f39ee8823d2febb47ba5b453c14b119a60e575569fb7bc83729",

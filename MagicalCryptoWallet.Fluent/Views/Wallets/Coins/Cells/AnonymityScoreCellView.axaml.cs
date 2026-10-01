@@ -1,11 +1,11 @@
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
-namespace MagicalCryptoWallet.Fluent.Views.CoinControl.Core.Cells;
+namespace MagicalCryptoWallet.Fluent.Views.Wallets.Coins.Cells;
 
-public class LabelsCellView : UserControl
+public class AnonymityScoreCellView : UserControl
 {
-	public LabelsCellView()
+	public AnonymityScoreCellView()
 	{
 		InitializeComponent();
 	}

@@ -86,12 +86,6 @@ public class SmartCoin : NotifyPropertyChangedBase, IEquatable<SmartCoin>, IDest
 
 	public bool IsBanned => BannedUntilUtc is not null && BannedUntilUtc > DateTimeOffset.UtcNow;
 
-	public bool IsExcludedFromCoinJoin
-	{
-		get;
-		set => RaiseAndSetIfChanged(ref field, value);
-	}
-
 	[MemberNotNullWhen(returnValue: true, nameof(SpenderTransaction))]
 	public bool IsSpent() => SpenderTransaction is not null;
 

@@ -1,9 +1,8 @@
 using MagicalCryptoWallet.Fluent.Helpers;
-using MagicalCryptoWallet.Fluent.ViewModels.Wallets.Coins;
 
-namespace MagicalCryptoWallet.Fluent.ViewModels.CoinControl;
+namespace MagicalCryptoWallet.Fluent.ViewModels.Wallets.Coins;
 
-public static class CoinControlLabelComparer
+public static class CoinLabelComparer
 {
 	public static int Ascending(CoinListItem? left, CoinListItem? right)
 	{
