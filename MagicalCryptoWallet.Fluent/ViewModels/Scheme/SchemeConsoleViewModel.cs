@@ -10,7 +10,7 @@ namespace MagicalCryptoWallet.Fluent.ViewModels.Scheme;
 
 [NavigationMetaData(
 	Title = "Scripting",
-	Caption = "Automate MagicalCryptoWallet",
+	Caption = "Automate Magical Crypto Wallet",
 	IconName = "nav_wallet_24_regular",
 	Order = 3,
 	Category = "General",

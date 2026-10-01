@@ -434,7 +434,7 @@ public class Global
 			var errorBecauseIndexIsDisabled = supportsBlockFiltersResult.Error;
 			if( errorBecauseIndexIsDisabled)
 			{
-				Logger.LogInfo("\nMagicalCryptoWallet is connected to a bitcoin RPC that doesn't provides compact filters (BIP158)."
+				Logger.LogInfo("\nMagical Crypto Wallet is connected to a bitcoin RPC that doesn't provides compact filters (BIP158)."
 								+ "\nCompact filters are disabled by default in Bitcoin and you have to enable them."
 								+ "\nIf you are using your own node then edit the bitcoin.conf file and add the line:"
 								+ "\nblockfilterindex=1"
@@ -460,7 +460,7 @@ public class Global
 			await resume().ConfigureAwait(false);
 		}
 
-		Spawn("Synchronizer", Service("MagicalCryptoWallet Index-Based Synchronizer", serviceLoop), cancellationToken)
+		Spawn("Synchronizer", Service("Magical Crypto Wallet Index-Based Synchronizer", serviceLoop), cancellationToken)
 			.DisposeUsing(_disposables);
 
 		EventBus.Subscribe<RpcStatusChanged>(e =>
@@ -520,7 +520,7 @@ public class Global
 				: ReleaseDownloader.ForOfficiallySupportedOSes(ExternalSourcesHttpClientFactory, EventBus);
 
 		var magicalcryptowalletVersionUpdater = Spawn("UpdateManager",
-			Service("MagicalCryptoWallet Version AutoUpdater",
+			Service("Magical Crypto Wallet Version AutoUpdater",
 				Periodically(
 					TimeSpan.FromHours(12),
 					Unit.Instance,

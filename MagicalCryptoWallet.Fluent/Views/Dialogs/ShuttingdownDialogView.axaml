@@ -15,9 +15,9 @@
     </ContentArea.Title>
     <DockPanel VerticalAlignment="Center">
       <StackPanel DockPanel.Dock="Bottom" Margin="20 0" MaxWidth="500" Spacing="5">
-        <TextBlock Text="MagicalCryptoWallet is unable to close right now. Coinjoin in progress."
+        <TextBlock Text="Magical Crypto Wallet is unable to close right now. Coinjoin in progress."
                    TextAlignment="Center" TextWrapping="Wrap" />
-        <TextBlock Text="This may take a few minutes. MagicalCryptoWallet will close automatically when finished."
+        <TextBlock Text="This may take a few minutes. Magical Crypto Wallet will close automatically when finished."
                    TextAlignment="Center" TextWrapping="Wrap" MaxWidth="500" />
       </StackPanel>
 

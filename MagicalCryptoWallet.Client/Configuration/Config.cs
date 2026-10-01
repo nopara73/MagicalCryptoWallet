@@ -89,7 +89,7 @@ public class Config
 			[nameof(TorSocksPort)] = "Tor is started to listen with the specified SOCKS5 port",
 			[nameof(TorControlPort)] = "Tor is started to listen with the specified control port",
 			[nameof(TorBridges)] = "Tor is started with the set of specified bridges",
-			[nameof(TerminateTorOnExit)] = "Stop the Tor process when MagicalCryptoWallet is closed",
+			[nameof(TerminateTorOnExit)] = "Stop the Tor process when Magical Crypto Wallet is closed",
 			[nameof(DownloadNewVersion)] = "Automatically download any new released version of MagicalCryptoWallet",
 			[nameof(BitcoinRpcCredentialString)] = "Credentials for authenticating against the bitcoin node rpc server",
 			[nameof(BitcoinRpcUri)] = "-",
@@ -99,7 +99,7 @@ public class Config
 			[nameof(JsonRpcServerPrefixes)] = "The Json RPC server prefixes",
 			[nameof(RpcOnionEnabled)] = "Publish the Json RPC Server as a Tor Onion service",
 			[nameof(DustThreshold)] = "The amount threshold under which coins received from others to already used addresses are considered a dust attack",
-			[nameof(BlockOnlyMode)] = "MagicalCryptoWallet listens only for blocks and not for transactions",
+			[nameof(BlockOnlyMode)] = "Magical Crypto Wallet listens only for blocks and not for transactions",
 			[nameof(LogLevel)] = "The level of detail in the logs: trace, debug, info, warning, error, or critical",
 			[nameof(LogModes)] = "The logging modes: console, and file (for multiple values use comma as a separator)",
 			[nameof(EnableGpu)] = "Use a GPU to render the user interface",
@@ -109,7 +109,7 @@ public class Config
 			[nameof(ExchangeRateProvider)] = "The BTC/USD exchange rate provider. Available providers are MempoolSpace (default), Gemini, BlockchainInfo, CoinGecko or None",
 			[nameof(FeeRateEstimationProvider)] = "The mining fee rate estimation provider. Available providers are MempoolSpace (default), BlockstreamInfo, BlockXyz or None",
 			[nameof(ExternalTransactionBroadcaster)] = "Third party transaction broadcaster. Available broadcasters are MempoolSpace (default) and BlockstreamInfo",
-			[nameof(DropUnconfirmedTransactionsAfterDays)] = "The number of days that unconfirmed wallet transactions will be remembered by MagicalCryptoWallet before dropping them",
+			[nameof(DropUnconfirmedTransactionsAfterDays)] = "The number of days that unconfirmed wallet transactions will be remembered by Magical Crypto Wallet before dropping them",
 			[nameof(ExperimentalFeatures)] = "Colon-separated list of experimental features to enable. (features available: scripting)",
 		};
 	private Dictionary<string, IValue> Data { get; }

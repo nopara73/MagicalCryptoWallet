@@ -72,7 +72,7 @@ public class TorSettings
 
 		if (torMode == TorMode.EnabledOnlyRunning && terminateOnExit)
 		{
-			Logger.LogWarning("MagicalCryptoWallet is instructed to use a running Tor process. Terminate on exit was disabled.");
+			Logger.LogWarning("Magical Crypto Wallet is instructed to use a running Tor process. Terminate on exit was disabled.");
 		}
 
 		TorMode = torMode;

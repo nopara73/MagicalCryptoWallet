@@ -4,7 +4,7 @@ namespace MagicalCryptoWallet.Fluent.ViewModels.HelpAndSupport;
 
 [NavigationMetaData(
 	Title = "User Support",
-	Caption = "Open MagicalCryptoWallet's user support website",
+	Caption = "Open Magical Crypto Wallet's user support website",
 	Order = 0,
 	Category = "Help & Support",
 	Keywords = new[]

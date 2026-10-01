@@ -15,7 +15,7 @@
     </DockPanel>
 
     <DockPanel>
-      <TextBlock Text="Run MagicalCryptoWallet when computer starts" />
+      <TextBlock Text="Run Magical Crypto Wallet when computer starts" />
       <ToggleSwitch IsChecked="{Binding Settings.RunOnSystemStartup}" />
     </DockPanel>
 

@@ -49,7 +49,7 @@
     </DockPanel>
 
     <DockPanel IsVisible="{Binding Settings.UseTor, ConverterParameter={x:Static basemodels:TorMode.Enabled}, Converter={x:Static conv:EnumToBoolConverter.Instance}}">
-      <TextBlock Text="Terminate Tor when MagicalCryptoWallet shuts down" />
+      <TextBlock Text="Terminate Tor when Magical Crypto Wallet shuts down" />
       <ToggleSwitch IsChecked="{Binding Settings.TerminateTorOnExit}" />
     </DockPanel>
   </StackPanel>

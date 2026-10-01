@@ -19,7 +19,7 @@ public class StartupTask
 
 	public async Task ExecuteAsync(CancellationToken cancellationToken)
 	{
-		Logger.LogInfo("MagicalCryptoWallet Coordinator");
+		Logger.LogInfo("Magical Crypto Wallet Coordinator");
 
 		AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
 		TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;

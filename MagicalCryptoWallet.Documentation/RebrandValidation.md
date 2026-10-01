@@ -9,6 +9,8 @@ The rebrand uses independent application storage, executable names, installer id
 | Wallet unit tests | 1,080 passed, none skipped |
 | Vendored managed cryptography | 125 passed |
 | Native/managed interoperability | 34 passed on Windows |
+| Standalone cross-language credential exchange | Both directions passed, with 10 assertions |
+| Complete supported solution | Built with zero warnings and errors |
 | Source-built native C tests | Passed on Windows and Linux |
 | Immutable cryptographic sources and published vectors | 56 files match the pinned source, allowing the randomness identifier and attribution comments |
 | Immutable wallet fixtures | All three inherited JSON fixtures match the original source |

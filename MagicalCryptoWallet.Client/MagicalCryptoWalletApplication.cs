@@ -29,7 +29,7 @@ public class MagicalCryptoWalletApplication
 		Directory.CreateDirectory(Config.DataDir);
 		SetupLogger();
 		Config = new Config(LoadOrCreateConfigs(), magicalcryptowalletAppBuilder.Arguments);
-		Logger.LogDebug($"MagicalCryptoWallet was started with these argument(s): {string.Join(" ", AppConfig.Arguments.DefaultIfEmpty("none"))}.");
+		Logger.LogDebug($"Magical Crypto Wallet was started with these argument(s): {string.Join(" ", AppConfig.Arguments.DefaultIfEmpty("none"))}.");
 
 		Global = new Global(Config.DataDir, Config);
 		SingleInstanceChecker = new(Config.DataDir);
@@ -114,7 +114,7 @@ public class MagicalCryptoWalletApplication
 
 			if (!isFirst)
 			{
-				Logger.LogCritical($"MagicalCryptoWallet is already running. Please stop the other instance first.");
+				Logger.LogCritical($"Magical Crypto Wallet is already running. Please stop the other instance first.");
 				return ExitCode.FailedAlreadyRunningError;
 			}
 		}

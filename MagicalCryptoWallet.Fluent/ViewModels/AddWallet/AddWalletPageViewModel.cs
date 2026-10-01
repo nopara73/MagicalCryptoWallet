@@ -84,7 +84,7 @@ public partial class AddWalletPageViewModel : DialogViewModelBase<Unit>
 		catch (Exception ex)
 		{
 			Logger.LogError(ex);
-			await ShowErrorAsync("Import wallet", ex.ToUserFriendlyString(), "MagicalCryptoWallet was unable to import your wallet.");
+			await ShowErrorAsync("Import wallet", ex.ToUserFriendlyString(), "Magical Crypto Wallet was unable to import your wallet.");
 		}
 	}
 

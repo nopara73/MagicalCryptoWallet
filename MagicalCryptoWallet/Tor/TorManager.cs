@@ -88,7 +88,7 @@ public class TorManager : IAsyncDisposable
 		}
 
 		throw new InvalidOperationException($"No attempt to connect to Tor was successful. It seems no Tor instance is currently running.\n" +
-		                                    $"Please start Tor before opening MagicalCryptoWallet or set 'UseTor' to 'Enabled' in the configuration file.");
+		                                    $"Please start Tor before opening Magical Crypto Wallet or set 'UseTor' to 'Enabled' in the configuration file.");
 	}
 
 	/// <summary>Waits until Tor process is fully started or until it is stopped for some reason.</summary>

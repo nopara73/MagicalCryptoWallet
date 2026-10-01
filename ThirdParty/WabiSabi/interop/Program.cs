@@ -37,11 +37,12 @@ using WabiSabi.Crypto;
 using WabiSabi.Crypto.Randomness;
 using WabiSabi.Crypto.ZeroKnowledge;
 using WabiSabi.CredentialRequesting;
+using WabiSabi.Native;
 using WabiSabiInterop;
 using CsIssuer     = WabiSabi.Crypto.CredentialIssuer;
 using CsClient     = WabiSabi.Crypto.WabiSabiClient;
-using NativeIssuer = WabiSabiInterop.CredentialIssuer;
-using NativeClient = WabiSabiInterop.WabiSabiClient;
+using NativeIssuer = WabiSabi.Native.CredentialIssuer;
+using NativeClient = WabiSabi.Native.WabiSabiClient;
 
 // -----------------------------------------------------------------------
 // Main test runner

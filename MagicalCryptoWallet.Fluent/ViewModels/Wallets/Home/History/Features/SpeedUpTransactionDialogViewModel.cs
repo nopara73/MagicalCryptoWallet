@@ -66,7 +66,7 @@ public partial class SpeedUpTransactionDialogViewModel : RoutableViewModel
 		{
 			Logger.LogError(ex);
 			var msg = speedupTransaction.TargetTransaction.Confirmed ? "The transaction is already confirmed." : ex.ToUserFriendlyString();
-			UiContext.Navigate().To().ShowErrorDialog(msg, "Speed Up Failed", "MagicalCryptoWallet was unable to speed up your transaction.", NavigationTarget.CompactDialogScreen);
+			UiContext.Navigate().To().ShowErrorDialog(msg, "Speed Up Failed", "Magical Crypto Wallet was unable to speed up your transaction.", NavigationTarget.CompactDialogScreen);
 		}
 
 		IsBusy = false;

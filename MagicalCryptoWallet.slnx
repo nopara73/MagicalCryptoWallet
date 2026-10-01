@@ -19,6 +19,7 @@
     <File Path="NuGet.Config" />
     <File Path="README.md" />
   </Folder>
+  <Project Path="MagicalCryptoWallet/MagicalCryptoWallet.csproj" />
   <Project Path="MagicalCryptoWallet.Client/MagicalCryptoWallet.Client.csproj" />
   <Folder Name="/ThirdParty/WabiSabi/">
     <Project Path="ThirdParty/WabiSabi/csharp/WabiSabi/WabiSabi.csproj" />

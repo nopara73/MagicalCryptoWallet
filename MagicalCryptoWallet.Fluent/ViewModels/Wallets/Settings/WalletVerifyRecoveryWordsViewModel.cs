@@ -78,7 +78,7 @@ public partial class WalletVerifyRecoveryWordsViewModel : RoutableViewModel
 		catch (Exception ex)
 		{
 			Logger.LogError(ex);
-			await ShowErrorAsync(Title, ex.ToUserFriendlyString(), "MagicalCryptoWallet was unable to verify the recovery words.");
+			await ShowErrorAsync(Title, ex.ToUserFriendlyString(), "Magical Crypto Wallet was unable to verify the recovery words.");
 		}
 	}
 

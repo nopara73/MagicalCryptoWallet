@@ -22,7 +22,7 @@
     </DockPanel>
 
     <DockPanel
-      ToolTip.Tip="MagicalCryptoWallet will download blocks from this full node.">
+      ToolTip.Tip="Magical Crypto Wallet will download blocks from this full node.">
       <TextBlock Text="Bitcoin RPC Endpoint" />
         <TextBox Text="{Binding BitcoinRpcUri}">
           <Interaction.Behaviors>

@@ -16,7 +16,7 @@ public abstract class OpenFileViewModel(UiContext uiContext) : TriggerCommandVie
 			}
 			catch (Exception ex)
 			{
-				await ShowErrorAsync("Open", ex.ToUserFriendlyString(), "MagicalCryptoWallet was unable to open the file");
+				await ShowErrorAsync("Open", ex.ToUserFriendlyString(), "Magical Crypto Wallet was unable to open the file");
 			}
 		});
 }

@@ -106,7 +106,7 @@
               </StatusItem.Icon>
             </StatusItem>
 
-            <StatusItem Title="Update Checker" StatusText="MagicalCryptoWallet won't look for updates while Tor is disabled." IsVisible="{Binding IsTorDisabled}">
+            <StatusItem Title="Update Checker" StatusText="Magical Crypto Wallet won't look for updates while Tor is disabled." IsVisible="{Binding IsTorDisabled}">
               <StatusItem.Icon>
                 <PathIcon Data="{StaticResource warning_circle}" />
               </StatusItem.Icon>

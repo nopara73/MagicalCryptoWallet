@@ -168,7 +168,7 @@ public partial class RecoverMultiShareWalletViewModel : RoutableViewModel
 
 					await ShowErrorAsync(
 						"Restart required",
-						"MagicalCryptoWallet needs to download older block filters for this wallet. The application will restart to begin this process.",
+						"Magical Crypto Wallet needs to download older block filters for this wallet. The application will restart to begin this process.",
 						"Wallet recovery");
 					AppLifetimeHelper.Shutdown(withShutdownPrevention: true, restart: true);
 					return;
@@ -179,7 +179,7 @@ public partial class RecoverMultiShareWalletViewModel : RoutableViewModel
 			catch (Exception ex)
 			{
 				Logger.LogError(ex);
-				await ShowErrorAsync(Title, ex.ToUserFriendlyString(), "MagicalCryptoWallet was unable to recover the wallet.");
+				await ShowErrorAsync(Title, ex.ToUserFriendlyString(), "Magical Crypto Wallet was unable to recover the wallet.");
 			}
 
 		}

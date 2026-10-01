@@ -4,7 +4,7 @@ namespace MagicalCryptoWallet.Fluent.ViewModels.HelpAndSupport;
 
 [NavigationMetaData(
 	Title = "Report a Bug",
-	Caption = "Open MagicalCryptoWallet's GitHub issues website",
+	Caption = "Open Magical Crypto Wallet's GitHub issues website",
 	Order = 1,
 	Category = "Help & Support",
 	Keywords = new[]

@@ -157,7 +157,7 @@ public static class CpfpInfoUpdater
 		{
 			if (cancellationToken.IsCancellationRequested)
 			{
-				Logger.LogTrace($"FetchCpfpInfoAsync was canceled for {transaction.GetHash()} because MagicalCryptoWallet is shutting down");
+				Logger.LogTrace($"FetchCpfpInfoAsync was canceled for {transaction.GetHash()} because Magical Crypto Wallet is shutting down");
 			}
 		}
 	}

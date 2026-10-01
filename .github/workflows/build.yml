@@ -74,6 +74,8 @@ jobs:
         run: dotnet test --project ThirdParty/WabiSabi/csharp/WabiSabi.Tests -c Release --no-progress --no-ansi --output Normal
       - name: Native and managed wire interoperability
         run: dotnet test --project ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests -c Release --no-progress --no-ansi --output Normal
+      - name: Standalone cross-language credential exchange
+        run: dotnet run --project ThirdParty/WabiSabi/interop -c Release
       - name: Tracked source, generated code, assembly metadata, resources and symbols
         run: python Contrib/Rebrand/audit.py --artifacts .artifacts/packages/${{ matrix.rid }}/MagicalCryptoWallet
       - name: Audit rejects retired identity and trust material

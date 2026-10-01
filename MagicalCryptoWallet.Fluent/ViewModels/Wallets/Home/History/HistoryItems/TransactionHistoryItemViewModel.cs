@@ -38,7 +38,7 @@ public partial class TransactionHistoryItemViewModel : HistoryItemViewModelBase
 		catch (Exception ex)
 		{
 			Logger.LogError(ex);
-			UiContext.Navigate().To().ShowErrorDialog(ex.ToUserFriendlyString(), "Speed Up failed", "MagicalCryptoWallet could not initiate the transaction speed up process.");
+			UiContext.Navigate().To().ShowErrorDialog(ex.ToUserFriendlyString(), "Speed Up failed", "Magical Crypto Wallet could not initiate the transaction speed up process.");
 		}
 	}
 
@@ -52,7 +52,7 @@ public partial class TransactionHistoryItemViewModel : HistoryItemViewModelBase
 		catch (Exception ex)
 		{
 			Logger.LogError(ex);
-			UiContext.Navigate().To().ShowErrorDialog(ex.ToUserFriendlyString(), "Cancel failed", "MagicalCryptoWallet could not initiate the cancelling process.");
+			UiContext.Navigate().To().ShowErrorDialog(ex.ToUserFriendlyString(), "Cancel failed", "Magical Crypto Wallet could not initiate the cancelling process.");
 		}
 	}
 }

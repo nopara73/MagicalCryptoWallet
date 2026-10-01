@@ -126,7 +126,7 @@ public partial class TransactionPreviewViewModel : RoutableViewModel
 			catch (Exception ex)
 			{
 				Logger.LogError(ex);
-				await ShowErrorAsync("Transaction Export", ex.ToUserFriendlyString(), "MagicalCryptoWallet was unable to export the PSBT.");
+				await ShowErrorAsync("Transaction Export", ex.ToUserFriendlyString(), "Magical Crypto Wallet was unable to export the PSBT.");
 			}
 
 			if (saved)
@@ -295,7 +295,7 @@ public partial class TransactionPreviewViewModel : RoutableViewModel
 			await ShowErrorAsync(
 				"Transaction Building",
 				"The transaction cannot be sent because its fee is more than the payment amount.",
-				"MagicalCryptoWallet was unable to create your transaction.");
+				"Magical Crypto Wallet was unable to create your transaction.");
 
 			return null;
 		}
@@ -322,7 +322,7 @@ public partial class TransactionPreviewViewModel : RoutableViewModel
 			await ShowErrorAsync(
 				"Transaction Building",
 				"There are not enough funds to cover the transaction fee.",
-				"MagicalCryptoWallet was unable to create your transaction.");
+				"Magical Crypto Wallet was unable to create your transaction.");
 
 			return null;
 		}
@@ -333,7 +333,7 @@ public partial class TransactionPreviewViewModel : RoutableViewModel
 			await ShowErrorAsync(
 				"Transaction Building",
 				ex.ToUserFriendlyString(),
-				"MagicalCryptoWallet was unable to create your transaction.");
+				"Magical Crypto Wallet was unable to create your transaction.");
 
 			return null;
 		}
@@ -453,7 +453,7 @@ public partial class TransactionPreviewViewModel : RoutableViewModel
 			await ShowErrorAsync(
 				"Transaction",
 				ex.ToUserFriendlyString(),
-				"MagicalCryptoWallet was unable to send your transaction.");
+				"Magical Crypto Wallet was unable to send your transaction.");
 		}
 		finally
 		{
