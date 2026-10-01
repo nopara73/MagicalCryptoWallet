@@ -18,6 +18,7 @@ The rebrand uses independent application storage, executable names, installer id
 | Windows MSI and ZIP | Built, extracted, and audited; 455 MSI payload files match published files |
 | Application metadata, resources and symbols | Seven application assemblies and five symbol sets passed per extracted Windows payload |
 | Fresh storage, explicit synthetic wallet import, independent locks, startup entries, fee defaults | Covered by passing wallet tests |
+| Windows process application ID | Native shell API confirms the configured platform ID; both installer shortcuts use the same ID |
 | Update authentication | Valid signatures accepted; tampering, wrong signing keys, wrong announcement authors, forged authors, duplicate tags and wrong destinations rejected |
 | Actual application views | Welcome, About and title bar rendered in both themes at 100, 125, 150 and 200 percent |
 | Logo proportions and geometry | Cropped compact/horizontal masks match source artwork at 99.8%/99.6%; tiny icons inspected at 16–64 pixels |
@@ -26,7 +27,7 @@ The rebrand uses independent application storage, executable names, installer id
 
 The Build and audit workflow builds and extracts `win-x64`, `linux-x64`, `linux-arm64`, `osx-x64`, and `osx-arm64` packages. Each platform runs wallet, managed cryptographic and native interoperability tests, source/generated/assembly/resource/symbol audits, and actual application view rendering. Windows additionally installs both products on an ephemeral runner and checks independent installer registration. Separate jobs build the coordinator container and the Nix package.
 
-Results and downloadable artifacts will be linked here after the draft pull request's exact commit completes CI. Snapshot packages use the existing development version `99.99.99`; they are not production platform signed.
+Current results and downloadable artifacts are linked from [draft PR #1 and its checks](https://github.com/nopara73/MagicalCryptoWallet/pull/1/checks). Each successful run uploads its packages, extracted-payload inspection reports, and screenshots. Snapshot packages use the existing development version `99.99.99`; they are not production platform signed.
 
 ## Signing and scope
 

@@ -53,6 +53,7 @@ public class Program
 	[STAThread]
 	public static int Main(string[] args)
 	{
+		MagicalCryptoWallet.Helpers.WindowsAppIdentity.Apply();
 		// Crash reporting must be before the "single instance checking".
 		if (CrashReporter.TryGetExceptionFromCliArgs(args, out var exceptionToShow))
 		{

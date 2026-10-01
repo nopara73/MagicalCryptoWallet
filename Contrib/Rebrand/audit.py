@@ -15,6 +15,10 @@ def audit(artifacts):
     data_files = {'Contrib/Rebrand/policy.json', 'Contrib/Rebrand/exceptions.json'}
     names = subprocess.check_output(['git','ls-files','-z'], cwd=ROOT).decode().split('\0')
     failures=[]; count=0; used=set()
+    for entry in filter(None, subprocess.check_output(['git','ls-files','--stage','-z'], cwd=ROOT).decode().split('\0')):
+        metadata, name = entry.split('\t', 1)
+        if '/BundledApps/Binaries/' in name and '/win-' not in name and name.rsplit('/',1)[-1] in ('hwi','tor','bitcoind'):
+            if metadata.split()[0] != '100755': failures.append('Unix executable mode: '+name)
     for name in filter(None, names):
         path=ROOT/name
         if not path.is_file(): continue

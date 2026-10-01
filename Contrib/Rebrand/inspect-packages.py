@@ -32,6 +32,8 @@ if args.rid.startswith('win'):
     product=document.find('w:Product',ns);ids=json.loads((ROOT/'MagicalCryptoWallet.WindowsInstaller/identities.json').read_text())
     assert product is not None and product.attrib['Name']==NAME
     assert product.attrib['UpgradeCode'].strip('{}').upper()==ids['upgrade_code']
+    properties=document.findall('.//w:ShortcutProperty',ns)
+    assert len(properties)==2 and all(p.attrib['Key']=='System.AppUserModel.ID' and p.attrib['Value']==APP_ID for p in properties)
     expected={p.name+':'+sha(p):p for p in dist.rglob('*') if p.is_file()}
     canonical=destination/'payload';canonical.mkdir(exist_ok=True);files=0
     for file in document.findall('.//w:File',ns):

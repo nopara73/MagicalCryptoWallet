@@ -12,7 +12,7 @@
 
     <!-- Provide package details. -->
     <Package
-            InstallerVersion="200"
+            InstallerVersion="500"
             Compressed="yes"
             InstallScope="perMachine"
             Platform = "x64"

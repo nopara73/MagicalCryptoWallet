@@ -1,21 +1,21 @@
 [
   {
     "path": "Contrib/Rebrand/audit.py",
-    "line": 46,
+    "line": 50,
     "line_sha256": "d5e0c798fc8a1205154479c2faf4897054851990d932173e589f62a1d94c41d2",
     "category": "audit forbidden-token data",
     "text": "target=ROOT/'ThirdParty/WabiSabi'/name.replace('WasabiRandom','WalletRandom')"
   },
   {
     "path": "Contrib/Rebrand/audit.py",
-    "line": 49,
+    "line": 53,
     "line_sha256": "4f21702c5be7a53024d2b9df7388311c113335c31c3b14412549e8e66753a5b2",
     "category": "audit forbidden-token data",
     "text": "normalized=raw.decode().replace('WalletRandom','WasabiRandom')"
   },
   {
     "path": "Contrib/Rebrand/audit.py",
-    "line": 51,
+    "line": 55,
     "line_sha256": "d75c65689a453fcaeeacfd6dcc9c770fdd8fc7a6134f30754f34ceeaca557a03",
     "category": "audit forbidden-token data",
     "text": "normalized=normalized.replace('Magical Crypto Wallet','WalletWasabi').replace('MagicalCryptoWallet','WalletWasabi')"

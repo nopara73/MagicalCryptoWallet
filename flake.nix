@@ -87,9 +87,7 @@
           doCheck = true;
           checkPhase = ''
             runHook preCheck
-            dotnet test --project MagicalCryptoWallet.Tests/MagicalCryptoWallet.Tests.csproj \
-              --no-build \
-              --configuration Release \
+            dotnet MagicalCryptoWallet.Tests/bin/Release/net10.0/linux-x64/MagicalCryptoWallet.Tests.dll \
               --filter-namespace "*UnitTests*" \
               --no-progress \
               --no-ansi \
@@ -103,9 +101,7 @@
           doCheck = true;
           checkPhase = ''
             runHook preCheck
-            dotnet test --project MagicalCryptoWallet.IntegrationTests/MagicalCryptoWallet.IntegrationTests.csproj \
-              --no-build \
-              --configuration Release \
+            dotnet MagicalCryptoWallet.IntegrationTests/bin/Release/net10.0/linux-x64/MagicalCryptoWallet.IntegrationTests.dll \
               --no-progress \
               --no-ansi \
               --output Detailed
@@ -118,16 +114,12 @@
           doCheck = true;
           checkPhase = ''
             runHook preCheck
-            dotnet test --project MagicalCryptoWallet.Tests/MagicalCryptoWallet.Tests.csproj \
+            dotnet MagicalCryptoWallet.Tests/bin/Release/net10.0/linux-x64/MagicalCryptoWallet.Tests.dll \
               --filter-namespace "*UnitTests*" \
-              --no-build \
-              --configuration Release \
               --no-progress \
               --no-ansi \
               --output Detailed
-            dotnet test --project MagicalCryptoWallet.IntegrationTests/MagicalCryptoWallet.IntegrationTests.csproj \
-              --no-build \
-              --configuration Release \
+            dotnet MagicalCryptoWallet.IntegrationTests/bin/Release/net10.0/linux-x64/MagicalCryptoWallet.IntegrationTests.dll \
               --no-progress \
               --no-ansi \
               --output Detailed

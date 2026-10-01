@@ -15,7 +15,9 @@
           Target="[INSTALLFOLDER]magicalcryptowallet.exe"
           Directory="InstallProgramMenuFolder"
           WorkingDirectory="INSTALLFOLDER"
-          Icon="icon.ico" />
+          Icon="icon.ico">
+          <ShortcutProperty Key="System.AppUserModel.ID" Value="io.github.nopara73.magicalcryptowallet" />
+        </Shortcut>
         <RegistryValue Id="StartMenuShortcutKey" Root="HKCU" Key="SOFTWARE\!(loc.ProductNameFolder)" Name="StartMenuShortcut" Value="1" Type="integer" KeyPath="yes" />
         <RemoveFolder Id="RemoveStartMenu" Directory="InstallProgramMenuFolder" On="uninstall" />
       </Component>
@@ -28,7 +30,9 @@
           Target="[INSTALLFOLDER]magicalcryptowallet.exe"
           Directory="DesktopFolder"
           WorkingDirectory="INSTALLFOLDER"
-          Icon="icon.ico" />
+          Icon="icon.ico">
+          <ShortcutProperty Key="System.AppUserModel.ID" Value="io.github.nopara73.magicalcryptowallet" />
+        </Shortcut>
         <RegistryValue Id="DesktopShortcutKey" Root="HKCU" Key="SOFTWARE\!(loc.ProductNameFolder)" Name="DesktopShortcut" Value="1" Type="integer" KeyPath="yes" />
         <RemoveFolder Id="RemoveDesktop" Directory="DesktopFolder" On="uninstall" />
       </Component>
