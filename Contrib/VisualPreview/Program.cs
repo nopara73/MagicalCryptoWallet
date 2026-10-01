@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Reactive.Concurrency;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
@@ -7,6 +8,7 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Styling;
 using Avalonia.Threading;
+using ReactiveUI;
 using ReactiveUI.Avalonia;
 using MagicalCryptoWallet.Fluent;
 using MagicalCryptoWallet.Fluent.Models.UI;
@@ -24,6 +26,17 @@ using MagicalCryptoWallet.Fluent.Views.Shell;
 // Render the actual application views and resources with an inert context.
 // No wallet services, networking, navigation, or user data are initialized.
 AppBuilder.Configure<App>().WithInterFont().With(new FontManagerOptions { DefaultFamilyName = "fonts:Inter#Inter, $Default" }).UseSkia().UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false }).UseReactiveUI().SetupWithoutStarting();
+// Headless test detection can override RxApp's thread-local scheduler. Commands
+// also use RxSchedulers directly, so initialize both before creating any views.
+RxApp.MainThreadScheduler = AvaloniaScheduler.Instance;
+RxSchedulers.MainThreadScheduler = AvaloniaScheduler.Instance;
+bool callbackOnUiThread = false;
+using (Task.Run(() => RxSchedulers.MainThreadScheduler.Schedule(() => callbackOnUiThread = Dispatcher.UIThread.CheckAccess())).GetAwaiter().GetResult())
+{
+    Dispatcher.UIThread.RunJobs();
+    if (!callbackOnUiThread) throw new InvalidOperationException("Headless command notifications must return to the Avalonia UI thread.");
+}
+Console.WriteLine("Headless UI scheduler check passed: background callbacks return to the Avalonia dispatcher.");
 string destination = args.FirstOrDefault() ?? ".artifacts/rebrand/screenshots";
 Directory.CreateDirectory(destination);
 var context = (UiContext)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(UiContext));
