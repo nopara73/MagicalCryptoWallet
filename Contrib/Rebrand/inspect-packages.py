@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Extract the produced installers and audit their payloads and independent identities."""
-import argparse, hashlib, json, os, plistlib, shutil, subprocess, zipfile
+import argparse, hashlib, json, os, plistlib, shutil, subprocess, tarfile, zipfile
 from pathlib import Path
 import xml.etree.ElementTree as ET
 ROOT=Path(__file__).resolve().parents[2]
@@ -21,9 +21,14 @@ work.mkdir(parents=True,exist_ok=True)
 dist=ROOT/'.artifacts/packages'/args.rid/'MagicalCryptoWallet'
 packages=ROOT/'packages';payloads=[];identities={}
 for path in sorted(packages.glob('*')):
-    if path.suffix=='.zip' and args.rid.split('-')[0] in path.name.lower():
+    matches_rid = args.rid in path.name.lower() or (args.rid.startswith('osx') and ('macos-'+args.rid.split('-')[1]) in path.name.lower())
+    if path.suffix=='.zip' and matches_rid:
         destination=work/(path.stem+'-zip');destination.mkdir(exist_ok=True)
         extract_zip(path,destination);payloads.append(destination)
+    elif path.name.endswith('.tar.gz') and matches_rid:
+        destination=work/(path.name[:-7]+'-tar');destination.mkdir(exist_ok=True)
+        with tarfile.open(path) as archive: archive.extractall(destination,filter='data')
+        payloads.append(destination)
 if args.rid.startswith('win'):
     msi=next(packages.glob('*.msi'));destination=work/'msi';destination.mkdir(exist_ok=True)
     manifest=destination/'package.wxs'

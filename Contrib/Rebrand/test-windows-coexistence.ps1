@@ -2,6 +2,8 @@ $ErrorActionPreference = 'Stop'
 $taskRoot = (Resolve-Path "$PSScriptRoot/../..").Path
 $taskWork = Join-Path $taskRoot '.artifacts/installed-coexistence'
 [IO.Directory]::CreateDirectory($taskWork) | Out-Null
+$taskReports = Join-Path $taskRoot '.artifacts/package-inspection'
+[IO.Directory]::CreateDirectory($taskReports) | Out-Null
 $taskBaseline = Get-Content "$PSScriptRoot/coexist-baseline.json" -Raw | ConvertFrom-Json
 $taskOldMsi = Join-Path $taskWork 'baseline.msi'
 Invoke-WebRequest -Uri $taskBaseline.url -OutFile $taskOldMsi
@@ -30,5 +32,5 @@ if (-not (Test-Path "$taskNewFolder/magicalcryptowallet.exe") -or -not (Test-Pat
 $taskData = Join-Path $taskWork 'synthetic-client'
 & "$taskNewFolder/magicalcryptowalletd.exe" '--help' "--datadir=$taskData" '--network=RegTest' | Out-File (Join-Path $taskWork 'help.txt')
 if ($LASTEXITCODE -ne 0) { throw 'Installed daemon could not display help' }
-@{ baseline_product=$taskOldCode; new_product=$taskNewCode; both_installed=$true; data_directory=$taskData } | ConvertTo-Json | Set-Content "$taskRoot/.artifacts/package-inspection/windows-coexistence.json"
+@{ baseline_product=$taskOldCode; new_product=$taskNewCode; both_installed=$true; data_directory=$taskData } | ConvertTo-Json | Set-Content (Join-Path $taskReports 'windows-coexistence.json')
 Write-Output 'Both installers coexist independently; installed daemon executes with isolated synthetic regtest storage.'
