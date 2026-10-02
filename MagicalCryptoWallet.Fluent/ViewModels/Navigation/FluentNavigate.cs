@@ -204,15 +204,6 @@ public partial class FluentNavigate
 		return new FluentDialog<System.Reactive.Unit>(target.NavigateDialogAsync(dialog, navigationMode));
 	}
 
-	public FluentDialog<FeeRate> CustomFeeRateDialog(TransactionInfo transactionInfo, NavigationTarget navigationTarget = NavigationTarget.CompactDialogScreen, NavigationMode navigationMode = NavigationMode.Normal)
-	{
-		var dialog = new CustomFeeRateDialogViewModel(UiContext, transactionInfo);
-		var target = UiContext.Navigate(navigationTarget);
-		target.To(dialog, navigationMode);
-
-		return new FluentDialog<FeeRate>(target.NavigateDialogAsync(dialog, navigationMode));
-	}
-
 	public void SendSuccess(SmartTransaction finalTransaction, string? title = null, string? caption = null, NavigationTarget navigationTarget = NavigationTarget.DialogScreen, NavigationMode navigationMode = NavigationMode.Normal)
 	{
 		UiContext.Navigate(navigationTarget).To(new SendSuccessViewModel(UiContext, finalTransaction, title, caption), navigationMode);
@@ -452,15 +443,6 @@ public partial class FluentNavigate
 	public void WalletBackupType(WalletCreationOptions options, NavigationTarget navigationTarget = NavigationTarget.DialogScreen, NavigationMode navigationMode = NavigationMode.Normal)
 	{
 		UiContext.Navigate(navigationTarget).To(new WalletBackupTypeViewModel(UiContext, options), navigationMode);
-	}
-
-	public FluentDialog<FeeRate> SendFee(Wallet wallet, TransactionInfo transactionInfo, bool isSilent, NavigationTarget navigationTarget = NavigationTarget.DialogScreen, NavigationMode navigationMode = NavigationMode.Normal)
-	{
-		var dialog = new SendFeeViewModel(UiContext, wallet, transactionInfo, isSilent);
-		var target = UiContext.Navigate(navigationTarget);
-		target.To(dialog, navigationMode);
-
-		return new FluentDialog<FeeRate>(target.NavigateDialogAsync(dialog, navigationMode));
 	}
 
 }

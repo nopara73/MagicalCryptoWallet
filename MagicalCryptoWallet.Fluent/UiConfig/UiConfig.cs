@@ -19,7 +19,6 @@ public class UiConfig : ConfigBase
 	private Version _lastVersionHighlightsDisplayed;
 	private bool _hideOnClose;
 	private bool _autoPaste;
-	private int _feeTarget;
 	private bool _sendAmountConversionReversed;
 	private double? _windowWidth;
 	private double? _windowHeight;
@@ -36,7 +35,6 @@ public class UiConfig : ConfigBase
 		Version lastVersionHighlightsDisplayed,
 		bool hideOnClose,
 		bool autoPaste,
-		int feeTarget,
 		bool sendAmountConversionReversed,
 		double? windowWidth,
 		double? windowHeight) : base(filePath)
@@ -51,7 +49,6 @@ public class UiConfig : ConfigBase
 		_lastVersionHighlightsDisplayed = lastVersionHighlightsDisplayed;
 		_hideOnClose = hideOnClose;
 		_autoPaste = autoPaste;
-		_feeTarget = feeTarget;
 		_sendAmountConversionReversed = sendAmountConversionReversed;
 		_windowWidth = windowWidth;
 		_windowHeight = windowHeight;
@@ -68,8 +65,7 @@ public class UiConfig : ConfigBase
 				x => x.RunOnSystemStartup,
 				x => x.PrivacyMode,
 				x => x.HideOnClose,
-				x => x.FeeTarget,
-				(_, _, _, _, _, _, _, _, _, _, _) => Unit.Default)
+				(_, _, _, _, _, _, _, _, _, _) => Unit.Default)
 			.Skip(1)
 			.Throttle(TimeSpan.FromMilliseconds(1000))
 			.ObserveOn(RxApp.MainThreadScheduler)
@@ -103,7 +99,6 @@ public class UiConfig : ConfigBase
 			lastVersionHighlightsDisplayed: new (2, 3, 1),
 			hideOnClose: false,
 			autoPaste: false,
-			feeTarget: 2,
 			sendAmountConversionReversed: false,
 			windowWidth: null,
 			windowHeight: null)
@@ -126,12 +121,6 @@ public class UiConfig : ConfigBase
 	{
 		get => _windowState;
 		internal set => RaiseAndSetIfChanged(ref _windowState, value);
-	}
-
-	public int FeeTarget
-	{
-		get => _feeTarget;
-		internal set => RaiseAndSetIfChanged(ref _feeTarget, value);
 	}
 
 	public bool Autocopy

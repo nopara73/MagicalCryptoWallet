@@ -37,9 +37,18 @@ using (Task.Run(() => RxSchedulers.MainThreadScheduler.Schedule(() => callbackOn
     if (!callbackOnUiThread) throw new InvalidOperationException("Headless command notifications must return to the Avalonia UI thread.");
 }
 Console.WriteLine("Headless UI scheduler check passed: background callbacks return to the Avalonia dispatcher.");
-string destination = args.FirstOrDefault() ?? ".artifacts/rebrand/screenshots";
+string destination = args.FirstOrDefault(x => !x.StartsWith("--", StringComparison.Ordinal)) ?? ".artifacts/rebrand/screenshots";
 Directory.CreateDirectory(destination);
 var context = (UiContext)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(UiContext));
+if (args.Contains("--fees-only"))
+{
+    var feeServices = (Services)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(Services));
+    AutomaticCoinSelectionChecks.SetBackingField(feeServices, nameof(Services.UiConfig), new UiConfig(Path.Combine(Path.GetFullPath(destination), "synthetic-fee-ui-config.json")));
+    typeof(Services).GetProperty(nameof(Services.Instance))!.SetValue(null, feeServices);
+    AutomaticCoinSelectionChecks.Run(context);
+    FeeDisplayChecks.Run(context, destination);
+    return;
+}
 PasswordBoxChecks.Run();
 LurkingWifeModeChecks.Initialize(context, destination);
 SingleWalletChecks.Run(context);

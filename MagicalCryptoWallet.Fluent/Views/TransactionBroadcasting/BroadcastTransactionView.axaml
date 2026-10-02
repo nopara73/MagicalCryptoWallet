@@ -1,5 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:converters="clr-namespace:MagicalCryptoWallet.Fluent.Converters"
              xmlns:transactionBroadcasting="using:MagicalCryptoWallet.Fluent.ViewModels.TransactionBroadcasting"
              x:DataType="transactionBroadcasting:BroadcastTransactionViewModel"
              x:CompileBindings="True"
@@ -21,14 +22,10 @@
       </PreviewItem>
       <Separator />
       <PreviewItem Icon="{StaticResource paper_cash_regular}"
-                   Label="Fee">
-        <StackPanel>
-          <TextBlock IsVisible="{Binding Path=BroadcastInfo.NetworkFee, Converter={x:Static ObjectConverters.IsNull}}"
-                   Text="Unknown" />
-          <AmountControl IsVisible="{Binding Path=BroadcastInfo.NetworkFee, Converter={x:Static ObjectConverters.IsNotNull}}"
-                         Classes="WithUsd"
-                         Amount="{Binding BroadcastInfo.NetworkFee}"/>
-        </StackPanel>
+                   Label="Total fee">
+        <PrivacyContentControl>
+          <TextBlock Text="{Binding BroadcastInfo.NetworkFee.Usd^, Converter={x:Static converters:MoneyConverters.ToUsdFee}, FallbackValue=—}" />
+        </PrivacyContentControl>
       </PreviewItem>
     </StackPanel>
   </ContentArea>

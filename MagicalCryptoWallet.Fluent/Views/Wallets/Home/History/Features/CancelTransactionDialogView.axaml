@@ -3,6 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:features="clr-namespace:MagicalCryptoWallet.Fluent.ViewModels.Wallets.Home.History.Features"
+             xmlns:converters="clr-namespace:MagicalCryptoWallet.Fluent.Converters"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="MagicalCryptoWallet.Fluent.Views.Wallets.Home.History.Features.CancelTransactionDialogView"
              x:DataType="features:CancelTransactionDialogViewModel"
@@ -20,8 +21,10 @@
         <PathIcon Data="{StaticResource cancel_regular}" Opacity="0.6" />
       </Viewbox>
       <StackPanel Spacing="10" HorizontalAlignment="Center">
-        <TextBlock HorizontalAlignment="Center" Text="Cancelling this transaction will cost you" />
-        <AmountControl Classes="WithUsd h5" HorizontalAlignment="Center" Amount="{Binding Fee}" />
+        <TextBlock HorizontalAlignment="Center" Text="Total fee" />
+        <PrivacyContentControl>
+          <TextBlock Classes="h5" HorizontalAlignment="Center" Text="{Binding Fee.Usd^, Converter={x:Static converters:MoneyConverters.ToUsdFee}}" />
+        </PrivacyContentControl>
       </StackPanel>
     </DockPanel>
   </ContentArea>

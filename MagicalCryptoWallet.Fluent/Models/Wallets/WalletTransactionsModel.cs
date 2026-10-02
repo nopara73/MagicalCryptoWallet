@@ -14,7 +14,6 @@ using MagicalCryptoWallet.Blockchain.Transactions;
 using MagicalCryptoWallet.Blockchain.Transactions.Summary;
 using MagicalCryptoWallet.Fluent.Extensions;
 using MagicalCryptoWallet.Fluent.Helpers;
-using MagicalCryptoWallet.Fluent.ViewModels.Wallets.Send;
 using MagicalCryptoWallet.Services;
 using MagicalCryptoWallet.Wallets;
 
@@ -87,24 +86,6 @@ public class WalletTransactionsModel : ReactiveObject, IDisposable
 		return txn;
 	}
 
-	public async Task<TimeSpan?> TryEstimateConfirmationTimeAsync(uint256 id, CancellationToken cancellationToken)
-	{
-		if (!_wallet.TransactionStore.TryGetTransaction(id, out var smartTransaction))
-		{
-			throw new InvalidOperationException($"Transaction not found! ID: {id}");
-		}
-
-		return await TransactionFeeHelper.EstimateConfirmationTimeAsync(_wallet.FeeRateEstimations, _wallet.Network, smartTransaction, _wallet.CpfpInfoProvider, cancellationToken);
-	}
-
-	public async Task<TimeSpan?> TryEstimateConfirmationTimeAsync(TransactionModel model, CancellationToken cancellationToken) => await TryEstimateConfirmationTimeAsync(model.Id, cancellationToken);
-
-	public TimeSpan? TryEstimateConfirmationTime(TransactionInfo info)
-	{
-		TransactionFeeHelper.TryEstimateConfirmationTime(_wallet, info.FeeRate, out var estimate);
-		return estimate;
-	}
-
 	public async Task<SpeedupTransaction> CreateSpeedUpTransactionAsync(RegularTransactionModel transaction, CancellationToken cancellationToken)
 	{
 		if (!_wallet.TransactionStore.TryGetTransaction(transaction.Id, out var targetTransaction))
@@ -121,7 +102,7 @@ public class WalletTransactionsModel : ReactiveObject, IDisposable
 		_services.WalletSession.EnsureReady();
 		var boostingTransaction = await _wallet.SpeedUpTransactionAsync(targetTransaction, null, cancellationToken);
 
-		var fee = _walletModel.AmountProvider.Create(GetFeeDifference(targetTransaction, boostingTransaction));
+		var fee = _walletModel.AmountProvider.Create(boostingTransaction.Fee);
 
 		var originalForeignAmounts = targetTransaction.ForeignOutputs.Select(x => x.TxOut.Value).OrderBy(x => x).ToArray();
 		var boostedForeignAmounts = boostingTransaction.Transaction.ForeignOutputs.Select(x => x.TxOut.Value).OrderBy(x => x).ToArray();
@@ -163,22 +144,7 @@ public class WalletTransactionsModel : ReactiveObject, IDisposable
 	private async Task<IEnumerable<TransactionModel>> BuildSummaryAsync(CancellationToken cancellationToken)
 	{
 		var orderedRawHistoryList = await _wallet.BuildHistorySummaryAsync(sortForUi: true, cancellationToken: cancellationToken);
-		var transactionModels = await _treeBuilder.BuildAsync(orderedRawHistoryList, cancellationToken);
-		return transactionModels;
-	}
-
-	private Money GetFeeDifference(SmartTransaction transactionToSpeedUp, BuildTransactionResult boostingTransaction)
-	{
-		var isCpfp = boostingTransaction.Transaction.Transaction.Inputs.Any(x => x.PrevOut.Hash == transactionToSpeedUp.GetHash());
-		var boostingTransactionFee = boostingTransaction.Fee;
-
-		if (isCpfp)
-		{
-			return boostingTransactionFee;
-		}
-
-		var originalFee = transactionToSpeedUp.WalletInputs.Sum(x => x.Amount) - transactionToSpeedUp.OutputValues.Sum(x => x);
-		return boostingTransactionFee - originalFee;
+		return _treeBuilder.Build(orderedRawHistoryList, cancellationToken);
 	}
 
 	public IEnumerable<BitcoinAddress> GetDestinationAddresses(uint256 id)

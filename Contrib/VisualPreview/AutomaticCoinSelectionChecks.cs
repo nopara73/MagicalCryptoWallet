@@ -40,7 +40,7 @@ internal static class AutomaticCoinSelectionChecks
 {
 	public static void Run(UiContext context)
 	{
-		int sends = 0, adjustments = 0, confirmations = 0;
+		int sends = 0, confirmations = 0;
 		CheckView(CreateWalletActions(context, () => sends++), window =>
 		{
 			var send = window.GetVisualDescendants().OfType<Button>().Single(b => ControlAutomationPeer.CreatePeerForElement(b).GetName() == "Send");
@@ -48,18 +48,29 @@ internal static class AutomaticCoinSelectionChecks
 			Click(window, send);
 			Check(sends == 1, "The real Send button must activate exactly once.");
 		});
-		CheckView(CreateTransactionPreview(context, () => adjustments++, () => confirmations++), window =>
+		CheckView(CreateTransactionPreview(context, () => confirmations++), window =>
 		{
 			window.KeyPress(Key.LeftAlt, RawInputModifiers.Alt, PhysicalKey.AltLeft, "");
 			Flush();
 			Check(!window.GetVisualDescendants().OfType<Button>().Any(b => Equals(b.Content, "Review coins")), "Alt must not reveal input selection.");
 			window.KeyRelease(Key.LeftAlt, RawInputModifiers.None, PhysicalKey.AltLeft, "");
-			var fee = window.GetVisualDescendants().OfType<Button>().Single(b => Equals(ToolTip.GetTip(b), "Change transaction fee or confirmation time"));
-			Check(fee.IsEnabled && fee.IsVisible, "Fee adjustment must remain available.");
-			Click(window, fee);
+			Check(!window.GetVisualDescendants().OfType<Slider>().Any(), "Transaction fees must have no slider.");
+			Check(!window.GetVisualDescendants().OfType<Button>().Any(b => Equals(ToolTip.GetTip(b), "Change transaction fee or confirmation time")), "Transaction fees must have no adjustment button.");
+			Check(!window.GetVisualDescendants().OfType<TextBlock>().Any(t => t.Text is "Fee Rate" or "Expected confirmation time"), "The send preview must omit fee rate and expected confirmation time.");
+			var fee = window.GetVisualDescendants().OfType<PreviewItem>().Single(item => item.Label == "Total fee");
+			Check(!fee.GetVisualDescendants().OfType<AmountControl>().Any(), "The fee must not display a BTC amount.");
+			Check(fee.GetVisualDescendants().OfType<TextBlock>().Any(t => t.Text == "0.28 USD" && t.IsEffectivelyVisible), "The total fee must display only its USD value to two decimals.");
+			Check(Equals(fee.CopyableContent, "0.28 USD"), "Copying the fee must copy its displayed USD value.");
 			var confirm = window.GetVisualDescendants().OfType<Button>().Single(b => Equals(b.Content, "Confirm"));
 			Click(window, confirm);
-			Check(adjustments == 1 && confirmations == 1, "Fee and confirmation commands must remain operable.");
+			Check(confirmations == 1, "Transaction confirmation must remain operable.");
+		});
+		CheckView(CreateTransactionPreview(context, usdExchangeRate: null), window =>
+		{
+			var fee = window.GetVisualDescendants().OfType<PreviewItem>().Single(item => item.Label == "Total fee");
+			Check(fee.GetVisualDescendants().OfType<TextBlock>().Any(t => t.Text == "—" && t.IsEffectivelyVisible), "A missing USD quote must show an unavailable value.");
+			Check(!fee.IsCopyButtonEnabled, "A missing USD quote must not copy a zero-dollar fee.");
+			Check(!fee.GetVisualDescendants().OfType<TextBlock>().Any(t => t.Text == "0.00 USD" && t.IsEffectivelyVisible), "A missing USD quote must not be displayed as a free transaction.");
 		});
 		CheckView(CreateWalletCoins(context), window =>
 		{
@@ -75,7 +86,7 @@ internal static class AutomaticCoinSelectionChecks
 			Check(!window.GetVisualDescendants().OfType<TextBlock>().Any(t => t.Text == "Default Send Workflow"), "Settings must not offer a manual send workflow.");
 			Check(window.GetVisualDescendants().OfType<ComboBox>().Count(c => c.IsVisible) == 2, "Receive and change address-type settings must remain available.");
 		});
-		Console.WriteLine("Automatic coin selection UI checks passed: one accessible Send action, no Alt input selection, working fee/confirm buttons, read-only sortable coin details, and no manual send setting.");
+		Console.WriteLine("Automatic send UI checks passed: USD-only total fee and clipboard, no fee rate or expected confirmation time, missing-quote handling, working confirmation, automatic inputs, and read-only coin details.");
 	}
 
 	[SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Commands are disposed when the returned view detaches.")]
@@ -109,23 +120,22 @@ internal static class AutomaticCoinSelectionChecks
 	}
 
 	[SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Commands are disposed when the returned view detaches.")]
-	public static Control CreateTransactionPreview(UiContext context, Action? adjust = null, Action? confirm = null)
+	public static Control CreateTransactionPreview(UiContext context, Action? confirm = null, decimal? usdExchangeRate = 100_000m)
 	{
 		var parent = NewModel<TransactionPreviewViewModel>(context);
 		SetField(parent, "_walletModel", NewWallet());
 		parent.NextButtonText = "Confirm";
-		parent.IsFeeAdjustable = true;
-		parent.FeeAdjustToolTip = "Change transaction fee or confirmation time";
-		var feeCommand = ReactiveCommand.Create(() => adjust?.Invoke());
 		var confirmCommand = ReactiveCommand.Create(() => confirm?.Invoke());
-		SetBackingField(parent, nameof(TransactionPreviewViewModel.AdjustFeeCommand), feeCommand);
 		SetProperty(parent, nameof(TransactionPreviewViewModel.NextCommand), confirmCommand);
 		var destination = ExtKey.CreateFromSeed(new byte[32]).Neuter().PubKey.GetAddress(ScriptPubKeyType.Segwit, Network.RegTest);
 		var info = new TransactionInfo(new Destination.Loudly(destination.ScriptPubKey), 50);
+		var services = DispatchProxy.Create<IServices, AutomaticPreviewServices>();
+		((AutomaticPreviewServices)(object)services).UsdExchangeRate = usdExchangeRate ?? 0m;
+		var amountProvider = new AmountProvider(services);
 		var summary = new TransactionSummaryViewModel(context, parent, NewWallet(), info)
 		{
-			Amount = new Amount(Money.Coins(0.01m)), Fee = new Amount(Money.Satoshis(280)), FeeRate = new FeeRate(2m),
-			ConfirmationTime = TimeSpan.FromMinutes(20), Recipient = new LabelsArray("synthetic-payment")
+			Amount = new Amount(Money.Coins(0.01m)), Fee = amountProvider.Create(Money.Satoshis(280)),
+			Recipient = new LabelsArray("synthetic-payment")
 		};
 		var privacy = NewModel<PrivacySuggestionsFlyoutViewModel>(context);
 		privacy.GoodPrivacy = true;
@@ -134,7 +144,7 @@ internal static class AutomaticCoinSelectionChecks
 		SetBackingField(parent, nameof(TransactionPreviewViewModel.TransactionSummaries), new List<TransactionSummaryViewModel> { summary });
 		parent.DisplayedTransactionSummary = summary;
 		var view = new TransactionPreviewView { DataContext = parent };
-		view.DetachedFromVisualTree += (_, _) => { feeCommand.Dispose(); confirmCommand.Dispose(); };
+		view.DetachedFromVisualTree += (_, _) => { confirmCommand.Dispose(); };
 		return view;
 	}
 
@@ -168,7 +178,7 @@ internal static class AutomaticCoinSelectionChecks
 		return view;
 	}
 
-	private static T NewModel<T>(UiContext context) where T : ViewModelBase
+	internal static T NewModel<T>(UiContext context) where T : ViewModelBase
 	{
 		var model = (T)RuntimeHelpers.GetUninitializedObject(typeof(T));
 		typeof(ViewModelBase).GetConstructor([typeof(UiContext)])!.Invoke(model, [context]);
@@ -198,7 +208,7 @@ internal static class AutomaticCoinSelectionChecks
 		var smart = new SmartTransaction(transaction, new Height.ChainHeight(100));
 		return [new SmartCoin(smart, 0, first), new SmartCoin(smart, 1, second)];
 	}
-	private static void SetBackingField(object target, string name, object value) => SetField(target, $"<{name}>k__BackingField", value);
+	internal static void SetBackingField(object target, string name, object value) => SetField(target, $"<{name}>k__BackingField", value);
 	private static void SetField(object target, string name, object value) => target.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(target, value);
 	private static void SetProperty(object target, string name, object value) => target.GetType().GetProperty(name)!.SetValue(target, value);
 	private static void CheckView(Control view, Action<Window> assertion)
@@ -265,6 +275,13 @@ public class AutomaticPreviewWallet : DispatchProxy
 
 public class AutomaticPreviewServices : DispatchProxy
 {
-	protected override object? Invoke(MethodInfo? method, object?[]? args) => method?.Name == "GetServerTipHeight"
-		? 120u : throw new InvalidOperationException("Network services are unavailable in this preview.");
+	private readonly MagicalCryptoWallet.Services.EventBus _events = new();
+	public decimal UsdExchangeRate { get; set; }
+	protected override object? Invoke(MethodInfo? method, object?[]? args) => method?.Name switch
+	{
+		"GetServerTipHeight" => 120u,
+		"get_EventBus" => _events,
+		"GetUsdExchangeRate" => UsdExchangeRate,
+		_ => throw new InvalidOperationException("Network services are unavailable in this preview.")
+	};
 }
