@@ -117,13 +117,13 @@ The initial remote caller snapshot was `82127991068522210cdcf77080dc9b819502e486
 
 Managed regression callers remain in `MagicalCryptoWallet.Tests/UnitTests/WalletOperationAuthorizationTests.cs` (reviewed unsigned transaction unchanged by signing) and `MagicalCryptoWallet.Tests/UnitTests/SoftwareWalletTests.cs` (preview/signing finalization state). They are not removed or rewritten here.
 
-Concurrent hardware-wallet removal has already removed PSBT text/file import/export from `TransactionHelpers`, `TransactionBroadcasterModel`, `TransactionAuthorizationInfo`, and `FileDialogHelper` in the inspected remote snapshot. Do not resurrect hardware wallet, PayJoin, or removed import/export flows to manufacture a production caller. Re-audit the fresh caller graph before integrating. NBitcoin 10.0.13 is still a direct dependency in the managed core lockfile; 188 C# files in the inspected core/client/Fluent directories reference NBitcoin, and test/daemon/coordinator uses remain as well. This module does **not** justify removing the package.
+Hardware-wallet removal eliminated PSBT text/file import/export from the inspected managed workflows. The standalone transaction broadcaster and raw-transaction import/paste are also removed. Do not resurrect hardware wallet, PayJoin, or removed import/export flows to manufacture a production caller. Re-audit the fresh caller graph before integrating. NBitcoin 10.0.13 is still a direct dependency in the managed core lockfile; 188 C# files in the inspected core/client/Fluent directories reference NBitcoin, and test/daemon/coordinator uses remain as well. This module does **not** justify removing the package.
 
 Inventory commands:
 
 ```powershell
 rg -n '\bPSBT\b|\.Psbt\b|PSBTInput|PSBTOutput|BuildPSBT|SignPSBT' -g '*.cs' -g '!**/obj/**' -g '!**/bin/**'
-rg -n 'PSBT|Psbt' MagicalCryptoWallet.Fluent/Helpers/TransactionHelpers.cs MagicalCryptoWallet.Fluent/Models/TransactionBroadcasterModel.cs MagicalCryptoWallet.Fluent/Models/TransactionAuthorizationInfo.cs MagicalCryptoWallet.Fluent/Helpers/FileDialogHelper.cs
+rg -n 'PSBT|Psbt' MagicalCryptoWallet.Fluent/Helpers/TransactionHelpers.cs MagicalCryptoWallet.Fluent/Models/TransactionAuthorizationInfo.cs MagicalCryptoWallet.Fluent/Helpers/FileDialogHelper.cs
 rg -l '\bNBitcoin\b' MagicalCryptoWallet MagicalCryptoWallet.Client MagicalCryptoWallet.Fluent -g '*.cs'
 ```
 
