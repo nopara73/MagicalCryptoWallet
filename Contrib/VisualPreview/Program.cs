@@ -106,7 +106,7 @@ foreach (var theme in new[] { ThemeVariant.Light, ThemeVariant.Dark })
             window.Measure(new Size(width, height));
             window.Arrange(new Rect(0, 0, width, height));
             using var bitmap = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("The compositor did not render a frame.");
-            if (window.RenderScaling != scale || bitmap.PixelSize != new PixelSize((int)(width * scale), (int)(height * scale)))
+            if (window.RenderScaling != scale || bitmap.PixelSize != PixelSize.FromSize(new Size(width, height), scale))
                 throw new InvalidOperationException("The captured frame does not match the requested display scale.");
             bitmap.Save(Path.Combine(destination, $"{name}-{theme.Key!.ToString()!.ToLowerInvariant()}-{(int)(scale * 100)}.png"));
             window.Close();
