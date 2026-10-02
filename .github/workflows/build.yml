@@ -180,6 +180,9 @@ jobs:
             .artifacts/mcw-managed-tools/**/outputs/**
             .artifacts/mcw-content-host/**/verification.json
             .artifacts/mcw-content-host/**/*.log
+            .artifacts/mcw-content-host/**/source-snapshot.zip
+            .artifacts/mcw-content-host/**/restore-locks/**
+            .artifacts/mcw-content-host/**/restore-locks.targets
             .artifacts/mcw-content-inbox/verification.json
             .artifacts/managed-host-verification/**/verification.json
             .artifacts/managed-host-verification/**/source-snapshot.zip
