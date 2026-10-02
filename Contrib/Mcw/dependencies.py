@@ -37,7 +37,7 @@ def inventory():
             "handoff":"MagicalCryptoWallet.Documentation/McwArchitecture.md" if name=="qr"
                        else handoff.relative_to(ROOT).as_posix() if handoff.is_file() else None})
     packages={}
-    for lock in sorted(ROOT.rglob("packages.lock.json")):
+    for lock in sorted(ROOT.rglob("packages.lock.json"),key=lambda path:path.relative_to(ROOT).as_posix()):
         relative=lock.relative_to(ROOT).as_posix()
         if any(part in relative.split("/") for part in (".artifacts","bin","obj","target")): continue
         for framework,values in json.loads(lock.read_text(encoding="utf-8-sig"))["dependencies"].items():
@@ -54,7 +54,7 @@ def inventory():
                 if use not in item["uses"]: item["uses"].append(use)
                 item["dependencies"].update(entry.get("dependencies",{}))
     references=[]
-    for project in sorted(ROOT.rglob("*.csproj")):
+    for project in sorted(ROOT.rglob("*.csproj"),key=lambda path:path.relative_to(ROOT).as_posix()):
         relative=project.relative_to(ROOT).as_posix()
         if any(part in relative.split("/") for part in (".artifacts","bin","obj")):continue
         for node in ET.parse(project).findall(".//PackageReference"):
@@ -68,7 +68,7 @@ def inventory():
         pins.append({"name":node.get("Include"),"version":version,"used_reference":any(ref["name"]==node.get("Include") for ref in references)})
     bundles=[]
     for directory in ("MagicalCryptoWallet/BundledApps/Binaries","MagicalCryptoWallet.IntegrationTests/BundledApps/Binaries"):
-        for path in sorted((ROOT/directory).rglob("*")):
+        for path in sorted((ROOT/directory).rglob("*"),key=lambda path:path.relative_to(ROOT).as_posix()):
             if path.is_file():
                 bundles.append({"path":path.relative_to(ROOT).as_posix(),"bytes":path.stat().st_size,
                                 "sha256":hashlib.sha256(path.read_bytes()).hexdigest(),"role":role(directory),

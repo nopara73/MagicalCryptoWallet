@@ -44,6 +44,7 @@
           dontBuild = true;
           dontStrip = true;
           installPhase = ''
+            patchShebangs --build ./*/install.sh
             for component in rustc cargo rust-std; do
               ./$component-1.99.0-x86_64-unknown-linux-gnu/install.sh --prefix=$out --disable-ldconfig
             done

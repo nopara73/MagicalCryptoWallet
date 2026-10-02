@@ -22,15 +22,15 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Direct",
-          "role": "application"
-        },
-        {
           "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
+          "role": "application"
+        },
+        {
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Direct",
           "role": "application"
         },
         {
@@ -82,13 +82,13 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -124,13 +124,13 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -164,15 +164,15 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Direct",
-          "role": "application"
-        },
-        {
           "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
+          "role": "application"
+        },
+        {
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Direct",
           "role": "application"
         },
         {
@@ -229,15 +229,15 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Direct",
-          "role": "application"
-        },
-        {
           "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
+          "role": "application"
+        },
+        {
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Direct",
           "role": "application"
         },
         {
@@ -326,13 +326,13 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -366,15 +366,15 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Direct",
-          "role": "application"
-        },
-        {
           "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
+          "role": "application"
+        },
+        {
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Direct",
           "role": "application"
         },
         {
@@ -414,13 +414,13 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -457,15 +457,15 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Direct",
-          "role": "application"
-        },
-        {
           "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
+          "role": "application"
+        },
+        {
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Direct",
           "role": "application"
         },
         {
@@ -556,13 +556,13 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -599,13 +599,13 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -663,13 +663,13 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -705,13 +705,13 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -745,13 +745,13 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -785,13 +785,13 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -828,13 +828,13 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -868,13 +868,13 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -908,13 +908,13 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -948,13 +948,13 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -988,13 +988,13 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -1034,12 +1034,6 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
           "lock": "MagicalCryptoWallet.Client/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -1058,13 +1052,13 @@
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -1080,6 +1074,12 @@
           "framework": "net10.0",
           "type": "Transitive",
           "role": "verification"
+        },
+        {
+          "lock": "MagicalCryptoWallet/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
         }
       ],
       "dependencies": {},
@@ -1110,12 +1110,6 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
           "lock": "MagicalCryptoWallet.Client/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -1134,13 +1128,13 @@
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -1156,6 +1150,12 @@
           "framework": "net10.0",
           "type": "Transitive",
           "role": "verification"
+        },
+        {
+          "lock": "MagicalCryptoWallet/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
         }
       ],
       "dependencies": {},
@@ -1180,15 +1180,15 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Direct",
-          "role": "application"
-        },
-        {
           "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
+          "role": "application"
+        },
+        {
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Direct",
           "role": "application"
         },
         {
@@ -1225,13 +1225,13 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -1272,13 +1272,13 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -1316,13 +1316,13 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -1359,13 +1359,13 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -1403,13 +1403,13 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -1513,12 +1513,6 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Direct",
-          "role": "application"
-        },
-        {
           "lock": "MagicalCryptoWallet.Client/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
@@ -1531,13 +1525,13 @@
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "application"
@@ -1553,6 +1547,12 @@
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "verification"
+        },
+        {
+          "lock": "MagicalCryptoWallet/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Direct",
+          "role": "application"
         }
       ],
       "dependencies": {
@@ -1657,12 +1657,6 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Direct",
-          "role": "application"
-        },
-        {
           "lock": "MagicalCryptoWallet.Client/packages.lock.json",
           "framework": "net10.0",
           "type": "Direct",
@@ -1681,12 +1675,6 @@
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Direct",
-          "role": "application"
-        },
-        {
           "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "Direct",
@@ -1699,6 +1687,12 @@
           "role": "build"
         },
         {
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Direct",
+          "role": "application"
+        },
+        {
           "lock": "MagicalCryptoWallet.IntegrationTests/packages.lock.json",
           "framework": "net10.0",
           "type": "Direct",
@@ -1709,6 +1703,12 @@
           "framework": "net10.0",
           "type": "Direct",
           "role": "verification"
+        },
+        {
+          "lock": "MagicalCryptoWallet/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Direct",
+          "role": "application"
         }
       ],
       "dependencies": {},
@@ -1798,12 +1798,6 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Direct",
-          "role": "application"
-        },
-        {
           "lock": "MagicalCryptoWallet.Client/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
@@ -1822,13 +1816,13 @@
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "application"
@@ -1844,6 +1838,12 @@
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "verification"
+        },
+        {
+          "lock": "MagicalCryptoWallet/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Direct",
+          "role": "application"
         }
       ],
       "dependencies": {
@@ -1872,12 +1872,6 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
           "lock": "MagicalCryptoWallet.Client/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -1896,13 +1890,13 @@
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -1918,6 +1912,12 @@
           "framework": "net10.0",
           "type": "Transitive",
           "role": "verification"
+        },
+        {
+          "lock": "MagicalCryptoWallet/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
         }
       ],
       "dependencies": {
@@ -1944,12 +1944,6 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Direct",
-          "role": "application"
-        },
-        {
           "lock": "MagicalCryptoWallet.Client/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
@@ -1962,13 +1956,13 @@
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "application"
@@ -1984,6 +1978,12 @@
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "verification"
+        },
+        {
+          "lock": "MagicalCryptoWallet/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Direct",
+          "role": "application"
         }
       ],
       "dependencies": {
@@ -2022,13 +2022,13 @@
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "application"
@@ -2074,12 +2074,6 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
           "lock": "MagicalCryptoWallet.Client/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -2092,13 +2086,13 @@
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -2114,6 +2108,12 @@
           "framework": "net10.0",
           "type": "Transitive",
           "role": "verification"
+        },
+        {
+          "lock": "MagicalCryptoWallet/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
         }
       ],
       "dependencies": {
@@ -2141,12 +2141,6 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
           "lock": "MagicalCryptoWallet.Client/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -2159,13 +2153,13 @@
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -2181,6 +2175,12 @@
           "framework": "net10.0",
           "type": "Transitive",
           "role": "verification"
+        },
+        {
+          "lock": "MagicalCryptoWallet/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
         }
       ],
       "dependencies": {
@@ -2207,12 +2207,6 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
           "lock": "MagicalCryptoWallet.Client/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -2225,13 +2219,13 @@
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -2247,6 +2241,12 @@
           "framework": "net10.0",
           "type": "Transitive",
           "role": "verification"
+        },
+        {
+          "lock": "MagicalCryptoWallet/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
         }
       ],
       "dependencies": {
@@ -2376,12 +2376,6 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
           "lock": "MagicalCryptoWallet.Client/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -2394,13 +2388,13 @@
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -2416,6 +2410,12 @@
           "framework": "net10.0",
           "type": "Transitive",
           "role": "verification"
+        },
+        {
+          "lock": "MagicalCryptoWallet/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
         }
       ],
       "dependencies": {
@@ -2442,12 +2442,6 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
           "lock": "MagicalCryptoWallet.Client/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -2460,13 +2454,13 @@
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -2482,6 +2476,12 @@
           "framework": "net10.0",
           "type": "Transitive",
           "role": "verification"
+        },
+        {
+          "lock": "MagicalCryptoWallet/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
         }
       ],
       "dependencies": {},
@@ -2522,12 +2522,6 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
           "lock": "MagicalCryptoWallet.Client/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -2540,13 +2534,13 @@
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -2562,6 +2556,12 @@
           "framework": "net10.0",
           "type": "Transitive",
           "role": "verification"
+        },
+        {
+          "lock": "MagicalCryptoWallet/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
         }
       ],
       "dependencies": {
@@ -2590,12 +2590,6 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
           "lock": "MagicalCryptoWallet.Client/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -2608,13 +2602,13 @@
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -2630,6 +2624,12 @@
           "framework": "net10.0",
           "type": "Transitive",
           "role": "verification"
+        },
+        {
+          "lock": "MagicalCryptoWallet/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
         }
       ],
       "dependencies": {
@@ -2657,12 +2657,6 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
           "lock": "MagicalCryptoWallet.Client/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -2675,13 +2669,13 @@
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -2697,6 +2691,12 @@
           "framework": "net10.0",
           "type": "Transitive",
           "role": "verification"
+        },
+        {
+          "lock": "MagicalCryptoWallet/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
         }
       ],
       "dependencies": {
@@ -2798,12 +2798,6 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Direct",
-          "role": "application"
-        },
-        {
           "lock": "MagicalCryptoWallet.Client/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
@@ -2816,13 +2810,13 @@
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "application"
@@ -2838,6 +2832,12 @@
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "verification"
+        },
+        {
+          "lock": "MagicalCryptoWallet/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Direct",
+          "role": "application"
         }
       ],
       "dependencies": {
@@ -2868,12 +2868,6 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Direct",
-          "role": "application"
-        },
-        {
           "lock": "MagicalCryptoWallet.Client/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
@@ -2886,13 +2880,13 @@
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "application"
@@ -2908,6 +2902,12 @@
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "verification"
+        },
+        {
+          "lock": "MagicalCryptoWallet/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Direct",
+          "role": "application"
         }
       ],
       "dependencies": {
@@ -2939,12 +2939,6 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
           "lock": "MagicalCryptoWallet.Client/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -2957,13 +2951,13 @@
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -2979,6 +2973,12 @@
           "framework": "net10.0",
           "type": "Transitive",
           "role": "verification"
+        },
+        {
+          "lock": "MagicalCryptoWallet/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
         }
       ],
       "dependencies": {
@@ -3029,12 +3029,6 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
           "lock": "MagicalCryptoWallet.Client/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -3047,13 +3041,13 @@
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -3069,6 +3063,12 @@
           "framework": "net10.0",
           "type": "Transitive",
           "role": "verification"
+        },
+        {
+          "lock": "MagicalCryptoWallet/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
         }
       ],
       "dependencies": {
@@ -3206,12 +3206,6 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
           "lock": "MagicalCryptoWallet.Client/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -3224,13 +3218,13 @@
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -3246,6 +3240,12 @@
           "framework": "net10.0",
           "type": "Transitive",
           "role": "verification"
+        },
+        {
+          "lock": "MagicalCryptoWallet/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
         }
       ],
       "dependencies": {
@@ -3273,12 +3273,6 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
           "lock": "MagicalCryptoWallet.Client/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -3291,13 +3285,13 @@
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -3313,6 +3307,12 @@
           "framework": "net10.0",
           "type": "Transitive",
           "role": "verification"
+        },
+        {
+          "lock": "MagicalCryptoWallet/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
         }
       ],
       "dependencies": {
@@ -3343,12 +3343,6 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
           "lock": "MagicalCryptoWallet.Client/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -3361,13 +3355,13 @@
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -3383,6 +3377,12 @@
           "framework": "net10.0",
           "type": "Transitive",
           "role": "verification"
+        },
+        {
+          "lock": "MagicalCryptoWallet/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
         }
       ],
       "dependencies": {},
@@ -3407,12 +3407,6 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
           "lock": "MagicalCryptoWallet.Client/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -3425,13 +3419,13 @@
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -3447,6 +3441,12 @@
           "framework": "net10.0",
           "type": "Transitive",
           "role": "verification"
+        },
+        {
+          "lock": "MagicalCryptoWallet/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
         }
       ],
       "dependencies": {
@@ -3666,12 +3666,6 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Direct",
-          "role": "application"
-        },
-        {
           "lock": "MagicalCryptoWallet.Client/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
@@ -3690,13 +3684,13 @@
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "application"
@@ -3712,6 +3706,12 @@
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "verification"
+        },
+        {
+          "lock": "MagicalCryptoWallet/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Direct",
+          "role": "application"
         }
       ],
       "dependencies": {},
@@ -3760,12 +3760,6 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Direct",
-          "role": "application"
-        },
-        {
           "lock": "MagicalCryptoWallet.Client/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
@@ -3784,13 +3778,13 @@
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "application"
@@ -3806,6 +3800,12 @@
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "verification"
+        },
+        {
+          "lock": "MagicalCryptoWallet/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Direct",
+          "role": "application"
         },
         {
           "lock": "ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/packages.lock.json",
@@ -3845,12 +3845,6 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet/packages.lock.json",
-          "framework": "net10.0",
-          "type": "CentralTransitive",
-          "role": "application"
-        },
-        {
           "lock": "MagicalCryptoWallet.Client/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
@@ -3869,13 +3863,13 @@
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "application"
@@ -3893,9 +3887,9 @@
           "role": "verification"
         },
         {
-          "lock": "ThirdParty/WabiSabi/csharp/WabiSabi/packages.lock.json",
+          "lock": "MagicalCryptoWallet/packages.lock.json",
           "framework": "net10.0",
-          "type": "Direct",
+          "type": "CentralTransitive",
           "role": "application"
         },
         {
@@ -3905,9 +3899,9 @@
           "role": "verification"
         },
         {
-          "lock": "ThirdParty/WabiSabi/interop/packages.lock.json",
+          "lock": "ThirdParty/WabiSabi/csharp/WabiSabi/packages.lock.json",
           "framework": "net10.0",
-          "type": "CentralTransitive",
+          "type": "Direct",
           "role": "application"
         },
         {
@@ -3915,6 +3909,12 @@
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "verification"
+        },
+        {
+          "lock": "ThirdParty/WabiSabi/interop/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "application"
         }
       ],
       "dependencies": {},
@@ -3979,12 +3979,6 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet/packages.lock.json",
-          "framework": "net10.0",
-          "type": "CentralTransitive",
-          "role": "application"
-        },
-        {
           "lock": "MagicalCryptoWallet.Client/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
@@ -4003,13 +3997,13 @@
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "application"
@@ -4025,6 +4019,12 @@
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "verification"
+        },
+        {
+          "lock": "MagicalCryptoWallet/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "application"
         },
         {
           "lock": "ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/packages.lock.json",
@@ -4061,12 +4061,6 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Direct",
-          "role": "application"
-        },
-        {
           "lock": "MagicalCryptoWallet.Client/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
@@ -4085,13 +4079,13 @@
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "application"
@@ -4107,6 +4101,12 @@
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "verification"
+        },
+        {
+          "lock": "MagicalCryptoWallet/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Direct",
+          "role": "application"
         }
       ],
       "dependencies": {
@@ -4148,15 +4148,15 @@
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Direct",
-          "role": "application"
-        },
-        {
           "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
+          "role": "application"
+        },
+        {
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Direct",
           "role": "application"
         },
         {
@@ -4188,15 +4188,15 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Direct",
-          "role": "application"
-        },
-        {
           "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
+          "role": "application"
+        },
+        {
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Direct",
           "role": "application"
         },
         {
@@ -4230,13 +4230,13 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -4274,13 +4274,13 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "Direct",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "Direct",
           "role": "application"
@@ -4318,13 +4318,13 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -4358,15 +4358,15 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Direct",
-          "role": "application"
-        },
-        {
           "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
+          "role": "application"
+        },
+        {
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Direct",
           "role": "application"
         },
         {
@@ -4401,15 +4401,15 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Direct",
-          "role": "application"
-        },
-        {
           "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
+          "role": "application"
+        },
+        {
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Direct",
           "role": "application"
         },
         {
@@ -4441,13 +4441,13 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -4481,13 +4481,13 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "application"
@@ -4521,13 +4521,13 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -4561,13 +4561,13 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -4605,13 +4605,13 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -4648,13 +4648,13 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -4690,13 +4690,13 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -4733,12 +4733,6 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
           "lock": "MagicalCryptoWallet.Client/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -4757,13 +4751,13 @@
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -4779,6 +4773,12 @@
           "framework": "net10.0",
           "type": "Transitive",
           "role": "verification"
+        },
+        {
+          "lock": "MagicalCryptoWallet/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
         }
       ],
       "dependencies": {
@@ -4806,12 +4806,6 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
           "lock": "MagicalCryptoWallet.Client/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -4830,13 +4824,13 @@
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -4852,6 +4846,12 @@
           "framework": "net10.0",
           "type": "Transitive",
           "role": "verification"
+        },
+        {
+          "lock": "MagicalCryptoWallet/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
         }
       ],
       "dependencies": {},
@@ -4876,12 +4876,6 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
           "lock": "MagicalCryptoWallet.Client/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -4900,13 +4894,13 @@
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -4922,6 +4916,12 @@
           "framework": "net10.0",
           "type": "Transitive",
           "role": "verification"
+        },
+        {
+          "lock": "MagicalCryptoWallet/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
         }
       ],
       "dependencies": {},
@@ -4946,12 +4946,6 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
           "lock": "MagicalCryptoWallet.Client/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -4970,13 +4964,13 @@
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -4992,6 +4986,12 @@
           "framework": "net10.0",
           "type": "Transitive",
           "role": "verification"
+        },
+        {
+          "lock": "MagicalCryptoWallet/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
         }
       ],
       "dependencies": {
@@ -5018,13 +5018,13 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -5061,13 +5061,13 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -5189,12 +5189,6 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
           "lock": "MagicalCryptoWallet.Client/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -5213,13 +5207,13 @@
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -5235,6 +5229,12 @@
           "framework": "net10.0",
           "type": "Transitive",
           "role": "verification"
+        },
+        {
+          "lock": "MagicalCryptoWallet/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
         }
       ],
       "dependencies": {},
@@ -5277,12 +5277,6 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Direct",
-          "role": "application"
-        },
-        {
           "lock": "MagicalCryptoWallet.Client/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
@@ -5301,13 +5295,13 @@
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "application"
@@ -5323,6 +5317,12 @@
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "verification"
+        },
+        {
+          "lock": "MagicalCryptoWallet/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Direct",
+          "role": "application"
         }
       ],
       "dependencies": {
@@ -5385,13 +5385,13 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -5547,15 +5547,15 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Direct",
-          "role": "application"
-        },
-        {
           "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
+          "role": "application"
+        },
+        {
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Direct",
           "role": "application"
         },
         {
@@ -5596,13 +5596,13 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -5639,13 +5639,13 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -5682,13 +5682,13 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -5725,13 +5725,13 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -5768,13 +5768,13 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -5811,13 +5811,13 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -5854,13 +5854,13 @@
           "role": "verification"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
         },
         {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
+          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -6225,51 +6225,6 @@
       "role": "verification"
     },
     {
-      "name": "Microsoft.AspNetCore.WebUtilities",
-      "project": "MagicalCryptoWallet/MagicalCryptoWallet.csproj",
-      "role": "application"
-    },
-    {
-      "name": "Microsoft.Extensions.Caching.Abstractions",
-      "project": "MagicalCryptoWallet/MagicalCryptoWallet.csproj",
-      "role": "application"
-    },
-    {
-      "name": "Microsoft.Extensions.Hosting.Abstractions",
-      "project": "MagicalCryptoWallet/MagicalCryptoWallet.csproj",
-      "role": "application"
-    },
-    {
-      "name": "Microsoft.Extensions.Http",
-      "project": "MagicalCryptoWallet/MagicalCryptoWallet.csproj",
-      "role": "application"
-    },
-    {
-      "name": "NNostr.Client",
-      "project": "MagicalCryptoWallet/MagicalCryptoWallet.csproj",
-      "role": "application"
-    },
-    {
-      "name": "Microsoft.Data.Sqlite",
-      "project": "MagicalCryptoWallet/MagicalCryptoWallet.csproj",
-      "role": "application"
-    },
-    {
-      "name": "Microsoft.Win32.SystemEvents",
-      "project": "MagicalCryptoWallet/MagicalCryptoWallet.csproj",
-      "role": "application"
-    },
-    {
-      "name": "NBitcoin",
-      "project": "MagicalCryptoWallet/MagicalCryptoWallet.csproj",
-      "role": "application"
-    },
-    {
-      "name": "System.Linq.Async",
-      "project": "MagicalCryptoWallet/MagicalCryptoWallet.csproj",
-      "role": "application"
-    },
-    {
       "name": "Microsoft.Extensions.Caching.Memory",
       "project": "MagicalCryptoWallet.Client/MagicalCryptoWallet.Client.csproj",
       "role": "application"
@@ -6278,6 +6233,26 @@
       "name": "NScheme",
       "project": "MagicalCryptoWallet.Client/MagicalCryptoWallet.Client.csproj",
       "role": "application"
+    },
+    {
+      "name": "Avalonia.Desktop",
+      "project": "MagicalCryptoWallet.Fluent.Desktop/MagicalCryptoWallet.Fluent.Desktop.csproj",
+      "role": "application"
+    },
+    {
+      "name": "ReactiveUI.Avalonia",
+      "project": "MagicalCryptoWallet.Fluent.Desktop/MagicalCryptoWallet.Fluent.Desktop.csproj",
+      "role": "application"
+    },
+    {
+      "name": "Microsoft.CodeAnalysis.CSharp",
+      "project": "MagicalCryptoWallet.Fluent.Generators/MagicalCryptoWallet.Fluent.Generators.csproj",
+      "role": "build"
+    },
+    {
+      "name": "Microsoft.CodeAnalysis.Analyzers",
+      "project": "MagicalCryptoWallet.Fluent.Generators/MagicalCryptoWallet.Fluent.Generators.csproj",
+      "role": "build"
     },
     {
       "name": "Avalonia",
@@ -6345,26 +6320,6 @@
       "role": "application"
     },
     {
-      "name": "Avalonia.Desktop",
-      "project": "MagicalCryptoWallet.Fluent.Desktop/MagicalCryptoWallet.Fluent.Desktop.csproj",
-      "role": "application"
-    },
-    {
-      "name": "ReactiveUI.Avalonia",
-      "project": "MagicalCryptoWallet.Fluent.Desktop/MagicalCryptoWallet.Fluent.Desktop.csproj",
-      "role": "application"
-    },
-    {
-      "name": "Microsoft.CodeAnalysis.CSharp",
-      "project": "MagicalCryptoWallet.Fluent.Generators/MagicalCryptoWallet.Fluent.Generators.csproj",
-      "role": "build"
-    },
-    {
-      "name": "Microsoft.CodeAnalysis.Analyzers",
-      "project": "MagicalCryptoWallet.Fluent.Generators/MagicalCryptoWallet.Fluent.Generators.csproj",
-      "role": "build"
-    },
-    {
       "name": "coverlet.collector",
       "project": "MagicalCryptoWallet.IntegrationTests/MagicalCryptoWallet.IntegrationTests.csproj",
       "role": "verification"
@@ -6405,8 +6360,48 @@
       "role": "verification"
     },
     {
-      "name": "NBitcoin.Secp256k1",
-      "project": "ThirdParty/WabiSabi/csharp/WabiSabi/WabiSabi.csproj",
+      "name": "Microsoft.AspNetCore.WebUtilities",
+      "project": "MagicalCryptoWallet/MagicalCryptoWallet.csproj",
+      "role": "application"
+    },
+    {
+      "name": "Microsoft.Extensions.Caching.Abstractions",
+      "project": "MagicalCryptoWallet/MagicalCryptoWallet.csproj",
+      "role": "application"
+    },
+    {
+      "name": "Microsoft.Extensions.Hosting.Abstractions",
+      "project": "MagicalCryptoWallet/MagicalCryptoWallet.csproj",
+      "role": "application"
+    },
+    {
+      "name": "Microsoft.Extensions.Http",
+      "project": "MagicalCryptoWallet/MagicalCryptoWallet.csproj",
+      "role": "application"
+    },
+    {
+      "name": "NNostr.Client",
+      "project": "MagicalCryptoWallet/MagicalCryptoWallet.csproj",
+      "role": "application"
+    },
+    {
+      "name": "Microsoft.Data.Sqlite",
+      "project": "MagicalCryptoWallet/MagicalCryptoWallet.csproj",
+      "role": "application"
+    },
+    {
+      "name": "Microsoft.Win32.SystemEvents",
+      "project": "MagicalCryptoWallet/MagicalCryptoWallet.csproj",
+      "role": "application"
+    },
+    {
+      "name": "NBitcoin",
+      "project": "MagicalCryptoWallet/MagicalCryptoWallet.csproj",
+      "role": "application"
+    },
+    {
+      "name": "System.Linq.Async",
+      "project": "MagicalCryptoWallet/MagicalCryptoWallet.csproj",
       "role": "application"
     },
     {
@@ -6423,6 +6418,11 @@
       "name": "Newtonsoft.Json",
       "project": "ThirdParty/WabiSabi/csharp/WabiSabi.Tests/WabiSabi.Tests.csproj",
       "role": "verification"
+    },
+    {
+      "name": "NBitcoin.Secp256k1",
+      "project": "ThirdParty/WabiSabi/csharp/WabiSabi/WabiSabi.csproj",
+      "role": "application"
     },
     {
       "name": "xunit.v3",
@@ -6656,6 +6656,13 @@
       "status": "retained"
     },
     {
+      "path": "MagicalCryptoWallet/BundledApps/Binaries/README.md",
+      "bytes": 691,
+      "sha256": "a57b77b8a55f58ba50a1dd9561b6246858e933e2a6dda7ed460255ccfbe5ce4e",
+      "role": "application",
+      "status": "retained"
+    },
+    {
       "path": "MagicalCryptoWallet/BundledApps/Binaries/linux-arm64/Tor/libcrypto.so.3",
       "bytes": 5778424,
       "sha256": "863cd72e532412f853542d8024464acd092fe4d2a3f7477e9a1a8bc16bb81462",
@@ -6698,6 +6705,13 @@
       "status": "retained"
     },
     {
+      "path": "MagicalCryptoWallet/BundledApps/Binaries/linux-x64/Tor/LICENSE",
+      "bytes": 20040,
+      "sha256": "fa14c36ee65b62accc19e819455a2c1639d1ccb68cc2120273cf5382ceda8638",
+      "role": "application",
+      "status": "retained"
+    },
+    {
       "path": "MagicalCryptoWallet/BundledApps/Binaries/linux-x64/Tor/libcrypto.so.3",
       "bytes": 5476656,
       "sha256": "fc9f029c1545534f9ccdb20a4ed338a5956ee2ce67a8af568706792427cffc5a",
@@ -6726,13 +6740,6 @@
       "status": "retained"
     },
     {
-      "path": "MagicalCryptoWallet/BundledApps/Binaries/linux-x64/Tor/LICENSE",
-      "bytes": 20040,
-      "sha256": "fa14c36ee65b62accc19e819455a2c1639d1ccb68cc2120273cf5382ceda8638",
-      "role": "application",
-      "status": "retained"
-    },
-    {
       "path": "MagicalCryptoWallet/BundledApps/Binaries/linux-x64/Tor/tor",
       "bytes": 3594072,
       "sha256": "ff37b5be3c321db4be3ecb81f3ca8c822e64b3ededc60b6fd2f1ce8e626a8a07",
@@ -6747,13 +6754,6 @@
       "status": "retained"
     },
     {
-      "path": "MagicalCryptoWallet/BundledApps/Binaries/osx64/Tor/libevent-2.1.7.dylib",
-      "bytes": 823056,
-      "sha256": "2eb13c45dd9a7adf27b6cfdad8890719eec3064c2f3cb5e08c780533cca70db4",
-      "role": "application",
-      "status": "retained"
-    },
-    {
       "path": "MagicalCryptoWallet/BundledApps/Binaries/osx64/Tor/LICENSE",
       "bytes": 20040,
       "sha256": "fa14c36ee65b62accc19e819455a2c1639d1ccb68cc2120273cf5382ceda8638",
@@ -6761,16 +6761,16 @@
       "status": "retained"
     },
     {
-      "path": "MagicalCryptoWallet/BundledApps/Binaries/osx64/Tor/tor",
-      "bytes": 17600464,
-      "sha256": "28f2cd62c1dc9ea89788c23a80a8a9105321f397961cf893e1057c20c5e53c7b",
+      "path": "MagicalCryptoWallet/BundledApps/Binaries/osx64/Tor/libevent-2.1.7.dylib",
+      "bytes": 823056,
+      "sha256": "2eb13c45dd9a7adf27b6cfdad8890719eec3064c2f3cb5e08c780533cca70db4",
       "role": "application",
       "status": "retained"
     },
     {
-      "path": "MagicalCryptoWallet/BundledApps/Binaries/README.md",
-      "bytes": 691,
-      "sha256": "a57b77b8a55f58ba50a1dd9561b6246858e933e2a6dda7ed460255ccfbe5ce4e",
+      "path": "MagicalCryptoWallet/BundledApps/Binaries/osx64/Tor/tor",
+      "bytes": 17600464,
+      "sha256": "28f2cd62c1dc9ea89788c23a80a8a9105321f397961cf893e1057c20c5e53c7b",
       "role": "application",
       "status": "retained"
     },

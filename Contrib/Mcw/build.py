@@ -13,13 +13,18 @@ def build(rid, version="99.99.99", test=False):
     env = os.environ.copy()
     env["MCW_VERSION"] = version
     env.setdefault("CARGO_BUILD_JOBS", "1")
-    if os.name == "nt" and not env.get("VCToolsInstallDir"):
+    if os.name == "nt" and not env.get("VCTOOLSINSTALLDIR"):
         vswhere = Path(os.environ["ProgramFiles(x86)"]) / "Microsoft Visual Studio/Installer/vswhere.exe"
         vs = subprocess.check_output([str(vswhere), "-latest", "-products", "*", "-requires", "Microsoft.VisualStudio.Component.VC.Tools.x86.x64", "-property", "installationPath"]).decode().strip()
         script = Path(vs) / "Common7/Tools/Launch-VsDevShell.ps1"
         command = "& '" + str(script).replace("'", "''") + "' -Arch amd64 -HostArch amd64 -SkipAutomaticLocation *> $null; [Environment]::GetEnvironmentVariables('Process') | ConvertTo-Json -Compress"
-        env.update(json.loads(subprocess.check_output(["pwsh", "-NoProfile", "-Command", command]).decode("utf-8-sig")))
-        env["CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER"] = shutil.which("link.exe", path=env["Path"])
+        # Windows environment names are case-insensitive; Python normalizes its
+        # own keys to uppercase, while DevShell's JSON preserves their spelling.
+        env.update({key.upper():value for key,value in json.loads(subprocess.check_output(
+            ["pwsh", "-NoProfile", "-Command", command]).decode("utf-8-sig")).items()})
+        env["CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER"] = shutil.which("link.exe", path=env["PATH"])
+        if not env["CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER"]:
+            raise RuntimeError("Visual Studio's native linker is unavailable")
     target = TARGETS[rid]
     env.setdefault("CARGO_TARGET_DIR", str(ROOT / ".artifacts/mcw-build"))
     # Reading rust-toolchain.toml must work even when invoked from the repo root.
