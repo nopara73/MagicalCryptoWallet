@@ -1,9 +1,11 @@
 # Bitcoin address and data encoding handoff
 
-State: implementation ready for application-host integration. This is a portable
-application module; the host, bridge, managed adapters and shipping launch paths
-remain owned by the QR/application-host task. No production callers or managed
-package references have been changed by this worker.
+State: portable implementation and bounded address-validation handoff prepared
+for application-host integration. The published handler and deferred caller patch
+are separate from incorporation into the production host. The host, bridge,
+managed adapters and shipping launch paths remain owned by the QR/application-host
+task. The bounded patch passed the Windows checks below. No managed package
+references have been removed by this worker.
 
 Worker: bitcoin-encoding, Codex thread 01a0fc27-21f9-7901-abff-f8a7acdaacdf.
 Implementation commit: 6365f3244d23b801c0bb36581967caad8aae968e.
@@ -19,6 +21,12 @@ Caller inventory snapshot: 2f4867c188b49d61d2eded702975fca111d3bbe4.
 - mcw/tests/bitcoin_encoding_reference.py
 - mcw/tests/bitcoin_encoding_inventory.py
 - mcw/tests/bitcoin_encoding_verify.ps1
+- mcw/src/bitcoin_encoding/address_service.rs
+- mcw/tests/bitcoin_encoding_service.rs
+- mcw/tests/bitcoin_encoding_prepare_integration.py
+- mcw/tests/bitcoin_encoding_integration.patch
+- mcw/tests/bitcoin_encoding_managed_probe.cs
+- mcw/tests/bitcoin_encoding_integration_verify.ps1
 - Contrib/McwMigration/Handoffs/bitcoin-encoding.md
 
 No Cargo package, library artifact, shipping executable or external Cargo
@@ -242,8 +250,9 @@ Current managed AddressParser trims input, and the JSON converter trims and trie
 multiple networks. The Rust domain intentionally rejects surrounding whitespace
 and requires a network. Any retained UI compatibility transform must be explicit
 at the caller boundary. Standard output payloads need the existing managed script
-construction until the script/transaction layer migrates. This worker does not
-add that managed adapter or move private keys into the Rust service.
+construction until the script/transaction layer migrates. The bounded deferred
+adapter below covers only the common public-address parsing helper; private keys
+do not move into the Rust service.
 
 Direct NBitcoin package references remain in MagicalCryptoWallet.csproj,
 Contrib/Releases/Publisher/MagicalCryptoWallet.ReleaseTools.csproj and
@@ -263,12 +272,109 @@ project, and is also retained transitively through other managed packages such
 as NNostr.Client. None of these dependencies is called or linked by this Rust
 module; migrating a codec does not eliminate their other managed consumers.
 
-As a read-only current dependency audit, the QR worker's uncommitted mcw/Cargo.toml
-has empty dependencies/dev-dependencies/build-dependencies, and Cargo.lock names
-only mcw. This is that worker's source snapshot, not a published host audit or
-this worker's deliverable. The new encoding module itself has no external
-dependencies. The transitional managed application and its existing dependencies
-are explicitly retained until their respective migrations finish.
+The pinned published host at 7ae424b5f5f3734ca1870962a2d913769c59b26d has empty
+dependencies/dev-dependencies/build-dependencies, and Cargo.lock names only mcw.
+The new encoding module itself has no external dependencies. The transitional
+managed application and its existing dependencies are explicitly retained until
+their respective migrations finish.
+
+## Bounded address-validation incorporation
+
+The assigned follow-up is the actual common production address parser, not a new
+CLI or a substitute wallet implementation. The exact deferred patch changes four
+paths owned by the host integrator: mcw/src/lib.rs, mcw/src/app.rs,
+MagicalCryptoWallet/Mcw/BitcoinAddressValidation.cs and
+MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs. It replaces the existing
+Network.Parse<BitcoinAddress> call in TryParseBitcoinAddressForNetwork with the
+typed native service, followed by Script.GetDestinationAddress(network) on the
+validated script bytes. The latter retains managed address-object ownership and
+its supported witness-address policy. No managed address text is decoded as a
+fallback. Invalid addresses return false; unavailable, failed or malformed service
+responses propagate an exception rather than pretending an address was invalid.
+
+AddressParser.ParseBitcoinAddress is the real downstream caller reached by send,
+paste, camera and the existing BIP21 parser. AddressParser.Parse still performs
+its existing explicit Trim; the common helper and native handler do not trim.
+Existing unit callers must bind an explicit service fixture or run under the real
+host after incorporation. Unbound callers deliberately fail; retaining a hidden
+managed implementation solely for tests would violate the application boundary.
+JSON converters, receive formatting, HD keys, transaction parsing and all other
+NBitcoin responsibilities are outside this narrow cutover and remain retained.
+
+The handler stays outside the portable domain module. The deferred lib declaration
+imports it as bitcoin_address_service; only this transport adapter depends on
+bridge::Frame. Operation 0x020C has this version-1 payload contract:
+
+| Payload | Meaning |
+| --- | --- |
+| Request: network:u8 followed by exact UTF-8 address bytes | 0 Mainnet, 1 Testnet, 2 Testnet4, 3 Signet, 4 Regtest; maximum 90 text bytes |
+| Response: 1 followed by scriptPubKey bytes | Exact P2PKH, P2SH or witness program script derived from validated text |
+| Response: 0 followed by failure:u16 little endian | 1 format, 2 network, 3 checksum, 4 mixed case, 5 size |
+| ERROR frame code 1 and static message | Invalid frame, missing/unknown network or invalid UTF-8; input is never echoed |
+
+Apply only when the QR task is idle and the coordinator dispatches incorporation.
+The checked-in patch is pinned to 7ae424b5f5f3734ca1870962a2d913769c59b26d.
+Run git apply --check before applying it to the latest published host. If exact
+shared context has moved, regenerate with:
+
+    python mcw/tests/bitcoin_encoding_prepare_integration.py --base-commit <published-host-commit> --output <review-patch-path>
+
+The generator reads immutable Git blobs, requires unique exact contexts and
+does not write shared host/managed files. Review the generated patch; no active QR
+checkout was edited to produce or test it. Verification uses a dedicated ignored
+checkout with the patch applied and the published handler/test copied in:
+
+    & mcw/tests/bitcoin_encoding_integration_verify.ps1 -IntegrationRoot <private-checkout> -RustToolchain <Rust-1.99.0-bin> -SharedProject <shared-project-root>
+
+The verifier takes one exclusive shared build slot, requires two GiB free memory,
+uses one build job, and returns BUILD_SLOTS_BUSY/LOW_MEMORY rather than competing
+with peer builds. The temporary managed test project has no PackageReference;
+it references the actual core project and links the actual ManagedApplicationHost
+source. The probe runs as a synthetic child of the actual mcw executable through
+the persistent binary channel. Its retained NBitcoin parser is an independent
+test oracle only; production uses the native validator. Neither the test project
+nor its managed child executable is a shipping artifact.
+
+Native Linux/macOS runners, host-owner incorporation and final package inspection
+remain the integrator's acceptance checks. Windows integration evidence for this
+bounded patch cannot by itself establish a five-target native release or removal
+of NBitcoin, Secp256k1 or their managed dependencies.
+
+Verified bounded evidence is published in
+mcw/tests/bitcoin_encoding_fixtures/address_service_evidence.json. It fingerprints
+the seven exact source/tooling files and ten saved evidence files, and records the
+actual Windows host binary hash. Native tests used the patched published host
+base above; applicability was also checked against published master
+b28331b8dfae53acdd1b25c77780f1a47762df2a. The codec blob still has the original
+4e59e9210317f6c75f1196d22892202b3c72f62adcf9d05be88c4c3c66925ec0 hash.
+
+- Four handler tests passed in debug and optimized profiles with overflow checks,
+  covering all 54 Core valid-address scripts, all five network values and witness
+  versions 0 through 16, typed rejection, malformed frames, bounds and redaction.
+- Rustfmt and Cargo Clippy -D warnings passed. Cargo metadata contains one mcw
+  package and zero external dependencies, including dev/build dependencies.
+- The actual core project and production ManagedApplicationHost source compiled
+  with zero warnings/errors. The real mcw-to-managed caller probe passed 1,139
+  assertions: 54 native valid fixtures with explicit network bytes; 70 invalid
+  fixtures across three managed networks; 60 supported address/object cases and
+  26 retained unsupported witness cases, including uppercase variants; eight
+  lexical comparisons with the retained parser; existing UI trim and BIP21
+  behavior; malformed-response and transport failure handling; four malformed or
+  unknown requests followed by valid requests; pre-canceled request handling; and
+  64 concurrent requests on the persistent pipe. Core's existing TestNet alias is
+  patched to TestNet4, so the report records that alias explicitly.
+- Windows executable import descriptors are kernel32.dll/KERNEL32.dll,
+  shell32.dll, api-ms-win-core-synch-l1-2-0.dll and ntdll.dll. No external runtime
+  DLL or companion native shipping executable was introduced by this handler.
+- Actual retained managed assets still resolve NBitcoin 10.0.13, Secp256k1 3.1.6,
+  Newtonsoft.Json 13.0.4 and Logging/DependencyInjection.Abstractions 10.0.12.
+
+Saved logs and the synthetic managed executable remain only in the ignored
+.artifacts/mcw-bitcoin-address-integration/.artifacts/bitcoin-address-evidence
+directory. The publication includes the deferred patch and owned handler/tests,
+not edits to the integrator's active host/managed checkout. Production integration,
+old-implementation retirement and dependency removal are all still false in the
+evidence manifest until the integration owner completes those acceptance gates.
 
 ## Integration and removal acceptance checks
 
