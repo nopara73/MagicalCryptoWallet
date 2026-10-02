@@ -1,0 +1,123 @@
+name: Verify built software snapshot
+on:
+  workflow_dispatch:
+    inputs:
+      build_run:
+        description: Workflow run that built the Linux snapshot
+        type: number
+        required: true
+      artifact_id:
+        description: Built Linux snapshot artifact ID
+        type: number
+        required: true
+      build_commit:
+        description: Exact application build commit
+        required: true
+      archive_sha256:
+        description: GitHub artifact archive SHA-256
+        required: true
+permissions:
+  contents: read
+  actions: read
+jobs:
+  linux:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      AVALONIA_TELEMETRY_OPTOUT: '1'
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      DOTNET_NOLOGO: '1'
+      APPIMAGE_EXTRACT_AND_RUN: '1'
+      MAGICALCRYPTOWALLET_VERSION: '99.99.99'
+      MAGICALCRYPTOWALLET_DATADIR: ${{ github.workspace }}/.artifacts/test-data
+      BUILD_RUN: ${{ inputs.build_run }}
+      ARTIFACT_ID: ${{ inputs.artifact_id }}
+      BUILD_COMMIT: ${{ inputs.build_commit }}
+      ARCHIVE_SHA256: ${{ inputs.archive_sha256 }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+      - name: Linux runtime and package inspection dependencies
+        run: sudo apt-get update && sudo apt-get install -y libfontconfig1 squashfs-tools
+      - name: Restore authenticated snapshot without changing application code
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p .artifacts
+          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/$ARTIFACT_ID" > .artifacts/build-artifact.json
+          python - <<'PY'
+          import json, os, re
+          artifact = json.load(open('.artifacts/build-artifact.json'))
+          assert re.fullmatch('[0-9a-f]{40}', os.environ['BUILD_COMMIT'])
+          assert re.fullmatch('[0-9a-f]{64}', os.environ['ARCHIVE_SHA256'])
+          assert artifact['workflow_run']['id'] == int(os.environ['BUILD_RUN'])
+          assert artifact['workflow_run']['head_sha'] == os.environ['BUILD_COMMIT']
+          assert artifact['digest'] == 'sha256:' + os.environ['ARCHIVE_SHA256']
+          assert artifact['name'] == 'packages-linux-x64' and not artifact['expired']
+          PY
+          git fetch --depth=1 origin "$BUILD_COMMIT"
+          git diff --name-only "$BUILD_COMMIT" HEAD > .artifacts/verification-changes.txt
+          python - <<'PY'
+          from pathlib import Path
+          allowed = {'.github/workflows/verify-software-snapshot.yml', 'Contrib/Tests/test-single-wallet-coinjoin.py'}
+          assert set(Path('.artifacts/verification-changes.txt').read_text().splitlines()) <= allowed, 'Application source changed.'
+          PY
+          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/$ARTIFACT_ID/zip" > .artifacts/built-snapshot.zip
+          printf '%s  %s\n' "$ARCHIVE_SHA256" .artifacts/built-snapshot.zip | sha256sum --check
+          python - <<'PY'
+          from pathlib import Path
+          import tarfile, zipfile
+          root = Path.cwd().resolve()
+          with zipfile.ZipFile('.artifacts/built-snapshot.zip') as archive:
+              assert archive.testzip() is None
+              for name in archive.namelist():
+                  if name.endswith('/') or not name.startswith(('packages/', '.artifacts/single-wallet/process/')):
+                      continue
+                  destination = (root / name).resolve()
+                  assert destination.is_relative_to(root)
+                  destination.parent.mkdir(parents=True, exist_ok=True)
+                  destination.write_bytes(archive.read(name))
+          destination = Path('.artifacts/packages/linux-x64')
+          destination.mkdir(parents=True)
+          with tarfile.open('packages/MagicalCryptoWallet-99.99.99-linux-x64.tar.gz') as archive:
+              archive.extractall(destination, filter='data')
+          PY
+          chmod +x MagicalCryptoWallet.IntegrationTests/BundledApps/Binaries/linux-x64/bitcoind
+      - name: Five encrypted clients automatically complete CoinJoin after Send
+        run: python Contrib/Tests/test-single-wallet-coinjoin.py --package .artifacts/packages/linux-x64/MagicalCryptoWallet --bitcoind MagicalCryptoWallet.IntegrationTests/BundledApps/Binaries/linux-x64/bitcoind
+      - name: Source, generated code, assemblies, resources and symbols
+        run: |
+          python Contrib/SingleWallet/audit.py --artifacts .artifacts/packages/linux-x64/MagicalCryptoWallet
+          dotnet run --project Contrib/Rebrand/AssemblyAudit -c Release -- Contrib/Tests/client-core-policy.json .artifacts/packages/linux-x64/MagicalCryptoWallet
+          python Contrib/SingleWallet/test-audit.py
+          python Contrib/Rebrand/audit.py --artifacts .artifacts/packages/linux-x64/MagicalCryptoWallet
+          python Contrib/Rebrand/test-audit.py
+      - name: Managed cryptography and native wire interoperability
+        run: |
+          dotnet test --project ThirdParty/WabiSabi/csharp/WabiSabi.Tests -c Release --no-progress --no-ansi --output Normal
+          dotnet test --project ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests -c Release --no-progress --no-ansi --output Normal
+          dotnet run --project ThirdParty/WabiSabi/interop -c Release
+      - name: Extracted packages and both-theme UI matrix
+        run: |
+          python Contrib/Rebrand/inspect-packages.py --rid linux-x64
+          dotnet run --project Contrib/VisualPreview -c Release -- .artifacts/screenshots
+      - name: Verified packages and evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: packages-linux-x64
+          compression-level: 0
+          if-no-files-found: error
+          path: |
+            packages/*
+            .artifacts/screenshots/*.png
+            .artifacts/package-inspection/*.json
+            .artifacts/single-wallet/process/**/*.log
+            .artifacts/single-wallet/process/**/results.json
+            .artifacts/single-wallet/coinjoin/**/*.log
+            .artifacts/single-wallet/coinjoin/**/results.json
