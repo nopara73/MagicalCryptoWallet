@@ -62,6 +62,9 @@ public class WalletFilterProcessor : BackgroundService
 	private readonly AsyncLock _reorgLock = new();
 
 	private IDisposable? _chainReorgSubscription;
+	private readonly Lock _reorgTaskGate = new();
+	private Task _pendingReorgs = Task.CompletedTask;
+	private bool _acceptReorgs;
 
 	/// <inheritdoc />
 	/// <summary>Used for filter synchronization.</summary>
@@ -187,7 +190,19 @@ public class WalletFilterProcessor : BackgroundService
 		lock (_rescanGate) { _rescanPending = true; _rescanHeight = _rescanHeight < 0 ? height : Math.Min(_rescanHeight, height); }
 	}
 
-	private async void ReorgedAsync(uint256 invalidBlockHash, ChainHeight invalidBlockHeight)
+	private void QueueReorg(ChainReorganized reorg)
+	{
+		lock (_reorgTaskGate)
+		{
+			if (_acceptReorgs)
+			{
+				var task = ReorgedAsync(reorg.invalidBlockHash, reorg.invalidBlockHeight);
+				_pendingReorgs = _pendingReorgs.IsCompleted ? task : Task.WhenAll(_pendingReorgs, task);
+			}
+		}
+	}
+
+	private async Task ReorgedAsync(uint256 invalidBlockHash, ChainHeight invalidBlockHeight)
 	{
 		try
 		{
@@ -209,16 +224,39 @@ public class WalletFilterProcessor : BackgroundService
 
 	public override async Task StartAsync(CancellationToken cancellationToken)
 	{
-		_chainReorgSubscription = _eventBus.Subscribe<ChainReorganized>(e => ReorgedAsync(e.invalidBlockHash, e.invalidBlockHeight));
+		lock (_reorgTaskGate) { _acceptReorgs = true; }
+		_chainReorgSubscription = _eventBus.Subscribe<ChainReorganized>(QueueReorg);
 		await base.StartAsync(cancellationToken).ConfigureAwait(false);
 	}
 
-	public override void Dispose() { _chainReorgSubscription?.Dispose(); base.Dispose(); }
+	public override void Dispose()
+	{
+		lock (_reorgTaskGate) { _acceptReorgs = false; }
+		_chainReorgSubscription?.Dispose();
+		base.Dispose();
+	}
 
 	public override async Task StopAsync(CancellationToken cancellationToken)
 	{
+		Task pendingReorgs;
+		lock (_reorgTaskGate)
+		{
+			_acceptReorgs = false;
+			pendingReorgs = _pendingReorgs;
+		}
 		_chainReorgSubscription?.Dispose();
-		await base.StopAsync(cancellationToken).ConfigureAwait(false);
+		try
+		{
+			await base.StopAsync(cancellationToken).ConfigureAwait(false);
+			// BackgroundService can return early when the caller cancels its shutdown wait.
+			// Its own stop token still cancels the download and filter loop; await their retirement.
+			if (ExecuteTask is { } execution) { await execution.ConfigureAwait(false); }
+		}
+		finally
+		{
+			// Callbacks copied before unsubscription may already be waiting on the filter loop.
+			await pendingReorgs.ConfigureAwait(false);
+		}
 	}
 }
 

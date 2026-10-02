@@ -107,9 +107,13 @@ def wait_for_rpc_start(process, log_path):
     wait_for(started)
 
 
-def rpc(url, method, params=(), allow_error=False, timeout=5):
+def rpc(url, method, params=(), allow_error=False, timeout=None):
     request = urllib.request.Request(url, json.dumps({"jsonrpc": "2.0", "id": 1, "method": method, "params": params}).encode(),
         {"Content-Type": "application/json", "Authorization": "Basic " + base64.b64encode(b"synthetic:synthetic").decode()})
+    # Mining and password derivation can exceed five seconds on slower CI runners.
+    # Give expensive operations one bounded request; never retry a wallet mutation.
+    if timeout is None:
+        timeout = 30 if method in {"generatetoaddress", "createwallet", "recoverwallet", "build", "send"} else 5
     with urllib.request.urlopen(request, timeout=timeout) as response:
         body = response.read()
     if not body:

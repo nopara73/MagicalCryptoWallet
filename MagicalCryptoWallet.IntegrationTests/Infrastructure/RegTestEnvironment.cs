@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using NBitcoin;
 using NBitcoin.Protocol;
 using NBitcoin.Protocol.Behaviors;
+using NBitcoin.RPC;
 using MagicalCryptoWallet.Backend.Models;
 using MagicalCryptoWallet.BitcoinP2p;
 using MagicalCryptoWallet.Extensions;
@@ -39,7 +40,7 @@ public sealed class RegTestEnvironment : IAsyncDisposable
 		FilterStore filterStore,
 		AllTransactionStore transactionStore,
 		FilterHeaderChain filterHeaderChain,
-		CpfpInfoProvider cpfpInfoProvider)
+		MailboxProcessor<CpfpInfoMessage> cpfpWorker)
 	{
 		Fixture = fixture;
 		WorkDir = workDir;
@@ -47,7 +48,8 @@ public sealed class RegTestEnvironment : IAsyncDisposable
 		FilterStore = filterStore;
 		TransactionStore = transactionStore;
 		FilterHeaderChain = filterHeaderChain;
-		CpfpInfoProvider = cpfpInfoProvider;
+		_cpfpWorker = cpfpWorker;
+		CpfpInfoProvider = new CpfpInfoProvider(cpfpWorker);
 		ServiceConfiguration = new ServiceConfiguration(Money.Coins(Constants.DefaultDustThreshold));
 	}
 
@@ -59,6 +61,8 @@ public sealed class RegTestEnvironment : IAsyncDisposable
 	public FilterHeaderChain FilterHeaderChain { get; }
 	public CpfpInfoProvider CpfpInfoProvider { get; }
 	public ServiceConfiguration ServiceConfiguration { get; }
+	private readonly List<Wallet> _createdWallets = [];
+	private readonly MailboxProcessor<CpfpInfoMessage> _cpfpWorker;
 
 	/// <summary>
 	/// Wallet-specific RPC client for operations requiring wallet context (send, generate, etc.).
@@ -104,8 +108,9 @@ public sealed class RegTestEnvironment : IAsyncDisposable
 
 		// Use unique worker name to avoid conflicts between tests
 		var workerName = $"CpfpInfoProvider_{Guid.NewGuid():N}";
-		var cpfpInfoProvider = new CpfpInfoProvider(
-			Workers.Spawn(workerName, Workers.EventDriven(Unit.Instance, CpfpInfoUpdater.CreateForRegTest())));
+		var cpfpWorker = new MailboxProcessor<CpfpInfoMessage>(workerName,
+			Workers.EventDriven(Unit.Instance, CpfpInfoUpdater.CreateForRegTest()));
+		cpfpWorker.Start();
 
 		return new RegTestEnvironment(
 			fixture,
@@ -114,7 +119,7 @@ public sealed class RegTestEnvironment : IAsyncDisposable
 			filterStore,
 			transactionStore,
 			filterHeaderChain,
-			cpfpInfoProvider);
+			cpfpWorker);
 	}
 
 	/// <summary>
@@ -128,7 +133,7 @@ public sealed class RegTestEnvironment : IAsyncDisposable
 	/// <summary>
 	/// Creates a Wallet instance (not started).
 	/// </summary>
-	public Wallet CreateWallet(KeyManager keyManager)
+	public Wallet CreateWallet(KeyManager keyManager, BlockProvider? blockProvider = null)
 	{
 		var factory = Wallet.CreateFactory(
 			Network,
@@ -137,11 +142,13 @@ public sealed class RegTestEnvironment : IAsyncDisposable
 			FilterHeaderChain,
 			MempoolService,
 			ServiceConfiguration,
-			CreateBlockProvider(),
+			blockProvider ?? CreateBlockProvider(),
 			EventBus,
 			CpfpInfoProvider);
 
-		return factory(keyManager);
+		var wallet = factory(keyManager);
+		_createdWallets.Add(wallet);
+		return wallet;
 	}
 
 	/// <summary>
@@ -196,6 +203,26 @@ public sealed class RegTestEnvironment : IAsyncDisposable
 	/// </summary>
 	public async Task SyncFiltersP2PAsync(CancellationToken cancellationToken)
 	{
+		var targetHeight = await RpcClient.GetBlockCountAsync(cancellationToken).ConfigureAwait(false);
+		var targetHash = await RpcClient.GetBlockHashAsync(targetHeight, cancellationToken).ConfigureAwait(false);
+		// Mining returns before Core's asynchronous filter index necessarily reaches the new tip.
+		// A BIP157 request made too early can receive no response and retire our only test peer.
+		using (var indexReady = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken))
+		{
+			indexReady.CancelAfter(TimeSpan.FromSeconds(30));
+			while (true)
+			{
+				try
+				{
+					await RpcClient.GetBlockFilterAsync(targetHash, indexReady.Token).ConfigureAwait(false);
+					break;
+				}
+				catch (RPCException ex) when (ex.RPCCode == RPCErrorCode.RPC_MISC_ERROR && ex.Message.Contains("being indexed", StringComparison.Ordinal))
+				{
+					await Task.Delay(100, indexReady.Token).ConfigureAwait(false);
+				}
+			}
+		}
 		var blockHeaderChain = new ConcurrentChain(Network);
 
 		// Create the filter synchronization state
@@ -219,9 +246,6 @@ public sealed class RegTestEnvironment : IAsyncDisposable
 
 		// Connect and handshake
 		node.VersionHandshake(cancellationToken);
-
-		// Get the target height from Bitcoin Core
-		var targetHeight = await RpcClient.GetBlockCountAsync(cancellationToken).ConfigureAwait(false);
 
 		// Wait for block headers to sync to target height (with timeout)
 		// This fixes a race condition where filter sync would start before block headers were ready
@@ -361,14 +385,31 @@ public sealed class RegTestEnvironment : IAsyncDisposable
 
 	private static string GetWorkDir(string callerFilePath, string callerMemberName)
 	{
-		var dataDir = EnvironmentHelpers.GetDataDir(Path.Combine("MagicalCryptoWallet", "IntegrationTests"));
-		return Path.Combine(dataDir, EnvironmentHelpers.ExtractFileName(callerFilePath), callerMemberName);
+		return Path.Combine(TestNodeBuilder.DataDir, EnvironmentHelpers.ExtractFileName(callerFilePath), callerMemberName);
 	}
 
-	public ValueTask DisposeAsync()
+	public async ValueTask DisposeAsync()
 	{
-		FilterStore.Dispose();
-		TransactionStore.Dispose();
-		return ValueTask.CompletedTask;
+		try
+		{
+			foreach (var wallet in _createdWallets)
+			{
+				try { await wallet.StopAsync(CancellationToken.None).ConfigureAwait(false); }
+				finally { wallet.Dispose(); }
+			}
+		}
+		finally
+		{
+			try
+			{
+				_cpfpWorker.Dispose();
+				await _cpfpWorker.Completion.ConfigureAwait(false);
+			}
+			finally
+			{
+				FilterStore.Dispose();
+				TransactionStore.Dispose();
+			}
+		}
 	}
 }

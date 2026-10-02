@@ -312,25 +312,37 @@ public sealed class WalletSession
 	}
 	public Task StopAsync(CancellationToken cancel)
 	{
-		lock (_gate) { return _stopTask ??= StopCoreAsync(cancel); }
+		lock (_gate)
+		{
+			_disposed = true;
+			// Retiring event callbacks can wait for code that reads the session snapshot.
+			// Start shutdown outside this gate, including when all startup tasks already completed.
+			return _stopTask ??= Task.Run(() => StopCoreAsync(cancel), CancellationToken.None);
+		}
 	}
 	private async Task StopCoreAsync(CancellationToken cancel)
 	{
-		lock (_gate) { _disposed = true; }
 		Publish(Snapshot with { State = WalletSessionState.Stopping });
 		try
 		{
 			await _stopping.CancelAsync().ConfigureAwait(false);
-			if (_startTask is { } start) { await start.WaitAsync(cancel).ConfigureAwait(false); }
-			if (_monitorTask is { } monitor) { await monitor.WaitAsync(cancel).ConfigureAwait(false); }
-			if (_wallet is { } wallet) { await wallet.StopAsync(cancel).ConfigureAwait(false); }
+			if (_startTask is { } start) { await start.ConfigureAwait(false); }
+			if (_monitorTask is { } monitor) { await monitor.ConfigureAwait(false); }
 		}
 		finally
 		{
-			_wallet?.Dispose();
-			_coinJoinAuthorization?.Dispose();
-			_coinJoinAuthorization = null;
-			_stopping.Dispose();
+			try
+			{
+				// A canceled startup wait must still retire the workers before their stores are closed.
+				if (_wallet is { } wallet) { await wallet.StopAsync(cancel).ConfigureAwait(false); }
+			}
+			finally
+			{
+				_wallet?.Dispose();
+				_coinJoinAuthorization?.Dispose();
+				_coinJoinAuthorization = null;
+				_stopping.Dispose();
+			}
 		}
 	}
 	public void SetMaxBestHeight(uint bestHeight) => GetWallet()?.KeyManager.SetMaxBestHeight(bestHeight);

@@ -8,7 +8,8 @@ namespace MagicalCryptoWallet.Tests.Helpers;
 
 public static class Common
 {
-	public static string DataDir => EnvironmentHelpers.GetDataDir(Path.Combine("MagicalCryptoWallet", "Tests"));
+	private static readonly string RunId = Guid.NewGuid().ToString("N");
+	public static string DataDir => EnvironmentHelpers.GetDataDir(Path.Combine("MagicalCryptoWallet", "Tests", RunId));
 
 	public static string GetWorkDir([CallerFilePath] string callerFilePath = "", [CallerMemberName] string callerMemberName = "")
 	{
