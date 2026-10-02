@@ -19,7 +19,6 @@ public static class UiConfigEncode
 			yield return ("Oobe", Bool(cfg.Oobe));
 			yield return ("LastVersionHighlightsDisplayed", Version(cfg.LastVersionHighlightsDisplayed));
 			yield return ("WindowState", String(cfg.WindowState));
-			yield return ("FeeTarget", Int(cfg.FeeTarget));
 			yield return ("Autocopy", Bool(cfg.Autocopy));
 			yield return ("AutoPaste", Bool(cfg.AutoPaste));
 			yield return ("IsCustomChangeAddress", Bool(cfg.IsCustomChangeAddress));
@@ -50,7 +49,6 @@ public static class UiConfigDecode
 	        var oobe = get.Required("Oobe", Decode.Bool);
 	        var lastVersionHighlightsDisplayed = get.Required("LastVersionHighlightsDisplayed", Version);
 	        var windowState = get.Required("WindowState", Decode.String);
-	        var feeTarget = get.Required("FeeTarget", Decode.Int);
 	        var autocopy = get.Required("Autocopy", Decode.Bool);
 	        var autoPaste = get.Required("AutoPaste", Decode.Bool);
 	        var isCustomChangeAddress = get.Required("IsCustomChangeAddress", Decode.Bool);
@@ -63,6 +61,6 @@ public static class UiConfigDecode
 	        var windowHeight = get.Optional("WindowHeight", Decode.Double, 0);
 	        return new UiConfig(filePath, privacyMode, isCustomChangeAddress, autocopy, darkModeEnabled,
 		        windowState, runOnSystemStartup, oobe, lastVersionHighlightsDisplayed, hideOnClose,
-		        autoPaste, feeTarget, sendAmountConversionReversed, windowWidth > 0 ? windowWidth : null, windowHeight > 0 ? windowHeight : null);
+		        autoPaste, sendAmountConversionReversed, windowWidth > 0 ? windowWidth : null, windowHeight > 0 ? windowHeight : null);
         });
 }

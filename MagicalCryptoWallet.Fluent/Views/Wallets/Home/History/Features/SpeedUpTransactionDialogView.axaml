@@ -15,34 +15,23 @@
                  EnableNext="True" NextContent="Confirm"
                  IsBusy="{Binding IsBusy}"
                  MinWidth="500">
-    <Panel>
-      <DockPanel IsVisible="{Binding AreWePayingTheFee}">
-        <Viewbox MaxHeight="120" Margin="40" DockPanel.Dock="Top">
+    <DockPanel>
+      <Panel DockPanel.Dock="Top">
+        <Viewbox MaxHeight="120" Margin="40">
           <PathIcon Data="{StaticResource rocket_regular}" Opacity="0.6" />
         </Viewbox>
-        <StackPanel Spacing="10" HorizontalAlignment="Center">
-          <TextBlock Text="Speeding up this transaction will cost you" />
-          <AmountControl Classes="WithUsd h5" HorizontalAlignment="Center"  Amount="{Binding Fee}" />
-        </StackPanel>
-      </DockPanel>
-
-      <DockPanel IsVisible="{Binding !AreWePayingTheFee}">
-        <Panel DockPanel.Dock="Top">
-          <Viewbox MaxHeight="120" Margin="40">
-            <PathIcon Data="{StaticResource rocket_regular}" Opacity="0.6" />
-          </Viewbox>
-          <Viewbox MaxHeight="40" Margin="120, 100 0 0">
-            <PathIcon Data="{StaticResource warning_regular}" Opacity="0.6" />
-          </Viewbox>
-        </Panel>
-        <StackPanel Spacing="10" HorizontalAlignment="Center">
-          <StackPanel Spacing="10">
-            <TextBlock Text="Speeding up this transaction will deduct from the recipient's amount" />
-            <AmountControl Classes="WithUsd h5" HorizontalAlignment="Center" Amount="{Binding Fee}" />
-          </StackPanel>
-        </StackPanel>
-      </DockPanel>
-    </Panel>
+        <Viewbox IsVisible="{Binding !AreWePayingTheFee}" MaxHeight="40" Margin="120, 100 0 0">
+          <PathIcon Data="{StaticResource warning_regular}" Opacity="0.6" />
+        </Viewbox>
+      </Panel>
+      <StackPanel Spacing="10" HorizontalAlignment="Center">
+        <TextBlock Text="Total fee" HorizontalAlignment="Center" />
+        <PrivacyContentControl>
+          <TextBlock Classes="h5" HorizontalAlignment="Center" Text="{Binding Fee.Usd^, Converter={x:Static converters:MoneyConverters.ToUsdFee}}" />
+        </PrivacyContentControl>
+        <TextBlock Text="The recipient's amount will be reduced." IsVisible="{Binding !AreWePayingTheFee}" HorizontalAlignment="Center" />
+      </StackPanel>
+    </DockPanel>
 
   </ContentArea>
 </UserControl>

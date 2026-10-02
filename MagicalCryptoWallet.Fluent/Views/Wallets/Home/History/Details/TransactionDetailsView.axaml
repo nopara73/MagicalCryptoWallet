@@ -65,29 +65,18 @@
 
       <Separator IsVisible="{Binding !!DestinationAddresses.Count}" />
 
-      <!-- Fee -->
+      <!-- Total fee -->
       <PreviewItem IsVisible="{Binding IsFeeVisible}"
                      Icon="{StaticResource paper_cash_regular}"
-                     Label="Fee"
-                     CopyableContent="{Binding Fee.Btc, Converter={x:Static conv:MoneyConverters.ToFeeWithoutUnit}}">
+                     Label="Total fee"
+                     CopyableContent="{Binding #TotalFeeUsd.Text}"
+                     IsCopyButtonEnabled="{Binding Fee.HasUsdBalance^}">
         <PrivacyContentControl>
-          <AmountControl Classes="WithUsd" Amount="{Binding Fee}" />
+          <TextBlock x:Name="TotalFeeUsd" Text="{Binding Fee.Usd^, Converter={x:Static conv:MoneyConverters.ToUsdFee}}" />
         </PrivacyContentControl>
       </PreviewItem>
 
       <Separator IsVisible="{Binding IsFeeVisible}" />
-
-      <!-- Fee Rate-->
-      <PreviewItem IsVisible="{Binding IsFeeRateVisible}"
-                     Icon="{StaticResource paper_cash_regular}"
-                     Label="Fee Rate"
-                     CopyableContent="{Binding FeeRate.SatoshiPerByte}">
-        <PrivacyContentControl>
-          <TextBlock Text="{Binding FeeRate.SatoshiPerByte, Converter={x:Static conv:FeeRateConverters.FeeRateConverter}}"/>
-        </PrivacyContentControl>
-      </PreviewItem>
-
-      <Separator IsVisible="{Binding IsFeeRateVisible}" />
 
       <!-- Status -->
       <PreviewItem Icon="{StaticResource copy_confirmed}"
@@ -99,18 +88,6 @@
           </Panel>
           <TextBlock IsVisible="{Binding IsConfirmed}" Margin="4 0 0 0 " Text="{Binding Confirmations, StringFormat='({0} confirmations)'}" />
         </StackPanel>
-      </PreviewItem>
-
-      <Separator IsVisible="{Binding IsConfirmationTimeVisible}" />
-
-      <!-- Confirmation Time -->
-      <PreviewItem IsVisible="{Binding IsConfirmationTimeVisible}"
-                     Icon="{StaticResource timer_regular}"
-                     Label="Expected confirmation time"
-                     ToolTip.Tip="This is just an estimation based on some data for transactions and blocks. The confirmation time might change.">
-        <PrivacyContentControl>
-          <TextBlock Text="{Binding ConfirmationTime, Converter={x:Static conv:TimeSpanConverter.ToEstimatedConfirmationTime}}" Classes="monoSpaced" />
-        </PrivacyContentControl>
       </PreviewItem>
 
       <Separator IsVisible="{Binding IsConfirmed}" />
