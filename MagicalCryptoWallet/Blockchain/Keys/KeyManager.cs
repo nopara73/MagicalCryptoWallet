@@ -10,7 +10,6 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using MagicalCryptoWallet.Blockchain.Analysis.Clustering;
 using MagicalCryptoWallet.Blockchain.BlockFilters;
-using MagicalCryptoWallet.CoinJoinProfiles;
 using MagicalCryptoWallet.Io;
 using MagicalCryptoWallet.Models;
 using MagicalCryptoWallet.Serialization;
@@ -25,7 +24,6 @@ namespace MagicalCryptoWallet.Blockchain.Keys;
 
 public class KeyManager
 {
-	public const bool DefaultAutoCoinjoin = false;
 
 	public const int AbsoluteMinGapLimit = 21;
 	public const int MaxGapLimit = 10_000;
@@ -119,18 +117,16 @@ public class KeyManager
 
 	private readonly BlockchainState _blockchainState;
 
-	public bool AutoCoinJoin { get; set; } = DefaultAutoCoinjoin;
+
 
 	/// <summary>
 	/// Won't coinjoin automatically if the confirmed wallet balance is below this.
 	/// </summary>
 	public Money PlebStopThreshold { get; set; } = DefaultPlebStopThreshold;
 
-	public int AnonScoreTarget { get; set; } = PrivacyProfiles.DefaultProfile.AnonScoreTarget;
 
-	public bool NonPrivateCoinIsolation { get; set; } = PrivacyProfiles.DefaultProfile.NonPrivateCoinIsolation;
 
-	public bool OnlyUsePrivateFundsForPayments { get; set; } = PrivacyProfiles.DefaultProfile.OnlyUsePrivateFundsForPayments;
+
 
 	public ScriptPubKeyType DefaultReceiveScriptType { get; set; } = ScriptPubKeyType.TaprootBIP86;
 
@@ -616,11 +612,7 @@ public class KeyManager
 			("AccountKeyPath", Encode.KeyPath(keyManager.SegwitAccountKeyPath)),
 			("TaprootAccountKeyPath", Encode.KeyPath(keyManager.TaprootAccountKeyPath)),
 			("BlockchainState", Encode.BlockchainState(keyManager._blockchainState)),
-			("AutoCoinJoin", Encode.Bool(keyManager.AutoCoinJoin)),
 			("PlebStopThreshold", Encode.MoneyBitcoins(keyManager.PlebStopThreshold)),
-			("AnonScoreTarget", Encode.Int(keyManager.AnonScoreTarget)),
-			("RedCoinIsolation", Encode.Bool(keyManager.NonPrivateCoinIsolation)),
-			("OnlyUsePrivateFundsForPayments", Encode.Bool(keyManager.OnlyUsePrivateFundsForPayments)),
 			("DefaultReceiveScriptType", Encode.ScriptPubKeyType(keyManager.DefaultReceiveScriptType)),
 			("ChangeScriptPubKeyType", Encode.PreferredScriptPubKeyType(keyManager.ChangeScriptPubKeyType)),
 			("CoinjoinCosts", Encode.Array(keyManager.CoinjoinCosts.Select(Encode.CoinjoinCosts))),
@@ -662,11 +654,7 @@ public class KeyManager
 				get.Optional("TaprootAccountKeyPath", Decode.KeyPath)
 			)
 			{
-				AutoCoinJoin = get.Optional("AutoCoinJoin", Decode.Bool, false),
 				PlebStopThreshold = get.Optional("PlebStopThreshold", Decode.MoneyBitcoins) ?? DefaultPlebStopThreshold,
-				AnonScoreTarget = get.Optional("AnonScoreTarget", Decode.Int, 10),
-				NonPrivateCoinIsolation = get.Optional("RedCoinIsolation", Decode.Bool, false),
-				OnlyUsePrivateFundsForPayments = get.Optional("OnlyUsePrivateFundsForPayments", Decode.Bool, false),
 				DefaultReceiveScriptType = get.Optional("DefaultReceiveScriptType", Decode.ScriptPubKeyType, ScriptPubKeyType.TaprootBIP86),
 				ChangeScriptPubKeyType = get.Optional("ChangeScriptPubKeyType", Decode.PreferredScriptPubKeyType) ?? PreferredScriptPubKeyType.Unspecified.Instance,
 				CoinjoinCosts = get.Optional("CoinjoinCosts", Decode.Array(Decode.CoinjoinCosts))?.ToDictionary() ?? []

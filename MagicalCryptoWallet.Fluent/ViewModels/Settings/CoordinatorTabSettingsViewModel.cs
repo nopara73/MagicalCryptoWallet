@@ -18,14 +18,13 @@ namespace MagicalCryptoWallet.Fluent.ViewModels.Settings;
 	Category = "Settings",
 	Keywords =
 	[
-		"Settings", "Coordinator", "URI", "Max", "Coinjoin", "Mining", "Fee", "Rate", "Min", "Input", "Count"
+		"Settings", "Coordinator", "URI", "Max", "Coinjoin", "Mining", "Fee", "Rate"
 	],
 	IconName = "settings_bitcoin_regular")]
 public partial class CoordinatorTabSettingsViewModel : RoutableViewModel
 {
 	[AutoNotify] private string _coordinatorUri;
 	[AutoNotify] private string _maxCoinJoinMiningFeeRate;
-	[AutoNotify] private string _absoluteMinInputCount;
 
 	public CoordinatorTabSettingsViewModel(UiContext uiContext, ApplicationSettings settings) : base(uiContext)
 	{
@@ -33,11 +32,9 @@ public partial class CoordinatorTabSettingsViewModel : RoutableViewModel
 
 		this.ValidateProperty(x => x.CoordinatorUri, ValidateCoordinatorUri);
 		this.ValidateProperty(x => x.MaxCoinJoinMiningFeeRate, ValidateMaxCoinJoinMiningFeeRate);
-		this.ValidateProperty(x => x.AbsoluteMinInputCount, ValidateAbsoluteMinInputCount);
 
 		_coordinatorUri = settings.CoordinatorUri;
 		_maxCoinJoinMiningFeeRate = settings.MaxCoinJoinMiningFeeRate;
-		_absoluteMinInputCount = settings.AbsoluteMinInputCount;
 
 		this.WhenAnyValue(
 				x => x.Settings.CoordinatorUri,
@@ -49,9 +46,6 @@ public partial class CoordinatorTabSettingsViewModel : RoutableViewModel
 			.ToSignal()
 			.Subscribe(x => MaxCoinJoinMiningFeeRate = Settings.MaxCoinJoinMiningFeeRate);
 
-		this.WhenAnyValue(x => x.Settings.AbsoluteMinInputCount)
-			.ToSignal()
-			.Subscribe(x => AbsoluteMinInputCount = Settings.AbsoluteMinInputCount);
 	}
 
 	public bool IsReadOnly => Settings.IsOverridden;
@@ -101,27 +95,4 @@ public partial class CoordinatorTabSettingsViewModel : RoutableViewModel
 		Settings.MaxCoinJoinMiningFeeRate = maxCoinJoinMiningFeeRateDecimal.ToString(CultureInfo.InvariantCulture);
 	}
 
-	private void ValidateAbsoluteMinInputCount(IValidationErrors errors)
-	{
-		var absoluteMinInputCount = AbsoluteMinInputCount;
-
-		if (string.IsNullOrEmpty(absoluteMinInputCount))
-		{
-			return;
-		}
-
-		if (!int.TryParse(absoluteMinInputCount, out var absoluteMinInputCountInt))
-		{
-			errors.Add(ErrorSeverity.Error, "Invalid number.");
-			return;
-		}
-
-		if (absoluteMinInputCountInt < Constants.AbsoluteMinInputCount)
-		{
-			errors.Add(ErrorSeverity.Error, $"Absolute min input count should be at least {Constants.AbsoluteMinInputCount}");
-			return;
-		}
-
-		Settings.AbsoluteMinInputCount = absoluteMinInputCountInt.ToString(CultureInfo.InvariantCulture);
-	}
 }

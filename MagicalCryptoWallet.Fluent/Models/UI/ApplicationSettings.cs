@@ -46,7 +46,6 @@ public partial class ApplicationSettings : ReactiveObject
 	// Coordinator
 	[AutoNotify] private string _coordinatorUri;
 	[AutoNotify] private string _maxCoinJoinMiningFeeRate;
-	[AutoNotify] private string _absoluteMinInputCount;
 
 	// General
 	[AutoNotify] private bool _darkModeEnabled;
@@ -96,7 +95,6 @@ public partial class ApplicationSettings : ReactiveObject
 		_coordinatorUri = persistentConfig.CoordinatorUri;
 
 		_maxCoinJoinMiningFeeRate = persistentConfig.MaxCoinJoinMiningFeeRate.ToString(CultureInfo.InvariantCulture);
-		_absoluteMinInputCount = persistentConfig.AbsoluteMinInputCount.ToString(CultureInfo.InvariantCulture);
 
 		// General
 		_darkModeEnabled = uiConfig.DarkModeEnabled;
@@ -138,7 +136,6 @@ public partial class ApplicationSettings : ReactiveObject
 		CoordinatorUri = persistentConfig.CoordinatorUri;
 
 		MaxCoinJoinMiningFeeRate = persistentConfig.MaxCoinJoinMiningFeeRate.ToString(CultureInfo.InvariantCulture);
-		AbsoluteMinInputCount = persistentConfig.AbsoluteMinInputCount.ToString(CultureInfo.InvariantCulture);
 
 		// General
 		DarkModeEnabled = uiConfig.DarkModeEnabled;
@@ -179,12 +176,11 @@ public partial class ApplicationSettings : ReactiveObject
 		var configSaveTrigger2 =
 			this.WhenAnyValue(
 					x => x.MaxCoinJoinMiningFeeRate,
-					x => x.AbsoluteMinInputCount,
 					x => x.CoordinatorUri,
 					x => x.ExchangeRateProvider,
 					x => x.FeeRateEstimationProvider,
 					x => x.ExternalTransactionBroadcaster,
-					(_, _, _, _, _, _) => Unit.Default)
+					(_, _, _, _, _) => Unit.Default)
 				.Skip(1);
 
 		Observable
@@ -303,9 +299,6 @@ public partial class ApplicationSettings : ReactiveObject
 			MaxCoinJoinMiningFeeRate = decimal.TryParse(MaxCoinJoinMiningFeeRate, out var maxCoinjoinMiningFeeRate) ?
 				maxCoinjoinMiningFeeRate :
 				Constants.DefaultMaxCoinJoinMiningFeeRate,
-			AbsoluteMinInputCount = int.TryParse(AbsoluteMinInputCount, out var absoluteMinInputCount) ?
-				absoluteMinInputCount :
-				Constants.DefaultAbsoluteMinInputCount,
 			ExchangeRateProvider = ExchangeRateProvider,
 			FeeRateEstimationProvider = FeeRateEstimationProvider,
 			ExternalTransactionBroadcaster = ExternalTransactionBroadcaster
@@ -333,7 +326,6 @@ public partial class ApplicationSettings : ReactiveObject
 
 		CoordinatorUri = coordinatorConnectionString.CoordinatorUri.ToString();
 
-		AbsoluteMinInputCount = coordinatorConnectionString.AbsoluteMinInputCount.ToString();
 
 		// TODO: Save Name and ReadMoreUri to display it after.
 

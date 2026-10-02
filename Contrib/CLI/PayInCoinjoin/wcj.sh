@@ -60,7 +60,7 @@ fi
 
 # Start coinjoin
 echo ""
-mcw_authorized_rpc startcoinjoin '[false,true]' > /dev/null || exit 1
+mcw_authorized_rpc startcoinjoin '[]' > /dev/null || exit 1
 echo "=== CoinJoin started ==="
 echo ""
 

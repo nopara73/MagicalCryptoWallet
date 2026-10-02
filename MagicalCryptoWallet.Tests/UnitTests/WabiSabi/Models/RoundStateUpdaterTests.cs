@@ -143,6 +143,68 @@ public class RoundStateUpdaterTests
 	private static readonly TimeSpan TestTimeOut = TimeSpan.FromMinutes(10);
 
 	[Fact]
+	public async Task CachedRoundsKeepTheCoordinatorsPreferenceAsync()
+	{
+		var preferred = RoundState.FromRound(WabiSabiFactory.CreateRound(cfg: new()));
+		var empty = RoundState.FromRound(WabiSabiFactory.CreateRound(cfg: new()));
+		var api = new WabiSabiHttpApiClient("synthetic", MockHttpClientFactory.Create([
+			RoundStateResponseBuilder(preferred),
+			RoundStateResponseBuilder(preferred with { CoinjoinState = preferred.CoinjoinState.GetStateFrom(1) }, empty)]));
+		using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+		using var updater = RoundStateUpdaterForTesting.CreateManual(api, timeout.Token);
+		var provider = new RoundStateProvider(updater);
+		var first = provider.CreateRoundAwaiterAsync(preferred.Id, Phase.InputRegistration, timeout.Token);
+		updater.Update();
+		await first;
+		var newRound = provider.CreateRoundAwaiterAsync(empty.Id, Phase.InputRegistration, timeout.Token);
+		updater.Update();
+		await newRound;
+		var choice = await provider.CreateRoundAwaiterAsync(round => round.Phase == Phase.InputRegistration, timeout.Token);
+		Assert.Equal(preferred.Id, choice.Id);
+	}
+
+	[Fact]
+	public async Task CachedRoundCompletesNewAwaitersWithoutAnotherPollAsync()
+	{
+		var round = RoundState.FromRound(WabiSabiFactory.CreateRound(cfg: new()));
+		var api = new WabiSabiHttpApiClient("synthetic", MockHttpClientFactory.Create([RoundStateResponseBuilder(round)]));
+		using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+		using var updater = RoundStateUpdaterForTesting.CreateManual(api, timeout.Token);
+		var provider = new RoundStateProvider(updater);
+		var first = provider.CreateRoundAwaiterAsync(state => state.Id == round.Id, timeout.Token);
+		updater.Update();
+		await first;
+
+		Assert.Equal(round.Id, (await provider.CreateRoundAwaiterAsync(state => state.Id == round.Id, timeout.Token)).Id);
+		Assert.Equal(round.Id, (await provider.CreateRoundAwaiterAsync(round.Id, Phase.InputRegistration, timeout.Token)).Id);
+		var futurePhase = provider.CreateRoundAwaiterAsync(round.Id, Phase.OutputRegistration, timeout.Token);
+		await Task.Delay(50, timeout.Token);
+		Assert.False(futurePhase.IsCompleted);
+		await timeout.CancelAsync();
+		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => futurePhase);
+	}
+
+	[Fact]
+	public async Task UnknownRoundWaitsForTheNextPollAsync()
+	{
+		var first = RoundState.FromRound(WabiSabiFactory.CreateRound(cfg: new()));
+		var next = RoundState.FromRound(WabiSabiFactory.CreateRound(cfg: new()));
+		var api = new WabiSabiHttpApiClient("synthetic", MockHttpClientFactory.Create([
+			RoundStateResponseBuilder(first), RoundStateResponseBuilder(next)]));
+		using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+		using var updater = RoundStateUpdaterForTesting.CreateManual(api, timeout.Token);
+		var provider = new RoundStateProvider(updater);
+		var initial = provider.CreateRoundAwaiterAsync(state => state.Id == first.Id, timeout.Token);
+		updater.Update();
+		await initial;
+		var pending = provider.CreateRoundAwaiterAsync(next.Id, Phase.InputRegistration, timeout.Token);
+		await Task.Delay(50, timeout.Token);
+		Assert.False(pending.IsCompleted);
+		updater.Update();
+		Assert.Equal(next.Id, (await pending).Id);
+	}
+
+	[Fact]
 	public async Task UpdatesAutomaticallyAsync()
 	{
 		var roundState = RoundState.FromRound(WabiSabiFactory.CreateRound(cfg: new()));

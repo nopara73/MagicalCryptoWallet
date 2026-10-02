@@ -25,13 +25,5 @@
       <CurrencyEntryBox Classes="standalone" Name="CoinJoinMiningFeeRateTextBox" Text="{Binding MaxCoinJoinMiningFeeRate}" CurrencyCode="sat/vB"/>
     </DockPanel>
 
-    <DockPanel ToolTip.Tip="The client will refuse to participate in rounds with a minimum input count lower than the value indicated here.">
-      <TextBlock Text="Min Input Count" />
-      <TextBox Classes="standalone" Name="AbsoluteMinInputCountTextBox" Text="{Binding AbsoluteMinInputCount}">
-        <Interaction.Behaviors>
-          <TextBoxAutoSelectTextBehavior />
-        </Interaction.Behaviors>
-      </TextBox>
-    </DockPanel>
   </StackPanel>
 </UserControl>

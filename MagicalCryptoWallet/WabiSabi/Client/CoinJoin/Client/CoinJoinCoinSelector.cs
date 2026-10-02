@@ -6,41 +6,23 @@ namespace MagicalCryptoWallet.WabiSabi.Client.CoinJoin.Client;
 
 public class CoinJoinCoinSelector
 {
-	public const int MaxInputsRegistrableByWallet = 10; // how many
+	public const int MaxInputsRegistrableByWallet = 10;
 	public const int MaxWeightedAnonLoss = 3; // Maximum tolerable WeightedAnonLoss.
 
-	/// <param name="consolidationMode">If true it attempts to select as many coins as it can.</param>
-	/// <param name="anonScoreTarget">Tries to select few coins over this threshold.</param>
-	/// <param name="semiPrivateThreshold">Minimum anonymity of coins that can be selected together.</param>
-	/// <param name="arePaymentsPending">Tells whether there is a coinjoin payment waiting to be funded.</param>
 	public CoinJoinCoinSelector(
-		bool consolidationMode,
-		int anonScoreTarget,
-		int semiPrivateThreshold,
 		CoinJoinCoinSelectorRandomnessGenerator? generator = null,
 		Func<bool>? arePaymentsPending = null)
 	{
-		ConsolidationMode = consolidationMode;
-		AnonScoreTarget = anonScoreTarget;
-		SemiPrivateThreshold = semiPrivateThreshold;
-
-		_generator = generator ?? new(MaxInputsRegistrableByWallet, RandomnessProviders.Secure);
+		_generator = generator ?? new(RandomnessProviders.Secure);
 		_arePaymentsPending = arePaymentsPending ?? (() => false);
 	}
 
-	public bool ConsolidationMode { get; }
-	public int AnonScoreTarget { get; }
-	public int SemiPrivateThreshold { get; }
 	private RandomnessProvider Rnd => _generator.Rnd;
 	private readonly CoinJoinCoinSelectorRandomnessGenerator _generator;
 	private readonly Func<bool> _arePaymentsPending;
 
 	public static CoinJoinCoinSelector FromWallet(Wallet wallet) =>
-		new(
-			wallet.ConsolidationMode,
-			wallet.AnonScoreTarget,
-			wallet.NonPrivateCoinIsolation ? Constants.SemiPrivateThreshold : 0,
-			arePaymentsPending: () => wallet.BatchedPayments.AreTherePendingPayments);
+		new(arePaymentsPending: () => wallet.BatchedPayments.AreTherePendingPayments);
 
 	/// <param name="liquidityClue">Weakly prefer not to select inputs over this.</param>
 	public ImmutableList<SmartCoin> SelectCoinsForRound(IEnumerable<SmartCoin> coins, UtxoSelectionParameters parameters, Money liquidityClue)
@@ -62,54 +44,20 @@ public class CoinJoinCoinSelector
 			return ImmutableList<SmartCoin>.Empty;
 		}
 
-		var effectiveAnonScoreTarget = _arePaymentsPending() && filteredCoins.All(x => x.IsPrivate(AnonScoreTarget))
-			? int.MaxValue
-			: AnonScoreTarget;
-
-		var privateCoins = filteredCoins
-			.Where(x => x.IsPrivate(effectiveAnonScoreTarget))
-			.ToArray();
-		var semiPrivateCoins = filteredCoins
-			.Where(x => x.IsSemiPrivate(effectiveAnonScoreTarget, SemiPrivateThreshold))
-			.ToArray();
-
-		// redCoins will only fill up if redCoinIsolation is turned on. Otherwise the coin will be in semiPrivateCoins.
-		var redCoins = filteredCoins
-			.Where(x => x.IsRedCoin(SemiPrivateThreshold))
-			.ToArray();
-
-		if (semiPrivateCoins.Length + redCoins.Length == 0)
+		var privateCoins = filteredCoins.Where(x => x.IsPrivate(Constants.AnonymityScoreTarget)).ToArray();
+		var allowedNonPrivateCoins = filteredCoins.Where(x => !x.IsPrivate(Constants.AnonymityScoreTarget)).ToList();
+		// A queued payment can use already-private funds even when there is nothing left to mix.
+		if (allowedNonPrivateCoins.Count == 0 && _arePaymentsPending())
 		{
-			Logger.LogDebug("No suitable coins for this round.");
+			allowedNonPrivateCoins.AddRange(privateCoins);
+			privateCoins = [];
+		}
+		if (allowedNonPrivateCoins.Count == 0)
+		{
 			return ImmutableList<SmartCoin>.Empty;
 		}
 
-		Logger.LogDebug($"Coin selection started:");
-		Logger.LogDebug($"{nameof(filteredCoins)}: {filteredCoins.Length} coins, valued at {Money.Satoshis(filteredCoins.Sum(x => x.Amount)).ToString(false, true)} BTC.");
-		Logger.LogDebug($"{nameof(privateCoins)}: {privateCoins.Length} coins, valued at {Money.Satoshis(privateCoins.Sum(x => x.Amount)).ToString(false, true)} BTC.");
-		Logger.LogDebug($"{nameof(semiPrivateCoins)}: {semiPrivateCoins.Length} coins, valued at {Money.Satoshis(semiPrivateCoins.Sum(x => x.Amount)).ToString(false, true)} BTC.");
-		Logger.LogDebug($"{nameof(redCoins)}: {redCoins.Length} coins, valued at {Money.Satoshis(redCoins.Sum(x => x.Amount)).ToString(false, true)} BTC.");
-
-		// We want to isolate red coins from each other. We only let a single red coin get into our selection candidates.
-		var allowedNonPrivateCoins = semiPrivateCoins.ToList();
-		var red = redCoins.RandomElement(Rnd);
-		if (red is not null)
-		{
-			allowedNonPrivateCoins.Add(red);
-			Logger.LogDebug($"One red coin got selected: {red.Amount.ToString(false, true)} BTC. Isolating the rest.");
-		}
-
-		Logger.LogDebug($"{nameof(allowedNonPrivateCoins)}: {allowedNonPrivateCoins.Count} coins, valued at {Money.Satoshis(allowedNonPrivateCoins.Sum(x => x.Amount)).ToString(false, true)} BTC.");
-
-		int inputCount = Math.Min(
-			privateCoins.Length + allowedNonPrivateCoins.Count,
-			ConsolidationMode ? MaxInputsRegistrableByWallet : _generator.GetInputTarget());
-		if (ConsolidationMode)
-		{
-			Logger.LogDebug($"Consolidation mode is on.");
-		}
-		Logger.LogDebug($"Targeted {nameof(inputCount)}: {inputCount}.");
-
+		int inputCount = Math.Min(privateCoins.Length + allowedNonPrivateCoins.Count, MaxInputsRegistrableByWallet);
 		var biasShuffledPrivateCoins = AnonScoreTxSourceBiasedShuffle(privateCoins).ToArray();
 
 		// Deprioritize private coins those are too large.
@@ -298,6 +246,11 @@ public class CoinJoinCoinSelector
 			}
 		}
 
+		// Privacy pruning can reduce an initially viable batch below the output minimum.
+		if (winner.Sum(x => x.EffectiveValue(parameters.MiningFeeRate)) < parameters.MinAllowedOutputAmount)
+		{
+			return ImmutableList<SmartCoin>.Empty;
+		}
 		return winner.ToShuffled(Rnd).ToImmutableList();
 	}
 

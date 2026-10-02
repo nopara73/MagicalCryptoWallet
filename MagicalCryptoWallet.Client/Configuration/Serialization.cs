@@ -34,7 +34,6 @@ public static class PersistentConfigEncode
 			("FeeRateEstimationProvider", String(cfg.FeeRateEstimationProvider)),
 			("ExternalTransactionBroadcaster", String(cfg.ExternalTransactionBroadcaster)),
 			("MaxCoinJoinMiningFeeRate", Decimal(cfg.MaxCoinJoinMiningFeeRate)),
-			("AbsoluteMinInputCount", Int(cfg.AbsoluteMinInputCount)),
 			("MaxDaysInMempool", Int(cfg.MaxDaysInMempool)),
 			("ExperimentalFeatures", Array(cfg.ExperimentalFeatures.Select(String))),
 			("ConfigVersion", Int(4))
@@ -84,7 +83,6 @@ public static class PersistentConfigDecode
 					                                "MempoolSpace",
 					CoordinatorIdentifier: get.Required("CoordinatorIdentifier", Decode.String),
 					MaxCoinJoinMiningFeeRate: get.Required("MaxCoinJoinMiningFeeRate", Decode.Decimal),
-					AbsoluteMinInputCount: get.Required("AbsoluteMinInputCount", Decode.Int),
 					MaxDaysInMempool: get.Optional("MaxDaysInMempool", Decode.Int, Constants.DefaultMaxDaysInMempool),
 					ExperimentalFeatures: get.Optional("ExperimentalFeatures", ValueList(Decode.String)) ??
 					                      Helpers.ValueList<string>.Empty,

@@ -80,7 +80,7 @@ internal class Participant
 		var roundStateProvider = new RoundStateProvider(roundStateUpdater);
 
 		var outputProvider = new OutputProvider(Wallet, RandomnessProviders.Insecure);
-		var coinJoinClient = WabiSabiFactory.CreateTestCoinJoinClient(HttpClientFactory, Wallet, outputProvider, roundStateProvider, false);
+		var coinJoinClient = WabiSabiFactory.CreateTestCoinJoinClient(HttpClientFactory, Wallet, outputProvider, roundStateProvider);
 
 		static HdPubKey CreateHdPubKey(ExtPubKey extPubKey)
 		{

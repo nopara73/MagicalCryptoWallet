@@ -65,18 +65,30 @@ if (args.Contains("--fees-only"))
     FeeDisplayChecks.Run(context, destination);
     return;
 }
-PasswordBoxChecks.Run();
-LurkingWifeModeChecks.Initialize(context, destination);
-SingleWalletChecks.Run(context);
-AutomaticCoinSelectionChecks.Run(context);
-using var bitcoinP2p = new BitcoinP2pChecks(destination);
-SoftwareWalletChecks.Run(context, destination);
+bool coinJoinOnly = args.Contains("--coinjoin-only");
+if (!coinJoinOnly)
+{
+    PasswordBoxChecks.Run();
+    LurkingWifeModeChecks.Initialize(context, destination);
+    SingleWalletChecks.Run(context);
+    AutomaticCoinSelectionChecks.Run(context);
+    SoftwareWalletChecks.Run(context, destination);
+}
+using var bitcoinP2p = coinJoinOnly ? null : new BitcoinP2pChecks(destination);
+CoinJoinChecks.Run(context);
 int capturedFrames = 0;
 foreach (var theme in new[] { ThemeVariant.Light, ThemeVariant.Dark })
 {
     Application.Current!.RequestedThemeVariant = theme;
     foreach (double scale in new[] { 1.0, 1.25, 1.5, 2.0 })
     {
+        Render("coinjoin-settings", CoinJoinChecks.CreateWalletSettings(context), 800, 450);
+        Render("coordinator-settings", CoinJoinChecks.CreateCoordinatorSettings(context), 800, 450);
+        foreach (var state in new[] { "waiting", "paused", "signing", "private" })
+        {
+            Render($"coinjoin-{state}", CoinJoinChecks.CreateControls(context, state), 800, 220);
+        }
+        if (coinJoinOnly) { continue; }
         Render("welcome", new WelcomePageView { DataContext = new WelcomePageViewModel(context) }, 1024, 680);
         Render("about", new AboutView { DataContext = new AboutViewModel(context) }, 640, 560);
         Render("password-create", new CreatePasswordDialogView
@@ -123,8 +135,8 @@ foreach (var theme in new[] { ThemeVariant.Light, ThemeVariant.Dark })
         Render("transaction-preview", AutomaticCoinSelectionChecks.CreateTransactionPreview(context), 900, 650);
         Render("wallet-coins", AutomaticCoinSelectionChecks.CreateWalletCoins(context), 900, 650);
         Render("wallet-general-settings", AutomaticCoinSelectionChecks.CreateWalletSettings(context), 900, 650);
-        Render("bitcoin-settings", bitcoinP2p.CreateSettings(), 650, 340);
-        Render("bitcoin-status", bitcoinP2p.CreateStatus(), 360, 560);
+        Render("bitcoin-settings", bitcoinP2p!.CreateSettings(), 650, 340);
+        Render("bitcoin-status", bitcoinP2p!.CreateStatus(), 360, 560);
         Render("send", SoftwareWalletChecks.CreateSend(context), 900, 650);
         Render("receive", SoftwareWalletChecks.CreateReceive(context), 900, 650);
         Render("recovery", SoftwareWalletChecks.CreateRecovery(context), 900, 650);
@@ -159,8 +171,10 @@ foreach (var theme in new[] { ThemeVariant.Light, ThemeVariant.Dark })
         }
     }
 }
-Console.WriteLine($"Rendered {capturedFrames} actual application captures: Welcome, About, password creation/authorization, Lurking Wife Mode, single-wallet sidebar/dashboard, setup, wallet actions, transaction preview, coins, settings, send, receive, recovery and recovery words in both themes at 100, 125, 150 and 200 percent.");
-using var syntheticWallets = LurkingWifeModeChecks.Run(context, destination);
+Console.WriteLine(coinJoinOnly
+    ? $"Rendered {capturedFrames} CoinJoin settings, coordinator settings, waiting, pause, signing, and private states in both themes at 100, 125, 150 and 200 percent."
+    : $"Rendered {capturedFrames} actual application captures: Welcome, About, password creation/authorization, Lurking Wife Mode, single-wallet sidebar/dashboard, setup, wallet actions, transaction preview, coins, settings, CoinJoin controls, send, receive, recovery and recovery words in both themes at 100, 125, 150 and 200 percent.");
+using var syntheticWallets = coinJoinOnly ? null : LurkingWifeModeChecks.Run(context, destination);
 
 // Authorize is never invoked. Any attempt to use a wallet service fails immediately.
 public class InertPreviewWallet : DispatchProxy
