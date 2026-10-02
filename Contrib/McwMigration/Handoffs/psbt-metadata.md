@@ -134,6 +134,9 @@ finalized/part-finalized inputs, origin replacement, v2 and witnessed parents.
 # Before shared activation, select a tracked-source snapshot with the complete patch:
 ./mcw/tests/psbt_metadata_host_verify.ps1 -CoreSourceRoot <activation-snapshot> -NativeApplication <snapshot-mcw.exe>
 ./mcw/tests/psbt_metadata_suite_verify.ps1 -CoreSourceRoot <activation-snapshot> -NativeApplication <snapshot-mcw.exe>
+# Windows shipping-runtime evidence requires the published policy, not a default Cargo build:
+./mcw/tests/psbt_metadata_shipping_verify.ps1 -ActivationSourceRoot <activation-snapshot>
+# Use the exact audited SHIPPING_POLICY_BINARY for both host and suite verification.
 ./mcw/tests/psbt_metadata_suite_verify.ps1 -NativeApplication <fresh-integrated-mcw.exe> -FilterNamespace '*UnitTests*'
 ./mcw/tests/psbt_metadata_suite_verify.ps1 -NativeApplication <fresh-integrated-mcw.exe> -TestProject MagicalCryptoWallet.IntegrationTests -AllTests
 ```
@@ -204,6 +207,14 @@ integration. Evidence:
 and `.artifacts/mcw-psbt/.artifacts/psbt-metadata-suite/20261002-220815-026-279b2b14/evidence.json`.
 The candidate native executable builds with warnings denied and the actual
 first-party Cargo graph has one package and no external dependencies.
+That historical suite run used development executable
+`a030ae93159d0bd3b504d144c9e40275e9388d9348aef2d766db20292c661c73`.
+Its direct/delay import audit fails the shipping rule: it imports
+`VCRUNTIME140.dll` and CRT API libraries. Those successful regressions remain
+development conformance evidence, and do not prove an OS-only shipping runtime.
+The executable and historical evidence remain preserved. Actual import details
+are recorded in
+`.artifacts/mcw-psbt/.artifacts/psbt-shipping-proof/20261002-223815-242-318f05e0/historical-development-qualification.json`.
 
 MTP may open OS stdout directly. The fixture reserves the original protocol
 pipe, redirects runner output to stderr inside its own process, and binds the
@@ -215,3 +226,59 @@ is introduced. Windows execution is verified; Unix pipe reservation and native
 package execution still require the shared owner's Linux/macOS checks. Source
 and publication IDs remain candidate evidence until atomic shared activation
 and exact published-host verification are complete.
+
+## Windows candidate shipping-runtime proof
+
+The same `76b5c878cc27f6ae3182f2a77730fb15c163b1c2` tracked-source activation
+snapshot was rebuilt using the published `Contrib/Mcw/build-windows.ps1`
+unchanged. Its SHA256 is
+`ddc9be682d5307983281dc11abc6eff7379dd1abdace6f6fbf96719fc91a56f6`.
+The policy uses Rust 1.99.0, the existing first-party Windows entry/TLS/memory
+runtime, and matching rebuilt `std`/`panic_abort` with
+`-C panic=abort -C default-linker-libraries=no`. It uses existing cached build
+tooling offline; no copied/static CRT, new application dependency or shipping
+executable was introduced.
+
+The actual release application SHA256 is
+`de14a823a2178b3f60b93cf1812ab0c8e698ea54ec9497620a87684fdd84062b`.
+Both the published shipping-script check and the strict `Contrib/Mcw/audit.py`
+direct/delay import allowlist passed. Actual imports are `KERNEL32.dll`,
+`kernel32.dll`, `kernelbase.dll`, `ntdll.dll`, `shell32.dll` and
+`api-ms-win-core-synch-l1-2-0.dll`; all are allowed OS libraries. The application
+Cargo graph remains one package with zero external dependencies. The wrapper
+checks that the audit's binary path and hash identify exactly the application
+being tested. Native runtime imports are a separate requirement from the
+retained managed package graph.
+
+Before/after fingerprints cover 746 native, managed core/client/test, fixture
+and build-policy source files. The shipping build changed none, and preserved
+the original development executable hash. The transport verifier also selects
+ManagedApplicationHost from the chosen activation snapshot, rather than its
+own checkout. Source fingerprints and exact-binary test results are recorded in
+`psbt-metadata-windows-shipping-evidence.json` and its local evidence references.
+
+That exact native binary and candidate managed transport source
+`e6d33c79e033754292beafb5bb4f5e9dc73d0511a206a1c2a4f85e5b8b4d80b4`
+passed two packet comparisons, unsigned and signed factory builds, retained
+signing/policy validation, and normal shutdown. All 56 existing wallet tests
+(20 TransactionFactory, four WalletOperationAuthorization, 32 SoftwareWallet)
+passed, as did four CoreConfig tests proving integration-runner binding and
+shutdown. They do not prove node-backed integration. The two actual suite builds
+produced the same managed Client DLL hash, recorded alongside the source hash;
+the packet probe links that same transport source into its synthetic child.
+All managed builds had zero warnings/errors, and all 746 source fingerprints
+were checked again after the suites without changes.
+
+The intermediate shipping build `cbd26ba802e0c3ea02c6d95b06c0fdea2db6beaf3857c9b1bb10c98708319219`
+and its test records remain preserved separately. The shipping wrapper was
+intentionally rerun after adding an exact-audit identity check and explicit
+development-binary preservation, while the packet verifier was corrected to
+select the candidate transport. That rebuild produced the finalized `de14a823`
+binary above. Its packet and 56+4 suite evidence were rerun; results from the
+earlier binaries or the original transport are excluded from this final pairing.
+
+This remains isolated Windows candidate evidence. Shared routing/caller/test/CI
+activation, exact published-host verification, request/session-specific queued
+cancellation cleanup, Unix verification and the five-target release gate remain
+unproved. The shipping rebuild does not make NBitcoin removable. No active
+shared Cargo, build, platform or dispatch files were changed by this proof.

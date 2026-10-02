@@ -1,0 +1,129 @@
+{
+  "schema_version": 1,
+  "scope": "existing_bounded_psbt_metadata_windows_shipping_candidate",
+  "verified_at_utc": "2026-10-02T14:52:23.548113+00:00",
+  "candidate_only": true,
+  "base_commit": "76b5c878cc27f6ae3182f2a77730fb15c163b1c2",
+  "archive_sha256": "4828fcbcc6cfcc939a04e83243e3e3ee063cd1a450aa7dd4aabd537355d5454b",
+  "atomic_patch_lf_sha256": "116ceff739303aa16aec698a4ccf8fdaaa16c87be57798105bafa6121526e420",
+  "atomic_patch_working_copy_sha256": "e14acbebcd4caadbe432847732ab5a49bc876f7bcd257596bfd0251dc2a480b8",
+  "source_graph_workarounds": [],
+  "shared_roots_modified": false,
+  "native_binary": ".artifacts/mcw-psbt/.artifacts/psbt-shipping-proof/20261002-224458-905-298e7281/native-target/x86_64-pc-windows-msvc/release/mcw.exe",
+  "native_sha256": "de14a823a2178b3f60b93cf1812ab0c8e698ea54ec9497620a87684fdd84062b",
+  "managed_transport_source_sha256": "e6d33c79e033754292beafb5bb4f5e9dc73d0511a206a1c2a4f85e5b8b4d80b4",
+  "wallet_and_integration_managed_client_dll_sha256": "dfa21f98a550c497b7178df8b5f9451cb32381d6cb955494e470869cf04ac5c6",
+  "probe_transport_compilation": "same_candidate_source_linked_into_synthetic_child",
+  "runtime_imports": [
+    "KERNEL32.dll",
+    "api-ms-win-core-synch-l1-2-0.dll",
+    "kernel32.dll",
+    "kernelbase.dll",
+    "ntdll.dll",
+    "shell32.dll"
+  ],
+  "direct_and_delay_os_import_audit": "passed",
+  "delay_import_directory_empty": true,
+  "application_packages": 1,
+  "external_cargo_dependencies": 0,
+  "rust_version": "rustc 1.99.0 (b940084d7 2026-09-28)",
+  "shipping_build_policy": "published_windows_first_party_runtime_and_rebuilt_aborting_std",
+  "shipping_policy_sha256": "ddc9be682d5307983281dc11abc6eff7379dd1abdace6f6fbf96719fc91a56f6",
+  "source_files": 746,
+  "source_fingerprints_unchanged_during_build_and_suites": true,
+  "source_before_sha256": "9337fa7788245021ca7c48f4ef414c1171959e13b9edc3a247acda3102f446c6",
+  "source_after_build_sha256": "9337fa7788245021ca7c48f4ef414c1171959e13b9edc3a247acda3102f446c6",
+  "source_after_suites_sha256": "9337fa7788245021ca7c48f4ef414c1171959e13b9edc3a247acda3102f446c6",
+  "historical_development": {
+    "native_sha256": "a030ae93159d0bd3b504d144c9e40275e9388d9348aef2d766db20292c661c73",
+    "runtime_imports": [
+      "KERNEL32.dll",
+      "VCRUNTIME140.dll",
+      "api-ms-win-core-synch-l1-2-0.dll",
+      "api-ms-win-crt-heap-l1-1-0.dll",
+      "api-ms-win-crt-locale-l1-1-0.dll",
+      "api-ms-win-crt-math-l1-1-0.dll",
+      "api-ms-win-crt-runtime-l1-1-0.dll",
+      "api-ms-win-crt-stdio-l1-1-0.dll",
+      "api-ms-win-crt-string-l1-1-0.dll",
+      "kernel32.dll",
+      "ntdll.dll",
+      "shell32.dll"
+    ],
+    "direct_and_delay_os_import_audit": "failed",
+    "failure": "Non-OS runtime import: VCRUNTIME140.dll",
+    "classification": "development_conformance_only",
+    "binary_preserved": true,
+    "evidence_preserved": true
+  },
+  "transport_probe": {
+    "metadata_comparisons": 2,
+    "factory_builds": 2,
+    "complete_parent_above_1_mib": true,
+    "retained_signing_and_policy_verified": true,
+    "clean_shutdown": true,
+    "packets": "synthetic"
+  },
+  "wallet_tests": [
+    {
+      "filter": "*TransactionFactoryTests",
+      "succeeded": 20,
+      "exit_code": 0
+    },
+    {
+      "filter": "*WalletOperationAuthorizationTests",
+      "succeeded": 4,
+      "exit_code": 0
+    },
+    {
+      "filter": "*SoftwareWalletTests",
+      "succeeded": 32,
+      "exit_code": 0
+    }
+  ],
+  "integration_fixture_tests": {
+    "filter": "*CoreConfigTests",
+    "succeeded": 4,
+    "purpose": "runner_binding_and_shutdown_only",
+    "node_backed_integration_verified": false
+  },
+  "wallet_transport_suite_verified": true,
+  "production_verified": false,
+  "nbitcoin_removed": false,
+  "unix_verified": false,
+  "five_target_verified": false,
+  "queued_session_cleanup_verified": false,
+  "evidence": {
+    "shipping_build": ".artifacts/mcw-psbt/.artifacts/psbt-shipping-proof/20261002-224458-905-298e7281/evidence.json",
+    "imports": ".artifacts/mcw-psbt/.artifacts/psbt-shipping-proof/20261002-224458-905-298e7281/imports.json",
+    "source_before": ".artifacts/mcw-psbt/.artifacts/psbt-shipping-proof/20261002-224458-905-298e7281/source-before.json",
+    "source_after_build": ".artifacts/mcw-psbt/.artifacts/psbt-shipping-proof/20261002-224458-905-298e7281/source-after.json",
+    "source_after_suites": ".artifacts/mcw-psbt/.artifacts/psbt-shipping-proof/20261002-224458-905-298e7281/source-after-suites.json",
+    "historical_development_qualification": ".artifacts/mcw-psbt/.artifacts/psbt-shipping-proof/20261002-223815-242-318f05e0/historical-development-qualification.json",
+    "transport_probe": ".artifacts/mcw-psbt/.artifacts/psbt-metadata-host/20261002-224618-907-78b49d4a/evidence.json",
+    "wallet_suite": ".artifacts/mcw-psbt/.artifacts/psbt-metadata-suite/20261002-224729-652-8ae9a35f/evidence.json",
+    "integration_fixture": ".artifacts/mcw-psbt/.artifacts/psbt-metadata-suite/20261002-224936-673-4cdfec6f/evidence.json"
+  },
+  "evidence_sha256": {
+    "shipping_build": "f995c5c1da041d701d319686a30961f0312cde60758898f23dda6bc75f629e8b",
+    "imports": "5cff7bd72a5f21f6e8e54774d9506f02a3d546cf973afd41e398676c824ca427",
+    "source_before": "9337fa7788245021ca7c48f4ef414c1171959e13b9edc3a247acda3102f446c6",
+    "source_after_build": "9337fa7788245021ca7c48f4ef414c1171959e13b9edc3a247acda3102f446c6",
+    "source_after_suites": "9337fa7788245021ca7c48f4ef414c1171959e13b9edc3a247acda3102f446c6",
+    "historical_development_qualification": "ddd80f5480320bba27cd4f0de3b3b91a90744f64e1cd616773fd3f4d858dfee0",
+    "transport_probe": "af0a39fe3e474d1062f1e1424795bad9fa33d8c5b08b9cee5166bc095ce1f202",
+    "wallet_suite": "745a32381c93a7cd1f96373bbd78621074cd0524c98ce1732daee246f8df7fd4",
+    "integration_fixture": "adf44f6bfd21218bae3f4d7b8167cd157a27f3dbbb58bec51c51e8560cdb92f9"
+  },
+  "preserved_intermediate_shipping_run": {
+    "native_sha256": "cbd26ba802e0c3ea02c6d95b06c0fdea2db6beaf3857c9b1bb10c98708319219",
+    "packet_probe_managed_transport_source_sha256": "096066e0cc7ee1fad2e48dd41815f14a0babd15caac7092415b3d49883e2aaed",
+    "excluded_from_finalized_pair": true,
+    "intentional_rebuild_reason": "rerun tightened audit-identity/preservation wrapper and select candidate managed transport; all final suites rerun for de14",
+    "evidence": {
+      "shipping_build": ".artifacts/mcw-psbt/.artifacts/psbt-shipping-proof/20261002-223815-242-318f05e0/evidence.json",
+      "packet_probe": ".artifacts/mcw-psbt/.artifacts/psbt-metadata-host/20261002-224142-852-05dbe6d7/evidence.json",
+      "wallet_suite": ".artifacts/mcw-psbt/.artifacts/psbt-metadata-suite/20261002-224245-944-8e0e17eb/evidence.json"
+    }
+  }
+}
