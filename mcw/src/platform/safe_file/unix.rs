@@ -158,12 +158,18 @@ pub fn move_no_replace(source: &Path, destination: &Path) -> io::Result<()> {
         .map_err(|_| io::Error::new(io::ErrorKind::InvalidInput, "safe file path"))?;
     let destination = CString::new(destination.as_os_str().as_bytes())
         .map_err(|_| io::Error::new(io::ErrorKind::InvalidInput, "safe file path"))?;
-    // SAFETY: both C strings outlive the call; flags require a no-replace move.
     #[cfg(target_os = "linux")]
-    let result =
-        retry(|| unsafe { renameat2(-100, source.as_ptr(), -100, destination.as_ptr(), 1) });
+    let result = retry(|| {
+        // SAFETY: both C strings outlive this call; RENAME_NOREPLACE forbids
+        // replacing the destination. Each pointer is NUL-terminated and live.
+        unsafe { renameat2(-100, source.as_ptr(), -100, destination.as_ptr(), 1) }
+    });
     #[cfg(target_os = "macos")]
-    let result = retry(|| unsafe { renamex_np(source.as_ptr(), destination.as_ptr(), 4) });
+    let result = retry(|| {
+        // SAFETY: both C strings outlive this call; RENAME_EXCL forbids replacing
+        // the destination. Each pointer is NUL-terminated and live.
+        unsafe { renamex_np(source.as_ptr(), destination.as_ptr(), 4) }
+    });
     result
 }
 #[cfg(target_os = "macos")]
