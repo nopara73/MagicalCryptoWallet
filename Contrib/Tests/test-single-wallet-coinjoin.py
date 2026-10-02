@@ -136,6 +136,8 @@ def main():
                 transaction = rpc(node_url, "getrawtransaction", [txid, True])
                 if len(transaction["vin"]) >= 5 and len(transaction["vout"]) >= 5:
                     coinjoins.append(txid)
+                    # With no P2P listener, clients discover coordinator broadcasts through confirmed filters.
+                    rpc(node_url, "generatetoaddress", [1, mining_address])
             if coinjoins and all(any(coin["anonymityScore"] > 1 for coin in rpc(url, "listcoins")) for _, url in clients):
                 break
             time.sleep(.5)
