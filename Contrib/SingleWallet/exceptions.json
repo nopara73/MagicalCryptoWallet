@@ -370,5 +370,11 @@
     "line": 13,
     "line_sha256": "e7ade0eb8a3d943e548dddfb34537a8e8600fc5259bbc134fa1c29bd09c4bcb2",
     "reason": "Migration documentation identifying removed fields and Scheme predicates."
+  },
+  {
+    "path": "Contrib/Tests/test-single-wallet-process.py",
+    "line": 308,
+    "line_sha256": "84e7d5238193c363fcf305c34157888f4a17f93a6174b2687c054cf2c0398aad",
+    "reason": "Bitcoin Core harness-only mining wallet reload; no application wallet-selection support."
   }
 ]
