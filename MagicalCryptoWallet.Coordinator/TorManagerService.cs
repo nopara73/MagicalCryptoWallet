@@ -16,15 +16,16 @@ public class TorManagerService(TorSettings torSettings, WabiSabiConfig config, I
 
 	public async Task StartAsync(CancellationToken cancellationToken)
 	{
+		var (_, torControlClient) = await _torManager.StartAsync(attempts: 3, cancellationToken).ConfigureAwait(false);
+		Logger.LogInfo($"{nameof(TorManager)} is initialized.");
+		if (!config.PublishAsOnionService) { return; }
+
 		var urls = configuration["urls"];
 		if (urls is null)
 		{
 			Logger.LogWarning("The coordinator doesn't have URLs configured!");
 			return;
 		}
-
-		var (_, torControlClient) = await _torManager.StartAsync(attempts: 3, cancellationToken).ConfigureAwait(false);
-		Logger.LogInfo($"{nameof(TorManager)} is initialized.");
 
 		if (torControlClient is not null)
 		{

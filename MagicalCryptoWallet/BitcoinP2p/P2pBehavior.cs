@@ -18,12 +18,14 @@ public class P2pBehavior : NodeBehavior
 
 	private static readonly ConcurrentDictionary<Node, FeeRate> PeerFeeFilters = new();
 
-	public P2pBehavior(MempoolService mempoolService)
+	public P2pBehavior(MempoolService mempoolService, bool listenForTransactions = true)
 	{
 		MempoolService = mempoolService;
+		ListenForTransactions = listenForTransactions;
 	}
 
 	public MempoolService MempoolService { get; }
+	public bool ListenForTransactions { get; }
 
 	public static FeeRate? GetMinPeerFeeFilter() =>
 		PeerFeeFilters.Select(x => x.Value).MinOrDefault();
@@ -55,7 +57,7 @@ public class P2pBehavior : NodeBehavior
 			{
 				await ProcessGetDataAsync(node, getDataPayload).ConfigureAwait(false);
 			}
-			else if (message.Message.Payload is TxPayload txPayload)
+			else if (ListenForTransactions && message.Message.Payload is TxPayload txPayload)
 			{
 				ProcessTx(txPayload);
 			}
@@ -104,6 +106,8 @@ public class P2pBehavior : NodeBehavior
 				entry.ConfirmPropagationOnce(remoteSocketEndpoint);
 			}
 
+			if (!ListenForTransactions) { return false; }
+
 			// If we already processed it, then don't ask for it.
 			if (MempoolService.IsProcessed(inv.Hash))
 			{
@@ -150,5 +154,5 @@ public class P2pBehavior : NodeBehavior
 		MempoolService.Process(transaction);
 	}
 
-	public override object Clone() => new P2pBehavior(MempoolService);
+	public override object Clone() => new P2pBehavior(MempoolService, ListenForTransactions);
 }
