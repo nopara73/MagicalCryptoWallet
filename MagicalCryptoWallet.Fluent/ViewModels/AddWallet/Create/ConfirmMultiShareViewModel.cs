@@ -287,11 +287,10 @@ public partial class ConfirmMultiShareViewModel : RoutableViewModel
 		if ((_currentShare >= multiShareBackup.Settings.Shares && _currentSharePage >= _totalCurrenSharePages)
 		    || skip)
 		{
-			var dialogCaption = "Store your passphrase safely, it cannot be reset if lost.\n" +
-			                    "It's needed to open and to recover your wallet.\n" +
-			                    "It's a recovery words extension for more security.";
+			var dialogCaption = "This password is needed to send bitcoin and recover your wallet.\n" +
+			                    "Store it safely; it cannot be reset if lost.";
 			var password = await Navigate().To()
-				.CreatePasswordDialog("Add Passphrase", dialogCaption, enableEmpty: true).GetResultAsync();
+				.CreatePasswordDialog("Add Password", dialogCaption, enableEmpty: true).GetResultAsync();
 
 			if (password is null)
 			{

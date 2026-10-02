@@ -55,4 +55,72 @@ public class TransactionFeeHelperTests
 		Assert.NotNull(estimates);
 		Assert.NotEmpty(estimates.WildEstimations);
 	}
+
+	[Fact]
+	public void AutomaticFeeUsesHighestEstimateRegardlessOfInputOrder()
+	{
+		var estimates = new FeeRateEstimations(new Dictionary<int, FeeRate>
+		{
+			[144] = new(1m),
+			[6] = new(9m),
+			[2] = new(35.125m),
+			[3] = new(20m)
+		});
+
+		Assert.True(TransactionFeeHelper.TryGetHighestFeeRate(estimates, Network.Main, out var feeRate));
+		Assert.Equal(new FeeRate(35.125m), feeRate);
+	}
+
+	[Fact]
+	public void AutomaticFeeUsesHighestAvailableSparseEstimate()
+	{
+		var estimates = new FeeRateEstimations(new Dictionary<int, FeeRate>
+		{
+			[18] = new(7m),
+			[144] = new(1m)
+		});
+
+		Assert.True(TransactionFeeHelper.TryGetHighestFeeRate(estimates, Network.RegTest, out var feeRate));
+		Assert.Equal(new FeeRate(7m), feeRate);
+	}
+
+	[Fact]
+	public void AutomaticFeeSupportsSingleEstimate()
+	{
+		var estimates = new FeeRateEstimations(new Dictionary<int, FeeRate> { [2] = new(1m) });
+
+		Assert.True(TransactionFeeHelper.TryGetHighestFeeRate(estimates, Network.Main, out var feeRate));
+		Assert.Equal(new FeeRate(1m), feeRate);
+	}
+
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public void AutomaticFeeRequiresUsableEstimates(bool hasEmptyEstimates)
+	{
+		var estimates = hasEmptyEstimates ? FeeRateEstimations.Empty : null;
+
+		Assert.False(TransactionFeeHelper.TryGetHighestFeeRate(estimates, Network.Main, out var feeRate));
+		Assert.Null(feeRate);
+	}
+
+	[Fact]
+	public void AutomaticFeeRejectsFilteredOutEstimates()
+	{
+		var estimates = new FeeRateEstimations(new Dictionary<int, FeeRate>
+		{
+			[0] = new(100m),
+			[1009] = new(1m)
+		});
+
+		Assert.False(TransactionFeeHelper.TryGetHighestFeeRate(estimates, Network.Main, out var feeRate));
+		Assert.Null(feeRate);
+	}
+
+	[Fact]
+	public void AutomaticFeeUsesHighestTestNetFallbackEstimate()
+	{
+		Assert.True(TransactionFeeHelper.TryGetHighestFeeRate(null, Network.TestNet, out var feeRate));
+		Assert.Equal(new FeeRate(12m), feeRate);
+	}
 }

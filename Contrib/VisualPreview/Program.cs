@@ -37,9 +37,18 @@ using (Task.Run(() => RxSchedulers.MainThreadScheduler.Schedule(() => callbackOn
     if (!callbackOnUiThread) throw new InvalidOperationException("Headless command notifications must return to the Avalonia UI thread.");
 }
 Console.WriteLine("Headless UI scheduler check passed: background callbacks return to the Avalonia dispatcher.");
-string destination = args.FirstOrDefault() ?? ".artifacts/rebrand/screenshots";
+string destination = args.FirstOrDefault(x => !x.StartsWith("--", StringComparison.Ordinal)) ?? ".artifacts/rebrand/screenshots";
 Directory.CreateDirectory(destination);
 var context = (UiContext)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(UiContext));
+if (args.Contains("--fees-only"))
+{
+    var feeServices = (Services)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(Services));
+    AutomaticCoinSelectionChecks.SetBackingField(feeServices, nameof(Services.UiConfig), new UiConfig(Path.Combine(Path.GetFullPath(destination), "synthetic-fee-ui-config.json")));
+    typeof(Services).GetProperty(nameof(Services.Instance))!.SetValue(null, feeServices);
+    AutomaticCoinSelectionChecks.Run(context);
+    FeeDisplayChecks.Run(context, destination);
+    return;
+}
 PasswordBoxChecks.Run();
 using var syntheticWallets = LurkingWifeModeChecks.Run(context, destination);
 SingleWalletChecks.Run(context);
@@ -53,19 +62,35 @@ foreach (var theme in new[] { ThemeVariant.Light, ThemeVariant.Dark })
         Render("about", new AboutView { DataContext = new AboutViewModel(context) }, 640, 560);
         Render("password-create", new CreatePasswordDialogView
         {
-            DataContext = new CreatePasswordDialogViewModel(context, "Add Passphrase")
+            DataContext = new CreatePasswordDialogViewModel(context, "Add Password")
             {
-                Password = "synthetic-passphrase", ConfirmPassword = "synthetic-passphrase"
+                Password = "synthetic-password", ConfirmPassword = "synthetic-password"
             }
         }, 640, 440);
+		Render("password-create-empty", new CreatePasswordDialogView
+		{
+			DataContext = new CreatePasswordDialogViewModel(context, "Add Password",
+				"This password is needed to send bitcoin and recover your wallet.\nStore it safely; it cannot be reset if lost.")
+		}, 640, 440);
 		var authorizationWallet = DispatchProxy.Create<IWalletModel, InertPreviewWallet>();
         Render("password-auth", new PasswordAuthDialogView
         {
             DataContext = new PasswordAuthDialogViewModel(context, authorizationWallet)
             {
-                Password = "synthetic-passphrase"
+                Password = "synthetic-password"
             }
         }, 640, 440);
+		Render("password-auth-empty", new PasswordAuthDialogView
+		{
+			DataContext = new PasswordAuthDialogViewModel(context, authorizationWallet)
+		}, 640, 440);
+		Render("password-auth-error", new PasswordAuthDialogView
+		{
+			DataContext = new PasswordAuthDialogViewModel(context, authorizationWallet)
+			{
+				HasAuthorizationFailed = true
+			}
+		}, 640, 440);
         Render("lurking-wife-mode-off", LurkingWifeModeChecks.CreatePreview(context, false), 640, 300);
         Render("lurking-wife-mode-on", LurkingWifeModeChecks.CreatePreview(context, true), 640, 300);
         Services.Instance.UiConfig.PrivacyMode = false;
@@ -99,7 +124,7 @@ foreach (var theme in new[] { ThemeVariant.Light, ThemeVariant.Dark })
         }
     }
 }
-Console.WriteLine("Rendered actual Welcome, About, passphrase creation/authorization, Lurking Wife Mode, single-wallet sidebar/dashboard, first-run setup, wallet actions, transaction preview, read-only coins, wallet settings, and title bar views in both themes at 100, 125, 150, and 200 percent.");
+Console.WriteLine("Rendered actual Welcome, About, password creation/authorization, Lurking Wife Mode, single-wallet sidebar/dashboard, first-run setup, wallet actions, transaction preview, read-only coins, wallet settings, and title bar views in both themes at 100, 125, 150, and 200 percent.");
 
 // Authorize is never invoked. Any attempt to use a wallet service fails immediately.
 public class InertPreviewWallet : DispatchProxy

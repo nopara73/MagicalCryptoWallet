@@ -4,8 +4,6 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:details="clr-namespace:MagicalCryptoWallet.Fluent.ViewModels.Wallets.Home.History.Details"
              xmlns:conv="clr-namespace:MagicalCryptoWallet.Fluent.Converters"
-             xmlns:inputs="clr-namespace:MagicalCryptoWallet.Fluent.Views.Wallets.Transactions.Inputs"
-             xmlns:outputs="clr-namespace:MagicalCryptoWallet.Fluent.Views.Wallets.Transactions.Outputs"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:DataType="details:TransactionDetailsViewModel"
              x:CompileBindings="True"
@@ -67,29 +65,18 @@
 
       <Separator IsVisible="{Binding !!DestinationAddresses.Count}" />
 
-      <!-- Fee -->
+      <!-- Total fee -->
       <PreviewItem IsVisible="{Binding IsFeeVisible}"
                      Icon="{StaticResource paper_cash_regular}"
-                     Label="Fee"
-                     CopyableContent="{Binding Fee.Btc, Converter={x:Static conv:MoneyConverters.ToFeeWithoutUnit}}">
+                     Label="Total fee"
+                     CopyableContent="{Binding #TotalFeeUsd.Text}"
+                     IsCopyButtonEnabled="{Binding Fee.HasUsdBalance^}">
         <PrivacyContentControl>
-          <AmountControl Classes="WithUsd" Amount="{Binding Fee}" />
+          <TextBlock x:Name="TotalFeeUsd" Text="{Binding Fee.Usd^, Converter={x:Static conv:MoneyConverters.ToUsdFee}}" />
         </PrivacyContentControl>
       </PreviewItem>
 
       <Separator IsVisible="{Binding IsFeeVisible}" />
-
-      <!-- Fee Rate-->
-      <PreviewItem IsVisible="{Binding IsFeeRateVisible}"
-                     Icon="{StaticResource paper_cash_regular}"
-                     Label="Fee Rate"
-                     CopyableContent="{Binding FeeRate.SatoshiPerByte}">
-        <PrivacyContentControl>
-          <TextBlock Text="{Binding FeeRate.SatoshiPerByte, Converter={x:Static conv:FeeRateConverters.FeeRateConverter}}"/>
-        </PrivacyContentControl>
-      </PreviewItem>
-
-      <Separator IsVisible="{Binding IsFeeRateVisible}" />
 
       <!-- Status -->
       <PreviewItem Icon="{StaticResource copy_confirmed}"
@@ -102,36 +89,6 @@
           <TextBlock IsVisible="{Binding IsConfirmed}" Margin="4 0 0 0 " Text="{Binding Confirmations, StringFormat='({0} confirmations)'}" />
         </StackPanel>
       </PreviewItem>
-
-      <Separator />
-
-      <!-- Confirmation Time -->
-      <PreviewItem IsVisible="{Binding IsConfirmationTimeVisible}"
-                     Icon="{StaticResource timer_regular}"
-                     Label="Expected confirmation time"
-                     ToolTip.Tip="This is just an estimation based on some data for transactions and blocks. The confirmation time might change.">
-        <PrivacyContentControl>
-          <TextBlock Text="{Binding ConfirmationTime, Converter={x:Static conv:TimeSpanConverter.ToEstimatedConfirmationTime}}" Classes="monoSpaced" />
-        </PrivacyContentControl>
-      </PreviewItem>
-
-      <Separator IsVisible="{Binding IsConfirmationTimeVisible}" />
-
-      <!-- Inputs/Outputs -->
-      <Separator />
-      <PreviewItem Icon="{StaticResource input_count}" />
-      <DockPanel Margin="30 -30 0 0" LastChildFill="True">
-        <Grid >
-          <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="30"/>
-            <ColumnDefinition Width="*"/>
-          </Grid.ColumnDefinitions>
-          <inputs:InputsCoinListView Grid.Column="0" Margin="10 -15 10 0" DataContext="{Binding InputList}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
-          <PathIcon Grid.Column="1" Opacity="0.6" Margin="0 2 0 0" VerticalAlignment="Top" Data="{StaticResource arrow_right_regular}"/>
-          <outputs:OutputsCoinListView Grid.Column="2" Margin="10 -15 10 0" DataContext="{Binding OutputList}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
-        </Grid>
-      </DockPanel>
 
       <Separator IsVisible="{Binding IsConfirmed}" />
 

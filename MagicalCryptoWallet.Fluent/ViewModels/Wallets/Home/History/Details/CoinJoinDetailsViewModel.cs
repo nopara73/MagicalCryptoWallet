@@ -1,9 +1,7 @@
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
-using System.Threading;
-using System.Threading.Tasks;
+using System.Reactive.Linq;
 using NBitcoin;
-using MagicalCryptoWallet.Fluent.Extensions;
 using MagicalCryptoWallet.Fluent.Models.Wallets;
 using MagicalCryptoWallet.Fluent.ViewModels.Navigation;
 using MagicalCryptoWallet.Fluent.ViewModels.Wallets.Coinjoins;
@@ -20,16 +18,9 @@ public partial class CoinJoinDetailsViewModel : RoutableViewModel
 	[AutoNotify] private uint256? _transactionId;
 	[AutoNotify] private bool _isConfirmed;
 	[AutoNotify] private uint _confirmations;
-	[AutoNotify] private TimeSpan? _confirmationTime;
-	[AutoNotify] private bool _isConfirmationTimeVisible;
-	[AutoNotify] private FeeRate? _feeRate;
-	[AutoNotify] private bool _feeRateVisible;
 
 	public CoinJoinDetailsViewModel(UiContext uiContext, IWalletModel wallet, CoinJoinTransactionModel transaction) : base(uiContext)
 	{
-		InputList = new CoinjoinCoinListViewModel(uiContext, transaction.WalletInputs, wallet.Network, transaction.WalletInputs.Count + transaction.ForeignInputs.Value.Count);
-		OutputList = new CoinjoinCoinListViewModel(uiContext, transaction.WalletOutputs, wallet.Network, transaction.WalletOutputs.Count + transaction.ForeignOutputs.Value.Count);
-
 		_wallet = wallet;
 		_transaction = transaction;
 
@@ -41,8 +32,6 @@ public partial class CoinJoinDetailsViewModel : RoutableViewModel
 		NextCommand = CancelCommand;
 	}
 
-	public CoinjoinCoinListViewModel InputList { get; }
-	public CoinjoinCoinListViewModel OutputList { get; }
 	public CoinjoinCostsViewModel Costs { get; }
 	public string TransactionHex { get; }
 
@@ -52,11 +41,12 @@ public partial class CoinJoinDetailsViewModel : RoutableViewModel
 
 		_wallet.Transactions.Cache
 							.Connect()
-							.SubscribeAsync(async _ => await UpdateAsync(CancellationToken.None))
+							.ObserveOn(RxApp.MainThreadScheduler)
+							.Subscribe(_ => Update())
 							.DisposeWith(disposables);
 	}
 
-	private async Task UpdateAsync(CancellationToken cancellationToken)
+	private void Update()
 	{
 		if (_wallet.Transactions.TryGetById<CoinJoinTransactionModel>(_transaction.Id, out var transaction))
 		{
@@ -65,10 +55,6 @@ public partial class CoinJoinDetailsViewModel : RoutableViewModel
 			Confirmations = transaction.Confirmations;
 			IsConfirmed = Confirmations > 0;
 			TransactionId = transaction.Id;
-			ConfirmationTime = await _wallet.Transactions.TryEstimateConfirmationTimeAsync(transaction.Id, cancellationToken);
-			IsConfirmationTimeVisible = ConfirmationTime.HasValue && ConfirmationTime != TimeSpan.Zero;
-			FeeRate = transaction.FeeRate;
-			FeeRateVisible = FeeRate is not null && FeeRate != FeeRate.Zero;
 		}
 	}
 }

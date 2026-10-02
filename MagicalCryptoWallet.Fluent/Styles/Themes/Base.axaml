@@ -131,12 +131,6 @@
   <SolidColorBrush x:Key="InvisibleButtonPointerOverBackgroundColor" Opacity="0.18" Color="{StaticResource SystemBaseHighColor}" />
   <SolidColorBrush x:Key="InvisibleButtonPressedBackgroundColor" Opacity="0.16" Color="{StaticResource SystemBaseHighColor}" />
 
-  <!-- LineChart -->
-  <StaticResource x:Key="LineChartAreaGradientStartStopColor" ResourceKey="SystemAccentColor" />
-  <StaticResource x:Key="LineChartAreaGradientEndStopColor" ResourceKey="RegionColor" />
-  <StaticResource x:Key="LineChartAreaGradientCursorStrokeColor" ResourceKey="SystemAccentColor" />
-  <StaticResource x:Key="LineChartLineColor" ResourceKey="SystemAccentColor" />
-
   <!-- ComboBox -->
   <SolidColorBrush x:Key="ComboBoxBackground" Color="{StaticResource Layer2BackgroundBrush}" />
   <SolidColorBrush x:Key="ComboBoxBackgroundPressed" Color="{StaticResource Layer1BackgroundBrush}" />

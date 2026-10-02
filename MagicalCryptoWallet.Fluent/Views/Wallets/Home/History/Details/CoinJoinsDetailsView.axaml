@@ -3,7 +3,6 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:details="clr-namespace:MagicalCryptoWallet.Fluent.ViewModels.Wallets.Home.History.Details"
-             xmlns:conv="clr-namespace:MagicalCryptoWallet.Fluent.Converters"
              xmlns:coinjoins="clr-namespace:MagicalCryptoWallet.Fluent.Views.Wallets.Coinjoins"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:DataType="details:CoinJoinsDetailsViewModel"
@@ -57,38 +56,10 @@
         <TextBlock Text="{Binding TxCount, Mode=OneWay}" />
       </PreviewItem>
 
-      <!-- Inputs/Outputs -->
-      <Separator />
-      <PreviewItem Icon="{StaticResource input_count}" />
-      <DockPanel Margin="0 -35 0 0" LastChildFill="True">
-        <Grid ColumnDefinitions="*,30,*">
-          <StackPanel Grid.Column="0">
-            <TextBlock Margin="35 0 25 0" Text="Inputs" FontSize="14" FontWeight="Bold" HorizontalAlignment="Center"/>
-            <coinjoins:CoinjoinCoinListView Margin="10 15 10 0" DataContext="{Binding InputList}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
-          </StackPanel>
-          <PathIcon Grid.Column="1" Opacity="0.6" Margin="0 48 0 0" VerticalAlignment="Top" Data="{StaticResource arrow_right_regular}"/>
-          <StackPanel Grid.Column="2">
-            <TextBlock Margin="35 0 25 0" Text="Outputs" FontSize="14" FontWeight="Bold" HorizontalAlignment="Center"/>
-            <coinjoins:CoinjoinCoinListView Margin="10 15 10 0" DataContext="{Binding OutputList}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
-          </StackPanel>
-        </Grid>
-      </DockPanel>
-      
       <Separator />
 
       <coinjoins:CoinjoinCostsView DataContext="{Binding Costs}" />
 
-      <Separator IsVisible="{Binding IsConfirmationTimeVisible}" />
-
-      <!-- Confirmation Time -->
-      <PreviewItem IsVisible="{Binding IsConfirmationTimeVisible}"
-                     Icon="{StaticResource timer_regular}"
-                     Label="Expected confirmation time"
-                     ToolTip.Tip="This is just an estimation based on some data for transactions and blocks. The confirmation time might change.">
-        <PrivacyContentControl>
-          <TextBlock Text="{Binding ConfirmationTime, Converter={x:Static conv:TimeSpanConverter.ToEstimatedConfirmationTime}}" Classes="monoSpaced" />
-        </PrivacyContentControl>
-      </PreviewItem>
     </StackPanel>
   </ContentArea>
 </UserControl>

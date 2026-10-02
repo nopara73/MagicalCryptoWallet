@@ -2,15 +2,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
-using System.Threading;
-using System.Threading.Tasks;
+using System.Reactive.Linq;
 using NBitcoin;
 using MagicalCryptoWallet.Blockchain.Analysis.Clustering;
-using MagicalCryptoWallet.Fluent.Extensions;
 using MagicalCryptoWallet.Fluent.Models.Wallets;
 using MagicalCryptoWallet.Fluent.ViewModels.Navigation;
-using MagicalCryptoWallet.Fluent.ViewModels.Wallets.Transactions.Inputs;
-using MagicalCryptoWallet.Fluent.ViewModels.Wallets.Transactions.Outputs;
 
 namespace MagicalCryptoWallet.Fluent.ViewModels.Wallets.Home.History.Details;
 
@@ -23,25 +19,14 @@ public partial class TransactionDetailsViewModel : RoutableViewModel
 	[AutoNotify] private string? _amountText = "";
 	[AutoNotify] private uint _blockHeight;
 	[AutoNotify] private uint _confirmations;
-	[AutoNotify] private TimeSpan? _confirmationTime;
 	[AutoNotify] private string? _dateString;
-	[AutoNotify] private bool _isConfirmationTimeVisible;
 	[AutoNotify] private bool _isLabelsVisible;
 	[AutoNotify] private LabelsArray? _labels;
 	[AutoNotify] private Amount? _amount;
-	[AutoNotify] private FeeRate? _feeRate;
-	[AutoNotify] private bool _isFeeRateVisible;
 
 	public TransactionDetailsViewModel(UiContext uiContext, IWalletModel wallet, RegularTransactionModel model) : base(uiContext)
 	{
 		_wallet = wallet;
-
-		InputList = new InputsCoinListViewModel(uiContext, model.WalletInputs, wallet.Network, model.WalletInputs.Count + model.ForeignInputs.Value.Count);
-		OutputList = new OutputsCoinListViewModel(
-			uiContext,
-			model.WalletOutputs.Select(x => x.TxOut).ToList(),
-			model.ForeignOutputs.Value.Select(x => x.TxOut).ToList(),
-			wallet.Network);
 
 		NextCommand = ReactiveCommand.Create(OnNext);
 		Fee = wallet.AmountProvider.Create(model.Fee);
@@ -53,11 +38,8 @@ public partial class TransactionDetailsViewModel : RoutableViewModel
 
 		SetupCancel(enableCancel: false, enableCancelOnEscape: true, enableCancelOnPressed: true);
 
-		Task.Run(() => UpdateValuesAsync(model, CancellationToken.None));
+		UpdateValues(model);
 	}
-
-	public InputsCoinListViewModel InputList { get; }
-	public OutputsCoinListViewModel OutputList { get; }
 
 	public BitcoinAddress? SingleAddress { get; set; }
 
@@ -69,21 +51,12 @@ public partial class TransactionDetailsViewModel : RoutableViewModel
 
 	public bool IsFeeVisible { get; }
 
-	private async Task UpdateValuesAsync(RegularTransactionModel model, CancellationToken cancellationToken)
+	private void UpdateValues(RegularTransactionModel model)
 	{
 		DateString = model.DateToolTipString;
 		Labels = model.Labels;
 		BlockHeight = model.BlockHeight;
 		Confirmations = model.Confirmations;
-		FeeRate = model.FeeRate;
-		IsFeeRateVisible = FeeRate is not null && FeeRate != FeeRate.Zero;
-
-		var confirmationTime = await _wallet.Transactions.TryEstimateConfirmationTimeAsync(model, cancellationToken);
-		if (confirmationTime is { })
-		{
-			ConfirmationTime = confirmationTime;
-		}
-
 		IsConfirmed = Confirmations > 0;
 
 		if (model.Amount < Money.Zero)
@@ -97,7 +70,6 @@ public partial class TransactionDetailsViewModel : RoutableViewModel
 			AmountText = "Amount received";
 		}
 
-		IsConfirmationTimeVisible = ConfirmationTime.HasValue && ConfirmationTime != TimeSpan.Zero;
 		IsLabelsVisible = Labels.HasValue && Labels.Value.Any();
 	}
 
@@ -112,16 +84,17 @@ public partial class TransactionDetailsViewModel : RoutableViewModel
 
 		_wallet.Transactions.Cache
 							.Connect()
-							.DoAsync(async _ => await UpdateCurrentTransactionAsync(CancellationToken.None))
+							.ObserveOn(RxApp.MainThreadScheduler)
+							.Do(_ => UpdateCurrentTransaction())
 							.Subscribe()
 							.DisposeWith(disposables);
 	}
 
-	private async Task UpdateCurrentTransactionAsync(CancellationToken cancellationToken)
+	private void UpdateCurrentTransaction()
 	{
 		if (_wallet.Transactions.TryGetById<RegularTransactionModel>(TransactionId, out var transaction))
 		{
-			await UpdateValuesAsync(transaction, cancellationToken);
+			UpdateValues(transaction);
 		}
 	}
 }
