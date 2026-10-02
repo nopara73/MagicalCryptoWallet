@@ -16,6 +16,7 @@ def group(name):
     return "application-services"
 
 def role(path):
+    if path.startswith("Contrib/McwMigration/"): return "verification"
     if any(part in path for part in ("Tests","VisualPreview","BridgeProbe","AssemblyAudit")): return "verification"
     if "Coordinator" in path or "Backend" in path: return "external-service"
     if "Publisher" in path: return "release-tool"
@@ -30,7 +31,10 @@ def inventory():
     rust_components=[]
     for name,path in sorted(rust_sources.items()):
         handoff_name={"privacy_service":"privacy","script_service":"bitcoin-script",
-                      "wallet_hash_service":"wallet-hmac"}.get(name,name.replace("_","-"))
+                      "wallet_hash_service":"wallet-hmac","bitcoin_block_service":"bitcoin-block",
+                      "psbt_metadata_service":"psbt-metadata","markdown":"native-ui",
+                      "serialization_service":"json-rpc","scan_service":"qr-scanning",
+                      "safe_file_service":"storage","content_service":"compression"}.get(name,name.replace("_","-"))
         handoff=ROOT/"Contrib/McwMigration/Handoffs"/(handoff_name+".md")
         rust_components.append({"name":name,"path":path.relative_to(ROOT).as_posix(),
             "status":"production callers migrated" if name=="qr" else "implementation present; production caller integration pending",
@@ -93,7 +97,11 @@ def inventory():
             {"name":"Nito AsyncEx/Collections/Disposables","path":"MagicalCryptoWallet/Nito","status":"retained","group":"application-services"},
             {"name":"WabiSabi managed/native fork","path":"ThirdParty/WabiSabi","status":"retained","group":"wallet-cryptography","provenance":"ThirdParty/WabiSabi/UPSTREAM.json"}
         ] + ([{"name":"JSONTestSuite reference fixtures","path":"mcw/tests/json_vectors/JSONTestSuite","status":"verification-only oracle","provenance":"mcw/tests/json_vectors/README.md"}]
-              if (ROOT/"mcw/tests/json_vectors/JSONTestSuite").is_dir() else []),
+              if (ROOT/"mcw/tests/json_vectors/JSONTestSuite").is_dir() else [])
+          + ([{"name":"Brotli RFC static dictionary and transform data","path":"mcw/src/content_service/data","status":"standard format data; caller integration pending","provenance":"mcw/src/content_service/data/PROVENANCE.md"}]
+              if (ROOT/"mcw/src/content_service/data/PROVENANCE.md").is_file() else [])
+          + ([{"name":"QR scanning character mapping data","path":"mcw/src/scan_service/charset_data.rs","status":"generated format data; caller integration pending","provenance":"mcw/tests/qr_scanning_charset_tables.py"}]
+              if (ROOT/"mcw/src/scan_service/charset_data.rs").is_file() else []),
         "native_and_embedded":[
             {"name":".NET runtime and ASP.NET shared libraries","status":"retained","owner":"managed application/external coordinator","evidence":"self-contained dotnet publish and .deps.json"},
             {"name":"Avalonia native platform backends, Skia and HarfBuzz","status":"retained","owner":"managed UI","evidence":"NuGet locks plus published runtimes/*/native payloads"},

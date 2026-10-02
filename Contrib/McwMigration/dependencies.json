@@ -16,6 +16,12 @@
           "role": "verification"
         },
         {
+          "lock": "Contrib/McwMigration/NativeUiVerification/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
           "lock": "Contrib/VisualPreview/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
@@ -113,6 +119,12 @@
       "uses": [
         {
           "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/McwMigration/NativeUiVerification/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "verification"
@@ -274,6 +286,12 @@
           "role": "verification"
         },
         {
+          "lock": "Contrib/McwMigration/NativeUiVerification/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Direct",
+          "role": "verification"
+        },
+        {
           "lock": "Contrib/VisualPreview/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
@@ -329,6 +347,12 @@
       "status": "retained",
       "uses": [
         {
+          "lock": "Contrib/McwMigration/NativeUiVerification/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Direct",
+          "role": "verification"
+        },
+        {
           "lock": "Contrib/VisualPreview/packages.lock.json",
           "framework": "net10.0",
           "type": "Direct",
@@ -371,6 +395,12 @@
           "role": "verification"
         },
         {
+          "lock": "Contrib/McwMigration/NativeUiVerification/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
           "lock": "Contrib/VisualPreview/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -408,6 +438,12 @@
           "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/McwMigration/NativeUiVerification/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Direct",
           "role": "verification"
         },
         {
@@ -499,6 +535,12 @@
           "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/McwMigration/NativeUiVerification/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Direct",
           "role": "verification"
         },
         {
@@ -854,6 +896,12 @@
           "role": "verification"
         },
         {
+          "lock": "Contrib/McwMigration/NativeUiVerification/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
           "lock": "Contrib/VisualPreview/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -892,6 +940,12 @@
       "uses": [
         {
           "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/McwMigration/NativeUiVerification/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "verification"
@@ -937,6 +991,12 @@
           "role": "verification"
         },
         {
+          "lock": "Contrib/McwMigration/NativeUiVerification/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
           "lock": "Contrib/VisualPreview/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -977,6 +1037,12 @@
           "role": "verification"
         },
         {
+          "lock": "Contrib/McwMigration/NativeUiVerification/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
           "lock": "Contrib/VisualPreview/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -1012,6 +1078,12 @@
       "uses": [
         {
           "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/McwMigration/NativeUiVerification/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "verification"
@@ -1097,10 +1169,22 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
+        },
+        {
+          "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
         },
         {
           "lock": "Contrib/Releases/Publisher/packages.lock.json",
@@ -1179,10 +1263,22 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
+        },
+        {
+          "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
         },
         {
           "lock": "Contrib/Releases/Publisher/packages.lock.json",
@@ -1484,6 +1580,12 @@
           "role": "verification"
         },
         {
+          "lock": "Contrib/McwMigration/NativeUiVerification/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
           "lock": "Contrib/VisualPreview/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -1594,10 +1696,22 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "application"
+        },
+        {
+          "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
         },
         {
           "lock": "Contrib/VisualPreview/packages.lock.json",
@@ -1738,10 +1852,28 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Direct",
           "role": "application"
+        },
+        {
+          "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Direct",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/McwMigration/NativeUiVerification/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Direct",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Direct",
+          "role": "verification"
         },
         {
           "lock": "Contrib/Rebrand/AssemblyAudit/packages.lock.json",
@@ -1891,10 +2023,22 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "application"
+        },
+        {
+          "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
         },
         {
           "lock": "Contrib/VisualPreview/packages.lock.json",
@@ -1971,10 +2115,22 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
+        },
+        {
+          "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
         },
         {
           "lock": "Contrib/VisualPreview/packages.lock.json",
@@ -2049,10 +2205,22 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "application"
+        },
+        {
+          "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
         },
         {
           "lock": "Contrib/VisualPreview/packages.lock.json",
@@ -2121,10 +2289,22 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "application"
+        },
+        {
+          "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
         },
         {
           "lock": "Contrib/VisualPreview/packages.lock.json",
@@ -2185,10 +2365,22 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
+        },
+        {
+          "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
         },
         {
           "lock": "Contrib/VisualPreview/packages.lock.json",
@@ -2258,10 +2450,22 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
+        },
+        {
+          "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
         },
         {
           "lock": "Contrib/VisualPreview/packages.lock.json",
@@ -2330,10 +2534,22 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
+        },
+        {
+          "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
         },
         {
           "lock": "Contrib/VisualPreview/packages.lock.json",
@@ -2505,10 +2721,22 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
+        },
+        {
+          "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
         },
         {
           "lock": "Contrib/VisualPreview/packages.lock.json",
@@ -2577,10 +2805,22 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
+        },
+        {
+          "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
         },
         {
           "lock": "Contrib/VisualPreview/packages.lock.json",
@@ -2663,10 +2903,22 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
+        },
+        {
+          "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
         },
         {
           "lock": "Contrib/VisualPreview/packages.lock.json",
@@ -2737,10 +2989,22 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
+        },
+        {
+          "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
         },
         {
           "lock": "Contrib/VisualPreview/packages.lock.json",
@@ -2810,10 +3074,22 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
+        },
+        {
+          "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
         },
         {
           "lock": "Contrib/VisualPreview/packages.lock.json",
@@ -2957,10 +3233,22 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "application"
+        },
+        {
+          "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
         },
         {
           "lock": "Contrib/VisualPreview/packages.lock.json",
@@ -3033,10 +3321,22 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "application"
+        },
+        {
+          "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
         },
         {
           "lock": "Contrib/VisualPreview/packages.lock.json",
@@ -3110,10 +3410,22 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
+        },
+        {
+          "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
         },
         {
           "lock": "Contrib/VisualPreview/packages.lock.json",
@@ -3206,10 +3518,22 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
+        },
+        {
+          "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
         },
         {
           "lock": "Contrib/VisualPreview/packages.lock.json",
@@ -3389,10 +3713,22 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
+        },
+        {
+          "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
         },
         {
           "lock": "Contrib/VisualPreview/packages.lock.json",
@@ -3462,10 +3798,22 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
+        },
+        {
+          "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
         },
         {
           "lock": "Contrib/VisualPreview/packages.lock.json",
@@ -3538,10 +3886,22 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
+        },
+        {
+          "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
         },
         {
           "lock": "Contrib/VisualPreview/packages.lock.json",
@@ -3608,10 +3968,22 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
+        },
+        {
+          "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
         },
         {
           "lock": "Contrib/VisualPreview/packages.lock.json",
@@ -3873,10 +4245,22 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "application"
+        },
+        {
+          "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
         },
         {
           "lock": "Contrib/VisualPreview/packages.lock.json",
@@ -3967,10 +4351,22 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "application"
+        },
+        {
+          "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
         },
         {
           "lock": "Contrib/Releases/Publisher/packages.lock.json",
@@ -4058,10 +4454,22 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "application"
+        },
+        {
+          "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
         },
         {
           "lock": "Contrib/Releases/Publisher/packages.lock.json",
@@ -4198,10 +4606,22 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "application"
+        },
+        {
+          "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
         },
         {
           "lock": "Contrib/Releases/Publisher/packages.lock.json",
@@ -4286,10 +4706,22 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "application"
+        },
+        {
+          "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
         },
         {
           "lock": "Contrib/Releases/Publisher/packages.lock.json",
@@ -4358,6 +4790,28 @@
         "NBitcoin.Secp256k1": "3.1.6",
         "System.Interactive.Async": "6.0.1"
       },
+      "source": "nuget-lock"
+    },
+    {
+      "name": "NScheme",
+      "version": "0.0.1",
+      "group": "application-services",
+      "status": "retained",
+      "uses": [
+        {
+          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "application"
+        },
+        {
+          "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        }
+      ],
+      "dependencies": {},
       "source": "nuget-lock"
     },
     {
@@ -4532,6 +4986,25 @@
     },
     {
       "name": "SkiaSharp",
+      "version": "2.88.9",
+      "group": "native-ui",
+      "status": "retained",
+      "uses": [
+        {
+          "lock": "Contrib/McwMigration/NativeUiVerification/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        }
+      ],
+      "dependencies": {
+        "SkiaSharp.NativeAssets.Win32": "2.88.9",
+        "SkiaSharp.NativeAssets.macOS": "2.88.9"
+      },
+      "source": "nuget-lock"
+    },
+    {
+      "name": "SkiaSharp",
       "version": "3.119.4",
       "group": "native-ui",
       "status": "retained",
@@ -4575,6 +5048,24 @@
     },
     {
       "name": "SkiaSharp.NativeAssets.Linux",
+      "version": "2.88.9",
+      "group": "native-ui",
+      "status": "retained",
+      "uses": [
+        {
+          "lock": "Contrib/McwMigration/NativeUiVerification/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        }
+      ],
+      "dependencies": {
+        "SkiaSharp": "2.88.9"
+      },
+      "source": "nuget-lock"
+    },
+    {
+      "name": "SkiaSharp.NativeAssets.Linux",
       "version": "3.119.4",
       "group": "native-ui",
       "status": "retained",
@@ -4607,6 +5098,22 @@
           "lock": "MagicalCryptoWallet.Tests/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
+          "role": "verification"
+        }
+      ],
+      "dependencies": {},
+      "source": "nuget-lock"
+    },
+    {
+      "name": "SkiaSharp.NativeAssets.macOS",
+      "version": "2.88.9",
+      "group": "native-ui",
+      "status": "retained",
+      "uses": [
+        {
+          "lock": "Contrib/McwMigration/NativeUiVerification/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
           "role": "verification"
         }
       ],
@@ -4666,6 +5173,12 @@
           "role": "verification"
         },
         {
+          "lock": "Contrib/McwMigration/NativeUiVerification/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
           "lock": "Contrib/VisualPreview/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
@@ -4687,6 +5200,22 @@
           "lock": "MagicalCryptoWallet.Tests/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
+          "role": "verification"
+        }
+      ],
+      "dependencies": {},
+      "source": "nuget-lock"
+    },
+    {
+      "name": "SkiaSharp.NativeAssets.Win32",
+      "version": "2.88.9",
+      "group": "native-ui",
+      "status": "retained",
+      "uses": [
+        {
+          "lock": "Contrib/McwMigration/NativeUiVerification/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
           "role": "verification"
         }
       ],
@@ -4918,10 +5447,22 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
+        },
+        {
+          "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
         },
         {
           "lock": "Contrib/VisualPreview/packages.lock.json",
@@ -4997,10 +5538,22 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
+        },
+        {
+          "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
         },
         {
           "lock": "Contrib/VisualPreview/packages.lock.json",
@@ -5073,10 +5626,22 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
+        },
+        {
+          "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
         },
         {
           "lock": "Contrib/VisualPreview/packages.lock.json",
@@ -5149,10 +5714,22 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
+        },
+        {
+          "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
         },
         {
           "lock": "Contrib/VisualPreview/packages.lock.json",
@@ -5398,10 +5975,22 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
+        },
+        {
+          "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
         },
         {
           "lock": "Contrib/VisualPreview/packages.lock.json",
@@ -5492,10 +6081,22 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "application"
+        },
+        {
+          "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
         },
         {
           "lock": "Contrib/VisualPreview/packages.lock.json",
@@ -6437,6 +7038,26 @@
   ],
   "package_references": [
     {
+      "name": "Avalonia.Headless",
+      "project": "Contrib/McwMigration/NativeUiVerification/NativeUiVerification.csproj",
+      "role": "verification"
+    },
+    {
+      "name": "Avalonia.Skia",
+      "project": "Contrib/McwMigration/NativeUiVerification/NativeUiVerification.csproj",
+      "role": "verification"
+    },
+    {
+      "name": "Avalonia.Fonts.Inter",
+      "project": "Contrib/McwMigration/NativeUiVerification/NativeUiVerification.csproj",
+      "role": "verification"
+    },
+    {
+      "name": "Avalonia.Themes.Fluent",
+      "project": "Contrib/McwMigration/NativeUiVerification/NativeUiVerification.csproj",
+      "role": "verification"
+    },
+    {
       "name": "NBitcoin",
       "project": "Contrib/Releases/Publisher/MagicalCryptoWallet.ReleaseTools.csproj",
       "role": "release-tool"
@@ -7040,7 +7661,7 @@
       "name": "bitcoin_block_service",
       "path": "mcw/src/bitcoin_block_service.rs",
       "status": "implementation present; production caller integration pending",
-      "handoff": null
+      "handoff": "Contrib/McwMigration/Handoffs/bitcoin-block.md"
     },
     {
       "name": "bitcoin_encoding",
@@ -7073,6 +7694,12 @@
       "handoff": "Contrib/McwMigration/Handoffs/compression.md"
     },
     {
+      "name": "content_service",
+      "path": "mcw/src/content_service/mod.rs",
+      "status": "implementation present; production caller integration pending",
+      "handoff": "Contrib/McwMigration/Handoffs/compression.md"
+    },
+    {
       "name": "http1",
       "path": "mcw/src/http1.rs",
       "status": "implementation present; production caller integration pending",
@@ -7083,6 +7710,12 @@
       "path": "mcw/src/json.rs",
       "status": "implementation present; production caller integration pending",
       "handoff": "Contrib/McwMigration/Handoffs/json.md"
+    },
+    {
+      "name": "markdown",
+      "path": "mcw/src/markdown/mod.rs",
+      "status": "implementation present; production caller integration pending",
+      "handoff": "Contrib/McwMigration/Handoffs/native-ui.md"
     },
     {
       "name": "nostr_event_id",
@@ -7124,7 +7757,7 @@
       "name": "psbt_metadata_service",
       "path": "mcw/src/psbt_metadata_service.rs",
       "status": "implementation present; production caller integration pending",
-      "handoff": null
+      "handoff": "Contrib/McwMigration/Handoffs/psbt-metadata.md"
     },
     {
       "name": "qr",
@@ -7133,10 +7766,16 @@
       "handoff": "MagicalCryptoWallet.Documentation/McwArchitecture.md"
     },
     {
+      "name": "safe_file_service",
+      "path": "mcw/src/safe_file_service/mod.rs",
+      "status": "implementation present; production caller integration pending",
+      "handoff": "Contrib/McwMigration/Handoffs/storage.md"
+    },
+    {
       "name": "scan_service",
       "path": "mcw/src/scan_service/mod.rs",
       "status": "implementation present; production caller integration pending",
-      "handoff": null
+      "handoff": "Contrib/McwMigration/Handoffs/qr-scanning.md"
     },
     {
       "name": "script_service",
@@ -7149,6 +7788,12 @@
       "path": "mcw/src/script_text.rs",
       "status": "implementation present; production caller integration pending",
       "handoff": "Contrib/McwMigration/Handoffs/script-text.md"
+    },
+    {
+      "name": "serialization_service",
+      "path": "mcw/src/serialization_service/mod.rs",
+      "status": "implementation present; production caller integration pending",
+      "handoff": "Contrib/McwMigration/Handoffs/json-rpc.md"
     },
     {
       "name": "socks5",
@@ -7201,6 +7846,18 @@
       "path": "mcw/tests/json_vectors/JSONTestSuite",
       "status": "verification-only oracle",
       "provenance": "mcw/tests/json_vectors/README.md"
+    },
+    {
+      "name": "Brotli RFC static dictionary and transform data",
+      "path": "mcw/src/content_service/data",
+      "status": "standard format data; caller integration pending",
+      "provenance": "mcw/src/content_service/data/PROVENANCE.md"
+    },
+    {
+      "name": "QR scanning character mapping data",
+      "path": "mcw/src/scan_service/charset_data.rs",
+      "status": "generated format data; caller integration pending",
+      "provenance": "mcw/tests/qr_scanning_charset_tables.py"
     }
   ],
   "native_and_embedded": [
