@@ -8,7 +8,6 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
-using NBitcoin;
 using MagicalCryptoWallet.Announcements;
 using MagicalCryptoWallet.Fluent.Models.ClientConfig;
 using MagicalCryptoWallet.Fluent.Models.FileSystem;
@@ -116,11 +115,6 @@ public class App : Application
 		return new ApplicationSettings(services, services.PersistentConfig, services.Config, services.UiConfig);
 	}
 
-	private static TransactionBroadcasterModel CreateBroadcaster(IServices services, Network network)
-	{
-		return new TransactionBroadcasterModel(services, network);
-	}
-
 	private static AmountProvider CreateAmountProvider(IServices services)
 	{
 		return new AmountProvider(services);
@@ -146,7 +140,6 @@ public class App : Application
 			CreateFileSystem(),
 			CreateConfig(services),
 			applicationSettings,
-			CreateBroadcaster(services, applicationSettings.Network),
 			amountProvider,
 			new EditableSearchSource(),
 			torStatusChecker,

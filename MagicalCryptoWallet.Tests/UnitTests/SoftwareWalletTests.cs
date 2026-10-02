@@ -15,8 +15,6 @@ using MagicalCryptoWallet.Blockchain.TransactionOutputs;
 using MagicalCryptoWallet.Blockchain.Transactions;
 using MagicalCryptoWallet.Client;
 using MagicalCryptoWallet.Client.Rpc;
-using MagicalCryptoWallet.Fluent.Helpers;
-using MagicalCryptoWallet.Fluent.Models;
 using MagicalCryptoWallet.Helpers;
 using MagicalCryptoWallet.Models;
 using MagicalCryptoWallet.Tests.Helpers;
@@ -158,31 +156,6 @@ public class SoftwareWalletTests
 		{
 			Assert.NotNull(await Record.ExceptionAsync(() => scheme.ExecuteAsync($"({predicate} (wallet))")));
 		}
-	}
-
-	[Fact]
-	public async Task BroadcasterAcceptsRawTransactionsAndRejectsExternalPsbtsAsync()
-	{
-		var transaction = Transaction.Create(Network.RegTest);
-		transaction.Inputs.Add(new OutPoint(uint256.One, 0));
-		transaction.Outputs.Add(Money.Satoshis(1000), NewKeys().GetKeys()[0].GetAssumedScriptPubKey());
-		var broadcaster = new TransactionBroadcasterModel(null!, Network.RegTest);
-		Assert.Equal(transaction.GetHash(), broadcaster.Parse("\n" + transaction.ToHex() + "\n").GetHash());
-		var root = await Common.GetEmptyWorkDirAsync();
-		var raw = Path.Combine(root, "raw.txn");
-		await File.WriteAllTextAsync(raw, "\n" + transaction.ToHex() + "\n");
-		Assert.Equal(transaction.GetHash(), (await broadcaster.LoadFromFileAsync(raw)).GetHash());
-		var psbt = transaction.CreatePSBT(Network.RegTest);
-		foreach (var text in new[] { psbt.ToBase64(), psbt.ToHex() })
-		{
-			Assert.NotNull(Record.Exception(() => broadcaster.Parse(text)));
-			var file = Path.Combine(root, "external.psbt");
-			await File.WriteAllTextAsync(file, text);
-			Assert.NotNull(await Record.ExceptionAsync(() => broadcaster.LoadFromFileAsync(file)));
-		}
-		var binary = Path.Combine(root, "binary.psbt");
-		await File.WriteAllBytesAsync(binary, psbt.ToBytes());
-		Assert.NotNull(await Record.ExceptionAsync(() => broadcaster.LoadFromFileAsync(binary)));
 	}
 
 	[Fact]

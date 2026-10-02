@@ -11,6 +11,6 @@ spec.loader.exec_module(audit)
 fixtures = json.loads((here / "negative-fixtures.json").read_text(encoding="utf-8"))
 for token in fixtures:
     assert audit.check_text("synthetic.cs", token, set()), token
-for text in ("RoundState[] rounds;", "Input[] inputs;", "Share[] backupShares;", "Transaction.IsSelected", "PSBT psbt;", "parameters.TryToSign"):
+for text in ("RoundState[] rounds;", "Input[] inputs;", "Share[] backupShares;", "Transaction.IsSelected", "PSBT psbt;", "parameters.TryToSign", "TransactionBroadcaster.SendTransactionAsync(transaction)", "ExternalTransactionBroadcaster"):
     assert not audit.check_text("synthetic.cs", text, set()), text
 print(f"Single-wallet audit rejected all {len(fixtures)} retired fixtures and accepted legitimate protocol, backup, transaction selection and internal PSBT data.")

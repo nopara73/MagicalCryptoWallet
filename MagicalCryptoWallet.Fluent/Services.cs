@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -92,7 +91,6 @@ public class Services : IServices
 
 	// Transactions info
 	public IEnumerable<LabelsArray> GetTransactionLabels() => _transactionStore.GetLabels();
-	public bool TryGetTransaction(uint256 hash, [NotNullWhen(true)] out SmartTransaction? tx) => _transactionStore.TryGetTransaction(hash, out tx);
 
 	// WalletSession info
 	public Network GetNetwork() => WalletSession.Network;
