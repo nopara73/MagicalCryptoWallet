@@ -7905,6 +7905,56 @@
       "evidence": "bundled libstdc++.so.6 hashes above"
     },
     {
+      "name": "AppImage ELF launcher runtime",
+      "status": "retained in Linux AppImage packages; independent of the mcw payload",
+      "owner": "installation and launch",
+      "evidence": "Contrib/Releases/package.py create_linux; appimagetool prepends the separately downloaded runtime",
+      "upstream_source": "https://github.com/AppImage/type2-runtime/blob/8f39b89e2ac31e1640b3d3f7e9a5108e6ce805fa/src/runtime/Makefile",
+      "embedded_build": "actual per-package runtime source/version and component versions unverified; a packaging-tool checksum is not a runtime checksum"
+    },
+    {
+      "name": "Squashfuse (including squashfuse_ll)",
+      "status": "declared static dependency of the retained AppImage runtime; actual packaged version unverified",
+      "owner": "AppImage launcher runtime",
+      "upstream_source": "https://github.com/AppImage/type2-runtime/blob/8f39b89e2ac31e1640b3d3f7e9a5108e6ce805fa/src/runtime/Makefile"
+    },
+    {
+      "name": "libfuse3",
+      "status": "declared static dependency of the retained AppImage runtime; actual packaged version unverified",
+      "owner": "AppImage launcher runtime",
+      "upstream_source": "https://github.com/AppImage/type2-runtime/blob/8f39b89e2ac31e1640b3d3f7e9a5108e6ce805fa/src/runtime/Makefile"
+    },
+    {
+      "name": "Zstandard",
+      "status": "declared static dependency of the retained AppImage runtime; actual packaged version unverified",
+      "owner": "AppImage launcher runtime",
+      "upstream_source": "https://github.com/AppImage/type2-runtime/blob/8f39b89e2ac31e1640b3d3f7e9a5108e6ce805fa/src/runtime/Makefile"
+    },
+    {
+      "name": "zlib (AppImage runtime)",
+      "status": "declared static dependency of the retained AppImage runtime; actual packaged version unverified",
+      "owner": "AppImage launcher runtime",
+      "upstream_source": "https://github.com/AppImage/type2-runtime/blob/8f39b89e2ac31e1640b3d3f7e9a5108e6ce805fa/src/runtime/Makefile"
+    },
+    {
+      "name": "mimalloc",
+      "status": "declared static dependency of the retained AppImage runtime; actual packaged version unverified",
+      "owner": "AppImage launcher runtime",
+      "upstream_source": "https://github.com/AppImage/type2-runtime/blob/8f39b89e2ac31e1640b3d3f7e9a5108e6ce805fa/src/runtime/Makefile"
+    },
+    {
+      "name": "musl libc (AppImage runtime)",
+      "status": "retained static C runtime in the upstream AppImage launcher build; actual packaged version unverified",
+      "owner": "AppImage launcher runtime",
+      "evidence": "https://github.com/AppImage/type2-runtime/blob/8f39b89e2ac31e1640b3d3f7e9a5108e6ce805fa/README.md"
+    },
+    {
+      "name": "Generated AppImage AppRun shell launcher",
+      "status": "retained packaging entrypoint delegating to mcw",
+      "owner": "installation and launch",
+      "evidence": "Contrib/Releases/package.py; uses system sh/readlink/dirname"
+    },
+    {
       "name": "Bitcoin Core and embedded native libraries",
       "status": "verification-only; not client runtime",
       "owner": "independent regtest oracle",

@@ -17,6 +17,7 @@ Executable and library hashes describe exact file bytes. License notices use UTF
 | Synchronization and privacy | P2P/filter synchronization, reorg/broadcast, coordinator wire behavior, private Tor routes, direct public-data routes and proxy isolation | Future owned network connections and privacy services, preserving the documented [routing policy](NetworkRouting.md) | Managed HTTP/Bitcoin/Tor clients and bundled Tor remain. Tor includes Libevent, OpenSSL, zlib and platform native payloads; migrate these capabilities into mcw as well. Prove routes, isolation, deadlines, reconnect/reorg and leak behavior. |
 | Hardware integration | Device discovery, user-approved signing, address confirmation and recovery compatibility if reintroduced | Future native OS USB/HID bindings, device protocol services, typed approval boundary | Current branch removed hardware/watch-only/HWI support. Do not restore it as part of QR work. Future hardware scope needs product compatibility decisions and a fresh HWI/device/Python/native inventory. |
 | Native UI | Established interaction, privacy masking, accessibility, themes, scaling, clipboard, notifications and dialogs | Future native platform controls bound directly to application services | Avalonia/ReactiveUI/DynamicData/Skia/HarfBuzz/Inter/fonts/native backends remain. Verify real desktop UI; remove bridge only after the final managed caller is gone. |
+| Installation and launch | Existing MSI/DEB/AppImage/DMG identities, startup/relaunch paths, exact arguments and packaged resources | `mcw` is the payload entrypoint; future platform packaging must preserve these contracts | AppImage's outer ELF runtime and generated AppRun remain separate dependencies. Its upstream static link declares Squashfuse, libfuse3, Zstandard, zlib and mimalloc, built with musl. Verify the actual embedded source/version and component versions per package before declaring this wrapper removed. |
 | External coordinator | Existing WabiSabi/coordinator protocol and authenticated trust | External service, outside client executable ownership | ASP.NET/coordinator dependencies retain their explicit external-service role. |
 | Verification and releases | Independent decoders, Bitcoin Core regtest, signatures, platform packages | Test/build tooling is separate from shipping mcw | xUnit/coverlet/Roslyn/SDK/CMake/WiX/Python/Nix and Bitcoin Core remain tooling/oracles. Embedded Bitcoin Core libraries are tracked as verification-only; do not infer their removal from a client migration. |
 
@@ -28,6 +29,18 @@ The later daemon/automation API removal superseded the proposed RPC migration.
 Retiring its unused adapters and activation patches is obsolete-code removal;
 it does not replace Newtonsoft.Json. The generic Rust JSON component remains
 prepared, with retained production callers and dependencies still recorded.
+
+The AppImage launcher is shipping code, while `appimagetool` is a build tool.
+The [upstream runtime build](https://github.com/AppImage/type2-runtime/blob/8f39b89e2ac31e1640b3d3f7e9a5108e6ce805fa/src/runtime/Makefile)
+declares its static implementation libraries; these are outside the `mcw` ELF
+runtime-import audit. [appimagetool downloads a separate runtime](https://github.com/AppImage/appimagetool/blob/main/README.md)
+unless supplied `--runtime-file`, which the current packaging command does not
+provide. Consequently, its pinned tool checksum does not establish the embedded
+runtime's identity. The inventory records this retained wrapper and its declared
+upstream dependencies without treating that source revision as proof of the
+current package's embedded versions. Whole-package hashes and extraction tests
+remain the current package evidence; runtime-specific source/version attribution
+is a separate requirement for future replacement.
 
 Mark a dependency removed only when **all callers, copied source, transitive inclusion, generated bindings, native imports and packaged references are gone**. Check every shipped target, including dependencies statically embedded in Tor/native credential libraries and those carried by NuGet native bundles. Preserve upstream license notices where attribution remains applicable.
 

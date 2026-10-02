@@ -5,6 +5,7 @@ from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[2]
 DEST=ROOT/"Contrib/McwMigration/dependencies.json"
+APPIMAGE_RUNTIME_SOURCE="https://github.com/AppImage/type2-runtime/blob/8f39b89e2ac31e1640b3d3f7e9a5108e6ce805fa/src/runtime/Makefile"
 
 def group(name):
     if any(word in name for word in ("Avalonia","Reactive","DynamicData","Skia","HarfBuzz","Markdown","FlashCap","QRackers","MicroCom")): return "native-ui"
@@ -113,6 +114,11 @@ def inventory():
             {"name":"OpenSSL","version":"3.5.6 (Windows Tor)","status":"retained inside Tor","owner":"Tor TLS/crypto","evidence":"tor.exe --version; libssl/libcrypto payloads above"},
             {"name":"zlib","version":"1.3.2 (Windows Tor)","status":"retained inside Tor","owner":"Tor compression","evidence":"tor.exe --version"},
             {"name":"libstdc++","status":"retained in Linux Tor payloads","owner":"legacy bundled native programs","evidence":"bundled libstdc++.so.6 hashes above"},
+            {"name":"AppImage ELF launcher runtime","status":"retained in Linux AppImage packages; independent of the mcw payload","owner":"installation and launch","evidence":"Contrib/Releases/package.py create_linux; appimagetool prepends the separately downloaded runtime","upstream_source":APPIMAGE_RUNTIME_SOURCE,"embedded_build":"actual per-package runtime source/version and component versions unverified; a packaging-tool checksum is not a runtime checksum"},
+            *[{"name":name,"status":"declared static dependency of the retained AppImage runtime; actual packaged version unverified","owner":"AppImage launcher runtime","upstream_source":APPIMAGE_RUNTIME_SOURCE}
+              for name in ("Squashfuse (including squashfuse_ll)","libfuse3","Zstandard","zlib (AppImage runtime)","mimalloc")],
+            {"name":"musl libc (AppImage runtime)","status":"retained static C runtime in the upstream AppImage launcher build; actual packaged version unverified","owner":"AppImage launcher runtime","evidence":"https://github.com/AppImage/type2-runtime/blob/8f39b89e2ac31e1640b3d3f7e9a5108e6ce805fa/README.md"},
+            {"name":"Generated AppImage AppRun shell launcher","status":"retained packaging entrypoint delegating to mcw","owner":"installation and launch","evidence":"Contrib/Releases/package.py; uses system sh/readlink/dirname"},
             {"name":"Bitcoin Core and embedded native libraries","status":"verification-only; not client runtime","owner":"independent regtest oracle","evidence":"integration BundledApps hashes; upstream Bitcoin Core build manifest required before any migration claim"},
             {"name":"HWI and embedded Python/device dependencies","status":"absent from current client after software-wallet-only removal; future hardware scope requires a fresh full inventory","owner":"future hardware integration","evidence":"MagicalCryptoWallet.Documentation/SoftwareWallet.md and source/package removal audits"},
             {"name":"Rust 1.99.0 standard library","status":"retained platform baseline","owner":"mcw","evidence":"mcw/rust-toolchain.toml; application Cargo graph empty; Windows std rebuilt with panic=abort"},
