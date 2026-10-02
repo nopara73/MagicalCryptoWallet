@@ -163,7 +163,9 @@ are bound to the recorded historical sources and binary, not current master.
 
 `compression_content_inbox_verify.ps1 -ReviewRoot <prepared-review>` compiles exact
 copied host Inbox/Frame/QR sources, the one review-only query, and the actual owned
-adapter/codecs. It holds the same build-slot guard and writes fresh source-hashed
+adapter/codecs. Its source is `mcw/tests/compression_fixtures/content_inbox_tests.rs`,
+outside Cargo's automatically discovered integration-test roots; only this verifier
+provides its source-hashed review modules. It holds the same build-slot guard and writes fresh source-hashed
 evidence. **14 debug + 14 optimized component tests** pass, including seven new
 synchronized cases: active cancellation with 256 queued requests, queued cancel
 removal/deduplication and sibling success, ID/operation isolation, saturated EOF,

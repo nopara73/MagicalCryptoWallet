@@ -19,7 +19,7 @@ function Assert-ReviewHashes {
     }
 }
 Assert-ReviewHashes
-$owned=@('mcw/src/compression.rs','mcw/tests/compression_content_inbox_tests.rs','mcw/tests/compression_content_inbox_verify.ps1','mcw/tests/compression_content_host_patch.py')
+$owned=@('mcw/src/compression.rs','mcw/tests/compression_fixtures/content_inbox_tests.rs','mcw/tests/compression_content_inbox_verify.ps1','mcw/tests/compression_content_host_patch.py')
 $owned+=Get-ChildItem -LiteralPath (Join-Path $repo 'mcw/src/content_service') -File -Recurse | ForEach-Object { [IO.Path]::GetRelativePath($repo,$_.FullName).Replace('\','/') }
 foreach($name in $owned){
     $source=Join-Path $repo $name
@@ -39,7 +39,7 @@ mod inbox;
 #[cfg(test)]
 #[path="TESTS"] mod content_inbox_tests;
 '@
-foreach($item in @(@('COMPRESSION','owned/mcw/src/compression.rs'),@('CONTENT','owned/mcw/src/content_service/mod.rs'),@('TESTS','owned/mcw/tests/compression_content_inbox_tests.rs'))){
+foreach($item in @(@('COMPRESSION','owned/mcw/src/compression.rs'),@('CONTENT','owned/mcw/src/content_service/mod.rs'),@('TESTS','owned/mcw/tests/compression_fixtures/content_inbox_tests.rs'))){
     $wrapper=$wrapper.Replace($item[0],(Join-Path $root $item[1]).Replace('\','/'))
 }
 $compiledHost=[ordered]@{}

@@ -38,6 +38,9 @@ def main():
         "MagicalCryptoWallet.Client/Application/ManagedApplicationHost.cs",
     ], cwd=repo).decode().split("\0")
     files = set(filter(None, tracked))
+    # Review-only source belongs below Cargo's auto-discovered integration tests.
+    files.discard("mcw/tests/compression_content_inbox_tests.rs")
+    files.add("mcw/tests/compression_fixtures/content_inbox_tests.rs")
     files = {p for p in files if not p.startswith((
         "MagicalCryptoWallet/BundledApps/Binaries/", "MagicalCryptoWallet/Tor/Geoip/"))}
     for directory in ("mcw/src/content_service", "MagicalCryptoWallet/Mcw/Content"):
