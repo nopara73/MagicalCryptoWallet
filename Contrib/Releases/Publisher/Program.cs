@@ -28,15 +28,13 @@ internal static class Program
 					}
 					return 0;
 				case ["verify-manifest", var manifest, var signature, var publicKey]:
-					var hash = new uint256(SHA256.HashData(await File.ReadAllBytesAsync(manifest)));
-					var proof = ECDSASignature.FromDER(Convert.FromBase64String(await File.ReadAllTextAsync(signature)));
-					return new PubKey(publicKey).Verify(hash, proof) ? 0 : 1;
+					return await VerifyManifestAsync(manifest, signature, publicKey) ? 0 : 1;
 				case ["prepare-announcement", var version, var contentFile, var packages]:
 					if (!Version.TryParse(version, out var parsedVersion) || parsedVersion.ToString() != version)
 						throw new InvalidOperationException("Invalid release version.");
-					var files = Directory.GetFiles(packages).Select(Path.GetFileName).Order(StringComparer.Ordinal).ToArray();
-					foreach (var required in new[] { "SHA256SUMS", "SHA256SUMS.asc", "SHA256SUMS.magicalcryptowalletsig" })
-						if (!files.Contains(required)) throw new InvalidOperationException("Sign the manifest before preparing an announcement.");
+					var files = ReleasePackageSet.GetAnnouncementAssets(packages, version);
+					if (!await VerifyManifestAsync(Path.Combine(packages, "SHA256SUMS.asc"), Path.Combine(packages, "SHA256SUMS.magicalcryptowalletsig"), TrustPin("update_public_key")))
+						throw new InvalidOperationException("Invalid update signature.");
 					var note = new NostrEvent
 					{
 						Kind = 1, CreatedAt = DateTimeOffset.UtcNow,
@@ -69,6 +67,13 @@ internal static class Program
 	private static string RequiredSecret(string variable) =>
 		Environment.GetEnvironmentVariable(variable) is { Length: > 0 } value
 			? value : throw new InvalidOperationException("Missing signing secret.");
+
+	private static async Task<bool> VerifyManifestAsync(string manifest, string signature, string publicKey)
+	{
+		var hash = new uint256(SHA256.HashData(await File.ReadAllBytesAsync(manifest)));
+		var proof = ECDSASignature.FromDER(Convert.FromBase64String(await File.ReadAllTextAsync(signature)));
+		return new PubKey(publicKey).Verify(hash, proof);
+	}
 
 	private static string TrustPin(string name)
 	{

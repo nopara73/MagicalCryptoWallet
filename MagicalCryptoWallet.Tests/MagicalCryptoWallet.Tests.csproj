@@ -28,6 +28,7 @@
 		<ProjectReference Include="..\MagicalCryptoWallet.Fluent.Generators\MagicalCryptoWallet.Fluent.Generators.csproj" />
 		<ProjectReference Include="..\MagicalCryptoWallet.Fluent\MagicalCryptoWallet.Fluent.csproj" />
 		<ProjectReference Include="..\MagicalCryptoWallet\MagicalCryptoWallet.csproj" />
+		<ProjectReference Include="..\Contrib\Releases\Publisher\MagicalCryptoWallet.ReleaseTools.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

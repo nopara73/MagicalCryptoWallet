@@ -17,7 +17,7 @@ The public GPG fingerprint is `552DC742598F1BE66485ADF3354986B46FAD0E7B`. [GitHu
 
 Platform signing runs separately from packaging. Windows signatures are checked against the supplied certificate; macOS signatures are checked against the configured team, notarized, and stapled. Missing production configuration fails before packaging begins. Public artifacts must never be presented as production signed merely because an unsigned build passed.
 
-After platform packaging, `python Contrib/Signing/sign-release.py` writes `SHA256SUMS`, clear-signs it with GPG, and signs the exact `SHA256SUMS.asc` bytes with the project's secp256k1 update key. The wallet authenticates that signature, requires the plaintext manifest to match the signed content, and checks the installer hash.
+After platform packaging, `python Contrib/Signing/sign-release.py packages --version 99.99.99` writes `SHA256SUMS`, clear-signs it with GPG, and signs the exact `SHA256SUMS.asc` bytes with the project's secp256k1 update key. Specify the version actually packaged. Mixed versions or unsupported package targets are rejected before any manifest is written; remove older packages or use a separate directory per release. The wallet authenticates that signature, requires the plaintext manifest to match the signed content, and checks the installer hash.
 
 Verify downloaded material:
 
@@ -28,6 +28,6 @@ dotnet run --project Contrib/Releases/Publisher/MagicalCryptoWallet.ReleaseTools
 sha256sum --check SHA256SUMS
 ```
 
-The publisher tool prepares a signed Nostr note locally, using the files that actually exist in the package directory. It does not broadcast notes or publish GitHub releases. Publication remains an explicit, separate operation.
+The publisher tool prepares a signed Nostr note locally, using only the selected version's packages, their available detached signatures, and the three authenticated manifest files. It verifies the package hashes, manifest inventory, signed contents and pinned update signature first. Older orphaned signatures and unrelated files are excluded. It does not broadcast notes or publish GitHub releases. Publication remains an explicit, separate operation.
 
 The **Build and audit** workflow can prepare authenticated snapshots from a selected branch: enable its `prepare_release` input and leave `production` disabled. It signs only after all five platform checks, the coordinator container, and Nix tests pass. The **Prepare signed release artifacts** workflow uses the same build and signing jobs. Both upload `signed-release-artifacts` without publishing anything.

@@ -9,5 +9,7 @@
     <PackageReference Include="NBitcoin" />
     <PackageReference Include="NNostr.Client" />
     <EmbeddedResource Include="../../Signing/public-keys.json" LogicalName="MagicalCryptoWallet.ReleaseKeys.json" />
+    <EmbeddedResource Include="../../Signing/package-suffixes.json" LogicalName="MagicalCryptoWallet.PackageSuffixes.json" />
+    <InternalsVisibleTo Include="MagicalCryptoWallet.Tests" />
   </ItemGroup>
 </Project>

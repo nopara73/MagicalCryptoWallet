@@ -1,0 +1,16 @@
+[
+  ".msi",
+  "-win-x64.zip",
+  ".deb",
+  ".AppImage",
+  "-linux-x64.zip",
+  "-linux-x64.tar.gz",
+  "-arm64.deb",
+  "-arm64.AppImage",
+  "-linux-arm64.zip",
+  "-linux-arm64.tar.gz",
+  ".dmg",
+  "-macOS-x64.zip",
+  "-arm64.dmg",
+  "-macOS-arm64.zip"
+]

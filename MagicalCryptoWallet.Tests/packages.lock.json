@@ -850,6 +850,13 @@
       "magicalcryptowallet.fluent.generators": {
         "type": "Project"
       },
+      "magicalcryptowallet.releasetools": {
+        "type": "Project",
+        "dependencies": {
+          "NBitcoin": "[10.0.13, )",
+          "NNostr.Client": "[0.0.55, )"
+        }
+      },
       "MagicalCryptoWallet.WabiSabi": {
         "type": "Project",
         "dependencies": {
