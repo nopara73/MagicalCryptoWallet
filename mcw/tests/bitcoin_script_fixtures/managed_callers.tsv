@@ -1,5 +1,15 @@
-# snapshot_revision=1120219c417e31b90864040e1f5f8849b29775a4
+# snapshot_revision=18f0619221b771f9168234bf352abcb026537dd8
 # category	path	line	source
+package_lock	Contrib/Mcw/BridgeProbe/packages.lock.json	478	"NBitcoin": "[10.0.13, )",
+package_lock	Contrib/Mcw/BridgeProbe/packages.lock.json	510	"NBitcoin.Secp256k1": "[3.1.6, )"
+package_lock	Contrib/Mcw/BridgeProbe/packages.lock.json	654	"NBitcoin": {
+package_lock	Contrib/Mcw/BridgeProbe/packages.lock.json	664	"NBitcoin.Secp256k1": {
+package_lock	Contrib/Mcw/BridgeProbe/packages.lock.json	684	"NBitcoin.Secp256k1": "3.1.6",
+package_lock	Contrib/McwMigration/PrivacyControlProbe/packages.lock.json	189	"NBitcoin": "[10.0.13, )",
+package_lock	Contrib/McwMigration/PrivacyControlProbe/packages.lock.json	204	"NBitcoin.Secp256k1": "[3.1.6, )"
+package_lock	Contrib/McwMigration/PrivacyControlProbe/packages.lock.json	282	"NBitcoin": {
+package_lock	Contrib/McwMigration/PrivacyControlProbe/packages.lock.json	292	"NBitcoin.Secp256k1": {
+package_lock	Contrib/McwMigration/PrivacyControlProbe/packages.lock.json	312	"NBitcoin.Secp256k1": "3.1.6",
 package	Contrib/Releases/Publisher/MagicalCryptoWallet.ReleaseTools.csproj	9	<PackageReference Include="NBitcoin" />
 package_lock	Contrib/Releases/Publisher/packages.lock.json	5	"NBitcoin": {
 package_lock	Contrib/Releases/Publisher/packages.lock.json	23	"NBitcoin.Secp256k1": "3.1.6",
@@ -17,7 +27,7 @@ package_lock	MagicalCryptoWallet.Client/packages.lock.json	210	"NBitcoin.Secp256
 package_lock	MagicalCryptoWallet.Client/packages.lock.json	275	"NBitcoin": {
 package_lock	MagicalCryptoWallet.Client/packages.lock.json	285	"NBitcoin.Secp256k1": {
 package_lock	MagicalCryptoWallet.Client/packages.lock.json	305	"NBitcoin.Secp256k1": "3.1.6",
-script_format	MagicalCryptoWallet.Coordinator/Startup.cs	53	options.ModelMetadataDetailsProviders.Add(new SuppressChildValidationMetadataProvider(typeof(Script)));
+script_format	MagicalCryptoWallet.Coordinator/Startup.cs	54	options.ModelMetadataDetailsProviders.Add(new SuppressChildValidationMetadataProvider(typeof(Script)));
 script_format	MagicalCryptoWallet.Coordinator/WabiSabi/Arena.Partial.cs	240	if (_coinJoinScriptStore?.Contains(request.Script) is true)
 script_format	MagicalCryptoWallet.Coordinator/WabiSabi/Arena.Partial.cs	249	.Select(x => x.Script)
 script_format	MagicalCryptoWallet.Coordinator/WabiSabi/Arena.Partial.cs	251	if (outputScripts.Contains(request.Script))
@@ -384,9 +394,9 @@ script_format	MagicalCryptoWallet/Blockchain/Transactions/TransactionFactory.cs	
 script_format	MagicalCryptoWallet/Blockchain/Transactions/TransactionFactory.cs	131	builder.SendAllRemaining(customChange.Destination.ScriptPubKey);
 script_format	MagicalCryptoWallet/Blockchain/Transactions/TransactionFactory.cs	170	amount: psbt.Outputs.FirstOrDefault(o => o.ScriptPubKey == t.Destination.ScriptPubKey)?.Value))
 script_format	MagicalCryptoWallet/Blockchain/Transactions/TransactionFactory.cs	197	totalOutgoingAmountNoFee = realToSend.Where(x => !changeHdPubKey.ContainsScript(x.destination.ScriptPubKey)).Sum(x => x.amount);
-script_format	MagicalCryptoWallet/Blockchain/Transactions/TransactionFactory.cs	235	IEnumerable<Key> signingKeys = _authorization?.GetSecrets(spentCoins.Select(x => x.ScriptPubKey).ToArray()) ?? KeyManager.GetSecrets(_password, spentCoins.Select(x => x.ScriptPubKey).ToArray());
-script_format	MagicalCryptoWallet/Blockchain/Transactions/TransactionFactory.cs	261	if (KeyManager.TryGetKeyForScriptPubKey(output.ScriptPubKey, out HdPubKey? foundKey))
-script_format	MagicalCryptoWallet/Blockchain/Transactions/TransactionFactory.cs	274	var foundPaymentRequest = payments.Requests.FirstOrDefault(x => x.Destination.ScriptPubKey == coin.ScriptPubKey);
+script_format	MagicalCryptoWallet/Blockchain/Transactions/TransactionFactory.cs	234	IEnumerable<Key> signingKeys = _authorization?.GetSecrets(spentCoins.Select(x => x.ScriptPubKey).ToArray()) ?? KeyManager.GetSecrets(_password, spentCoins.Select(x => x.ScriptPubKey).ToArray());
+script_format	MagicalCryptoWallet/Blockchain/Transactions/TransactionFactory.cs	260	if (KeyManager.TryGetKeyForScriptPubKey(output.ScriptPubKey, out HdPubKey? foundKey))
+script_format	MagicalCryptoWallet/Blockchain/Transactions/TransactionFactory.cs	273	var foundPaymentRequest = payments.Requests.FirstOrDefault(x => x.Destination.ScriptPubKey == coin.ScriptPubKey);
 script_format	MagicalCryptoWallet/Crypto/Bip322Signature.cs	8	private Script _scriptSig = Script.Empty;
 script_format	MagicalCryptoWallet/Crypto/Bip322Signature.cs	10	public Bip322Signature(Script scriptSig, WitScript witness)
 script_format	MagicalCryptoWallet/Crypto/Bip322Signature.cs	20	public Script ScriptSig => _scriptSig;
@@ -425,30 +435,33 @@ script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	226	throw new
 script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	229	if (i.WitnessUtxo.ScriptPubKey.IsScriptType(ScriptType.P2WPKH))
 script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	234	if (i.WitnessUtxo.ScriptPubKey.IsScriptType(ScriptType.P2SH) &&
 script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	236	witness.ToScript().IsScriptType(ScriptType.P2WPKH))
-script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	254	foreach (var script in psbt.Inputs.Select(x => x.WitnessUtxo?.ScriptPubKey).ToArray())
-script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	266	foreach (var script in psbt.Outputs.Select(x => x.ScriptPubKey).ToArray())
-script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	276	public static void AddKeyPath(this PSBT psbt, HDFingerprint fp, HdPubKey hdPubKey, Script script)
-script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	312	public static int EstimateOutputVsize(this Script scriptPubKey) =>
-script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	315	public static int EstimateInputVsize(this Script scriptPubKey) =>
-script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	341	output.Value + feeRate.GetFee(output.ScriptPubKey.EstimateOutputVsize());
-script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	344	=> EffectiveValue(coin.TxOut.Value, virtualSize: coin.TxOut.ScriptPubKey.EstimateInputVsize(), feeRate);
-script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	371	public static byte[] ExtractKeyId(this Script scriptPubKey)
-script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	375	ScriptType.P2WPKH => PayToWitPubKeyHashTemplate.Instance.ExtractScriptPubKeyParameters(scriptPubKey)!.ToBytes(),
-script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	376	ScriptType.P2PKH => PayToPubkeyHashTemplate.Instance.ExtractScriptPubKeyParameters(scriptPubKey)!.ToBytes(),
-script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	377	ScriptType.P2PK => PayToPubkeyTemplate.Instance.ExtractScriptPubKeyParameters(scriptPubKey)!.ToBytes(),
-script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	382	public static ScriptType GetScriptType(this Script script)
-script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	387	public static ScriptType? TryGetScriptType(this Script script)
-script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	391	if (script.IsScriptType(scriptType))
-script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	400	public static BitcoinSecret GetBitcoinSecret(this Key key, Network network, Script scriptPubKey)
-script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	403	public static BitcoinSecret GetBitcoinSecret(Network network, Key privateKey, Script scriptPubKey)
-script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	407	_ when scriptPubKey.IsScriptType(ScriptType.P2WPKH) => ScriptPubKeyType.Segwit,
-script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	408	_ when scriptPubKey.IsScriptType(ScriptType.Taproot) => ScriptPubKeyType.TaprootBIP86,
-script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	412	if (privateKey.PubKey.GetScriptPubKey(derivedScriptPubKeyType) != scriptPubKey)
-script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	420	public static OwnershipProof GetOwnershipProof(Key masterKey, BitcoinSecret secret, Script scriptPubKey, CoinJoinInputCommitmentData commitmentData)
-script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	431	scriptPubKey.IsScriptType(ScriptType.P2WPKH)
+script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	255	public static int EstimateOutputVsize(this Script scriptPubKey) =>
+script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	258	public static int EstimateInputVsize(this Script scriptPubKey) =>
+script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	284	output.Value + feeRate.GetFee(output.ScriptPubKey.EstimateOutputVsize());
+script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	287	=> EffectiveValue(coin.TxOut.Value, virtualSize: coin.TxOut.ScriptPubKey.EstimateInputVsize(), feeRate);
+script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	314	public static byte[] ExtractKeyId(this Script scriptPubKey)
+script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	318	ScriptType.P2WPKH => PayToWitPubKeyHashTemplate.Instance.ExtractScriptPubKeyParameters(scriptPubKey)!.ToBytes(),
+script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	319	ScriptType.P2PKH => PayToPubkeyHashTemplate.Instance.ExtractScriptPubKeyParameters(scriptPubKey)!.ToBytes(),
+script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	320	ScriptType.P2PK => PayToPubkeyTemplate.Instance.ExtractScriptPubKeyParameters(scriptPubKey)!.ToBytes(),
+script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	325	public static ScriptType GetScriptType(this Script script)
+script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	330	public static ScriptType? TryGetScriptType(this Script script)
+script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	334	if (script.IsScriptType(scriptType))
+script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	343	public static BitcoinSecret GetBitcoinSecret(this Key key, Network network, Script scriptPubKey)
+script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	346	public static BitcoinSecret GetBitcoinSecret(Network network, Key privateKey, Script scriptPubKey)
+script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	350	_ when scriptPubKey.IsScriptType(ScriptType.P2WPKH) => ScriptPubKeyType.Segwit,
+script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	351	_ when scriptPubKey.IsScriptType(ScriptType.Taproot) => ScriptPubKeyType.TaprootBIP86,
+script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	355	if (privateKey.PubKey.GetScriptPubKey(derivedScriptPubKeyType) != scriptPubKey)
+script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	363	public static OwnershipProof GetOwnershipProof(Key masterKey, BitcoinSecret secret, Script scriptPubKey, CoinJoinInputCommitmentData commitmentData)
+script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	374	scriptPubKey.IsScriptType(ScriptType.P2WPKH)
 script_format	MagicalCryptoWallet/Helpers/TxOutEqualityComparer.cs	10	public bool Equals(TxOut? x, TxOut? y) => (x?.Value, x?.ScriptPubKey) == (y?.Value, y?.ScriptPubKey);
 script_format	MagicalCryptoWallet/Helpers/TxOutEqualityComparer.cs	12	public int GetHashCode(TxOut txOut) => (txOut.Value, txOut.ScriptPubKey).GetHashCode();
 package	MagicalCryptoWallet/MagicalCryptoWallet.csproj	32	<PackageReference Include="NBitcoin" />
+script_format	MagicalCryptoWallet/Mcw/Psbt/McwPsbtMetadata.cs	33	private sealed record Origin(byte[] PublicKey, byte[] Fingerprint, uint[] Path, byte[] Script);
+script_format	MagicalCryptoWallet/Mcw/Psbt/McwPsbtMetadata.cs	62	var script = new Script(scriptBytes);
+script_format	MagicalCryptoWallet/Mcw/Psbt/McwPsbtMetadata.cs	100	WriteBlob(writer, origin.Script, MaxValue);
+script_format	MagicalCryptoWallet/Mcw/Scripts/ScriptTextClient.cs	7	/// <summary>The explicit client adapter for the retained legacy Script text format.</summary>
+script_format	MagicalCryptoWallet/Mcw/Scripts/ScriptTextClient.cs	37	throw new FormatException("The mcw Script text response is not valid UTF-8.", error);
+script_format	MagicalCryptoWallet/Mcw/Scripts/ScriptTextClient.cs	52	throw new FormatException("The mcw Script text payload exceeds the protocol limit.");
 script_format	MagicalCryptoWallet/Serialization/Bitcoin.cs	24	private static JsonNode Script(Script script) =>
 script_format	MagicalCryptoWallet/Serialization/Bitcoin.cs	35	("ScriptPubKey", Script(txo.ScriptPubKey)),
 script_format	MagicalCryptoWallet/Serialization/Bitcoin.cs	48	private static JsonNode WitScript(WitScript witScript) =>

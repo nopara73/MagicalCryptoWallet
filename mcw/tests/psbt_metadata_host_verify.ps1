@@ -13,7 +13,7 @@ $metadataHostSource = [Security.SecurityElement]::Escape((Join-Path $metadataRoo
 $metadataTestSource = [Security.SecurityElement]::Escape((Join-Path $PSScriptRoot 'psbt_metadata_host_reference.cs'))
 $metadataProjectText = @"
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup><OutputType>Exe</OutputType><AssemblyName>magicalcryptowalletd</AssemblyName><TargetFramework>net10.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable><EnableDefaultCompileItems>false</EnableDefaultCompileItems><IsPackable>false</IsPackable><TreatWarningsAsErrors>true</TreatWarningsAsErrors></PropertyGroup>
+  <PropertyGroup><OutputType>Exe</OutputType><AssemblyName>magicalcryptowallet</AssemblyName><TargetFramework>net10.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable><EnableDefaultCompileItems>false</EnableDefaultCompileItems><IsPackable>false</IsPackable><TreatWarningsAsErrors>true</TreatWarningsAsErrors></PropertyGroup>
   <ItemGroup><ProjectReference Include="$metadataCoreProject" /><Compile Include="$metadataHostSource" Link="ManagedApplicationHost.cs" /><Compile Include="$metadataTestSource" Link="MetadataReference.cs" /></ItemGroup>
 </Project>
 "@
@@ -45,7 +45,7 @@ try {
         $metadataChildOutput = Join-Path $metadataOutput 'bin/Release/net10.0'
         $metadataNative = Join-Path $metadataChildOutput 'mcw.exe'
         Copy-Item -LiteralPath $NativeApplication -Destination $metadataNative
-        & $metadataNative daemon 2>&1 | Tee-Object -FilePath (Join-Path $metadataOutput 'actual-host.log')
+        & $metadataNative gui 2>&1 | Tee-Object -FilePath (Join-Path $metadataOutput 'actual-host.log')
         if ($LASTEXITCODE -ne 0) { throw 'Actual Rust host/managed metadata/factory validation failed.' }
         if (-not (Select-String -LiteralPath (Join-Path $metadataOutput 'actual-host.log') -SimpleMatch 'MCW_PSBT_HOST_VERIFIED metadata=2 factory=2 signing=retained packets=synthetic')) { throw 'Missing actual-path verification marker.' }
         $metadataEvidence.native_host_verified = $true

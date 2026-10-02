@@ -1,4 +1,4 @@
-# immutable_git_revision=1120219c417e31b90864040e1f5f8849b29775a4
+# immutable_git_revision=18f0619221b771f9168234bf352abcb026537dd8
 kind	role	path	line	source
 block_header_merkle	test_or_tool	Contrib/Tests/RegTestRpcProviders.cs	29	public static FilterProvider CreateFilterProvider(IRPCClient rpcClient, ConcurrentChain blockHeaderChain) =>
 block_header_merkle	test_or_tool	Contrib/Tests/RegTestRpcProviders.cs	48	ConcurrentChain blockHeaderChain, uint256 fromHash, uint fromHeight, CancellationToken cancellationToken)
@@ -19,13 +19,13 @@ block_header_merkle	test_or_tool	Contrib/Utils/GenerateCheckpoint.cs	200	Block b
 block_header_merkle	test_or_tool	Contrib/Utils/GenerateCheckpoint.cs	208	if (!block.CheckMerkleRoot())
 block_header_merkle	test_or_tool	Contrib/Utils/GenerateCheckpoint.cs	209	throw new Exception("Block merkle root check failed");
 block_header_merkle	test_or_tool	Contrib/Utils/GenerateCheckpoint.cs	263	Block Block);
-block_header_merkle	application_or_coordinator	MagicalCryptoWallet.Client/Global.cs	135	private readonly ConcurrentChain _blockHeaders;
-block_header_merkle	application_or_coordinator	MagicalCryptoWallet.Client/Global.cs	175	private ConcurrentChain ConfigureBlockHeaderChain(string p2PDataDir)
-block_header_merkle	application_or_coordinator	MagicalCryptoWallet.Client/Global.cs	182	return new ConcurrentChain(Network);
-block_header_merkle	application_or_coordinator	MagicalCryptoWallet.Client/Global.cs	190	[] => new ConcurrentChain(Network),
-block_header_merkle	application_or_coordinator	MagicalCryptoWallet.Client/Global.cs	191	_ => new ConcurrentChain(bytes, Network)
-block_header_merkle	application_or_coordinator	MagicalCryptoWallet.Client/Global.cs	193	_ => new ConcurrentChain(Network));
-block_header_merkle	application_or_coordinator	MagicalCryptoWallet.Client/Global.cs	697	Logger.LogInfo("Block headers saved.");
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet.Client/Global.cs	136	private readonly ConcurrentChain _blockHeaders;
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet.Client/Global.cs	176	private ConcurrentChain ConfigureBlockHeaderChain(string p2PDataDir)
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet.Client/Global.cs	183	return new ConcurrentChain(Network);
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet.Client/Global.cs	191	[] => new ConcurrentChain(Network),
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet.Client/Global.cs	192	_ => new ConcurrentChain(bytes, Network)
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet.Client/Global.cs	194	_ => new ConcurrentChain(Network));
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet.Client/Global.cs	698	Logger.LogInfo("Block headers saved.");
 block_header_merkle	application_or_coordinator	MagicalCryptoWallet.Fluent/Models/Wallets/WalletSyncProgress.cs	115	// Block headers are synced for the whole chain, not only for the range the wallet is scanned in.
 block_header_merkle	test_or_tool	MagicalCryptoWallet.IntegrationTests/BitcoinCore/Tests/RpcBasedTests.cs	57	Assert.NotNull(response.Block);
 block_header_merkle	test_or_tool	MagicalCryptoWallet.IntegrationTests/Infrastructure/RegTestEnvironment.cs	226	var blockHeaderChain = new ConcurrentChain(Network);
@@ -129,7 +129,7 @@ block_header_merkle	application_or_coordinator	MagicalCryptoWallet/Blockchain/Bl
 block_header_merkle	application_or_coordinator	MagicalCryptoWallet/Blockchain/BlockFilters/FilterCheckpoints.cs	238	// Block 0
 block_header_merkle	application_or_coordinator	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	21	public static async Task<Block?> DownloadBlockAsync(this Node node, uint256 hash, CancellationToken cancellationToken)
 block_header_merkle	application_or_coordinator	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	43	if (message.Message.Payload is BlockPayload b && b.Object?.GetHash() == hash)
-block_header_merkle	application_or_coordinator	MagicalCryptoWallet/FeeRateEstimation/FeeRateProviders.cs	29	cancellationToken => GetFeeRateEstimationsAsync("Block.xyz",
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet/FeeRateEstimation/FeeRateProviders.cs	30	cancellationToken => GetFeeRateEstimationsAsync("Block.xyz",
 block_header_merkle	application_or_coordinator	MagicalCryptoWallet/Services/NodesManagement/P2pConnectionManager.cs	27	public async Task<Block?> GetBlockAsync(uint256 blockHash, CancellationToken cancellationToken)
 block_header_merkle	application_or_coordinator	MagicalCryptoWallet/Services/NodesManagement/P2pConnectionManager.cs	47	Logger.LogInfo($"Block ({block.GetCoinbaseHeight()}) downloaded: {block.GetHash()}.");
 block_header_merkle	application_or_coordinator	MagicalCryptoWallet/Services/Synchronizer.cs	28	public static FilterProvider CreateBitcoinP2pFilterProvider(FilterHeaderChain filterHeadersChain, ConcurrentChain blockHeadersChain, FilterSynchronizationState synchronizationState) =>
@@ -145,6 +145,7 @@ block_header_merkle	application_or_coordinator	MagicalCryptoWallet/Wallets/FileS
 block_header_merkle	application_or_coordinator	MagicalCryptoWallet/Wallets/FileSystemBlockRepository.cs	103	public async Task SaveAsync(Block block, CancellationToken cancellationToken)
 block_header_merkle	application_or_coordinator	MagicalCryptoWallet/Wallets/FilterProcessor/BlockFilterIterator.cs	42	throw new UnreachableException($"Block filter for height {height} was not found.");
 block_header_merkle	application_or_coordinator	MagicalCryptoWallet/Wallets/WalletFilterProcessor.cs	181	throw new IOException($"Block {filter.Header.BlockHash} is unavailable; synchronization will retry.");
+block_header_merkle	application_or_coordinator	mcw/tests/bitcoin_block_header_probe.cs	55	var baseline = BlockHeader.Parse(fields[1], Network.Main);
 nbitcoin_import	test_or_tool	Contrib/Releases/Publisher/Program.cs	3	using NBitcoin;
 nbitcoin_import	test_or_tool	Contrib/Releases/Publisher/Program.cs	4	using NBitcoin.Crypto;
 nbitcoin_import	test_or_tool	Contrib/Tests/RegTestRpcProviders.cs	7	using NBitcoin;
@@ -503,6 +504,9 @@ nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Extensions/System
 nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Helpers/Constants.cs	2	using NBitcoin;
 nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Helpers/NBitcoinHelpers.cs	1	using NBitcoin;
 nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Helpers/TxOutEqualityComparer.cs	2	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Mcw/Blocks/McwBlockHeaderService.cs	5	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Mcw/Nostr/McwNostrEventId.cs	6	using NBitcoin.Secp256k1;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Mcw/Psbt/McwPsbtMetadata.cs	5	using NBitcoin;
 nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Models/CpfpInfo.cs	2	using NBitcoin;
 nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Models/PreferredScriptPubKeyType.cs	1	using NBitcoin;
 nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Models/ServiceConfiguration.cs	1	using NBitcoin;
@@ -585,6 +589,22 @@ nbitcoin_import	test_or_tool	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/R
 nbitcoin_import	test_or_tool	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/Reference/ProofBody.cs	4	using NBitcoin.Crypto;
 nbitcoin_import	test_or_tool	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/Reference/ProofBody.cs	5	using NBitcoin.Protocol;
 nbitcoin_import	test_or_tool	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/Reference/ReferenceExtensions.cs	5	using NBitcoin;
+nbitcoin_import	application_or_coordinator	mcw/tests/bitcoin_block_header_probe.cs	9	using NBitcoin;
+nbitcoin_import	application_or_coordinator	mcw/tests/bitcoin_encoding_managed_probe.cs	14	using NBitcoin;
+nbitcoin_import	application_or_coordinator	mcw/tests/nostr_host/Program.cs	14	using NBitcoin.Secp256k1;
+nbitcoin_import	application_or_coordinator	mcw/tests/psbt_metadata_host_reference.cs	7	using NBitcoin;
+nbitcoin_import	application_or_coordinator	mcw/tests/psbt_metadata_reference.cs	6	using NBitcoin;
+nbitcoin_import	application_or_coordinator	mcw/tests/script_text_reference/Program.cs	3	using NBitcoin;
+nbitcoin_package	test_or_tool	Contrib/Mcw/BridgeProbe/packages.lock.json	478	"NBitcoin": "[10.0.13, )",
+nbitcoin_package	test_or_tool	Contrib/Mcw/BridgeProbe/packages.lock.json	510	"NBitcoin.Secp256k1": "[3.1.6, )"
+nbitcoin_package	test_or_tool	Contrib/Mcw/BridgeProbe/packages.lock.json	654	"NBitcoin": {
+nbitcoin_package	test_or_tool	Contrib/Mcw/BridgeProbe/packages.lock.json	664	"NBitcoin.Secp256k1": {
+nbitcoin_package	test_or_tool	Contrib/Mcw/BridgeProbe/packages.lock.json	684	"NBitcoin.Secp256k1": "3.1.6",
+nbitcoin_package	test_or_tool	Contrib/McwMigration/PrivacyControlProbe/packages.lock.json	189	"NBitcoin": "[10.0.13, )",
+nbitcoin_package	test_or_tool	Contrib/McwMigration/PrivacyControlProbe/packages.lock.json	204	"NBitcoin.Secp256k1": "[3.1.6, )"
+nbitcoin_package	test_or_tool	Contrib/McwMigration/PrivacyControlProbe/packages.lock.json	282	"NBitcoin": {
+nbitcoin_package	test_or_tool	Contrib/McwMigration/PrivacyControlProbe/packages.lock.json	292	"NBitcoin.Secp256k1": {
+nbitcoin_package	test_or_tool	Contrib/McwMigration/PrivacyControlProbe/packages.lock.json	312	"NBitcoin.Secp256k1": "3.1.6",
 nbitcoin_package	test_or_tool	Contrib/Releases/Publisher/MagicalCryptoWallet.ReleaseTools.csproj	9	<PackageReference Include="NBitcoin" />
 nbitcoin_package	test_or_tool	Contrib/Releases/Publisher/packages.lock.json	5	"NBitcoin": {
 nbitcoin_package	test_or_tool	Contrib/Releases/Publisher/packages.lock.json	23	"NBitcoin.Secp256k1": "3.1.6",
@@ -642,3 +662,10 @@ nbitcoin_package	test_or_tool	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/
 nbitcoin_package	test_or_tool	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/packages.lock.json	153	"NBitcoin.Secp256k1": {
 nbitcoin_package	test_or_tool	ThirdParty/WabiSabi/interop/packages.lock.json	8	"NBitcoin.Secp256k1": "[3.1.6, )"
 nbitcoin_package	test_or_tool	ThirdParty/WabiSabi/interop/packages.lock.json	11	"NBitcoin.Secp256k1": {
+nbitcoin_package	application_or_coordinator	mcw/tests/nostr_host/packages.lock.json	189	"NBitcoin": "[10.0.13, )",
+nbitcoin_package	application_or_coordinator	mcw/tests/nostr_host/packages.lock.json	197	"NBitcoin.Secp256k1": "[3.1.6, )"
+nbitcoin_package	application_or_coordinator	mcw/tests/nostr_host/packages.lock.json	262	"NBitcoin": {
+nbitcoin_package	application_or_coordinator	mcw/tests/nostr_host/packages.lock.json	272	"NBitcoin.Secp256k1": {
+nbitcoin_package	application_or_coordinator	mcw/tests/nostr_host/packages.lock.json	292	"NBitcoin.Secp256k1": "3.1.6",
+nbitcoin_package	application_or_coordinator	mcw/tests/script_text_reference/Oracle.csproj	10	<Reference Include="NBitcoin">
+nbitcoin_package	application_or_coordinator	mcw/tests/script_text_reference/Oracle.csproj	11	<HintPath>$(NuGetPackageRoot)nbitcoin/10.0.13/lib/net10.0/NBitcoin.dll</HintPath>

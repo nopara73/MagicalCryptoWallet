@@ -91,7 +91,7 @@ try {
     Copy-Item -LiteralPath (Join-Path $taskAdapterDirectory 'McwCompactFilterMatcher.cs') -Destination $taskProbe
     [IO.File]::WriteAllText((Join-Path $taskProbe 'SyntheticTermination.cs'), 'namespace MagicalCryptoWallet.Services.Terminate { public sealed class TerminateService { public void SignalForceTerminate() {} } }')
     [IO.File]::WriteAllText((Join-Path $taskProbe 'NuGet.Config'), '<configuration><packageSources><clear /></packageSources></configuration>')
-    $taskProject = '<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net10.0</TargetFramework><AssemblyName>magicalcryptowalletd</AssemblyName><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable><TreatWarningsAsErrors>true</TreatWarningsAsErrors></PropertyGroup></Project>'
+    $taskProject = '<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net10.0</TargetFramework><AssemblyName>magicalcryptowallet</AssemblyName><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable><TreatWarningsAsErrors>true</TreatWarningsAsErrors></PropertyGroup></Project>'
     [IO.File]::WriteAllText((Join-Path $taskProbe 'Probe.csproj'), $taskProject)
     $taskMsbuildFlags = @('-p:ImportDirectoryBuildProps=false','-p:ImportDirectoryBuildTargets=false','-p:ManagePackageVersionsCentrally=false')
     dotnet restore (Join-Path $taskProbe 'Probe.csproj') --configfile (Join-Path $taskProbe 'NuGet.Config') @taskMsbuildFlags --verbosity quiet 2>&1 |
@@ -103,12 +103,12 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'Synthetic typed adapter/real managed-host source compilation failed' }
     Copy-Item -LiteralPath (Join-Path $env:CARGO_TARGET_DIR 'debug/mcw.exe') -Destination $taskBin
     $taskCases = Join-Path $taskEvidence 'host-cases.json'
-    & (Join-Path $taskBin 'magicalcryptowalletd.exe') unit $taskCases (Join-Path $taskEvidence 'adapter-unit-results.json')
+    & (Join-Path $taskBin 'magicalcryptowallet.exe') unit $taskCases (Join-Path $taskEvidence 'adapter-unit-results.json')
     if ($LASTEXITCODE -ne 0) { throw 'Typed adapter unit contract failed' }
-    # mcw is a Windows GUI-subsystem executable even for daemon mode. A plain
+    # mcw is a Windows GUI-subsystem executable. A plain
     # invocation can return before its synthetic managed child writes results.
     $taskRoundtripReport = Join-Path $taskEvidence 'host-roundtrip-results.json'
-    $taskHostArguments = @('daemon','roundtrip',('"' + $taskCases + '"'),('"' + $taskRoundtripReport + '"'))
+    $taskHostArguments = @('gui','roundtrip',('"' + $taskCases + '"'),('"' + $taskRoundtripReport + '"'))
     $taskHost = Start-Process -FilePath (Join-Path $taskBin 'mcw.exe') -ArgumentList $taskHostArguments -WorkingDirectory $taskBin -PassThru -WindowStyle Hidden -RedirectStandardOutput (Join-Path $taskEvidence 'host-roundtrip-stdout.txt') -RedirectStandardError (Join-Path $taskEvidence 'host-roundtrip-stderr.txt')
     try {
         $taskElapsed = [Diagnostics.Stopwatch]::StartNew()

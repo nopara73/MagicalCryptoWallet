@@ -72,7 +72,7 @@ try {
     $taskManagedHost = [Security.SecurityElement]::Escape((Join-Path $taskRoot 'MagicalCryptoWallet.Client/Application/ManagedApplicationHost.cs'))
     $taskProject = @"
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup><TargetFramework>net10.0</TargetFramework><OutputType>Exe</OutputType><AssemblyName>magicalcryptowalletd</AssemblyName><LangVersion>14</LangVersion><Nullable>enable</Nullable><BuildMcwHost>false</BuildMcwHost><NuGetAudit>false</NuGetAudit></PropertyGroup>
+  <PropertyGroup><TargetFramework>net10.0</TargetFramework><OutputType>Exe</OutputType><AssemblyName>magicalcryptowallet</AssemblyName><LangVersion>14</LangVersion><Nullable>enable</Nullable><BuildMcwHost>false</BuildMcwHost><NuGetAudit>false</NuGetAudit></PropertyGroup>
   <ItemGroup><ProjectReference Include="$taskCoreProject" /><Compile Include="$taskManagedHost" Link="ManagedApplicationHost.cs" /></ItemGroup>
 </Project>
 "@
@@ -85,7 +85,7 @@ try {
     $taskReport = Join-Path $taskEvidence 'managed-results.json'
     if (Test-Path -LiteralPath $taskReport) { throw 'Use a fresh evidence directory; do not reuse a previous success report.' }
     $taskNativeHost = Join-Path $taskOutput 'mcw.exe'
-    & $taskNativeHost daemon (Join-Path $taskRoot 'mcw/tests/bitcoin_encoding_fixtures') $taskReport 2>&1 | Tee-Object -FilePath (Join-Path $taskEvidence 'managed-run.log')
+    & $taskNativeHost gui (Join-Path $taskRoot 'mcw/tests/bitcoin_encoding_fixtures') $taskReport 2>&1 | Tee-Object -FilePath (Join-Path $taskEvidence 'managed-run.log')
     if ($LASTEXITCODE -or -not (Test-Path -LiteralPath $taskReport)) { throw 'Actual host/caller integration did not produce a successful report.' }
     $taskResult = Get-Content -LiteralPath $taskReport -Raw | ConvertFrom-Json
     if ($taskResult.core_valid -ne 54 -or $taskResult.core_invalid -ne 70 -or $taskResult.concurrent_requests -ne 64 -or $taskResult.dependency_removed) { throw 'Integration report scope/count mismatch.' }

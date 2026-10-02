@@ -1,9 +1,9 @@
 {
-  "snapshot_revision": "1120219c417e31b90864040e1f5f8849b29775a4",
+  "snapshot_revision": "18f0619221b771f9168234bf352abcb026537dd8",
   "counts": {
     "script_format": {
-      "references": 533,
-      "files": 122
+      "references": 536,
+      "files": 124
     },
     "script_validation": {
       "references": 8,
@@ -14,19 +14,21 @@
       "files": 5
     },
     "package_lock": {
-      "references": 51,
-      "files": 13
+      "references": 61,
+      "files": 15
     }
   },
   "fixtures": 8,
   "source_hashes": {
+    "Contrib/Mcw/BridgeProbe/packages.lock.json": "f178249383d4a4aacbb4705f05981cf96a7d7cf036c600534a9b633da32b11a9",
+    "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json": "c0f7e32276a4b09c7eb91d609909bc787678ef21e33695ea4782cfdff0f86bde",
     "Contrib/Releases/Publisher/MagicalCryptoWallet.ReleaseTools.csproj": "d2b4d15d6d006d28fed360adc662844afe6830937ad2ed646f34652bcaab4f74",
     "Contrib/Releases/Publisher/packages.lock.json": "d55faf9563a1ad568d1719ad2c8911d0b343d6fb6db8a2c7ac4c6b37b671a638",
     "Contrib/VisualPreview/AutomaticCoinSelectionChecks.cs": "6601ff5910732fbab9db42be9e3182709c17ba705f0d065953e2d68d2d826f71",
     "Contrib/VisualPreview/packages.lock.json": "247a60a7b8d50307e50c1c83f6c4b131a5c3119e41a5bdab57317a1215bc21f4",
     "Directory.Packages.props": "0bf3e3513503c1499abf4d25e4817ce7fa26aa6045d01a92b24cfb7e47563ca2",
     "MagicalCryptoWallet.Client/packages.lock.json": "5cd064ad3de7160ecfdfe1d5de6ee803ce6a258e2837da9698daaf36dc052249",
-    "MagicalCryptoWallet.Coordinator/Startup.cs": "79b3cd9af0d36a9b384b53175501664aea9a836c534771616315584cca45e385",
+    "MagicalCryptoWallet.Coordinator/Startup.cs": "51080af022d2427edcd67310bff69cfe1fce63d80764be418ea3ce205bd21600",
     "MagicalCryptoWallet.Coordinator/WabiSabi/Arena.Partial.cs": "028f07d72a842d361ebed8a9d8c2cc8177f31df6686539f87353dfad6ecd4b84",
     "MagicalCryptoWallet.Coordinator/WabiSabi/Arena.cs": "9a4891cc7673ef1247df53c53560904ef713beb90fd74519eef732bb37696f0d",
     "MagicalCryptoWallet.Coordinator/packages.lock.json": "0134e37914a92af782d0f437ae10e742eecaeabd24e380853d86045e6016dbfc",
@@ -108,15 +110,17 @@
     "MagicalCryptoWallet/Blockchain/TransactionProcessing/TransactionProcessor.cs": "2ad52b8fa4a0abda3c9ad128edcd0ec2ee40e613ec4315c0deff2840842c1e7b",
     "MagicalCryptoWallet/Blockchain/Transactions/SmartTransaction.cs": "03ac9b20c65100b975d56e91e7f20a169c9d31cc43ca3126c324fa8f0195d042",
     "MagicalCryptoWallet/Blockchain/Transactions/SmartTransactionExtensions.cs": "dc86ddb29ff91e27504c9a5e611b3f9a8d3d48d2cfbd40a138ba8f7b76888e2d",
-    "MagicalCryptoWallet/Blockchain/Transactions/TransactionFactory.cs": "1858f1ce275189f30f20ee16a6dbf873820a395b94b4f039ecfd3fd5f50b050d",
+    "MagicalCryptoWallet/Blockchain/Transactions/TransactionFactory.cs": "4f8e2d7c49509bfb66dcef5417eb13d2ea916264de81aee0075f9a398630ff18",
     "MagicalCryptoWallet/Crypto/Bip322Signature.cs": "5280ec1157c4e4031f5080d0e0a9d331474b153e845a2f02d3884fbd497babd4",
     "MagicalCryptoWallet/Crypto/OwnershipIdentifier.cs": "025973c0c33e1b4409adcff40572fca520c24ced48d6abcb9bda4e16358e67ea",
     "MagicalCryptoWallet/Crypto/OwnershipProof.cs": "a83994b5946cc2006b8d5e420e6627aa481edf2ccde876a1fcb41e9a560d4566",
     "MagicalCryptoWallet/Crypto/ProofBody.cs": "d8684b6eb3678ae81280c52bdbff15bea4ebcec561e9e74350df6b45accd2d4d",
     "MagicalCryptoWallet/Exceptions/UnknownRoundEndingException.cs": "7a4df72473b7f95bba0deeaaa578167287119e60a33884d7443958f8b019f67b",
-    "MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs": "5c8cd79c52b2cee9c1fc7210019d4f0004c0433952c104233212aec5f0775c72",
+    "MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs": "1480b188e3bfcab8a3a8c1f1cf5b81024b7df0a260ff347765d386ee9f147a36",
     "MagicalCryptoWallet/Helpers/TxOutEqualityComparer.cs": "12e1b87e3b580d25384dd844ba5e0e6a1cd425c2d9dd2c61797594a0c1ba819f",
     "MagicalCryptoWallet/MagicalCryptoWallet.csproj": "db2bbc9a532947c82ba18fc1548768b8828d3d7f6a5610debbe6dabf41357a24",
+    "MagicalCryptoWallet/Mcw/Psbt/McwPsbtMetadata.cs": "d258a420a7fe6bf7f93dd7e2a4fb0fdf12d9a7b3df84bbecb166557898872f58",
+    "MagicalCryptoWallet/Mcw/Scripts/ScriptTextClient.cs": "db39780c6e7c4346dbfae53289ea5331046506966bbbeba873104a92cba4432b",
     "MagicalCryptoWallet/Serialization/Bitcoin.cs": "ff19f7ed7e83d0cc4a0ab38ecd9b500f1ec785b81870c46724b300a47f4877da",
     "MagicalCryptoWallet/Serialization/Coordination.cs": "610b3a50bd03c355ab352093aad8f98b637a68d67f7a180d6a524f7aeef95b84",
     "MagicalCryptoWallet/WabiSabi/Client/Batching/Payment.cs": "fb1823fc6d2d3b7c013889f2630ef8acdc9648f25205ab1f07c713ff031a6f6c",

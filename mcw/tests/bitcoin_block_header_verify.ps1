@@ -124,7 +124,7 @@ try {
     & dotnet build $probeProject --no-restore -c Release -m:1 -p:UseSharedCompilation=false -p:CustomAfterMicrosoftCommonTargets=$injection 2>&1 | Tee-Object -FilePath (Join-Path $runRoot 'managed-build.log')
     Require-Success 'Actual managed caller/host build'
     Copy-Item -Path (Join-Path $managedRoot 'bin/Release/net10.0/*') -Destination $applicationRoot -Recurse
-    Copy-Item -LiteralPath (Join-Path $applicationRoot 'BlockHeaderProbe.exe') -Destination (Join-Path $applicationRoot 'magicalcryptowalletd.exe')
+    Copy-Item -LiteralPath (Join-Path $applicationRoot 'BlockHeaderProbe.exe') -Destination (Join-Path $applicationRoot 'magicalcryptowallet.exe')
     $binary = Join-Path $applicationRoot 'mcw.exe'
     Copy-Item -LiteralPath (Join-Path $env:CARGO_TARGET_DIR 'debug/mcw.exe') -Destination $binary
     $fixture = Join-Path $PSScriptRoot 'bitcoin_block_fixtures/headers.tsv'
@@ -132,7 +132,7 @@ try {
     $reports = [ordered]@{}
     foreach ($action in 'verify', 'recover') {
         $report = Join-Path $runRoot ($action + '.json')
-        & $binary daemon $action $report $fixture $cache 2>&1 | Tee-Object -FilePath (Join-Path $runRoot ($action + '.log'))
+        & $binary gui $action $report $fixture $cache 2>&1 | Tee-Object -FilePath (Join-Path $runRoot ($action + '.log'))
         Require-Success ('Real host cache ' + $action)
         $reports[$action] = Get-Content -LiteralPath $report -Raw | ConvertFrom-Json
     }
