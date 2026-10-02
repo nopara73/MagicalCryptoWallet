@@ -68,3 +68,23 @@ Those files describe retained managed code; the Rust codec itself has only std
 plus the actual first-party bitcoin_wire/bitcoin_encoding source dependencies.
 Native production integration, upstream package removal and four non-Windows
 native executions are outstanding work.
+
+## Bounded cache header identity
+
+`headers.tsv` contains 256 deterministic synthetic 80-byte headers: zero bytes,
+all-ones bytes, ascending bytes and 253 pseudorandom inputs with seed `0x0E00`.
+`bitcoin_block_header_reference.py` checks the existing hash-pinned, unchanged
+Bitcoin Core v30.0 `CBlockHeader` against Python hashlib, then stores raw and
+display-order hashes. Its input/reference/fixture hashes are in `manifest.json`.
+No user block, wallet, key or network connection is used for these new vectors.
+
+`header_conformance.rs` exercises the exact 80-to-32-byte native
+application service, all short lengths, oversized inputs and hash byte order.
+`bitcoin_block_header_probe.cs` is an ignored-output test child of the actual
+mcw host using its actual managed connection and production cache source. It
+compares all synthetic hashes with Core/hashlib and the retained NBitcoin
+reference, checks cache/error/retry behavior and retries preserved bytes after
+actual host binding teardown. The verifier freezes real source and distinguishes
+an applied shared dispatch proposal from published incorporation; test execution
+does not by itself verify publication. NBitcoin remains a retained data mapping
+and independent test reference, with no fallback hashing path in the cache.

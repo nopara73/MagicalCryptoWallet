@@ -1,8 +1,9 @@
 # Bitcoin block and Merkle checkpoint
 
-State (2026-10-02, Asia/Singapore): **block/Merkle component ready for bounded
-caller integration; full synchronization migration stopped by the human scope
-correction**. This checkpoint
+State (2026-10-02, Asia/Singapore): **block/Merkle checkpoint and unused cache
+header service prepared; atomic cache caller/host incorporation pending QR idle**.
+The full synchronization migration remains stopped by the human scope correction.
+This checkpoint
 does not replace the retained NBitcoin synchronization backend, remove its
 package, authenticate headers, or constitute a production wallet release.
 
@@ -194,15 +195,59 @@ Its ignored `bitcoin-block-sync-evidence/preserved-scope.json` records source
 hashes and the incomplete Clippy verification. It is not production code and
 must not be included in host registration or a cutover.
 
-A bounded candidate is exact 80-byte header hashing for the existing block
-cache filenames, plus read identity verification against the requested hash.
-`Wallets/FileSystemBlockRepository.cs` still uses NBitcoin Block mapping and
-retains its existing storage format. This candidate requires narrow caller
-ownership coordination, a typed native service leaf, actual host dispatch and
-synthetic cache compatibility/error tests before a production replacement can
-be claimed. No package retirement, whole sync replacement or changed consensus
-validation is implied. In particular, `Block.Check` remains unchanged.
+A bounded implementation now exists for exact 80-byte header hashing and the
+existing cache filenames/read identity. Storage confirmed no ownership overlap
+on `Wallets/FileSystemBlockRepository.cs` and its tests. The production caller
+retains NBitcoin Block mapping and its existing storage format until atomic
+incorporation. No package retirement, whole sync replacement or changed
+consensus validation is implied. In particular, `Block.Check` remains unchanged.
+
+## Bounded cache header service and atomic incorporation
+
+`bitcoin_block_service::hash_header(&[u8]) -> Result<[u8;32], bitcoin_block::Error>`
+uses the actual published `BlockHeader::decode/hash` and first-party encoding
+module. Operation **0x0E00** accepts exactly 80 serialized bytes and returns 32
+raw digest bytes. The managed `McwBlockHeaderService` maps only those bytes to
+the retained uint256/display filename; it has no managed hashing fallback.
+Invalid input lengths are rejected, and invalid digest lengths/host errors are
+wrapped separately from corrupt-cache errors. Cancellation propagates.
+
+The narrow caller change preserves the existing public three-argument
+constructor, directories, filenames, block serialization/mapping, locking,
+pruning and access-time behavior. Save serializes once before awaiting the host,
+then hashes and writes that same byte snapshot. Read hashes the first 80 bytes
+before Block.Load, rejects a mismatched filename and retains corruption
+deletion/redownload behavior. Valid files survive runtime failure/cancellation.
+The delayed-request test specifically mutates the supplied block while hashing
+is pending to verify that the saved bytes retain the hashed header identity.
+
+`bitcoin-block-cache.patch` is the reviewable atomic activation proposal against
+published foundation descendant `7ae424b5f5f3734ca1870962a2d913769c59b26d`.
+It depends on the separately published unused service/test assets and includes
+the cache caller, managed tests, native test hook and two shared-file changes:
+`lib.rs` declares the service, and `app.rs` dispatches the exact header operation.
+QR owns those shared files and their fresh idle integration. Do not publish an
+active caller before the operation is available, or register broad sync drafts.
+Unused leaf/test assets may be published while the existing production caller
+and shared registration remain unchanged. The nested header-conformance source
+is deliberately not an automatically discovered Cargo test until the atomic
+patch adds it to the existing block-conformance test.
+
+The real-host verifier freezes the actual published host source in an ignored
+snapshot, uses the actual managed connection and production cache source, and
+records whether the shared dispatch was proposed in that snapshot. Its initial
+run and final byte-snapshot refinement run passed 256 synthetic
+Core/hashlib/NBitcoin hashes, 82 rejected native payload lengths and nine actual
+cache cases, including actual binding teardown and recovery through a new mcw
+process. The final run passed **nine fault-injection facts**, including the
+delayed-request byte-snapshot regression. Strict real-host Clippy/Rust and
+managed caller/probe builds completed with warnings denied/no warnings. Final
+evidence is recorded in the machine handoff; prior source evidence must not be
+substituted for that rerun. Build output uses a
+short owned path to avoid MSVC's legacy executable-path limit. Verification is
+Windows x64 only; publication/incorporation and other native platforms remain
+separate acceptance evidence.
 
 The coordinator alone dispatches incorporation when QR is idle. A machine handoff
-record identifies this component as ready while bounded caller integration
-awaits assignment; it is not a dependency-removal or workstream-completion claim.
+record identifies the checkpoint/assets as ready while atomic caller integration
+is pending; it is not a dependency-removal or completed-workstream claim.

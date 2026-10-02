@@ -1,0 +1,348 @@
+diff --git a/MagicalCryptoWallet/Wallets/FileSystemBlockRepository.cs b/MagicalCryptoWallet/Wallets/FileSystemBlockRepository.cs
+--- a/MagicalCryptoWallet/Wallets/FileSystemBlockRepository.cs
++++ b/MagicalCryptoWallet/Wallets/FileSystemBlockRepository.cs
+@@ -7,6 +7,8 @@
+ using MagicalCryptoWallet.Extensions;
+ using MagicalCryptoWallet.Helpers;
+ using MagicalCryptoWallet.Logging;
++using MagicalCryptoWallet.Mcw;
++using MagicalCryptoWallet.Mcw.Blocks;
+ 
+ namespace MagicalCryptoWallet.Wallets;
+ 
+@@ -15,10 +17,16 @@
+ 	private const int MegaByte = 1024 * 1024;
+ 
+ 	public FileSystemBlockRepository(string blocksFolderPath, Network network, int targetBlocksFolderSizeInMegabytes = 300)
++		: this(blocksFolderPath, network, targetBlocksFolderSizeInMegabytes, applicationServices: null)
++	{
++	}
++
++	public FileSystemBlockRepository(string blocksFolderPath, Network network, int targetBlocksFolderSizeInMegabytes, IMcwApplicationServices? applicationServices)
+ 	{
+ 		BlocksFolderPath = blocksFolderPath;
+ 		_network = network;
+ 		_targetBlocksFolderSizeBytes = targetBlocksFolderSizeInMegabytes * MegaByte;
++		_headerService = new McwBlockHeaderService(applicationServices);
+ 		RemoveBlockFolderForRegTest();
+ 	}
+ 
+@@ -26,6 +34,7 @@
+ 	private readonly Network _network;
+ 	private readonly long _targetBlocksFolderSizeBytes;
+ 	private readonly AsyncLock _blockFolderLock = new();
++	private readonly McwBlockHeaderService _headerService;
+ 
+ 	private void Prune()
+ 	{
+@@ -72,12 +81,21 @@
+ 			try
+ 			{
+ 				var blockBytes = await File.ReadAllBytesAsync(filePath, cancellationToken).ConfigureAwait(false);
++				if (blockBytes.Length < McwBlockHeaderService.HeaderLength)
++				{
++					throw new InvalidDataException("Cached block header is truncated.");
++				}
++				var cachedHash = await _headerService.HashAsync(blockBytes.AsMemory(0, McwBlockHeaderService.HeaderLength), cancellationToken).ConfigureAwait(false);
++				if (cachedHash != hash)
++				{
++					throw new InvalidDataException("Cached block header does not match its filename.");
++				}
+ 				var block = Block.Load(blockBytes, _network);
+ 
+ 				UpdateLastAccessTime(filePath);
+ 				return block;
+ 			}
+-			catch(Exception e)
++			catch(Exception e) when (e is not McwBlockHeaderServiceException and not OperationCanceledException)
+ 			{
+ 				Logger.LogDebug(e);
+ 				Logger.LogInfo($"Block {hash} file corrupted, deleting file and block will be re-downloaded. Deleting...");
+@@ -103,14 +121,17 @@
+ 	public async Task SaveAsync(Block block, CancellationToken cancellationToken)
+ 	{
+ 		EnsureBlockFolderExists();
+-		var path = Path.Combine(BlocksFolderPath, block.GetHash().ToString());
++		// Hash and save the same snapshot across the asynchronous host request.
++		var blockBytes = block.ToBytes();
++		var hash = await _headerService.HashAsync(blockBytes.AsMemory(0, McwBlockHeaderService.HeaderLength), cancellationToken).ConfigureAwait(false);
++		var path = Path.Combine(BlocksFolderPath, hash.ToString());
+ 		if (!File.Exists(path))
+ 		{
+ 			using (await _blockFolderLock.LockAsync(cancellationToken).ConfigureAwait(false))
+ 			{
+ 				if (!File.Exists(path))
+ 				{
+-					await File.WriteAllBytesAsync(path, block.ToBytes(), CancellationToken.None).ConfigureAwait(false);
++					await File.WriteAllBytesAsync(path, blockBytes, CancellationToken.None).ConfigureAwait(false);
+ 					Prune();
+ 				}
+ 			}
+diff --git a/MagicalCryptoWallet.Tests/UnitTests/Wallet/FileSystemBlockRepositoryTests.cs b/MagicalCryptoWallet.Tests/UnitTests/Wallet/FileSystemBlockRepositoryTests.cs
+--- a/MagicalCryptoWallet.Tests/UnitTests/Wallet/FileSystemBlockRepositoryTests.cs
++++ b/MagicalCryptoWallet.Tests/UnitTests/Wallet/FileSystemBlockRepositoryTests.cs
+@@ -4,7 +4,8 @@
+ using System.Threading;
+ using System.Threading.Tasks;
+ using MagicalCryptoWallet.Helpers;
+-using MagicalCryptoWallet.Tests.Helpers;
++using MagicalCryptoWallet.Mcw;
++using MagicalCryptoWallet.Mcw.Blocks;
+ using MagicalCryptoWallet.Wallets;
+ using Xunit;
+ 
+@@ -15,8 +16,8 @@
+ 	[Fact]
+ 	public async Task PrunesFilesOverConfiguredSizeAsync()
+ 	{
+-		var workDir = Common.GetWorkDir();
+-		await IoHelpers.TryDeleteDirectoryAsync(workDir);
++		using var directory = new SyntheticDirectory();
++		var workDir = directory.Path;
+ 
+ 		try
+ 		{
+@@ -25,9 +26,10 @@
+ 			await File.WriteAllBytesAsync(oldFilePath, new byte[1024 * 1024]);
+ 			File.SetLastAccessTimeUtc(oldFilePath, DateTime.UtcNow - TimeSpan.FromDays(1));
+ 
+-			var repository = new FileSystemBlockRepository(workDir, Network.Main, targetBlocksFolderSizeInMegabytes: 1);
+ 			var block = Network.Main.Consensus.ConsensusFactory.CreateBlock();
+ 			block.Header.Nonce = 1;
++			var services = new HeaderServices(block.Header.ToBytes(), block.GetHash().ToBytes());
++			var repository = new FileSystemBlockRepository(workDir, Network.Main, targetBlocksFolderSizeInMegabytes: 1, services);
+ 
+ 			await repository.SaveAsync(block, CancellationToken.None);
+ 
+@@ -39,4 +41,194 @@
+ 			await IoHelpers.TryDeleteDirectoryAsync(workDir);
+ 		}
+ 	}
++
++	[Fact]
++	public async Task KeepsExistingFilenameAndBytesAsync()
++	{
++		using var directory = new SyntheticDirectory();
++		var block = SyntheticBlock();
++		var hash = block.GetHash();
++		var services = new HeaderServices(block.Header.ToBytes(), hash.ToBytes());
++		var repository = new FileSystemBlockRepository(directory.Path, Network.Main, 300, applicationServices: services);
++		await repository.SaveAsync(block, CancellationToken.None);
++		var path = Path.Combine(directory.Path, hash.ToString());
++		Assert.Equal(block.ToBytes(), await File.ReadAllBytesAsync(path));
++		var loaded = await repository.TryGetBlockAsync(hash, CancellationToken.None);
++		Assert.NotNull(loaded);
++		Assert.Equal(block.ToBytes(), loaded.ToBytes());
++		Assert.Equal(2, services.Requests);
++	}
++
++	[Fact]
++	public async Task SaveHashesAndWritesTheSameSnapshotAsync()
++	{
++		using var directory = new SyntheticDirectory();
++		var block = SyntheticBlock();
++		var bytes = block.ToBytes();
++		var hash = block.GetHash();
++		var services = new DelayedHeaderServices();
++		var repository = new FileSystemBlockRepository(directory.Path, Network.Main, 300, services);
++		var saving = repository.SaveAsync(block, CancellationToken.None);
++		var requestedHeader = await services.Requested.Task;
++		block.Header.Nonce++;
++		services.Digest.SetResult(hash.ToBytes());
++		await saving;
++		Assert.Equal(bytes.AsSpan(0, 80).ToArray(), requestedHeader);
++		Assert.Equal(bytes, await File.ReadAllBytesAsync(Path.Combine(directory.Path, hash.ToString())));
++	}
++
++	[Fact]
++	public async Task WrongFilenameIsDeletedAndCanBeRedownloadedAsync()
++	{
++		using var directory = new SyntheticDirectory();
++		var block = SyntheticBlock();
++		var hash = block.GetHash();
++		var wrongHash = new uint256(1);
++		var wrongPath = Path.Combine(directory.Path, wrongHash.ToString());
++		await File.WriteAllBytesAsync(wrongPath, block.ToBytes());
++		var services = new HeaderServices(block.Header.ToBytes(), hash.ToBytes());
++		var repository = new FileSystemBlockRepository(directory.Path, Network.Main, 300, applicationServices: services);
++		Assert.Null(await repository.TryGetBlockAsync(wrongHash, CancellationToken.None));
++		Assert.False(File.Exists(wrongPath));
++		await repository.SaveAsync(block, CancellationToken.None);
++		Assert.NotNull(await repository.TryGetBlockAsync(hash, CancellationToken.None));
++	}
++
++	[Fact]
++	public async Task TruncatedHeaderIsDeletedWithoutHostRequestAsync()
++	{
++		using var directory = new SyntheticDirectory();
++		var hash = new uint256(2);
++		var path = Path.Combine(directory.Path, hash.ToString());
++		await File.WriteAllBytesAsync(path, new byte[79]);
++		var services = new HeaderServices(new byte[80], new byte[32]);
++		var repository = new FileSystemBlockRepository(directory.Path, Network.Main, 300, applicationServices: services);
++		Assert.Null(await repository.TryGetBlockAsync(hash, CancellationToken.None));
++		Assert.False(File.Exists(path));
++		Assert.Equal(0, services.Requests);
++	}
++
++	[Fact]
++	public async Task CorruptBodyStillUsesRetainedBlockMappingAsync()
++	{
++		using var directory = new SyntheticDirectory();
++		var block = SyntheticBlock();
++		var hash = block.GetHash();
++		var path = Path.Combine(directory.Path, hash.ToString());
++		var bytes = new byte[81];
++		block.Header.ToBytes().CopyTo(bytes, 0);
++		bytes[80] = 1; // One transaction declared, with no transaction bytes.
++		await File.WriteAllBytesAsync(path, bytes);
++		var services = new HeaderServices(block.Header.ToBytes(), hash.ToBytes());
++		var repository = new FileSystemBlockRepository(directory.Path, Network.Main, 300, applicationServices: services);
++		Assert.Null(await repository.TryGetBlockAsync(hash, CancellationToken.None));
++		Assert.False(File.Exists(path));
++	}
++
++	[Fact]
++	public async Task HostFailurePreservesCacheAndAllowsRetryAsync()
++	{
++		using var directory = new SyntheticDirectory();
++		var block = SyntheticBlock();
++		var hash = block.GetHash();
++		var path = Path.Combine(directory.Path, hash.ToString());
++		var bytes = block.ToBytes();
++		await File.WriteAllBytesAsync(path, bytes);
++		var failed = new HeaderServices(block.Header.ToBytes(), hash.ToBytes(), new IOException("Synthetic host disconnection."));
++		var repository = new FileSystemBlockRepository(directory.Path, Network.Main, 300, applicationServices: failed);
++		await Assert.ThrowsAsync<McwBlockHeaderServiceException>(() => repository.TryGetBlockAsync(hash, CancellationToken.None));
++		Assert.Equal(bytes, await File.ReadAllBytesAsync(path));
++		var working = new HeaderServices(block.Header.ToBytes(), hash.ToBytes());
++		var retry = new FileSystemBlockRepository(directory.Path, Network.Main, 300, applicationServices: working);
++		Assert.NotNull(await retry.TryGetBlockAsync(hash, CancellationToken.None));
++	}
++
++	[Fact]
++	public async Task InvalidHostDigestPreservesCacheAsync()
++	{
++		using var directory = new SyntheticDirectory();
++		var block = SyntheticBlock();
++		var hash = block.GetHash();
++		var path = Path.Combine(directory.Path, hash.ToString());
++		var bytes = block.ToBytes();
++		await File.WriteAllBytesAsync(path, bytes);
++		var services = new HeaderServices(block.Header.ToBytes(), new byte[31]);
++		var repository = new FileSystemBlockRepository(directory.Path, Network.Main, 300, applicationServices: services);
++		await Assert.ThrowsAsync<McwBlockHeaderServiceException>(() => repository.TryGetBlockAsync(hash, CancellationToken.None));
++		Assert.Equal(bytes, await File.ReadAllBytesAsync(path));
++	}
++
++	[Fact]
++	public async Task CancellationPreservesCacheAsync()
++	{
++		using var directory = new SyntheticDirectory();
++		var block = SyntheticBlock();
++		var hash = block.GetHash();
++		var path = Path.Combine(directory.Path, hash.ToString());
++		var bytes = block.ToBytes();
++		await File.WriteAllBytesAsync(path, bytes);
++		var services = new HeaderServices(block.Header.ToBytes(), hash.ToBytes());
++		var repository = new FileSystemBlockRepository(directory.Path, Network.Main, 300, applicationServices: services);
++		using var canceled = new CancellationTokenSource();
++		canceled.Cancel();
++		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => repository.TryGetBlockAsync(hash, canceled.Token));
++		Assert.Equal(bytes, await File.ReadAllBytesAsync(path));
++		Assert.NotNull(await repository.TryGetBlockAsync(hash, CancellationToken.None));
++	}
++
++	private static Block SyntheticBlock()
++	{
++		var block = Network.Main.Consensus.ConsensusFactory.CreateBlock();
++		block.Header.Version = 4;
++		block.Header.Nonce = 0x80000001;
++		return block;
++	}
++
++	// Fault-injection tests use a predetermined reference digest. The real-host
++	// integration probe separately executes native hashing and these cache paths.
++	private sealed class HeaderServices(byte[] expectedHeader, byte[] digest, Exception? failure = null) : IMcwApplicationServices
++	{
++		public int Requests { get; private set; }
++		public CancellationToken Stopped => CancellationToken.None;
++		public Task<byte[]> RequestAsync(ushort operation, ReadOnlyMemory<byte> payload, CancellationToken cancellationToken = default)
++		{
++			cancellationToken.ThrowIfCancellationRequested();
++			Assert.Equal(McwBlockHeaderService.HashHeaderOperation, operation);
++			Assert.Equal(expectedHeader, payload.ToArray());
++			Requests++;
++			return failure is null ? Task.FromResult((byte[])digest.Clone()) : Task.FromException<byte[]>(failure);
++		}
++	}
++
++	private sealed class DelayedHeaderServices : IMcwApplicationServices
++	{
++		public TaskCompletionSource<byte[]> Requested { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
++		public TaskCompletionSource<byte[]> Digest { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
++		public CancellationToken Stopped => CancellationToken.None;
++		public Task<byte[]> RequestAsync(ushort operation, ReadOnlyMemory<byte> payload, CancellationToken cancellationToken = default)
++		{
++			Assert.Equal(McwBlockHeaderService.HashHeaderOperation, operation);
++			Requested.SetResult(payload.ToArray());
++			return Digest.Task.WaitAsync(cancellationToken);
++		}
++	}
++
++	private sealed class SyntheticDirectory : IDisposable
++	{
++		private static readonly string Root = System.IO.Path.GetFullPath(System.IO.Path.Combine(System.IO.Path.GetTempPath(), "mcw-block-cache-tests"));
++		public SyntheticDirectory()
++		{
++			Path = System.IO.Path.Combine(Root, Guid.NewGuid().ToString("N"));
++			Directory.CreateDirectory(Path);
++		}
++		public string Path { get; }
++		public void Dispose()
++		{
++			if (!System.IO.Path.GetFullPath(Path).StartsWith(Root + System.IO.Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
++			{
++				throw new InvalidOperationException("Synthetic cache path escaped the test directory.");
++			}
++			if (Directory.Exists(Path)) { Directory.Delete(Path, recursive: true); }
++		}
++	}
+ }
+diff --git a/mcw/tests/bitcoin_block_conformance.rs b/mcw/tests/bitcoin_block_conformance.rs
+--- a/mcw/tests/bitcoin_block_conformance.rs
++++ b/mcw/tests/bitcoin_block_conformance.rs
+@@ -1012,3 +1012,6 @@
+         assert!(result.is_ok(), "case {case}");
+     }
+ }
++
++#[path = "bitcoin_block_fixtures/header_conformance.rs"]
++mod bounded_header;
+diff --git a/mcw/src/lib.rs b/mcw/src/lib.rs
+--- a/mcw/src/lib.rs
++++ b/mcw/src/lib.rs
+@@ -1,6 +1,7 @@
+ //! Application services shared by the host, CLI and eventually the native UI.
+ pub mod app;
+ pub mod bitcoin_block;
++pub mod bitcoin_block_service;
+ pub mod bitcoin_encoding;
+ pub mod bitcoin_script;
+ pub mod bitcoin_wire;
+diff --git a/mcw/src/app.rs b/mcw/src/app.rs
+--- a/mcw/src/app.rs
++++ b/mcw/src/app.rs
+@@ -263,6 +263,12 @@
+             frame.reply(Vec::new()).write(output)
+         }
+         bridge::QR => bridge::encode_qr(frame).write(output),
++        crate::bitcoin_block_service::HASH_HEADER => {
++            match crate::bitcoin_block_service::hash_header(&frame.payload) {
++                Ok(digest) => frame.reply(digest.to_vec()).write(output),
++                Err(_) => frame.error(1, "invalid block header").write(output),
++            }
++        }
+         bridge::RESTART | bridge::CRASH | bridge::UPDATE => {
+             let args = match bridge::strings(&frame.payload) {
+                 Ok(args) => args,

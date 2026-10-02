@@ -16,15 +16,17 @@ function Text-Hash([string]$Path) {
     [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData([Text.Encoding]::UTF8.GetBytes($canonical))).ToLowerInvariant()
 }
 $sources = [ordered]@{}
-foreach ($name in 'bitcoin_encoding', 'bitcoin_wire', 'bitcoin_block') {
+foreach ($name in 'bitcoin_encoding', 'bitcoin_wire', 'bitcoin_block', 'bitcoin_block_service') {
     $sources[$name] = Join-Path $repoRoot ('mcw/src/' + $name + '.rs')
     if (-not (Test-Path -LiteralPath $sources[$name])) { throw ('Actual source missing: ' + $sources[$name]) }
 }
 $sourceHashes = [ordered]@{}
 foreach ($name in $sources.Keys) { $sourceHashes[$name] = Source-Hash $sources[$name] }
 $testSource = Join-Path $PSScriptRoot 'bitcoin_block_conformance.rs'
+$headerTestSource = Join-Path $PSScriptRoot 'bitcoin_block_fixtures/header_conformance.rs'
 $driverSource = Join-Path $PSScriptRoot 'bitcoin_block_fixtures/driver.rs'
 $sourceHashes['conformance'] = Source-Hash $testSource
+$sourceHashes['header_conformance'] = Source-Hash $headerTestSource
 $sourceHashes['driver'] = Source-Hash $driverSource
 $manifestPath = Join-Path $PSScriptRoot 'bitcoin_block_fixtures/manifest.json'
 $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
@@ -46,7 +48,11 @@ try {
     $harnessSource = Join-Path $harnessRoot 'conformance.rs'
     $referenceSource = Join-Path $harnessRoot 'reference.rs'
     [IO.File]::WriteAllText($librarySource, $moduleText)
-    [IO.File]::WriteAllText($harnessSource, $moduleText + '#[path="' + $testSource.Replace('\', '/') + '"] mod conformance;')
+    $testModuleText = $moduleText + '#[path="' + $testSource.Replace('\', '/') + '"] mod conformance;'
+    if (-not ([IO.File]::ReadAllText($testSource).Contains('mod bounded_header;'))) {
+        $testModuleText += [Environment]::NewLine + '#[path="' + $headerTestSource.Replace('\', '/') + '"] mod header_conformance;'
+    }
+    [IO.File]::WriteAllText($harnessSource, $testModuleText)
     [IO.File]::WriteAllText($referenceSource, $moduleText + '#[path="' + $driverSource.Replace('\', '/') + '"] mod reference_driver;' + [Environment]::NewLine + 'fn main() { reference_driver::main(); }')
     $linker = Get-ChildItem -Path 'C:\Program Files\Microsoft Visual Studio\*\*\VC\Tools\MSVC\*\bin\Hostx64\x64\link.exe' | Sort-Object FullName -Descending | Select-Object -First 1
     if (-not $linker) { throw 'Existing MSVC linker is required' }
@@ -55,7 +61,7 @@ try {
     $env:PATH = $linker.Directory.FullName + ';' + $env:PATH
     $env:LIB = (Join-Path $msvcRoot 'lib/onecore/x64') + ';' + (Join-Path $sdk.FullName 'ucrt/x64') + ';' + (Join-Path $sdk.FullName 'um/x64')
     $env:CARGO_BUILD_JOBS = '1'
-    & (Join-Path $toolBin 'rustfmt.exe') --edition 2024 --check $sources.bitcoin_block $testSource $driverSource
+    & (Join-Path $toolBin 'rustfmt.exe') --edition 2024 --check $sources.bitcoin_block $sources.bitcoin_block_service $testSource $headerTestSource $driverSource
     if ($LASTEXITCODE -ne 0) { throw 'rustfmt check failed' }
     $common = @('--edition=2024', '-D', 'warnings', '-C', 'overflow-checks=yes', '-C', 'codegen-units=1', '-C', 'target-feature=+crt-static')
     & $rustc @common --crate-type lib --emit metadata $librarySource -o (Join-Path $harnessRoot 'block.rmeta')
@@ -90,13 +96,13 @@ try {
     & $dumpbin /dependents (Join-Path $harnessRoot 'block-optimized.exe') | Set-Content -LiteralPath $imports -Encoding utf8
     if ($LASTEXITCODE -ne 0) { throw 'Runtime import audit failed' }
     foreach ($name in $sources.Keys) { if ((Source-Hash $sources[$name]) -ne $sourceHashes[$name]) { throw 'Actual source changed during verification' } }
-    if ((Source-Hash $testSource) -ne $sourceHashes.conformance -or (Source-Hash $driverSource) -ne $sourceHashes.driver) { throw 'Test source changed during verification' }
+    if ((Source-Hash $testSource) -ne $sourceHashes.conformance -or (Source-Hash $headerTestSource) -ne $sourceHashes.header_conformance -or (Source-Hash $driverSource) -ne $sourceHashes.driver) { throw 'Test source changed during verification' }
     $platforms = @()
     foreach ($target in 'x86_64-pc-windows-msvc', 'x86_64-unknown-linux-gnu', 'aarch64-unknown-linux-gnu', 'x86_64-apple-darwin', 'aarch64-apple-darwin') {
         $available = Test-Path -LiteralPath (Join-Path $toolBin ('../lib/rustlib/' + $target + '/lib'))
         $platforms += [ordered]@{target=$target;standard_library_available=$available;execution_verified=($target -eq 'x86_64-pc-windows-msvc');note= $(if($target -eq 'x86_64-pc-windows-msvc') {'actual debug/optimized test execution'} else {'native compilation and execution not verified'})}
     }
-    $evidence = [ordered]@{compiler=$version;edition=2024;sources=$sourceHashes;source_paths=$sources;runs=$runs;block_vectors=$manifest.block_vectors;partial_vectors=$manifest.partial_vectors;witness_transactions=$manifest.witness_transactions;differential=$differential;runtime_imports=$imports;platforms=$platforms;production_release=$false;note='Actual committed-module sources in ignored test harness only. No extra Cargo package or shipping executable.'}
+    $evidence = [ordered]@{compiler=$version;edition=2024;sources=$sourceHashes;source_paths=$sources;runs=$runs;block_vectors=$manifest.block_vectors;partial_vectors=$manifest.partial_vectors;header_vectors=$manifest.header_vectors;witness_transactions=$manifest.witness_transactions;differential=$differential;runtime_imports=$imports;platforms=$platforms;production_release=$false;note='Actual module sources in ignored test harness only. Real-host cache caller verification is recorded separately. No extra Cargo package or shipping executable.'}
     $evidence | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $evidenceRoot 'verification.json') -Encoding utf8
     $evidence | ConvertTo-Json -Depth 8
 } finally { if ($buildHandle) { $buildHandle.Dispose() } }
