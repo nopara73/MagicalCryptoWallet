@@ -7908,7 +7908,7 @@
       "name": "AppImage ELF launcher runtime",
       "status": "retained in Linux AppImage packages; independent of the mcw payload",
       "owner": "installation and launch",
-      "evidence": "Contrib/Releases/package.py create_linux; appimagetool prepends the separately downloaded runtime",
+      "evidence": "Contrib/Releases/package.py linux_packages; appimagetool prepends the separately downloaded runtime",
       "upstream_source": "https://github.com/AppImage/type2-runtime/blob/8f39b89e2ac31e1640b3d3f7e9a5108e6ce805fa/src/runtime/Makefile",
       "embedded_build": "actual per-package runtime source/version and component versions unverified; a packaging-tool checksum is not a runtime checksum"
     },
