@@ -89,7 +89,7 @@ public class MagicalCryptoWalletJsonRpcService : IJsonRpcService
 		var walletGenerator = new WalletGenerator(Global.WalletSession.WalletDirectories.WalletsDir, Global.Network);
 		walletGenerator.TipHeight = Global.FilterHeaders.TipHeight;
 		var (keyManager, mnemonic) = walletGenerator.GenerateDraft(password, mnemonic: null);
-		Global.WalletSession.Configure(keyManager);
+		Global.WalletSession.Configure(keyManager, password);
 		return mnemonic.ToString();
 	}
 
@@ -105,7 +105,7 @@ public class MagicalCryptoWalletJsonRpcService : IJsonRpcService
 		}
 
 		var (keyManager, _) = walletGenerator.GenerateDraft(password, mnemonic);
-		Global.WalletSession.Configure(keyManager);
+		Global.WalletSession.Configure(keyManager, password);
 	}
 
 	[JsonRpcMethod("getwalletinfo", initializable: false)]

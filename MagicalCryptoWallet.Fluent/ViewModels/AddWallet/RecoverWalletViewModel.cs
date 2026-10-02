@@ -80,7 +80,7 @@ public partial class RecoverWalletViewModel : RoutableViewModel
 			if (filterMinHeight is { } minHeight && BirthHeight < minHeight)
 			{
 				// Save the wallet so its birth height is picked up by CalculateSafestHeight on restart.
-				UiContext.WalletSetupService.Commit(walletSettings);
+				await UiContext.WalletSetupService.CommitAsync(walletSettings, password);
 				UiContext.Services.UiConfig.ToFile();
 
 				await ShowErrorAsync(

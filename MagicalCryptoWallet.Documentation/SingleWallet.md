@@ -2,6 +2,8 @@
 
 MCW opens and synchronizes its configured wallet whenever the application starts, including silent desktop startup. The dashboard opens directly, shows placeholders until local data is known, then shows cached balance/history while synchronization continues. Detailed progress and retry appear in the expandable status surface. Protected operations validate their own passphrases. Any successful authorization also authorizes CoinJoin for this application run; automatic CoinJoin starts when synchronization and send/shutdown restrictions allow. This never skips authorization for later spending or private information. Chinese password masking and Lurking Wife Mode remain supported.
 
+Passwords supplied during creation or recovery also authorize CoinJoin for that run, through both the desktop and RPC setup paths. Importing an encrypted file without entering its password leaves CoinJoin awaiting authorization. Restarting always discards retained authorization.
+
 ## Storage and setup
 
 One wallet is configured per active network and data directory. New creation, recovery, and explicit software-wallet import create unsaved drafts and commit `Wallet.json` through a serialized, recoverable journal. Import sources stay unchanged; destination collisions and concurrent setup cannot overwrite stored keys or accept a second wallet.

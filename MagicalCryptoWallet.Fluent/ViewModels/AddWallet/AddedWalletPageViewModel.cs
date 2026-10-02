@@ -28,7 +28,16 @@ public partial class AddedWalletPageViewModel : RoutableViewModel
 
 	private async Task OnNextAsync(WalletCreationOptions options)
 	{
-		try { _wallet ??= UiContext.WalletSetupService.Commit(_draft); }
+		try
+		{
+			var password = options switch
+			{
+				WalletCreationOptions.AddNewWallet add => add.SelectedWalletBackup?.Password,
+				WalletCreationOptions.RecoverWallet recover => recover.WalletBackup?.Password,
+				_ => null
+			};
+			_wallet ??= await UiContext.WalletSetupService.CommitAsync(_draft, password);
+		}
 		catch (Exception ex)
 		{
 			await ShowErrorAsync("Wallet setup", ex.Message, "Unable to save the wallet");
