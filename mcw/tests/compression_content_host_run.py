@@ -31,7 +31,9 @@ def main():
         assert hashlib.sha256((snapshot / name).read_bytes()).hexdigest() == expected, name
     record = dict(manifest, actual_host_passed=9, native_exit_code=result.returncode,
                   binary_sha256=hashlib.sha256(host.read_bytes()).hexdigest(),
-                  binary_path=str(host), log_path=str(log))
+                  binary_path=str(host), log_path=str(log),
+                  cancellation_scope="HTTP body acquisition; this fixture has no synchronized in-flight native marker",
+                  in_flight_native_cancellation_verified=False)
     (snapshot / ".artifacts/verification.json").write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8")
 
 

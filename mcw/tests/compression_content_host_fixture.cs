@@ -38,7 +38,7 @@ internal static class ContentHostFixture
 		await Caller("gzip", false, true, false).ConfigureAwait(false);count++;Console.WriteLine("HOST PASS corrupt-checksum-withheld");
 		await Caller("unknown", false, false, true).ConfigureAwait(false);count++;Console.WriteLine("HOST PASS unsupported-coding-withheld");
 		await ResponseMetadata().ConfigureAwait(false);count++;Console.WriteLine("HOST PASS actual-decoded-response-metadata");
-		await Cancellation().ConfigureAwait(false);count++;Console.WriteLine("HOST PASS retained-caller-cancellation");
+		await BodyAcquisitionCancellation().ConfigureAwait(false);count++;Console.WriteLine("HOST PASS retained-caller-body-acquisition-cancellation");
 		Console.WriteLine($"ACTUAL HOST RESULT: {count} passed; actual_application_host=true; synthetic_only=true");
 		return 0;
 	}
@@ -87,7 +87,7 @@ internal static class ContentHostFixture
 		}
 		finally { factory.Close(); }
 	}
-	private static async Task Cancellation()
+	private static async Task BodyAcquisitionCancellation()
 	{
 		using var overall = new CancellationTokenSource(TimeSpan.FromSeconds(20));
 		using var server = new SocksFixture(Packed(Plain, "gzip"), "gzip", false, overall.Token, stall: true);

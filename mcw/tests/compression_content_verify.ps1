@@ -1,8 +1,15 @@
 param([string]$SharedRoot='C:\Users\user\OneDrive\Documents\ChatGPT\MagicalCryptoWallet',
-    [string]$Python='C:\Python314\python.exe', [int]$WaitForSlotSeconds=0)
+    [string]$Python='C:\Python314\python.exe', [int]$WaitForSlotSeconds=0,
+    [string]$EvidenceDirectory)
 $ErrorActionPreference='Stop'
 $repo=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
 $root=Join-Path $repo '.artifacts/compression-content'
+if($EvidenceDirectory){
+    $root=[IO.Path]::GetFullPath($EvidenceDirectory)
+    $artifacts=[IO.Path]::GetFullPath((Join-Path $repo '.artifacts'))+[IO.Path]::DirectorySeparatorChar
+    if(-not $root.StartsWith($artifacts,[StringComparison]::OrdinalIgnoreCase)){throw 'Evidence must stay in owned artifacts'}
+    if(Test-Path -LiteralPath $root){throw 'Use fresh evidence directory; preserve prior source-bound results'}
+}
 New-Item -ItemType Directory -Path $root -Force | Out-Null
 $rustc=Join-Path $SharedRoot '.artifacts/mcw-tools/rustup/toolchains/1.99.0-x86_64-pc-windows-msvc/bin/rustc.exe'
 $handle=$null

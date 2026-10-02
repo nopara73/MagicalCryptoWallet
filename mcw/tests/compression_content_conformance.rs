@@ -102,51 +102,34 @@ fn bounded_adapter_rejects_malformed_trailing_oversized_payloads() {
     assert!(u64::from_le_bytes(reply[14..22].try_into().unwrap()) > 0);
 }
 #[test]
-fn content_control_ids_cancellation_and_release_are_bounded() {
-    use content_service::adapter::{ControlError, Controls};
-    let c = Controls::new();
-    assert_eq!(c.register(0), Err(ControlError::InvalidId));
-    c.register(1).unwrap();
-    assert_eq!(c.register(1), Err(ControlError::DuplicateId));
-    c.cancel(1).unwrap();
-    assert_eq!(c.checkpoint(1), Err(Abort::Cancelled));
-    c.release(1).unwrap();
-    c.register(2).unwrap();
-    c.cancel(1).unwrap();
-    assert!(c.checkpoint(2).is_ok());
-    for id in 3..=33 {
-        c.register(id).unwrap();
-    }
-    assert_eq!(c.register(34), Err(ControlError::Full));
-    c.release(2).unwrap();
-    c.register(34).unwrap();
+fn stateless_adapter_withholds_body_on_host_cancellation() {
+    use content_service::adapter::{self, Failure};
+    let packet = content_packet(b"synthetic bounded response", &[]);
+    let reply = adapter::execute(&packet, &mut || Err(Abort::Cancelled)).unwrap();
+    assert_eq!(packet_failure(&reply), Failure::Cancelled as u16);
+    let next = adapter::execute(&packet, &mut || Ok(())).unwrap();
+    assert_eq!(&next[..3], &[1, 0, 0]);
+    assert_eq!(&next[12..], b"synthetic bounded response");
 }
 #[test]
-fn reader_cancellation_interrupts_registered_native_work_and_releases_id() {
-    use content_service::adapter::{self, Controls, Failure};
-    let control = std::sync::Arc::new(Controls::new());
-    control.register(9).unwrap();
-    let br = br_repeat(20000);
+fn host_callback_interrupts_partial_native_work_without_a_body() {
+    use content_service::adapter::{self, Failure};
+    let br = br_stored(&vec![42; 128 * 1024]);
     let packet = content_packet(&br, &[b"br"]);
     let mut calls = 0;
-    let reply = adapter::execute_registered(9, &packet, &control, &mut || {
+    let reply = adapter::execute(&packet, &mut || {
         calls += 1;
-        if calls == 3 {
-            let c = control.clone();
-            std::thread::spawn(move || c.cancel(9).unwrap())
-                .join()
-                .unwrap();
+        if calls == 20 {
+            Err(Abort::Cancelled)
+        } else {
+            Ok(())
         }
-        Ok(())
     })
     .unwrap();
     assert_eq!(packet_failure(&reply), Failure::Cancelled as u16);
-    assert!(calls >= 3);
-    assert_eq!(control.checkpoint(9), Err(Abort::Cancelled));
-    control.register(9).unwrap();
-    let bad = adapter::execute_registered(9, b"bad", &control, &mut || Ok(())).unwrap();
-    assert_eq!(packet_failure(&bad), Failure::MalformedRequest as u16);
-    control.register(9).unwrap();
+    assert_eq!(calls, 20);
+    let produced = u64::from_le_bytes(reply[14..22].try_into().unwrap());
+    assert!(produced > 0 && produced < 128 * 1024);
 }
 #[test]
 fn service_deadline_is_checked_inside_native_work() {

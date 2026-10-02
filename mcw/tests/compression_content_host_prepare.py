@@ -59,6 +59,10 @@ def main():
     patch_record = None
     if args.integrated:
         assert "pub mod content_service;" in (repo / "mcw/src/lib.rs").read_text()
+        app = (repo / "mcw/src/app.rs").read_text()
+        assert "content_adapter::OPERATION =>" in app and "content_adapter::execute(" in app
+        assert "inbox.is_interrupted(frame.id, frame.operation)" in app, "Real host interruption hook required"
+        assert "fn is_interrupted(" in (repo / "mcw/src/app/inbox.rs").read_text()
         factory = (repo / "MagicalCryptoWallet/WebClients/MagicalCryptoWallet/MagicalCryptoWalletHttpClientFactory.cs").read_text()
         assert "McwContentDecodingHandler" in factory and "DecompressionMethods.None" in factory
     else:
@@ -91,6 +95,8 @@ def main():
         "snapshot_hashes": {name: digest(out / name) for name in sorted(files)},
         "shared_patches": patch_record, "actual_application_host": True,
         "production_integrated": args.integrated, "test_local_shared_patches": not args.integrated,
+        "cancellation_scope": "HTTP body acquisition only; no synchronized native decode marker in this fixture",
+        "in_flight_native_cancellation_verified": False,
         "synthetic_only": True, "external_network": False, "active_checkouts_modified": False,
         "named_client": "MempoolSpace-bitcoin-fee-rate-provider",
     }

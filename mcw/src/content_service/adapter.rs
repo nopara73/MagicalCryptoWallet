@@ -3,10 +3,7 @@
 #![forbid(unsafe_code)]
 use super::{Abort, Coding, ErrorKind, Limits};
 use crate::compression::{self, Limit};
-use std::{
-    sync::Mutex,
-    time::{Duration, Instant},
-};
+use std::time::{Duration, Instant};
 
 pub const OPERATION: u16 = 0x0900;
 pub const VERSION: u16 = 1;
@@ -15,106 +12,6 @@ pub const MAX_FIELDS: usize = 4;
 pub const MAX_FIELD: usize = 2048;
 pub const MAX_TIMEOUT_MS: u16 = 5000;
 pub const MAX_REPLY: usize = 12 + MAX_FIELDS * 21 + MAX_BODY;
-const SLOTS: usize = 32;
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum ControlError {
-    InvalidId,
-    DuplicateId,
-    Full,
-    Poisoned,
-}
-#[derive(Clone, Copy)]
-struct Entry {
-    id: u64,
-    cancelled: bool,
-}
-/// Per host connection. The existing frame reader registers requests and marks
-/// cancellation before enqueueing; dispatch releases IDs after each operation.
-/// Only this content operation participates. Other services keep their owners.
-pub struct Controls {
-    entries: Mutex<[Entry; SLOTS]>,
-}
-impl Default for Controls {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-impl Controls {
-    pub const fn new() -> Self {
-        Self {
-            entries: Mutex::new(
-                [Entry {
-                    id: 0,
-                    cancelled: false,
-                }; SLOTS],
-            ),
-        }
-    }
-    pub fn register(&self, id: u64) -> Result<(), ControlError> {
-        if id == 0 {
-            return Err(ControlError::InvalidId);
-        }
-        let mut e = self.entries.lock().map_err(|_| ControlError::Poisoned)?;
-        if e.iter().any(|v| v.id == id) {
-            return Err(ControlError::DuplicateId);
-        }
-        let slot = e.iter_mut().find(|v| v.id == 0).ok_or(ControlError::Full)?;
-        *slot = Entry {
-            id,
-            cancelled: false,
-        };
-        Ok(())
-    }
-    pub fn cancel(&self, id: u64) -> Result<(), ControlError> {
-        let mut e = self.entries.lock().map_err(|_| ControlError::Poisoned)?;
-        if let Some(v) = e.iter_mut().find(|v| v.id == id && id != 0) {
-            v.cancelled = true;
-        }
-        Ok(())
-    }
-    pub fn checkpoint(&self, id: u64) -> Result<(), Abort> {
-        let e = self.entries.lock().map_err(|_| Abort::Cancelled)?;
-        match e.iter().find(|v| v.id == id && id != 0) {
-            Some(v) if !v.cancelled => Ok(()),
-            _ => Err(Abort::Cancelled),
-        }
-    }
-    pub fn release(&self, id: u64) -> Result<(), ControlError> {
-        let mut e = self.entries.lock().map_err(|_| ControlError::Poisoned)?;
-        if let Some(v) = e.iter_mut().find(|v| v.id == id && id != 0) {
-            *v = Entry {
-                id: 0,
-                cancelled: false,
-            };
-        }
-        Ok(())
-    }
-}
-
-/// Dispatcher entry after the real frame reader registered this request ID.
-/// Release on every exit, including malformed packets, aborts and allocation errors.
-pub fn execute_registered(
-    id: u64,
-    payload: &[u8],
-    controls: &Controls,
-    native_check: &mut impl FnMut() -> Result<(), Abort>,
-) -> Result<Vec<u8>, AllocationFailed> {
-    struct Release<'a> {
-        id: u64,
-        controls: &'a Controls,
-    }
-    impl Drop for Release<'_> {
-        fn drop(&mut self) {
-            let _ = self.controls.release(self.id);
-        }
-    }
-    let _release = Release { id, controls };
-    execute(payload, &mut || {
-        controls.checkpoint(id)?;
-        native_check()
-    })
-}
 
 /// Safe wire classifications. Neither messages nor Debug contain body/header data.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -213,6 +110,10 @@ fn failed(
 /// per layer coding:u8,input:u32,consumed:u32,output:u32,work:u64; then body.
 /// Failure: version:u16,status:u8=1,code:u16,layer:u8,input:u64,output:u64.
 /// Every packet fits the existing 1 MiB frame. Only <=512 KiB responses use it.
+/// The host owns cancellation and connection lifetime: its checkpoint queries
+/// the bounded inbox for the active (request ID, operation), closure and shutdown.
+/// The execution deadline starts here, after acquisition and queueing. Allocation
+/// limits account for logical codec storage, not the caller, allocator or RSS.
 pub fn execute(
     payload: &[u8],
     native_check: &mut impl FnMut() -> Result<(), Abort>,

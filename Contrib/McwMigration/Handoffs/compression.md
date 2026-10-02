@@ -2,8 +2,9 @@
 
 The accepted caller is **`MempoolSpace-bitcoin-fee-rate-provider`**, created by
 `FeeRateProviders.MempoolSpaceAsync`. This work replaces only that small response
-body's decoder. The actual native host and retained managed caller pass the
-synthetic host fixture. Production registration and factory incorporation remain
+body's decoder. A historical native-host/retained-caller fixture passes with
+test-local shared patches; its cancellation case stalls HTTP body acquisition.
+Production registration, cancellation hooks and factory incorporation remain
 with their owners; an unused leaf or a test-local patch is not a completed
 production cutover.
 
@@ -36,7 +37,7 @@ factory and mechanical caller-interface changes. Prepared small shared patches
 are applied only in an ignored test snapshot; coordinator requests QR
 incorporation only while QR is idle. No active owner checkout is edited here.
 
-The factory caches the outer content handler only for the exact named client,
+The reviewed factory proposal caches the outer content handler for the exact named client,
 with its existing transport as the inner handler. That transport alone gets
 `AutomaticDecompression.None`; every other client retains `.All`. Existing
 HttpClient, onion/direct routing, SOCKS identity credentials, TLS, retry,
@@ -100,10 +101,20 @@ consumption chain, counters and complete packet framing before exposing bytes.
 | Logical decoder allocation | 4 MiB |
 | Gzip header / members; Brotli meta-blocks | 16 KiB / 16; 256 |
 
-The existing frame reader registers request IDs and marks CANCEL before queueing;
-32 bounded control entries permit native work checkpoints to observe cancellation.
-Dispatch releases its entry on every result/error. Caller/host-stop tokens are
-linked; native cancellation/deadline checkpoints reach bounded inner work.
+The current host owner's bounded Inbox reads independently of dispatch, caps
+queued requests at 256/16 MiB, prioritizes CANCEL and removes matching queued
+work. The review-only `Inbox::is_interrupted(id, operation)` hook observes a
+matching cancellation, terminal connection closure or poisoned state from the
+decoder's existing checkpoint. The proposed dispatcher supplies this query to
+the stateless adapter and checks host shutdown. It adds no duplicate request
+registry. The previous sync_channel/32-ID Controls proposal is retired; preserved
+historical snapshots retain the code and evidence they actually tested.
+
+The 5000 ms bound starts after packet parsing, when native execution begins.
+It excludes HTTP acquisition, frame transit and queue delay. The inbox/hook
+component tests prove interruption during partial native decoding; real host
+in-flight cancellation, EOF and saturated-queue acceptance remain unsatisfied
+until the shared owner incorporates the hook and the incorporated host is tested.
 Allocation counts requested live buffer capacity and codec storage, not allocator
 bookkeeping, caller buffers, transient allocator copying or operating-system RSS.
 
@@ -129,7 +140,7 @@ at least 2 GiB free RAM, and release in finally before review/publication/waits.
   **32** hand-assembled context/RLE/MTF/block-switch vectors and **540** vectors
   covering qualities 0..11 and windows 10..24. Includes the actual HTTP/1 parser,
   synthetic TCP framing, private failure buffers, limits, cancellation, deadlines,
-  adapter/control IDs, redacted Debug and 3000 bounded random Brotli inputs.
+  stateless host checkpoints, redacted Debug and 3000 bounded random Brotli inputs.
 - Managed component: **14 tests** using the actual leaf/interface and actual Rust
   payload decoder. These are component evidence, not an application-host claim.
 - Actual host: **9 tests** using published host foundation
@@ -137,19 +148,36 @@ at least 2 GiB free RAM, and release in finally before review/publication/waits.
   real Core/retained fee caller/factory/retry/HTTP transport, and small test-local
   owner patches. A loopback SOCKS fixture verifies exact onion route, stream
   credentials, identity/gzip/zlib/br/layered bytes and decimal rates, typed checksum/
-  unsupported failures, encoded/decoded metadata, and caller cancellation.
+  unsupported failures, encoded/decoded metadata, and caller cancellation during
+  HTTP body acquisition. It does not synchronize or cancel in-flight native decode.
   It never resolves/connects to the requested onion or public endpoint, starts
   no Tor/UI, and reads/writes no wallet. Native exit is **0**.
 
-The actual Core/host fixture compiles with **0 warnings, 0 errors**; shipping
-native lib/bin pass Clippy with warnings denied. The actual Windows host uses
+That historical Core/host snapshot compiled with **0 warnings, 0 errors**; its
+native lib/bin passed Clippy with warnings denied. The actual Windows host used
 `Contrib/Mcw/build.py` and its matching rebuilt standard library/native OS runtime.
 PE audit reports OS imports only: KERNEL32, API-MS-WIN-CORE-SYNCH, KERNELBASE,
 NTDLL and SHELL32. This is Windows x64 fixture evidence; other target/runtime
-and complete product-release acceptance remain with the host owner.
+and complete product-release acceptance remain with the host owner. These facts
+are bound to the recorded historical sources and binary, not current master.
+
+`compression_content_inbox_verify.ps1 -ReviewRoot <prepared-review>` compiles exact
+copied host Inbox/Frame/QR sources, the one review-only query, and the actual owned
+adapter/codecs. It holds the same build-slot guard and writes fresh source-hashed
+evidence. **14 debug + 14 optimized component tests** pass, including seven new
+synchronized cases: active cancellation with 256 queued requests, queued cancel
+removal/deduplication and sibling success, ID/operation isolation, saturated EOF,
+malformed/truncated frame closure, request overload and control overload. A decoder
+thread pauses at checkpoint 20, ingress is acknowledged before resume, and each
+interruption requires nonzero partial-output counters below the complete size and
+only the 22-byte typed failure packet. No sleep determines when work has started.
+This test uses a synthetic loopback stream and never runs the real application
+host; its passing results do not satisfy the real-host incorporation gates.
 
 Evidence is under `.artifacts/compression/`, `.artifacts/compression-content/`,
 and `.artifacts/compression-content/actual-host/snapshot-e/.artifacts/`.
+Synchronized proof and reviewed patches are under
+`.artifacts/compression-content/inbox-review-a/`; old evidence is preserved.
 JSON records contain exact before/after source hashes, corpus digests, source
 baseline, test-local shared patch hashes and native binary SHA256.
 The Brotli corpus SHA256 is
@@ -172,12 +200,19 @@ Primary specifications: [RFC1950](https://www.rfc-editor.org/rfc/rfc1950),
 
 ## Integration acceptance and remaining dependencies
 
-`compression_content_host_patch.py` generates exact reviewed host/registration
-and network/factory hunks plus before-source/patch SHA256 without editing active
-owner files. Coordinator delivers host incorporation only when QR is idle;
+`compression_content_host_patch.py --repo <owned> --host-repo <read-only-host>
+--out <fresh-owned-artifact>` generates reviewed Inbox/registration/dispatcher
+and network/factory hunks plus exact originals, source roots and SHA256. It
+refuses the old blocking-reader contract and never edits active owner files.
+Coordinator delivers host incorporation only when QR is idle;
 network applies its own factory hunks after leaf publication and host dispatch.
-Re-run the actual-host fixture against incorporated master before reporting this
-named production replacement complete. Prepared/tested hunks alone are pending.
+Run `compression_content_host_prepare.py --integrated` against exact incorporated
+master after real registration, the interruption hook and selected factory
+activation. It applies no local shared patches and must be followed by the actual
+host verifier. Its nine retained-caller cases cover body acquisition cancellation;
+meaningful synchronized native in-flight cancellation/EOF/queue proof through that
+incorporated host is a separate unsatisfied gate. Prepared/tested hunks alone are
+pending. The queued factory baseline differs from the tested historical baseline.
 
 Other response clients keep managed AutomaticDecompression, including coordinator,
 exchange, CPFP, broadcaster, other fee providers and installer streams.
