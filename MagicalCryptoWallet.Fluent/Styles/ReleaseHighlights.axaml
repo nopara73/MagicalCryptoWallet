@@ -1,0 +1,47 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:MagicalCryptoWallet.Fluent.Controls">
+  <Style Selector="controls|ReleaseHighlightsText">
+    <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
+  </Style>
+  <Style Selector="TextBlock.releaseBody, TextBlock.releaseMarker">
+    <Setter Property="Foreground" Value="{DynamicResource TextForegroundColor}" />
+  </Style>
+  <Style Selector="TextBlock.releaseBody">
+    <Setter Property="Margin" Value="0 5" />
+  </Style>
+  <Style Selector="TextBlock.releaseHeading1, TextBlock.releaseHeading2, TextBlock.releaseHeading3, TextBlock.releaseHeading4">
+    <Setter Property="FontWeight" Value="Light" />
+  </Style>
+  <Style Selector="TextBlock.releaseHeading2">
+    <Setter Property="Margin" Value="0 20 0 0" />
+  </Style>
+  <Style Selector="TextBlock.releaseHeading3">
+    <Setter Property="Margin" Value="0 20 0 7" />
+  </Style>
+  <Style Selector="HyperlinkButton.releaseLink">
+    <Setter Property="Foreground" Value="{DynamicResource SystemAccentColor}" />
+  </Style>
+  <Style Selector="HyperlinkButton.releaseLink:pointerover">
+    <Setter Property="Foreground" Value="{DynamicResource SystemAccentColorLight2}" />
+  </Style>
+  <Style Selector="HyperlinkButton.releaseLink TextBlock">
+    <Setter Property="TextDecorations" Value="Underline" />
+  </Style>
+  <Style Selector="Border.releaseRule">
+    <Setter Property="Background">
+      <SolidColorBrush Opacity="0.4" Color="{DynamicResource SystemBaseHighColor}" />
+    </Setter>
+  </Style>
+  <Style Selector="Border.releaseQuote">
+    <Setter Property="BorderBrush">
+      <SolidColorBrush Opacity="0.16" Color="{DynamicResource SystemBaseHighColor}" />
+    </Setter>
+  </Style>
+  <Style Selector="Border.releaseCode">
+    <Setter Property="Background" Value="{DynamicResource Layer1BackgroundBrush}" />
+  </Style>
+  <Style Selector="TextBlock.releaseError">
+    <Setter Property="Foreground" Value="{DynamicResource TextForegroundColor}" />
+  </Style>
+</Styles>

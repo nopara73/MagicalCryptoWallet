@@ -1,0 +1,3630 @@
+{
+  "schema": 1,
+  "scope": "Retained release-highlights grammar. Historical product features are test data only.",
+  "source_head": "7ae424b5f5f3734ca1870962a2d913769c59b26d",
+  "oracle": {
+    "viewer": "Markdown.Avalonia.Full.MarkdownScrollViewer",
+    "version": "11.0.3",
+    "avalonia": "11.3.22",
+    "method": "Actual old XAML namespace wrapper Engine.TransformElement; semantic blocks, levels, depth, text, style and destinations",
+    "assembly_sha256": {
+      "ColorDocument.Avalonia.dll": "918c32eb14685ea9699762e27a19a349093ca28a374aec17999ffd412a262beb",
+      "ColorTextBlock.Avalonia.dll": "aaec7f077be16c11fb10a4e01870bfc7e984ea4cfeb8e7278e67ca5d44429a70",
+      "Markdown.Avalonia.dll": "00c84347043e6d5045cea42c02b03c07900d93a684330137068f1eb7c7bc47fd",
+      "Markdown.Avalonia.Full.dll": "585a59f4024d0fd23b80729a88d68fd019ddc0ca1aaf3692010cd7ce9138dfd6",
+      "Markdown.Avalonia.Html.dll": "0ed055f15feaa464ed6fcf21cd85fb52b3de4348b7f212a7c6bb9ce3128f6a84",
+      "Markdown.Avalonia.Svg.dll": "948f6dde8e519bfd9db9818fec885ba4e1767b2684d41929d4a4f91eac754d50",
+      "Markdown.Avalonia.SyntaxHigh.dll": "2f376bcd3460d0adfa61356592425dcf23c69708763ad18de1c90fd50f9a2897"
+    }
+  },
+  "records": [
+    {
+      "source_commit": "current",
+      "source_path": "MagicalCryptoWallet/Announcements/ReleaseHighlights.md",
+      "source_sha256": "c3bc3969fda94f209c0e28d330ebb411d8d6c6e327dbf61380450c40a9f06182",
+      "fixture": "current.md",
+      "markdown": "\n",
+      "markdown_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "expected": {
+        "Blocks": []
+      }
+    },
+    {
+      "source_commit": "96ac5f435109bfeec8edc5f0835445b522790be4",
+      "source_path": "WalletWasabi/Announcements/ReleaseHighlights.md",
+      "source_sha256": "e413e213a9a85ac71584961efa1f5dc2c81a9b1670257185b1db6ca8f13487d5",
+      "fixture": "96ac5f435109bfeec8edc5f0835445b522790be4.md",
+      "markdown": "## Summary\n#### \ud83c\udf33 Taproot support for Payjoin\n#### \ud83d\udd10 Stricter security controls across the wallet\n#### \ud83d\udee1\ufe0f Enhanced coinjoin blame round protection\n## Details\n\n### Deprecation of compatibility password feature\nPlease create a new wallet if you see the following message while logging in to your wallet:\n*Compatibility passphrase was used! Please consider generating a new wallet to ensure recoverability!*\n\nFive years ago, because of a clipboard bug on macOS (OSX) in the Avalonia UI framework, users who created wallets by pasting complex passwords (with non-ASCII characters) got their password silently truncated and corrupted. Wallets created with the buggy passwords would be unrecoverable using standard BIP39 tools.\n\nThe mechanism for working around that issue will soon be removed.\n\n### \ud83c\udf33 Payjoin now supports Taproot addresses\nPayjoin transactions now work with Taproot (P2TR) addresses. Payjoins are two-party collaborative transactions that improve fungibility.\n\n### \ud83d\udd10 Stricter security controls\nMultiple security hardening measures have been implemented:\n- Payjoin now requires Tor to be enabled for enhanced privacy\n- Improved validation of compact block filters\n- Better network diversity by connecting to nodes in different net groups\n- Fixed value-conservation checks for Payjoin sender\n\n### \ud83d\udee1\ufe0f Enhanced coinjoin blame round protection\nImproved coinjoin reliability and security:\n- Clients now verify blame round inputs match the original round\n- Fixed payment stalling when only non-private coins are temporarily banned\n- Wallet no longer participates in blame rounds when it didn't sign in the original round\n\n### \ud83c\udfb5 Music box always visible\nThe coinjoin \"music box\" is now always visible in the UI for easier access to coinjoin status and controls.\n\n### \ud83d\udc1b Bug fixes\n- Fixed blockchain info exchange rate provider\n- Improved handling of missing Windows startup registry key",
+      "markdown_sha256": "6981582a79788410180ae504ddd201baf945b4540d601210ff4b6b46530173e6",
+      "expected": {
+        "Blocks": [
+          {
+            "Kind": 1,
+            "Level": 2,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Summary",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 4,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83c\udf33 Taproot support for Payjoin",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 4,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83d\udd10 Stricter security controls across the wallet",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 4,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83d\udee1\ufe0f Enhanced coinjoin blame round protection",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 2,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Details",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 3,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Deprecation of compatibility password feature",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Please create a new wallet if you see the following message while logging in to your wallet: ",
+                "Style": 0,
+                "Link": null
+              },
+              {
+                "Text": "Compatibility passphrase was used! Please consider generating a new wallet to ensure recoverability!",
+                "Style": 2,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Five years ago, because of a clipboard bug on macOS (OSX) in the Avalonia UI framework, users who created wallets by pasting complex passwords (with non-ASCII characters) got their password silently truncated and corrupted. Wallets created with the buggy passwords would be unrecoverable using standard BIP39 tools.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "The mechanism for working around that issue will soon be removed.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 3,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83c\udf33 Payjoin now supports Taproot addresses",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Payjoin transactions now work with Taproot (P2TR) addresses. Payjoins are two-party collaborative transactions that improve fungibility.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 3,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83d\udd10 Stricter security controls",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Multiple security hardening measures have been implemented:",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 2,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Payjoin now requires Tor to be enabled for enhanced privacy",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 2,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Improved validation of compact block filters",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 2,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Better network diversity by connecting to nodes in different net groups",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 2,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Fixed value-conservation checks for Payjoin sender",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 3,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83d\udee1\ufe0f Enhanced coinjoin blame round protection",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Improved coinjoin reliability and security:",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 2,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Clients now verify blame round inputs match the original round",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 2,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Fixed payment stalling when only non-private coins are temporarily banned",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 2,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Wallet no longer participates in blame rounds when it didn't sign in the original round",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 3,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83c\udfb5 Music box always visible",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "The coinjoin \"music box\" is now always visible in the UI for easier access to coinjoin status and controls.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 3,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83d\udc1b Bug fixes",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 2,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Fixed blockchain info exchange rate provider",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 2,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Improved handling of missing Windows startup registry key",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "source_commit": "7fd820d251d863004b7ed6f0ec3345e1ef4abf8c",
+      "source_path": "WalletWasabi/Announcements/ReleaseHighlights.md",
+      "source_sha256": "81c1135b7f02a6f41851ae4cef653cddb9f3ba09e44f28052ae3d34950ebadc0",
+      "fixture": "7fd820d251d863004b7ed6f0ec3345e1ef4abf8c.md",
+      "markdown": "## Summary\n#### \ud83d\udd17 P2P synchronization fixes after chain reorganizations\n#### \ud83d\udd10 Security improvements for coinjoin\n#### \ud83c\udf4e Native macOS Apple Silicon support for hardware wallets\n## Details\n\n### \ud83d\udd17 P2P synchronization fixes after chain reorganizations\nFixed several issues that caused synchronization failures when the blockchain experienced reorganizations. The wallet now correctly handles orphaned tips and shorter reorg chains without throwing errors, ensuring reliable sync recovery.\n\n### \ud83d\udd10 Security improvements for coinjoin\nEnhanced coinjoin security by verifying other participants' inputs before signing. This adds an extra layer of protection against malicious coordinators or participants attempting to manipulate transactions.\n\n### \ud83c\udf4e Native macOS Apple Silicon support for hardware wallets\nHardware Wallet Interface (HWI) now runs natively on Apple Silicon Macs, eliminating the need for Rosetta emulation and improving performance when using hardware wallets on M1/M2/M3 machines.",
+      "markdown_sha256": "d04fa8c855f58b69e24b4f77b9c6107b09a952ad325aabfce7ebf5df84ae2570",
+      "expected": {
+        "Blocks": [
+          {
+            "Kind": 1,
+            "Level": 2,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Summary",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 4,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83d\udd17 P2P synchronization fixes after chain reorganizations",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 4,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83d\udd10 Security improvements for coinjoin",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 4,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83c\udf4e Native macOS Apple Silicon support for hardware wallets",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 2,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Details",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 3,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83d\udd17 P2P synchronization fixes after chain reorganizations",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Fixed several issues that caused synchronization failures when the blockchain experienced reorganizations. The wallet now correctly handles orphaned tips and shorter reorg chains without throwing errors, ensuring reliable sync recovery.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 3,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83d\udd10 Security improvements for coinjoin",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Enhanced coinjoin security by verifying other participants' inputs before signing. This adds an extra layer of protection against malicious coordinators or participants attempting to manipulate transactions.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 3,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83c\udf4e Native macOS Apple Silicon support for hardware wallets",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Hardware Wallet Interface (HWI) now runs natively on Apple Silicon Macs, eliminating the need for Rosetta emulation and improving performance when using hardware wallets on M1/M2/M3 machines.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "source_commit": "92c20e3dcbdeec8d04fb1402d6c48a37f52f9c7b",
+      "source_path": "WalletWasabi/Announcements/ReleaseHighlights.md",
+      "source_sha256": "4cd537d81e9b0b03cd4a7aa0ed01ddc5e4b274c4ed448f1d4326ef8accf7bda3",
+      "fixture": "92c20e3dcbdeec8d04fb1402d6c48a37f52f9c7b.md",
+      "markdown": "## Summary\n#### \ud83c\udf0e New loading screen\n#### \ud83e\udd55 Receive Taproot by default\n#### \ud83d\udcce Support for two new packages for Linux (AppImage)\n#### \u2699\ufe0f Bug fixes\n## Details\n\n### \ud83c\udf0e New loading screen\nMore detailed progress is now displayed while your wallet is loading. Peers, block headers, filter headers, compact filters, and blocks are now visually trackable. Filter headers now download in parallel.\n\n### \ud83e\udd55 Receive Taproot by default\nTaproot addresses use Bitcoin's most scalable and private script type. The soft fork was activated in August 2021 at block height 709,632, but sending to the new bech32m encoding type was not initially supported by wallet software. 5 years have now past, and Wasabi will shift the pressure to upgrade to unupgraded providers.\n\n#### \ud83d\udcce Support for two new packages for Linux (AppImage)\nWasabi package that runs anywhere. You can download Wasabi Wallet and run it on your Linux desktop system just like you would do with a Windows or Mac application.\n\n### \u2699\ufe0f Bug fixes\nSome issues preventing users from synchronizing with their node were fixed. A bug blocking version upgrade announcements was fixed, and the Nostr relay list was updated.",
+      "markdown_sha256": "05cd678c48409755b6427c0ad15464284d68a3835b07954250f9eb97c734a3e0",
+      "expected": {
+        "Blocks": [
+          {
+            "Kind": 1,
+            "Level": 2,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Summary",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 4,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83c\udf0e New loading screen",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 4,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83e\udd55 Receive Taproot by default",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 4,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83d\udcce Support for two new packages for Linux (AppImage)",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 4,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\u2699\ufe0f Bug fixes",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 2,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Details",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 3,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83c\udf0e New loading screen",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "More detailed progress is now displayed while your wallet is loading. Peers, block headers, filter headers, compact filters, and blocks are now visually trackable. Filter headers now download in parallel.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 3,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83e\udd55 Receive Taproot by default",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Taproot addresses use Bitcoin's most scalable and private script type. The soft fork was activated in August 2021 at block height 709,632, but sending to the new bech32m encoding type was not initially supported by wallet software. 5 years have now past, and Wasabi will shift the pressure to upgrade to unupgraded providers.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 4,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83d\udcce Support for two new packages for Linux (AppImage)",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Wasabi package that runs anywhere. You can download Wasabi Wallet and run it on your Linux desktop system just like you would do with a Windows or Mac application.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 3,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\u2699\ufe0f Bug fixes",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Some issues preventing users from synchronizing with their node were fixed. A bug blocking version upgrade announcements was fixed, and the Nostr relay list was updated.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "source_commit": "15f97c5446a1ff4c0c1f59c06ef1cd6c8bcea841",
+      "source_path": "WalletWasabi/Announcements/ReleaseHighlights.md",
+      "source_sha256": "9b4d7541f946c1e1478531a0a970f91a8757f5f6cde576f62f6677fab93c1db4",
+      "fixture": "15f97c5446a1ff4c0c1f59c06ef1cd6c8bcea841.md",
+      "markdown": "## Summary\n#### \u2699\ufe0f P2P synchronization for compact filters\n#### \ud83d\ude80 Pay in coinjoin\n#### \u2198\ufe0f Sub-1 sat/vByte transaction fees\n#### \u267b\ufe0f Payment batching\n#### \ud83d\udcce Support for arm64 Linux, Tails, and Whonix\n#### \ud83d\udcdc Scheme scripting language\n#### \ud83d\udd11 Signet test network\n#### \ud83d\udc80 Forward compatibility for Tor\n## Details\n\n### \u2699\ufe0f P2P synchronization for compact filters\nWasabi pioneered the use of compact block filters for private wallet synchronization. This involved implementing a custom indexer to build the filters, and hosting a server to provide them to clients.\n\nProgress continued on block filters, resulting in standardized BIPs and direct support in Bitcoin node software. This version of Wasabi uses Bitcoin\u2019s P2P network to download compact filters, eliminating the centralized server.\n\nOnboarding new users to Wasabi is now faster thanks to wallet birthday checkpoints. Newly generated wallets no longer waste time and bandwidth downloading old blockchain history since it would be impossible for a new wallet to have previously received any transactions.\n\n### \ud83d\ude80 Pay in coinjoin\nSending payments directly inside a coinjoin transaction uses block space more efficiently and improves privacy in several ways:\n\n- The age of your inputs is not revealed, so the receiver does not learn how long you\u2019ve held your coins.\n- The size of your change is not revealed, so the receiver does not learn the amount of coins you have left over.\n- You can batch multiple payments into one transaction without revealing they originate from the same sender.\n\n### \u2198\ufe0f Sub-1 sat/vByte transaction fees\nYou can now spend coins using fee rates as low as 0.1 sat/vByte, letting you save up to 90% on mining fees. If a low fee transaction gets \u201cstuck\u201d, you can use Replace By Fee (RBF) to speed it up.\n\n### \u267b\ufe0f Payment batching\nYou can now pay to multiple addresses in the same transaction. This significantly reduces the amount of block space used compared to sending each payment individually.\n\n### \ud83d\udcce Support for arm64 Linux, Tails, and Whonix\nLinux users with arm64 devices are now part of the Wasabi family. Tails and Whonix installations are now automatic and no longer require manual Tor configuration.\n\n### \ud83d\udcdc Scheme scripting language\nThe scripting language is an experimental feature that makes Wasabi programmable, queryable, and extensible.\n\n### \ud83d\udd11 Signet test network\nTestnet3 and Testnet4 use proof of work for generating blocks, just like mainnet. Because testnet coins have no value, low mining difficulty allows an attacker with a small amount of hashpower to flood blocks or create long reorgs.\n\nSignet is another test network that allows a set of signers to create blocks. This reduces the unpredictable behavior so developers can work with a stable environment.\n\n### \ud83d\udc80 Forward compatibility for Tor\nThe Tor Project is terminating network support for versions <0.4.9 on September 1, 2026. This release of Wasabi upgrades the bundled Tor dependency to ensure forward compatibility.",
+      "markdown_sha256": "1c087a5da09c59e883b70df06d36fbcffd3410427d59fc6af07771eb2be74d87",
+      "expected": {
+        "Blocks": [
+          {
+            "Kind": 1,
+            "Level": 2,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Summary",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 4,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\u2699\ufe0f P2P synchronization for compact filters",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 4,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83d\ude80 Pay in coinjoin",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 4,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\u2198\ufe0f Sub-1 sat/vByte transaction fees",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 4,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\u267b\ufe0f Payment batching",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 4,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83d\udcce Support for arm64 Linux, Tails, and Whonix",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 4,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83d\udcdc Scheme scripting language",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 4,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83d\udd11 Signet test network",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 4,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83d\udc80 Forward compatibility for Tor",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 2,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Details",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 3,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\u2699\ufe0f P2P synchronization for compact filters",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Wasabi pioneered the use of compact block filters for private wallet synchronization. This involved implementing a custom indexer to build the filters, and hosting a server to provide them to clients.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Progress continued on block filters, resulting in standardized BIPs and direct support in Bitcoin node software. This version of Wasabi uses Bitcoin\u2019s P2P network to download compact filters, eliminating the centralized server.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Onboarding new users to Wasabi is now faster thanks to wallet birthday checkpoints. Newly generated wallets no longer waste time and bandwidth downloading old blockchain history since it would be impossible for a new wallet to have previously received any transactions.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 3,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83d\ude80 Pay in coinjoin",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Sending payments directly inside a coinjoin transaction uses block space more efficiently and improves privacy in several ways:",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 2,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "The age of your inputs is not revealed, so the receiver does not learn how long you\u2019ve held your coins.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 2,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "The size of your change is not revealed, so the receiver does not learn the amount of coins you have left over.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 2,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "You can batch multiple payments into one transaction without revealing they originate from the same sender.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 3,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\u2198\ufe0f Sub-1 sat/vByte transaction fees",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "You can now spend coins using fee rates as low as 0.1 sat/vByte, letting you save up to 90% on mining fees. If a low fee transaction gets \u201cstuck\u201d, you can use Replace By Fee (RBF) to speed it up.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 3,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\u267b\ufe0f Payment batching",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "You can now pay to multiple addresses in the same transaction. This significantly reduces the amount of block space used compared to sending each payment individually.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 3,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83d\udcce Support for arm64 Linux, Tails, and Whonix",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Linux users with arm64 devices are now part of the Wasabi family. Tails and Whonix installations are now automatic and no longer require manual Tor configuration.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 3,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83d\udcdc Scheme scripting language",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "The scripting language is an experimental feature that makes Wasabi programmable, queryable, and extensible.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 3,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83d\udd11 Signet test network",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Testnet3 and Testnet4 use proof of work for generating blocks, just like mainnet. Because testnet coins have no value, low mining difficulty allows an attacker with a small amount of hashpower to flood blocks or create long reorgs.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Signet is another test network that allows a set of signers to create blocks. This reduces the unpredictable behavior so developers can work with a stable environment.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 3,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83d\udc80 Forward compatibility for Tor",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "The Tor Project is terminating network support for versions <0.4.9 on September 1, 2026. This release of Wasabi upgrades the bundled Tor dependency to ensure forward compatibility.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "source_commit": "fa2b79e0672a4270f74a8dfa76654f67b31bdbe5",
+      "source_path": "WalletWasabi/Announcements/ReleaseHighlights.md",
+      "source_sha256": "5a335792a8bc31c8460d243abb532e0795934c43e3fa5ed7a6759d35240e05cb",
+      "fixture": "fa2b79e0672a4270f74a8dfa76654f67b31bdbe5.md",
+      "markdown": "## Summary\n#### \u2699\ufe0f Custom indexer replaced with standard Bitcoin RPC\n#### \ud83d\ude80 Pay in coinjoin\n#### \u2198\ufe0f Sub-1 sat/vByte transaction fees\n#### \u267b\ufe0f Payment batching\n#### \ud83d\udcce Support for arm64 Linux, Tails, and Whonix\n#### \ud83d\udcdc Scheme scripting language\n#### \ud83d\udd11 Signet test network\n## Details\n\n### \u2699\ufe0f Custom indexer replaced with standard Bitcoin RPC\nWasabi pioneered the use of compact block filters for private wallet synchronization. This involved implementing a custom indexer to build the filters, and hosting a server to provide them to clients.\n\nProgress continued on block filters, resulting in standardized BIPs and direct support in Bitcoin node software. This release discards the legacy indexer and exclusively uses the node RPC for synchronizing block filters, making Wasabi's architecture simpler and more flexible.\n\nOnboarding new users to Wasabi is now faster thanks to wallet birthday checkpoints. Newly generated wallets no longer waste time and bandwidth downloading old blockchain history since it would be impossible for a new wallet to have previously received any transactions.\n\n### \ud83d\ude80 Pay in coinjoin\nSending payments directly inside a coinjoin transaction uses block space more efficiently and improves privacy in several ways:\n\n- The age of your inputs is not revealed, so the receiver does not learn how long you\u2019ve held your coins.\n- The size of your change is not revealed, so the receiver does not learn the amount of coins you have left over.\n- You can batch multiple payments into one transaction without revealing they originate from the same sender.\n\n### \u2198\ufe0f Sub-1 sat/vByte transaction fees\nYou can now spend coins using fee rates as low as 0.1 sat/vByte, letting you save up to 90% on mining fees. If a low fee transaction gets \u201cstuck\u201d, you can use Replace By Fee (RBF) to speed it up.\n\n### \u267b\ufe0f Payment batching\nYou can now pay to multiple addresses in the same transaction. This significantly reduces the amount of block space used compared to sending each payment individually.\n\n### \ud83d\udcce Support for arm64 Linux, Tails, and Whonix\nLinux users with arm64 devices are now part of the Wasabi family. Tails and Whonix installations are now automatic and no longer require manual Tor configuration.\n\n### \ud83d\udcdc Scheme scripting language\nThe scripting language is an experimental feature that makes Wasabi programmable, queryable, and extensible.\n\n### \ud83d\udd11 Signet test network\nTestnet3 and Testnet4 use proof of work for generating blocks, just like mainnet. Because testnet coins have no value, low mining difficulty allows an attacker with a small amount of hashpower to flood blocks or create long reorgs.\n\nSignet is another test network that allows a set of signers to create blocks. This reduces the unpredictable behavior so developers can work with a stable environment. Wasabi does not ship with a default signet RPC endpoint, so you must specify one in the signet config file or connect it to your signet node.",
+      "markdown_sha256": "5aa8596e004087436b1188ffed6559a1c33d020890eb1ef5ba885a97375cdf89",
+      "expected": {
+        "Blocks": [
+          {
+            "Kind": 1,
+            "Level": 2,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Summary",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 4,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\u2699\ufe0f Custom indexer replaced with standard Bitcoin RPC",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 4,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83d\ude80 Pay in coinjoin",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 4,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\u2198\ufe0f Sub-1 sat/vByte transaction fees",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 4,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\u267b\ufe0f Payment batching",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 4,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83d\udcce Support for arm64 Linux, Tails, and Whonix",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 4,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83d\udcdc Scheme scripting language",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 4,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83d\udd11 Signet test network",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 2,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Details",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 3,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\u2699\ufe0f Custom indexer replaced with standard Bitcoin RPC",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Wasabi pioneered the use of compact block filters for private wallet synchronization. This involved implementing a custom indexer to build the filters, and hosting a server to provide them to clients.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Progress continued on block filters, resulting in standardized BIPs and direct support in Bitcoin node software. This release discards the legacy indexer and exclusively uses the node RPC for synchronizing block filters, making Wasabi's architecture simpler and more flexible.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Onboarding new users to Wasabi is now faster thanks to wallet birthday checkpoints. Newly generated wallets no longer waste time and bandwidth downloading old blockchain history since it would be impossible for a new wallet to have previously received any transactions.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 3,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83d\ude80 Pay in coinjoin",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Sending payments directly inside a coinjoin transaction uses block space more efficiently and improves privacy in several ways:",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 2,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "The age of your inputs is not revealed, so the receiver does not learn how long you\u2019ve held your coins.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 2,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "The size of your change is not revealed, so the receiver does not learn the amount of coins you have left over.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 2,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "You can batch multiple payments into one transaction without revealing they originate from the same sender.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 3,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\u2198\ufe0f Sub-1 sat/vByte transaction fees",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "You can now spend coins using fee rates as low as 0.1 sat/vByte, letting you save up to 90% on mining fees. If a low fee transaction gets \u201cstuck\u201d, you can use Replace By Fee (RBF) to speed it up.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 3,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\u267b\ufe0f Payment batching",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "You can now pay to multiple addresses in the same transaction. This significantly reduces the amount of block space used compared to sending each payment individually.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 3,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83d\udcce Support for arm64 Linux, Tails, and Whonix",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Linux users with arm64 devices are now part of the Wasabi family. Tails and Whonix installations are now automatic and no longer require manual Tor configuration.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 3,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83d\udcdc Scheme scripting language",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "The scripting language is an experimental feature that makes Wasabi programmable, queryable, and extensible.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 3,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83d\udd11 Signet test network",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Testnet3 and Testnet4 use proof of work for generating blocks, just like mainnet. Because testnet coins have no value, low mining difficulty allows an attacker with a small amount of hashpower to flood blocks or create long reorgs.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Signet is another test network that allows a set of signers to create blocks. This reduces the unpredictable behavior so developers can work with a stable environment. Wasabi does not ship with a default signet RPC endpoint, so you must specify one in the signet config file or connect it to your signet node.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "source_commit": "0354c5fdfedb7bfa1d9ff01bfbf7a10cc8fa1ff9",
+      "source_path": "WalletWasabi/Announcements/ReleaseHighlights.md",
+      "source_sha256": "500ffd39c150c0ce2481ca15edacac52cff609988078a9f415b0a584d0fd7860",
+      "fixture": "0354c5fdfedb7bfa1d9ff01bfbf7a10cc8fa1ff9.md",
+      "markdown": "\n## Details\n\n### \ud83d\udee0\ufe0f Refinements & Fixes\n- Disable Silent Payments for Hardware wallets\n- Does not suggest fee rates under 1 sat/vb\n- Fix error sending when no estimations are available\n- Correct mistake in help page",
+      "markdown_sha256": "ff1680bd4f36fac00c40f2884b207a8cf948c59a7436c8feb7635a5692465e08",
+      "expected": {
+        "Blocks": [
+          {
+            "Kind": 1,
+            "Level": 2,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Details",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 3,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83d\udee0\ufe0f Refinements & Fixes",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 2,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Disable Silent Payments for Hardware wallets",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 2,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Does not suggest fee rates under 1 sat/vb",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 2,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Fix error sending when no estimations are available",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 2,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Correct mistake in help page",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "source_commit": "75ef276a4e75c4eea4d8da0f1b7700592570f0f7",
+      "source_path": "WalletWasabi/Announcements/ReleaseHighlights.md",
+      "source_sha256": "fc33326260287cc60f452fd85330feb8a64bbae0b0133b5c7546a6bb96f9d529",
+      "fixture": "75ef276a4e75c4eea4d8da0f1b7700592570f0f7.md",
+      "markdown": "## Summary\n#### \ud83d\udfe0 Enhanced Bitcoin Node Integration\n#### \ud83c\udfa8 Refreshed UI with Icons & Animations\n#### \u2699\ufe0f Dedicated Config Files Per Network\n#### \ud83e\udd2f Stronger & Smarter Coordinators\n#### \ud83d\udee0\ufe0f Refinements & Fixes\n## Details\n\n### \ud83d\udfe0 Enhanced Bitcoin Node Integration\nBitcoin node connectivity is now more seamless. RPC endpoint handling has been refined for smoother setup, with support for onion-service RPC interfaces.\n\nAdditionally, Wasabi no longer bundles bitcoind binaries, while block downloading has been simplified and made more dependable.\n\n### \ud83c\udfa8 Refreshed UI with Icons & Animations\nThe interface has been given a polished update. Subtle animations and a balanced color scheme breathe new life into Wasabi\u2019s design, making it both cleaner and less aggressive.\n\n### \u2699\ufe0f Dedicated Config Files Per Network\nEach network  Mainnet, Testnet4, and Regtest \u2014 now has its own independent configuration file. Switching to test networks is easier and your preferences are always preserved.\n\n### \ud83e\udd2f Stronger & Smarter Coordinators\nCoordinators are automatically published as onion services right out of the box: no manual Tor setup needed. Coordinators can now also run on pruned nodes in blocksonly mode.\n\nPlus, fallback fee rate providers were implemented (mempool.space and blockstream.info), ensuring accurate fee estimates, even if your node can\u2019t provide them.\n\n### \ud83d\udee0\ufe0f Refinements & Fixes\n- **Full-RBF by default** \u2013 All transactions are treated as replaceable.\n- **Resilient HTTP communication** \u2013 Smarter retry handling makes connections sturdier.\n- **Seed recovery fixes** \u2013 Annoying typing issues are resolved.\n- **Sharper fee estimations** \u2013 Precise decimal calculations with no rounding loss.\n- **NBitcoin updated to 8.0.14** \u2013 Latest Bitcoin protocol improvements included.\n- **Clearer terminology** \u2013 \u201cBackend\u201d is now called \u201cIndexer.\u201d\n- **Lean codebase** \u2013 Legacy components like TurboSync and BlockNotifier removed.\n- **Safer Coinjoin handling** \u2013 Excluded Coins can only be changed when Coinjoin is paused.\n- **Donation Button removed from Main Screen** \u2013 The button is gone, but donations are still possible via the search bar.\n- **Conflux by default** - Better Tor configuration for improved connectivity.",
+      "markdown_sha256": "ce71164bdf625ce37bca12333a626ae762b5b17d13ccaa61fdb73d9b2d428e89",
+      "expected": {
+        "Blocks": [
+          {
+            "Kind": 1,
+            "Level": 2,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Summary",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 4,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83d\udfe0 Enhanced Bitcoin Node Integration",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 4,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83c\udfa8 Refreshed UI with Icons & Animations",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 4,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\u2699\ufe0f Dedicated Config Files Per Network",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 4,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83e\udd2f Stronger & Smarter Coordinators",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 4,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83d\udee0\ufe0f Refinements & Fixes",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 2,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Details",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 3,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83d\udfe0 Enhanced Bitcoin Node Integration",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Bitcoin node connectivity is now more seamless. RPC endpoint handling has been refined for smoother setup, with support for onion-service RPC interfaces.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Additionally, Wasabi no longer bundles bitcoind binaries, while block downloading has been simplified and made more dependable.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 3,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83c\udfa8 Refreshed UI with Icons & Animations",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "The interface has been given a polished update. Subtle animations and a balanced color scheme breathe new life into Wasabi\u2019s design, making it both cleaner and less aggressive.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 3,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\u2699\ufe0f Dedicated Config Files Per Network",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Each network Mainnet, Testnet4, and Regtest \u2014 now has its own independent configuration file. Switching to test networks is easier and your preferences are always preserved.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 3,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83e\udd2f Stronger & Smarter Coordinators",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Coordinators are automatically published as onion services right out of the box: no manual Tor setup needed. Coordinators can now also run on pruned nodes in blocksonly mode.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Plus, fallback fee rate providers were implemented (mempool.space and blockstream.info), ensuring accurate fee estimates, even if your node can\u2019t provide them.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 3,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83d\udee0\ufe0f Refinements & Fixes",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 2,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Full-RBF by default",
+                "Style": 1,
+                "Link": null
+              },
+              {
+                "Text": " \u2013 All transactions are treated as replaceable.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 2,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Resilient HTTP communication",
+                "Style": 1,
+                "Link": null
+              },
+              {
+                "Text": " \u2013 Smarter retry handling makes connections sturdier.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 2,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Seed recovery fixes",
+                "Style": 1,
+                "Link": null
+              },
+              {
+                "Text": " \u2013 Annoying typing issues are resolved.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 2,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Sharper fee estimations",
+                "Style": 1,
+                "Link": null
+              },
+              {
+                "Text": " \u2013 Precise decimal calculations with no rounding loss.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 2,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "NBitcoin updated to 8.0.14",
+                "Style": 1,
+                "Link": null
+              },
+              {
+                "Text": " \u2013 Latest Bitcoin protocol improvements included.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 2,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Clearer terminology",
+                "Style": 1,
+                "Link": null
+              },
+              {
+                "Text": " \u2013 \u201cBackend\u201d is now called \u201cIndexer.\u201d",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 2,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Lean codebase",
+                "Style": 1,
+                "Link": null
+              },
+              {
+                "Text": " \u2013 Legacy components like TurboSync and BlockNotifier removed.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 2,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Safer Coinjoin handling",
+                "Style": 1,
+                "Link": null
+              },
+              {
+                "Text": " \u2013 Excluded Coins can only be changed when Coinjoin is paused.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 2,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Donation Button removed from Main Screen",
+                "Style": 1,
+                "Link": null
+              },
+              {
+                "Text": " \u2013 The button is gone, but donations are still possible via the search bar.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 2,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Conflux by default",
+                "Style": 1,
+                "Link": null
+              },
+              {
+                "Text": " - Better Tor configuration for improved connectivity.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "source_commit": "5bb82bc2340e9bcb88506936d377bcd59c780884",
+      "source_path": "WalletWasabi/Announcements/ReleaseHighlights.md",
+      "source_sha256": "3f1667268f404d47c6051434f90d0fcefd339134df0c39b34f605d7199c9ea91",
+      "fixture": "5bb82bc2340e9bcb88506936d377bcd59c780884.md",
+      "markdown": "## Summary\n#### \ud83d\udca5 Support for Standard BIP 158 Block Filters\n#### \ud83d\udcbb Full Node Integration Rework\n#### \ud83d\udd10 Create & Recover SLIP 39 Shares\n#### \ud83d\udcaa Nostr Update Manager\n#### \ud83e\udd2f And more\u2026\n## Details\n\n### \ud83d\udca5 Support for Standard BIP 158 Block Filters\n\nWasabi can now synchronize using BIP 158 filters without requiring a backend/indexer. You can connect directly to your own node, significantly enhancing synchronization speed and resilience. This improvement allows clients to operate fully sovereign and independent of specific servers.\n\n### \ud83d\udcbb Full Node Integration Rework\n\nThe previous integration was replaced with a simpler, more flexible system which is not limited to a specific Bitcoin node fork and doesn't depend on the node running on the same machine as Wasabi, or require modifications to the node's configuration.\n\nSimply enable the RPC server on your node and point Wasabi to it, ensuring all Bitcoin network interactions happen through your own node, bypassing third parties for getting blocks, fee estimations, block filters, and broadcasting transactions.\n\n### \ud83d\udd10 Create & Recover SLIP 39 Shares\n\nYou can now create and recover wallets with multiple share backups using SLIP 39. Simply specify the number of shares and the required threshold for recovery (e.g., a 2-of-3 scheme requires 2 of the 3 generated seed phrases to unlock the funds).\n\nThis offers additional flexibility for backups, as individual shares can be compromised without endangering funds.\n\nSpecial thanks to Trezor (SatoshiLabs) for sponsoring this amazing feature.\n\n### \ud83d\udcaa Nostr Update Manager\n\nWe're introducing a cutting-edge mechanism using the censorship-resistant Nostr network to receive update information and download locations instead of relying on GitHub's goodwill.\n\nThis considerably improves resiliency, allowing updates even if GitHub is inaccessible. Naturally, the manager still verifies that displayed updates are signed by our secure certificate.\n\n### \ud83e\udd2f And more\u2026\nWe've also been busy under the hood with several miscellaneous improvements:\n\n- Updated Avalonia to v11.2.7, fixing numerous UI bugs (including restoring Minimize on macOS Sequoia!).\n- Added a configurable third-party fallback for broadcasting transactions if other methods fail.\n- Changed our Windows Code Signing Certificate, now using Azure Trusted Signing.\n- Fixed numerous bugs, improved our codebase, and enhanced our CI pipeline.\n- Provided the option to avoid using any third-party Exchange Rate and Fee Rate providers (Wasabi can work without them).\n- Rebuilt all JSON Serialization mechanisms avoiding default .NET converters. Serialization is now stricter.\n\n### \ud83d\udd2e A Glimpse of Tomorrow\nThis new version brings us closer to our ultimate goal: ensuring Wasabi is future-proof.\n\nOur main focus areas for survival are:\n- Ensuring users can always fully and securely use their client.\n- Making contribution and forks easy through a codebase of the highest quality possible: understandable, maintainable, and improvable.\n\nSimultaneously, we aim for Wasabi to remain a top-notch choice for self-custody Bitcoin wallets, bringing privacy without frustration.\n\nAs we achieve our survival goals, expect more cutting-edge improvements in Bitcoin privacy and self-custody.\n\nThank you for the trust you place in us by using Wasabi.\n\nStay tuned \ud83d\udc40",
+      "markdown_sha256": "322bd00d5c3fa064613e45fac83f813bd77b06b35c303e8a2a5bec68166abeac",
+      "expected": {
+        "Blocks": [
+          {
+            "Kind": 1,
+            "Level": 2,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Summary",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 4,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83d\udca5 Support for Standard BIP 158 Block Filters",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 4,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83d\udcbb Full Node Integration Rework",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 4,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83d\udd10 Create & Recover SLIP 39 Shares",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 4,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83d\udcaa Nostr Update Manager",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 4,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83e\udd2f And more\u2026",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 2,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Details",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 3,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83d\udca5 Support for Standard BIP 158 Block Filters",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Wasabi can now synchronize using BIP 158 filters without requiring a backend/indexer. You can connect directly to your own node, significantly enhancing synchronization speed and resilience. This improvement allows clients to operate fully sovereign and independent of specific servers.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 3,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83d\udcbb Full Node Integration Rework",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "The previous integration was replaced with a simpler, more flexible system which is not limited to a specific Bitcoin node fork and doesn't depend on the node running on the same machine as Wasabi, or require modifications to the node's configuration.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Simply enable the RPC server on your node and point Wasabi to it, ensuring all Bitcoin network interactions happen through your own node, bypassing third parties for getting blocks, fee estimations, block filters, and broadcasting transactions.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 3,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83d\udd10 Create & Recover SLIP 39 Shares",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "You can now create and recover wallets with multiple share backups using SLIP 39. Simply specify the number of shares and the required threshold for recovery (e.g., a 2-of-3 scheme requires 2 of the 3 generated seed phrases to unlock the funds).",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "This offers additional flexibility for backups, as individual shares can be compromised without endangering funds.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Special thanks to Trezor (SatoshiLabs) for sponsoring this amazing feature.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 3,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83d\udcaa Nostr Update Manager",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "We're introducing a cutting-edge mechanism using the censorship-resistant Nostr network to receive update information and download locations instead of relying on GitHub's goodwill.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "This considerably improves resiliency, allowing updates even if GitHub is inaccessible. Naturally, the manager still verifies that displayed updates are signed by our secure certificate.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 3,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83e\udd2f And more\u2026",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "We've also been busy under the hood with several miscellaneous improvements:",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 2,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Updated Avalonia to v11.2.7, fixing numerous UI bugs (including restoring Minimize on macOS Sequoia!).",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 2,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Added a configurable third-party fallback for broadcasting transactions if other methods fail.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 2,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Changed our Windows Code Signing Certificate, now using Azure Trusted Signing.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 2,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Fixed numerous bugs, improved our codebase, and enhanced our CI pipeline.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 2,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Provided the option to avoid using any third-party Exchange Rate and Fee Rate providers (Wasabi can work without them).",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 2,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Rebuilt all JSON Serialization mechanisms avoiding default .NET converters. Serialization is now stricter.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 3,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83d\udd2e A Glimpse of Tomorrow",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "This new version brings us closer to our ultimate goal: ensuring Wasabi is future-proof.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Our main focus areas for survival are:",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 2,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Ensuring users can always fully and securely use their client.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 2,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Making contribution and forks easy through a codebase of the highest quality possible: understandable, maintainable, and improvable.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Simultaneously, we aim for Wasabi to remain a top-notch choice for self-custody Bitcoin wallets, bringing privacy without frustration.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "As we achieve our survival goals, expect more cutting-edge improvements in Bitcoin privacy and self-custody.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Thank you for the trust you place in us by using Wasabi.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Stay tuned \ud83d\udc40",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "source_commit": "4060397445fdc78d1f5ee1430064bb171329b480",
+      "source_path": "WalletWasabi/Announcements/ReleaseHighlights.md",
+      "source_sha256": "e84e8e5632921ec0604ebbdb760c682e15afb5d3a3f5a6f971718f5073572e9e",
+      "fixture": "4060397445fdc78d1f5ee1430064bb171329b480.md",
+      "markdown": "## Summary\n#### \ud83d\udcaa 3rd Party Providers for Fee & Exchange Rate<br/>\n#### \ud83d\udc68\u200d\ud83d\udd27 Quality of Life Features<br/>\n#### \ud83d\udce6 Backend and Coordinator packaged for Linux<br/>\n## Details\n\n\n### v2.5.1\n\nv2.5.1 Fixes a bug with the recovery workflow introduced in v2.5.0\n\n### \ud83d\udcaa 3rd Party Providers for Fee Estimations & Exchange Rate\n\nFee rate estimations and exchange rate providers are now configurable.\n\nPreviously, this information was provided by Wasabi's backend. This change aligns with our long-term goal of completely removing dependence on the backend.\n\nAfter this release, Wasabi will be significantly closer to achieving that goal, with most basic wallet features functioning without an active backend connection. You can read more about the remaining steps on [GitHub](https://github.com/orgs/WalletWasabi/discussions/13661).\n\n### \ud83d\udc68\u200d\ud83d\udd27 Quality of Life Features\n\nIn the last version, we introduced a donation button to gauge community interest in funding Wasabi's future. We have been overwhelmed by the support and interest shown by our community, including long-time users and privacy enthusiasts.\n\nWe want to thank you for believing in Wasabi and for your support, whether through using the software, providing feedback, contributing financially, or contributing to the open-source project in any form.\n\nTo show our gratitude, we've designed this release for you, our community. We've finally addressed some of the oldest bugs and feature requests that have been long-awaited!\n\nListing all the improvements would be too lengthy, but here are some examples:\n- Randomly skipping rounds was removed\n- Coinjoin settings & profiles are now all in a single tab\n- More information in the status icon\n- Resync button now available in Tools<br>\nAnd much more...\n\nWe expect these improvements to significantly enhance the overall experience of using Wasabi as your daily Bitcoin wallet. Take a tour or read the release details on GitHub to see all of them!\n\n### \ud83d\udce6 Backend and Coordinator packaged for Linux\n\nThe Debian package now includes two extra binaries: one for the backend (Wallet API) and one for the coordinator (Coinjoin API).\n\nThis makes it easier for community members to run a backend and/or a coordinator, private or publicly accessible, which lowers the barrier to contributing to the resiliency of Wasabi's infrastructure against potential attacks and technical failures.",
+      "markdown_sha256": "335d50c14c0f9466400da25abb3f0370e5c7e9391cad40a2383ff1cd96dd2e60",
+      "expected": {
+        "Blocks": [
+          {
+            "Kind": 1,
+            "Level": 2,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Summary",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 4,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83d\udcaa 3rd Party Providers for Fee & Exchange Rate\n",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 4,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83d\udc68\u200d\ud83d\udd27 Quality of Life Features\n",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 4,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83d\udce6 Backend and Coordinator packaged for Linux\n",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 2,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Details",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 3,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "v2.5.1",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "v2.5.1 Fixes a bug with the recovery workflow introduced in v2.5.0",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 3,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83d\udcaa 3rd Party Providers for Fee Estimations & Exchange Rate",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Fee rate estimations and exchange rate providers are now configurable.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Previously, this information was provided by Wasabi's backend. This change aligns with our long-term goal of completely removing dependence on the backend.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "After this release, Wasabi will be significantly closer to achieving that goal, with most basic wallet features functioning without an active backend connection. You can read more about the remaining steps on ",
+                "Style": 0,
+                "Link": null
+              },
+              {
+                "Text": "GitHub",
+                "Style": 0,
+                "Link": "https://github.com/orgs/WalletWasabi/discussions/13661"
+              },
+              {
+                "Text": ".",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 3,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83d\udc68\u200d\ud83d\udd27 Quality of Life Features",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "In the last version, we introduced a donation button to gauge community interest in funding Wasabi's future. We have been overwhelmed by the support and interest shown by our community, including long-time users and privacy enthusiasts.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "We want to thank you for believing in Wasabi and for your support, whether through using the software, providing feedback, contributing financially, or contributing to the open-source project in any form.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "To show our gratitude, we've designed this release for you, our community. We've finally addressed some of the oldest bugs and feature requests that have been long-awaited!",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Listing all the improvements would be too lengthy, but here are some examples:",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 2,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Randomly skipping rounds was removed",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 2,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Coinjoin settings & profiles are now all in a single tab",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 2,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "More information in the status icon",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 2,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Resync button now available in Tools\n And much more...",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "We expect these improvements to significantly enhance the overall experience of using Wasabi as your daily Bitcoin wallet. Take a tour or read the release details on GitHub to see all of them!",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 3,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83d\udce6 Backend and Coordinator packaged for Linux",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "The Debian package now includes two extra binaries: one for the backend (Wallet API) and one for the coordinator (Coinjoin API).",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "This makes it easier for community members to run a backend and/or a coordinator, private or publicly accessible, which lowers the barrier to contributing to the resiliency of Wasabi's infrastructure against potential attacks and technical failures.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "source_commit": "7490b92feb7011347c5fd2eecc274d5d9e79e357",
+      "source_path": "WalletWasabi/Announcements/ReleaseHighlights.md",
+      "source_sha256": "3db4af3f9c143ce80dbf6d06a51e41704aaa7bbc8031417c4ea4498dfc81524d",
+      "fixture": "7490b92feb7011347c5fd2eecc274d5d9e79e357.md",
+      "markdown": "## Summary\n#### \ud83d\udcaa 3rd Party Providers for Fee & Exchange Rate<br/>\n#### \ud83d\udc68\u200d\ud83d\udd27 Quality of Life Features<br/>\n#### \ud83d\udce6 Backend and Coordinator packaged for Linux<br/>\n## Details\n\n### \ud83d\udcaa 3rd Party Providers for Fee Estimations & Exchange Rate\n\nFee rate estimations and exchange rate providers are now configurable.\n\nPreviously, this information was provided by Wasabi's backend. This change aligns with our long-term goal of completely removing dependence on the backend.\n\nAfter this release, Wasabi will be significantly closer to achieving that goal, with most basic wallet features functioning without an active backend connection. You can read more about the remaining steps on [GitHub](https://github.com/orgs/WalletWasabi/discussions/13661).\n\n### \ud83d\udc68\u200d\ud83d\udd27 Quality of Life Features\n\nIn the last version, we introduced a donation button to gauge community interest in funding Wasabi's future. We have been overwhelmed by the support and interest shown by our community, including long-time users and privacy enthusiasts.\n\nWe want to thank you for believing in Wasabi and for your support, whether through using the software, providing feedback, contributing financially, or contributing to the open-source project in any form.\n\nTo show our gratitude, we've designed this release for you, our community. We've finally addressed some of the oldest bugs and feature requests that have been long-awaited!\n\nListing all the improvements would be too lengthy, but here are some examples:\n- Randomly skipping rounds was removed\n- Coinjoin settings & profiles are now all in a single tab\n- More information in the status icon\n- Resync button now available in Tools<br>\nAnd much more...\n\nWe expect these improvements to significantly enhance the overall experience of using Wasabi as your daily Bitcoin wallet. Take a tour or read the release details on GitHub to see all of them!\n\n### \ud83d\udce6 Backend and Coordinator packaged for Linux\n\nThe Debian package now includes two extra binaries: one for the backend (Wallet API) and one for the coordinator (Coinjoin API).\n\nThis makes it easier for community members to run a backend and/or a coordinator, private or publicly accessible, which lowers the barrier to contributing to the resiliency of Wasabi's infrastructure against potential attacks and technical failures.",
+      "markdown_sha256": "220d92322260822aec72e1fc7cf6ec8093fd944819be31eb3d4c1703ea9b5ba9",
+      "expected": {
+        "Blocks": [
+          {
+            "Kind": 1,
+            "Level": 2,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Summary",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 4,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83d\udcaa 3rd Party Providers for Fee & Exchange Rate\n",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 4,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83d\udc68\u200d\ud83d\udd27 Quality of Life Features\n",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 4,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83d\udce6 Backend and Coordinator packaged for Linux\n",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 2,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Details",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 3,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83d\udcaa 3rd Party Providers for Fee Estimations & Exchange Rate",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Fee rate estimations and exchange rate providers are now configurable.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Previously, this information was provided by Wasabi's backend. This change aligns with our long-term goal of completely removing dependence on the backend.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "After this release, Wasabi will be significantly closer to achieving that goal, with most basic wallet features functioning without an active backend connection. You can read more about the remaining steps on ",
+                "Style": 0,
+                "Link": null
+              },
+              {
+                "Text": "GitHub",
+                "Style": 0,
+                "Link": "https://github.com/orgs/WalletWasabi/discussions/13661"
+              },
+              {
+                "Text": ".",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 3,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83d\udc68\u200d\ud83d\udd27 Quality of Life Features",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "In the last version, we introduced a donation button to gauge community interest in funding Wasabi's future. We have been overwhelmed by the support and interest shown by our community, including long-time users and privacy enthusiasts.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "We want to thank you for believing in Wasabi and for your support, whether through using the software, providing feedback, contributing financially, or contributing to the open-source project in any form.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "To show our gratitude, we've designed this release for you, our community. We've finally addressed some of the oldest bugs and feature requests that have been long-awaited!",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Listing all the improvements would be too lengthy, but here are some examples:",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 2,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Randomly skipping rounds was removed",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 2,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Coinjoin settings & profiles are now all in a single tab",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 2,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "More information in the status icon",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 2,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Resync button now available in Tools\n And much more...",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "We expect these improvements to significantly enhance the overall experience of using Wasabi as your daily Bitcoin wallet. Take a tour or read the release details on GitHub to see all of them!",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 3,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83d\udce6 Backend and Coordinator packaged for Linux",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "The Debian package now includes two extra binaries: one for the backend (Wallet API) and one for the coordinator (Coinjoin API).",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "This makes it easier for community members to run a backend and/or a coordinator, private or publicly accessible, which lowers the barrier to contributing to the resiliency of Wasabi's infrastructure against potential attacks and technical failures.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "source_commit": "1a35a3f5c77307187dec46b35bae3ff8d6703807",
+      "source_path": "WalletWasabi/Announcements/ReleaseHighlights.md",
+      "source_sha256": "7c7e69c56ef7262ce4def635c341ab7ba37494258029d4fb334968845803486d",
+      "fixture": "1a35a3f5c77307187dec46b35bae3ff8d6703807.md",
+      "markdown": "## Summary\n#### \ud83e\udd2b Send to Silent Payment addresses<br/>\n#### \ud83c\udf81 Donation Button<br/>\n#### \ud83e\uddea ~~TestNet 3~~ -> TestNet 4<br/>\n#### \ud83d\udcdd Release Notes in the client<br/>\n## Details\n\n### \ud83e\udd2b Send to Silent Payment addresses\n\nSilent Payments are privately reusable static addresses. While sending Bitcoin to them is as easy as sending to regular addresses, it is not possible for an observer to link several payments to the same Silent Payments address.\n\nThey are useful to send an address to multiple persons at the same time (tips, donations...) or to make multiple payments between the same entities (salary, rent...).\n\nWasabi is now one of the first wallet to support send to Silent Payment addresses, and we hope that more wallets will join! We are working on allowing receiving, please bear with us!\n\n### \ud83c\udf81 Donation Button\n\nWasabi is Free Open Source Software (FOSS).\nNo service is provided, and therefore it doesn't generate any revenue.\n\nHowever, maintaining and improving the software requires ongoing effort, such as maintenance, continuous improvement, bug fixes, testing, documentation, regular updates etc...\n\nWhile Wasabi is one of the best tools available to use Bitcoin privately, achieving flawless financial-sovereign privacy is still a work in progress.\nThere are many features yet to be implemented, and your support can help make them a reality.\n\nAdditionally, contributors cover static costs, such as server expenses and release management, using their personal funds.\n\nA donate button has been added on the main screen.<br/>\nIt uses Silent Payments, so it's a great way to test that new feature!\n\nBy donating, you\u2019re directly supporting the developers who work tirelessly to maintain and improve Wasabi Wallet and make Bitcoin privacy accessible for everyone.\n\n#### \ud83e\uddea ~~TestNet 3~~ -> TestNet 4\n\nInstead of TestNet 3, Wasabi now uses TestNet 4.\n\nThis new network has slightly different mechanisms that mitigates some of the problems that were undermining TestNet 3 to the point that it is basically unusable.\n\nWhile using the test network will be much more enjoyable now, coins from TestNet 3 don't exist on this new network. You must use a faucet and get yourself TestNet 4 coins.\n\n### \ud83d\udcdd Release Notes in the client\n\nIf you've reached this far, you've probably noticed that the release notes highlights are now available in the client! They are displayed every first launch after an update.\n\nFull release notes are still available on GitHub.",
+      "markdown_sha256": "0ccd304fb84b7db43b926ea03effb4483e402a50d43f08728fc12e230c1950da",
+      "expected": {
+        "Blocks": [
+          {
+            "Kind": 1,
+            "Level": 2,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Summary",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 4,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83e\udd2b Send to Silent Payment addresses\n",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 4,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83c\udf81 Donation Button\n",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 4,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83e\uddea ",
+                "Style": 0,
+                "Link": null
+              },
+              {
+                "Text": "TestNet 3",
+                "Style": 8,
+                "Link": null
+              },
+              {
+                "Text": " -> TestNet 4\n",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 4,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83d\udcdd Release Notes in the client\n",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 2,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Details",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 3,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83e\udd2b Send to Silent Payment addresses",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Silent Payments are privately reusable static addresses. While sending Bitcoin to them is as easy as sending to regular addresses, it is not possible for an observer to link several payments to the same Silent Payments address.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "They are useful to send an address to multiple persons at the same time (tips, donations...) or to make multiple payments between the same entities (salary, rent...).",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Wasabi is now one of the first wallet to support send to Silent Payment addresses, and we hope that more wallets will join! We are working on allowing receiving, please bear with us!",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 3,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83c\udf81 Donation Button",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Wasabi is Free Open Source Software (FOSS). No service is provided, and therefore it doesn't generate any revenue.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "However, maintaining and improving the software requires ongoing effort, such as maintenance, continuous improvement, bug fixes, testing, documentation, regular updates etc...",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "While Wasabi is one of the best tools available to use Bitcoin privately, achieving flawless financial-sovereign privacy is still a work in progress. There are many features yet to be implemented, and your support can help make them a reality.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Additionally, contributors cover static costs, such as server expenses and release management, using their personal funds.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "A donate button has been added on the main screen.\n It uses Silent Payments, so it's a great way to test that new feature!",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "By donating, you\u2019re directly supporting the developers who work tirelessly to maintain and improve Wasabi Wallet and make Bitcoin privacy accessible for everyone.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 4,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83e\uddea ",
+                "Style": 0,
+                "Link": null
+              },
+              {
+                "Text": "TestNet 3",
+                "Style": 8,
+                "Link": null
+              },
+              {
+                "Text": " -> TestNet 4",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Instead of TestNet 3, Wasabi now uses TestNet 4.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "This new network has slightly different mechanisms that mitigates some of the problems that were undermining TestNet 3 to the point that it is basically unusable.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "While using the test network will be much more enjoyable now, coins from TestNet 3 don't exist on this new network. You must use a faucet and get yourself TestNet 4 coins.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 3,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83d\udcdd Release Notes in the client",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "If you've reached this far, you've probably noticed that the release notes highlights are now available in the client! They are displayed every first launch after an update.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Full release notes are still available on GitHub.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "source_commit": "85bdfc671c17ac8e9dcba29da9ca7319d649390d",
+      "source_path": "WalletWasabi/Announcements/ReleaseHighlights.md",
+      "source_sha256": "c8c28130c6ef56f3116a28a7873a85b490540c87c4fb8c812577562e606bbe95",
+      "fixture": "85bdfc671c17ac8e9dcba29da9ca7319d649390d.md",
+      "markdown": "## Summary\n#### \ud83e\udeb2 Bug Fixes<br/>\n#### \ud83d\udcab Settings Layout & UI Enhancements<br/>\n#### \ud83d\udcc8 Tor Update: Upgraded to v13.5.9<br/>\n#### \ud83d\udeab Buy Anything Button Disabled<br/>\n## Details\n\n### \ud83e\udeb2 Notable Bug Fixes\n- Fixed an issue where the transaction broadcaster displayed an error, while the transaction was successfully broadcast\n- Resolved a problem with DNS endpoints for remote Bitcoin nodes\n- Improved the amount decomposer to prevent privacy leaks when using the *payment-in-round* feature\n- Fixed sorting tables by amount\n- Sometimes small rounds were not recognized by the wallet, leading to improper anon score computation\n\n### \ud83d\udcab Settings & UI Enhancements\nThe Settings layout has been refined, optimizing space for a more streamlined user experience.\n\nAdditionally, some new UI features have been implemented:\n- Coin lists now display the address associated with each UTXO\n- Added functionality to copy addresses directly from the Coin List view\n- Consistent formatting of Fee Rate to 2 decimals without trailing 0\n\n### \ud83d\udeab Buy Anything Button Disabled\nThis feature, launched nearly a year ago, allowed users to access the premium ShopinBit concierge service directly through the wallet.\n\nThis version disables it, for the following reasons:\n- Limited usage among users\n- The same service is fully accessible via the ShopInBit platform\n- Occupies valuable interface space\n- Improving the experience would require additional maintenance costs\n\nStarting with this release, the button is removed, unless there are active or completed orders.<br/>\nIn the next release, the feature will be completely removed from the codebase.<br/>",
+      "markdown_sha256": "a61e0e7144073ac11cf8eee910eac1cfbb9ee97aaae7893131faf07f8ea1521c",
+      "expected": {
+        "Blocks": [
+          {
+            "Kind": 1,
+            "Level": 2,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Summary",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 4,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83e\udeb2 Bug Fixes\n",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 4,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83d\udcab Settings Layout & UI Enhancements\n",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 4,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83d\udcc8 Tor Update: Upgraded to v13.5.9\n",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 4,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83d\udeab Buy Anything Button Disabled\n",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 2,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Details",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 3,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83e\udeb2 Notable Bug Fixes",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 2,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Fixed an issue where the transaction broadcaster displayed an error, while the transaction was successfully broadcast",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 2,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Resolved a problem with DNS endpoints for remote Bitcoin nodes",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 2,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Improved the amount decomposer to prevent privacy leaks when using the ",
+                "Style": 0,
+                "Link": null
+              },
+              {
+                "Text": "payment-in-round",
+                "Style": 2,
+                "Link": null
+              },
+              {
+                "Text": " feature",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 2,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Fixed sorting tables by amount",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 2,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Sometimes small rounds were not recognized by the wallet, leading to improper anon score computation",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 3,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83d\udcab Settings & UI Enhancements",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "The Settings layout has been refined, optimizing space for a more streamlined user experience.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Additionally, some new UI features have been implemented:",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 2,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Coin lists now display the address associated with each UTXO",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 2,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Added functionality to copy addresses directly from the Coin List view",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 2,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Consistent formatting of Fee Rate to 2 decimals without trailing 0",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 1,
+            "Level": 3,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "\ud83d\udeab Buy Anything Button Disabled",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "This feature, launched nearly a year ago, allowed users to access the premium ShopinBit concierge service directly through the wallet.",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "This version disables it, for the following reasons:",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 2,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Limited usage among users",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 2,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "The same service is fully accessible via the ShopInBit platform",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 2,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Occupies valuable interface space",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 2,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Improving the experience would require additional maintenance costs",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          },
+          {
+            "Kind": 0,
+            "Level": 0,
+            "Depth": 0,
+            "Runs": [
+              {
+                "Text": "Starting with this release, the button is removed, unless there are active or completed orders.\n In the next release, the feature will be completely removed from the codebase.\n",
+                "Style": 0,
+                "Link": null
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

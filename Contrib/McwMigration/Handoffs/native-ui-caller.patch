@@ -1,0 +1,143 @@
+diff --git a/MagicalCryptoWallet.Fluent/Views/Dialogs/ReleaseHighlights/ReleaseHighlightsDialogView.axaml b/MagicalCryptoWallet.Fluent/Views/Dialogs/ReleaseHighlights/ReleaseHighlightsDialogView.axaml
+--- a/MagicalCryptoWallet.Fluent/Views/Dialogs/ReleaseHighlights/ReleaseHighlightsDialogView.axaml
++++ b/MagicalCryptoWallet.Fluent/Views/Dialogs/ReleaseHighlights/ReleaseHighlightsDialogView.axaml
+@@ -3,7 +3,7 @@
+              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+              xmlns:releaseHighlights="clr-namespace:MagicalCryptoWallet.Fluent.ViewModels.Dialogs.ReleaseHighlights"
+-             xmlns:mdxaml="https://github.com/whistyun/Markdown.Avalonia"
++             xmlns:controls="clr-namespace:MagicalCryptoWallet.Fluent.Controls"
+              mc:Ignorable="d" d:DesignWidth="428" d:DesignHeight="371"
+              x:DataType="releaseHighlights:ReleaseHighlightsDialogViewModel"
+              x:CompileBindings="True"
+@@ -11,10 +11,10 @@
+   <ContentArea Title="{Binding ReleaseHighlights.Title}"
+                Caption="{Binding ReleaseHighlights.Caption}"
+                EnableNext="True" NextContent="Great!">
+-    <mdxaml:MarkdownScrollViewer Margin="0 -10 0 0" Markdown="{Binding ReleaseHighlights.MarkdownText}">
+-      <mdxaml:MarkdownScrollViewer.Styles>
+-        <StyleInclude Source="avares://MagicalCryptoWallet.Fluent/Styles/Markdown.axaml" />
+-      </mdxaml:MarkdownScrollViewer.Styles>
+-    </mdxaml:MarkdownScrollViewer>
++    <controls:ReleaseHighlightsText x:Name="ReleaseNotes" Margin="0 -10 0 0" Markdown="{Binding ReleaseHighlights.MarkdownText}">
++      <controls:ReleaseHighlightsText.Styles>
++        <StyleInclude Source="avares://MagicalCryptoWallet.Fluent/Styles/ReleaseHighlights.axaml" />
++      </controls:ReleaseHighlightsText.Styles>
++    </controls:ReleaseHighlightsText>
+   </ContentArea>
+ </UserControl>
+diff --git a/MagicalCryptoWallet.Fluent/Views/Dialogs/ReleaseHighlights/ReleaseHighlightsDialogView.cs b/MagicalCryptoWallet.Fluent/Views/Dialogs/ReleaseHighlights/ReleaseHighlightsDialogView.cs
+--- a/MagicalCryptoWallet.Fluent/Views/Dialogs/ReleaseHighlights/ReleaseHighlightsDialogView.cs
++++ b/MagicalCryptoWallet.Fluent/Views/Dialogs/ReleaseHighlights/ReleaseHighlightsDialogView.cs
+@@ -1,5 +1,9 @@
++using System;
+ using Avalonia.Controls;
+ using Avalonia.Markup.Xaml;
++using MagicalCryptoWallet.Fluent.Controls;
++using MagicalCryptoWallet.Fluent.ViewModels.Dialogs.ReleaseHighlights;
++using MagicalCryptoWallet.Logging;
+ 
+ namespace MagicalCryptoWallet.Fluent.Views.Dialogs.ReleaseHighlights;
+ 
+@@ -8,6 +12,13 @@
+ 	public ReleaseHighlightsDialogView()
+ 	{
+ 		InitializeComponent();
++		this.FindControl<ReleaseHighlightsText>("ReleaseNotes")!.LinkClicked += OnLinkClicked;
++	}
++	private async void OnLinkClicked(object? sender, string target)
++	{
++		if (DataContext is not ReleaseHighlightsDialogViewModel viewModel) { return; }
++		try { await viewModel.UiContext.OpenBrowserAsync(target); }
++		catch (Exception) { Logger.LogWarning("Could not open release-highlights link."); }
+ 	}
+ 	private void InitializeComponent()
+ 	{
+diff --git a/MagicalCryptoWallet.Fluent/Styles/Markdown.axaml b/MagicalCryptoWallet.Fluent/Styles/Markdown.axaml
+deleted file mode 100644
+--- a/MagicalCryptoWallet.Fluent/Styles/Markdown.axaml
++++ /dev/null
+@@ -1,83 +0,0 @@
+-<Styles xmlns="https://github.com/avaloniaui"
+-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+-        xmlns:ctxt="clr-namespace:ColorTextBlock.Avalonia;assembly=ColorTextBlock.Avalonia"
+-        xmlns:mdctl="clr-namespace:Markdown.Avalonia.Controls;assembly=Markdown.Avalonia">
+-
+-  <Style Selector="ctxt|CTextBlock.Heading1">
+-    <Setter Property="Foreground" Value="{DynamicResource TextForegroundColor}" />
+-  </Style>
+-  <Style Selector="ctxt|CTextBlock.Heading2">
+-    <Setter Property="Foreground" Value="{DynamicResource TextForegroundColor}" />
+-    <Setter Property="Margin" Value="0 20 0 0" />
+-  </Style>
+-  <Style Selector="ctxt|CTextBlock.Heading3">
+-    <Setter Property="Foreground" Value="{DynamicResource TextForegroundColor}" />
+-    <Setter Property="Margin" Value="0 20 0 7" />
+-  </Style>
+-  <Style Selector="ctxt|CTextBlock.Heading4">
+-    <Setter Property="Foreground" Value="{DynamicResource TextForegroundColor}" />
+-  </Style>
+-  <Style Selector="ctxt|CTextBlock.Heading5">
+-    <Setter Property="Foreground" Value="{DynamicResource TextForegroundColor}" />
+-  </Style>
+-  <Style Selector="ctxt|CTextBlock.Heading6">
+-    <Setter Property="Foreground" Value="{DynamicResource TextForegroundColor}" />
+-  </Style>
+-
+-  <Style Selector="mdctl|Rule.Single">
+-    <Setter Property="Foreground">
+-      <SolidColorBrush Opacity="0.4" Color="{DynamicResource SystemBaseHighColor}" />
+-    </Setter>
+-  </Style>
+-  <Style Selector="mdctl|Rule.TwoLines">
+-    <Setter Property="Foreground">
+-      <SolidColorBrush Opacity="0.4" Color="{DynamicResource SystemBaseHighColor}" />
+-    </Setter>
+-  </Style>
+-  <Style Selector="mdctl|Rule.Bold">
+-    <Setter Property="Foreground">
+-      <SolidColorBrush Opacity="0.4" Color="{DynamicResource SystemBaseHighColor}" />
+-    </Setter>
+-  </Style>
+-  <Style Selector="mdctl|Rule.BoldWithSingle">
+-    <Setter Property="Foreground">
+-      <SolidColorBrush Opacity="0.4" Color="{DynamicResource SystemBaseHighColor}" />
+-    </Setter>
+-  </Style>
+-
+-  <Style Selector="ctxt|CHyperlink:pointerover">
+-    <Setter Property="Foreground" Value="{DynamicResource SystemAccentColorLight2}"/>
+-  </Style>
+-
+-  <Style Selector="Border.Table">
+-    <Setter Property="Padding" Value="2"/>
+-    <Setter Property="CornerRadius" Value="{DynamicResource OverlayCornerRadius}"/>
+-    <Setter Property="BorderThickness" Value="0"/>
+-  </Style>
+-
+-  <Style Selector="Grid.Table">
+-    <Setter Property="Background" Value="{DynamicResource Layer1BackgroundBrush}"/>
+-  </Style>
+-
+-  <Style Selector="Border.TableHeader">
+-    <Setter Property="Margin" Value="1 0"/>
+-    <Setter Property="BorderThickness" Value="0"/>
+-    <Setter Property="Background" Value="{DynamicResource Layer1BackgroundBrush}"/>
+-  </Style>
+-
+-  <Style Selector="Border.OddTableRow">
+-    <Setter Property="Margin" Value="1 1"/>
+-    <Setter Property="BorderThickness" Value="0"/>
+-    <Setter Property="Background" Value="{DynamicResource Layer2BackgroundBrush}"/>
+-  </Style>
+-
+-  <Style Selector="Border.EvenTableRow">
+-    <Setter Property="Margin" Value="1 1"/>
+-    <Setter Property="BorderThickness" Value="0"/>
+-    <Setter Property="Background" Value="{DynamicResource Layer2BackgroundBrush}"/>
+-  </Style>
+-
+-  <Style Selector="Border.TableHeader ctxt|CTextBlock">
+-    <Setter Property="FontWeight" Value="Bold"/>
+-  </Style>
+-</Styles>

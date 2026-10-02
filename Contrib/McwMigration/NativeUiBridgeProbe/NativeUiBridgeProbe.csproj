@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType><ImplicitUsings>enable</ImplicitUsings>
+    <!-- Test child for the real host. This project never ships. -->
+  </PropertyGroup>
+  <ItemGroup><ProjectReference Include="../../../MagicalCryptoWallet.Client/MagicalCryptoWallet.Client.csproj" /></ItemGroup>
+</Project>

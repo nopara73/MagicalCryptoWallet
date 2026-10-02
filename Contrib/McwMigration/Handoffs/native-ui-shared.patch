@@ -1,0 +1,59 @@
+diff --git a/mcw/src/lib.rs b/mcw/src/lib.rs
+--- a/mcw/src/lib.rs
++++ b/mcw/src/lib.rs
+@@ -10,6 +10,7 @@
+ pub mod compression;
+ pub mod http1;
+ pub mod json;
++pub mod markdown;
+ pub mod payment_uri;
+ pub mod platform;
+ pub mod png;
+diff --git a/mcw/src/app.rs b/mcw/src/app.rs
+--- a/mcw/src/app.rs
++++ b/mcw/src/app.rs
+@@ -253,6 +253,22 @@
+             frame.reply(Vec::new()).write(output)
+         }
+         bridge::QR => bridge::encode_qr(frame).write(output),
++        crate::markdown::OPERATION => {
++            let cancel = std::sync::atomic::AtomicBool::new(false);
++            match crate::markdown::dispatch(&frame.payload, &cancel) {
++                Ok(payload) => frame.reply(payload).write(output),
++                Err(error) => frame
++                    .error(
++                        match error {
++                            crate::markdown::Error::InvalidInput => 1,
++                            crate::markdown::Error::Limit => 2,
++                            crate::markdown::Error::Cancelled => 4,
++                        },
++                        error.diagnostic(),
++                    )
++                    .write(output),
++            }
++        }
+         bridge::RESTART | bridge::CRASH | bridge::UPDATE => {
+             let args = match bridge::strings(&frame.payload) {
+                 Ok(args) => args,
+diff --git a/MagicalCryptoWallet.Fluent/MagicalCryptoWallet.Fluent.csproj b/MagicalCryptoWallet.Fluent/MagicalCryptoWallet.Fluent.csproj
+--- a/MagicalCryptoWallet.Fluent/MagicalCryptoWallet.Fluent.csproj
++++ b/MagicalCryptoWallet.Fluent/MagicalCryptoWallet.Fluent.csproj
+@@ -31,7 +31,6 @@
+ 		<PackageReference Include="SkiaSharp.NativeAssets.Linux" />
+ 		<PackageReference Include="Avalonia.Themes.Fluent" />
+ 		<PackageReference Include="Avalonia.Fonts.Inter" />
+-		<PackageReference Include="Markdown.Avalonia" />
+ 		<PackageReference Include="QRackers" />
+ 	</ItemGroup>
+ 
+diff --git a/Directory.Packages.props b/Directory.Packages.props
+--- a/Directory.Packages.props
++++ b/Directory.Packages.props
+@@ -6,7 +6,6 @@
+   </PropertyGroup>
+   <ItemGroup>
+     <!-- AspNetCore. -->
+-    <PackageVersion Include="Markdown.Avalonia" Version="11.0.3" />
+     <PackageVersion Include="Microsoft.AspNetCore.WebUtilities" Version="$(NetPackagesVersion)" />
+     <PackageVersion Include="Microsoft.Extensions.Caching.Abstractions" Version="$(NetPackagesVersion)" />
+     <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="$(NetPackagesVersion)" />
