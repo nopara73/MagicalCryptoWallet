@@ -1,4 +1,5 @@
 using MagicalCryptoWallet.Services;
+using MagicalCryptoWallet.Logging;
 using MagicalCryptoWallet.WabiSabi.Coordinator.PostRequests;
 using MagicalCryptoWallet.WabiSabi.Coordinator.Rounds;
 using MagicalCryptoWallet.WabiSabi.Models;
@@ -9,7 +10,8 @@ namespace MagicalCryptoWallet.WabiSabi.Client.RoundStateAwaiters;
 public abstract record RoundUpdateMessage
 {
 	public record UpdateMessage(DateTime CurrentTime) : RoundUpdateMessage;
-	public record CreateRoundAwaiter(uint256? RoundId, Phase? Phase, Predicate<RoundState>? Predicate, IReplyChannel<Task<RoundState>> ReplayChannel) : RoundUpdateMessage;
+	public record CreateRoundAwaiter(uint256? RoundId, Phase? Phase, Predicate<RoundState>? Predicate,
+		IReplyChannel<Task<RoundState>> ReplayChannel, CancellationToken WaitCancellationToken = default) : RoundUpdateMessage;
 }
 
 public class RoundStateProvider(MailboxProcessor<RoundUpdateMessage> roundStateUpdater)
@@ -19,24 +21,22 @@ public class RoundStateProvider(MailboxProcessor<RoundUpdateMessage> roundStateU
 	public async Task<RoundState> CreateRoundAwaiterAsync(uint256 roundId, Phase phase,
 		CancellationToken cancellationToken)
 	{
+		using var cts = CancellationTokenSource.CreateLinkedTokenSource(roundStateUpdater.CancellationToken, cancellationToken);
 		var awaiter = await roundStateUpdater
 			.PostAndReplyAsync<Task<RoundState>>(
-				chan => new RoundUpdateMessage.CreateRoundAwaiter(roundId, phase, null, chan),
-				cancellationToken).ConfigureAwait(false);
-		using var cts =
-			CancellationTokenSource.CreateLinkedTokenSource(roundStateUpdater.CancellationToken, cancellationToken);
+				chan => new RoundUpdateMessage.CreateRoundAwaiter(roundId, phase, null, chan, cts.Token),
+				cts.Token).ConfigureAwait(false);
 		return await awaiter.WaitAsync(cts.Token).ConfigureAwait(false);
 	}
 
 	public async Task<RoundState> CreateRoundAwaiterAsync(Predicate<RoundState> predicate,
 		CancellationToken cancellationToken)
 	{
+		using var cts = CancellationTokenSource.CreateLinkedTokenSource(roundStateUpdater.CancellationToken, cancellationToken);
 		var awaiter = await roundStateUpdater
 			.PostAndReplyAsync<Task<RoundState>>(
-				chan => new RoundUpdateMessage.CreateRoundAwaiter(null, null, predicate, chan),
-				cancellationToken).ConfigureAwait(false);
-		using var cts =
-			CancellationTokenSource.CreateLinkedTokenSource(roundStateUpdater.CancellationToken, cancellationToken);
+				chan => new RoundUpdateMessage.CreateRoundAwaiter(null, null, predicate, chan, cts.Token),
+				cts.Token).ConfigureAwait(false);
 		return await awaiter.WaitAsync(cts.Token).ConfigureAwait(false);
 	}
 }
@@ -45,37 +45,60 @@ public record RoundsState(
 	DateTime NextQueryTime,
 	TimeSpan QueryInterval,
 	Dictionary<uint256, RoundState> Rounds,
-	ImmutableList<RoundStateAwaiter> Awaiters);
+	ImmutableList<RoundStateAwaiter> Awaiters,
+	int ConsecutiveFailures = 0);
 
 public static class RoundStateUpdater
 {
-	public static MessageHandler<RoundUpdateMessage, RoundsState> Create(IWabiSabiApiRequestHandler arenaRequestHandler) =>
-		(msg, state, cancellationToken) => ProcessMessageAsync(msg, state, arenaRequestHandler, cancellationToken);
+	public static MessageHandler<RoundUpdateMessage, RoundsState> Create(IWabiSabiApiRequestHandler arenaRequestHandler, TimeProvider? timeProvider = null) =>
+		(msg, state, cancellationToken) => ProcessMessageAsync(msg, state, arenaRequestHandler, timeProvider ?? TimeProvider.System, cancellationToken);
 
 	private static async Task<RoundsState> ProcessMessageAsync(
 		RoundUpdateMessage msg,
 		RoundsState state,
 		IWabiSabiApiRequestHandler arenaRequestHandler,
+		TimeProvider timeProvider,
 		CancellationToken cancellationToken)
 	{
+		var finished = state.Awaiters.Where(a => a.Task.IsCompleted).ToArray();
+		foreach (var awaiter in finished) { awaiter.Dispose(); }
+		state = state with { Awaiters = state.Awaiters.RemoveRange(finished) };
 		switch (msg)
 		{
-			case RoundUpdateMessage.UpdateMessage m:
-				if (state.Awaiters.Count > 0 && DateTime.UtcNow >= state.NextQueryTime)
+			case RoundUpdateMessage.UpdateMessage:
+				if (state.Awaiters.Count > 0 && timeProvider.GetUtcNow().UtcDateTime >= state.NextQueryTime)
 				{
-					var (rounds, awaiters) = await UpdateRoundsStateAsync(state, arenaRequestHandler, cancellationToken).ConfigureAwait(false);
-					state = state with
+					try
 					{
-						NextQueryTime = m.CurrentTime + state.QueryInterval,
-						Rounds = rounds,
-						Awaiters = awaiters
-					};
+						var (rounds, awaiters) = await UpdateRoundsStateAsync(state, arenaRequestHandler, cancellationToken).ConfigureAwait(false);
+						state = state with
+						{
+							NextQueryTime = timeProvider.GetUtcNow().UtcDateTime + state.QueryInterval,
+							Rounds = rounds,
+							Awaiters = awaiters,
+							ConsecutiveFailures = 0
+						};
+					}
+					catch (Exception ex) when (!cancellationToken.IsCancellationRequested)
+					{
+						Logger.LogWarning(ex);
+						var failures = Math.Min(state.ConsecutiveFailures + 1, 4);
+						var delay = TimeSpan.FromSeconds(Math.Min(60, state.QueryInterval.TotalSeconds * Math.Pow(2, failures - 1)));
+						state = state with { ConsecutiveFailures = failures, NextQueryTime = timeProvider.GetUtcNow().UtcDateTime + delay };
+					}
 				}
 
 				break;
 			case RoundUpdateMessage.CreateRoundAwaiter m:
-				var roundStateAwaiter = new RoundStateAwaiter(m.Predicate, m.RoundId, m.Phase, cancellationToken);
-				state = state with {Awaiters = state.Awaiters.Add(roundStateAwaiter)};
+				var roundStateAwaiter = new RoundStateAwaiter(m.Predicate, m.RoundId, m.Phase,
+					m.WaitCancellationToken.CanBeCanceled ? m.WaitCancellationToken : cancellationToken);
+				if (roundStateAwaiter.Task.IsCompleted ||
+					(state.ConsecutiveFailures == 0 && (state.QueryInterval == TimeSpan.Zero || timeProvider.GetUtcNow().UtcDateTime < state.NextQueryTime) &&
+					(m.RoundId is null || state.Rounds.ContainsKey(m.RoundId)) && roundStateAwaiter.IsCompleted(state.Rounds)))
+				{
+					roundStateAwaiter.Dispose();
+				}
+				else { state = state with { Awaiters = state.Awaiters.Add(roundStateAwaiter) }; }
 				m.ReplayChannel.Reply(roundStateAwaiter.Task);
 				break;
 		}
@@ -117,6 +140,7 @@ public static class RoundStateUpdater
 		var finalRoundStates = newRoundStates.Concat(updatedRoundStates).ToDictionary(x => x.Id, x => x);
 
 		var completedAwaiters = state.Awaiters.Where(awaiter => awaiter.IsCompleted(finalRoundStates)).ToArray();
+		foreach (var awaiter in completedAwaiters) { awaiter.Dispose(); }
 		return (Rounds: finalRoundStates, Awaiters: state.Awaiters.RemoveRange(completedAwaiters));
 	}
 }

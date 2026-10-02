@@ -88,19 +88,17 @@ public class Global
 		FilterStore.DisposeUsing(_disposables);
 
 		ExternalSourcesHttpClientFactory = BuildHttpClientFactory();
-		PublicSourcesHttpClientFactory = Config.UseTorForPublicData
-			? ExternalSourcesHttpClientFactory
-			: new DirectHttpClientFactory();
+		PublicSourcesHttpClientFactory = new DirectHttpClientFactory();
 
 		var p2PDataDir = GetBitcoinP2PNetworkDirectory();
 		_blockHeaders = ConfigureBlockHeaderChain(p2PDataDir);
 
-		_p2pConnectionManager = ConfigureNodeConnectionManager(publicSynchronization: false);
-		_publicConnectionManager = Config.UseSeparatePublicPeerPool
-			? ConfigureNodeConnectionManager(publicSynchronization: true)
-			: _p2pConnectionManager;
+		_publicConnectionManager = ConfigureNodeConnectionManager(publicSynchronization: true);
+		_p2pConnectionManager = Config.UseTor != TorMode.Disabled
+			? ConfigureNodeConnectionManager(publicSynchronization: false)
+			: _publicConnectionManager;
 		var cpfpProvider = ConfigureCpfpInfoProvider();
-		var blockProvider = ConfigureBlockProvider(_p2pConnectionManager, fileSystemBlockRepository);
+		var blockProvider = ConfigureBlockProvider(_publicConnectionManager, fileSystemBlockRepository);
 
 		var walletFactory = Wallet.CreateFactory(
 			Config.Network,
@@ -295,13 +293,13 @@ public class Global
 			}
 		}
 
-		var torEndpoint = Config.UseTor != TorMode.Disabled && (!publicSynchronization || Config.UseTorForPublicData)
+		var torEndpoint = Config.UseTor != TorMode.Disabled && !publicSynchronization
 			? TorSettings.SocksEndpoint : null;
 		IDnsResolver dnsResolver = torEndpoint is not null
 			? new DnsSocksResolver(torEndpoint){ StreamIsolation = true }
 			: DnsResolver.Instance;
 
-		var synchronizes = publicSynchronization || !Config.UseSeparatePublicPeerPool;
+		var canBroadcast = !publicSynchronization || Config.UseTor == TorMode.Disabled;
 		var manager = new P2pConnectionManager(
 			Network,
 			EventBus,
@@ -311,18 +309,18 @@ public class Global
 			options: new P2pConnectionOptions
 			{
 				Name = publicSynchronization ? "public" : "wallet",
-				TargetConnections = synchronizes ? 6 : 3,
-				MinimumCompactFilterNodes = synchronizes ? 5 : 0,
-				RelayTransactions = !publicSynchronization && !Config.BlockOnlyMode,
-				AllowBlockDownloads = !publicSynchronization,
+				TargetConnections = publicSynchronization ? 6 : Network.MinBroadcastNodes + 2,
+				MinimumCompactFilterNodes = publicSynchronization ? 5 : 0,
+				RelayTransactions = !publicSynchronization || !Config.BlockOnlyMode,
+				AllowBlockDownloads = publicSynchronization,
+				AllowTransactionBroadcasts = canBroadcast,
 				PeerCacheFile = Path.Combine(GetBitcoinP2PNetworkDirectory(), publicSynchronization ? "Peers-public.json" : "Peers-wallet.json")
 			},
 			reservations: _peerReservations);
 
-		if (!publicSynchronization)
-		{
-			manager.AddBehavior(new P2pBehavior(_mempoolService, listenForTransactions: !Config.BlockOnlyMode));
-		}
+		manager.AddBehavior(new P2pBehavior(_mempoolService,
+			listenForTransactions: publicSynchronization && !Config.BlockOnlyMode,
+			serveBroadcasts: canBroadcast));
 
 		manager.DisposeUsing(_disposables);
 		return manager;
@@ -407,8 +405,7 @@ public class Global
 	{
 		if (Network == Network.RegTest) { return; }
 		Uri[] relayUrls = [new ("wss://relay.primal.net"), new("wss://nos.lol"), new("wss://nostr.mom")];
-		var nostrClientFactory = () => NostrClientFactory.Create(relayUrls,
-			Config.UseTorForPublicData && Config.UseTor != TorMode.Disabled ? TorSettings.SocksEndpoint : null);
+		var nostrClientFactory = () => NostrClientFactory.Create(relayUrls, (EndPoint?)null);
 
 		// The feature is disabled on linux at the moment because we install Magical Crypto Wallet as a Debian package.
 		var installerDownloader = !Config.DownloadNewVersion
@@ -477,7 +474,6 @@ public class Global
 			if (_synchronizerStarted) { return; }
 			await ConfigureSynchronizerAsync(_stoppingCts.Token).ConfigureAwait(false);
 			_publicConnectionManager.Start(_stoppingCts.Token);
-			_p2pConnectionManager.Start(_stoppingCts.Token);
 			_synchronizerStarted = true;
 		}
 	}
@@ -650,17 +646,19 @@ public class Global
 		}).DisposeUsing(_disposables);
 		if (WalletSession.GetWallet() is { } configured) { _coinPrison.UpdateWallet(configured); }
 
-		// Aggressively retry
+		// Active protocol operations keep their retry budget; status polling uses a smaller budget.
 		var coordinatorHttpClientConfig = new HttpClientHandlerConfiguration
 		{
 			MaxAttempts = 10,
 			TimeBeforeRetryingAfterNetworkError = TimeSpan.FromSeconds(0.5),
 			TimeBeforeRetryingAfterServerError = TimeSpan.FromSeconds(0.5),
-			TimeBeforeRetryingAfterTooManyRequests = TimeSpan.FromSeconds(0.1)
+			TimeBeforeRetryingAfterTooManyRequests = TimeSpan.FromSeconds(2)
 		};
 		var coordinatorHttpClientFactory = new CoordinatorHttpClientFactory(coordinatorUri, BuildHttpClientFactory(coordinatorHttpClientConfig));
 
-		var wabiSabiStatusProvider =  new WabiSabiHttpApiClient("satoshi-coordination", coordinatorHttpClientFactory);
+		var statusHttpClientFactory = new CoordinatorHttpClientFactory(coordinatorUri,
+			BuildHttpClientFactory(coordinatorHttpClientConfig with { MaxAttempts = 3 }));
+		var wabiSabiStatusProvider = new WabiSabiHttpApiClient("satoshi-coordination", statusHttpClientFactory);
 		var roundUpdater = Spawn("RoundUpdater",
 			Service("WabiSabi Rounds Updater",
 				EventDriven(
@@ -680,7 +678,7 @@ public class Global
 	{
 		List<IBroadcaster> result =
 		[
-			new NetworkBroadcaster(mempoolService, p2PNodeListProvider, Network.MinBroadcastNodes)
+			new NetworkBroadcaster(mempoolService, p2PNodeListProvider, Network.MinBroadcastNodes, PrepareBroadcastPeersAsync)
 		];
 
 		if (Network != Network.RegTest)
@@ -691,6 +689,26 @@ public class Global
 		}
 
 		return result;
+	}
+
+	private async Task PrepareBroadcastPeersAsync(CancellationToken cancellationToken)
+	{
+		_p2pConnectionManager.Start(_stoppingCts.Token);
+		using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+		using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _stoppingCts.Token, timeout.Token);
+		try
+		{
+			// Two other peers must announce propagation; peers we announce to need not echo our inventory.
+			var target = Network.MinBroadcastNodes == 1 ? 1 : Network.MinBroadcastNodes + 2;
+			while (_p2pConnectionManager.Nodes.Length < target)
+			{
+				await Task.Delay(TimeSpan.FromMilliseconds(100), linked.Token).ConfigureAwait(false);
+			}
+		}
+		catch (OperationCanceledException) when (timeout.IsCancellationRequested && !cancellationToken.IsCancellationRequested && !_stoppingCts.IsCancellationRequested)
+		{
+			Logger.LogInfo("Broadcast peer discovery timed out; trying available peers and transaction broadcast services.");
+		}
 	}
 
 	public ImmutableArray<Node> GetNodes() => ReferenceEquals(_p2pConnectionManager, _publicConnectionManager)

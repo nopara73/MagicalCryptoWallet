@@ -116,7 +116,6 @@ public class WabiSabiConfig : ConfigBase
 
 	public bool PublishAsOnionService { get; init; }
 
-	public bool UseTorForPublicData { get; init; }
 	public string? OnionServicePrivateKey { get; set; }
 
 	public Script GetNextCleanCoordinatorScript() => DeriveCoordinatorScript(CoordinatorExtPubKeyCurrentDepth);
