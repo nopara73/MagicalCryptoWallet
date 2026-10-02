@@ -49,7 +49,7 @@ Malformed versions/reserved fields/address types, authentication failures, reply
 - `probe`, `resolve`, and `resolve_ptr` with the same proxy/auth/options/cancellation policy. `probe` checks method negotiation only; it cannot establish Tor identity, bootstrap completion or external reachability.
 - `SocksConnection::{read, read_exact, write_all}` with `&IoControl`; `shutdown(Shutdown)`; `bound_endpoint`; `abort_handle`; and `into_split()` into exactly one `SocksReader` and one `SocksWriter`.
 - `SocksReader::{read, read_exact, shutdown}` and `SocksWriter::{write_all, shutdown}`. They may run on separate host-owned threads. The API has no public raw stream or arbitrary reader cloning.
-- `Cancellation::{new, cancel, is_cancelled}`, `IoControl::{new, with_poll_interval}`, `ConnectOptions`, `AbortHandle::abort`, `Error`, `ErrorKind`, and `Stage`.
+- `Cancellation::{new, from_flag, cancel, is_cancelled}`, `IoControl::{new, with_poll_interval}`, `ConnectOptions`, `AbortHandle::abort`, `Error`, `ErrorKind`, and `Stage`.
 
 Example of internal Rust ownership (native host integration, not a new CLI):
 
@@ -191,7 +191,7 @@ The production caller publishes exactly one `TorConnectionStateChanged` event fo
 
 ### Cancellation boundary
 
-The published host dispatch is synchronous. Its narrow arm supplies a fresh `Cancellation` token, so bridge cancellation does **not** immediately abort the native socket. The existing managed bridge stops the caller waiting promptly and drains the late reply; after its dispatch begins, the native probe uses the 250-ms socket budget plus OS scheduling. Queued requests can wait longer, and no total queued bridge latency bound is claimed. The actual-host harness covers mid-call managed cancellation, native socket closure, absence of a readiness event, and a subsequent healthy request. This handoff does not add asynchronous networking, a connection table, or a general bridge cancellation rewrite.
+The earlier pinned host dispatch is synchronous. Its narrow arm supplies a fresh `Cancellation` token, so bridge cancellation does **not** immediately abort that fixture's native socket. The existing managed bridge stops the caller waiting promptly and drains the late reply; after its dispatch begins, the native probe uses the 250-ms socket budget plus OS scheduling. Queued requests can wait longer, and no total queued bridge latency bound is claimed. The actual-host harness covers mid-call managed cancellation, native socket closure, absence of a readiness event, and a subsequent healthy request. The later shared-flag constructor described below enables the host owner's updated cancellation composition without changing this historical proof.
 
 ### Reproduction and evidence
 
@@ -232,3 +232,11 @@ Fresh managed verification uses `-NativeLibraryPath` to supply the existing reta
 The earlier current-GUI attempt at `5ba626f5fcb434c293a4b7334be39a02b7b8ea00` passed the native build and 49 Rust tests but failed managed compilation in the obsolete `RpcObjectCodec` after RPC removal. Its log is preserved under `.artifacts/mcw-socks5-current-gui/.artifacts/socks5-probe/managed-build.txt`. The automation cleanup at `6af4217e...` removed that obsolete adapter; the fresh combined GUI proof above verifies the resulting managed build. No old RPC or daemon code was restored.
 
 One rerun on the old `52957dbc...` pin timed out in `fragmented_method_auth_and_reply_with_maximum_lengths` at `ProxyReply`. Its failure log remains `.artifacts/mcw-socks5-privacy-check/.artifacts/socks5-probe/transport-tests-timeout-rerun.txt`. Inspection confirmed that the fixture sleeps after 262 single-byte reply writes within a three-second total deadline; the exact scheduler cause is unproven. A subsequent old-pin run passed at **2026-10-02T13:39:09.2095442Z**, and the current GUI-only run above also passed. This worker changed neither the shared transport nor its deadline fixture during the correction; no exact wall-clock deadline or general flakiness-resolution claim follows from those passes.
+
+## Shared cancellation flag follow-up
+
+`Cancellation::from_flag(flag: Arc<AtomicBool>) -> Self` wraps the exact supplied host flag without copying or resetting its current value. An already cancelled flag remains cancelled; external stores are visible to the wrapper and its clones, and `Cancellation::cancel()` updates the same flag. Existing `new`, `cancel` and `is_cancelled` semantics remain unchanged. This lets the host owner pass its per-request Inbox flag to `PROBE` so the native polling loop can observe reader-side cancellation while the synchronous dispatch is executing.
+
+Native verification passed at **2026-10-02T16:16:51.5594738Z** against isolated base **`2889a0710d3190a175a8ca35e4e18afac835ac0e`** with Rust 1.99.0 on Windows x64: **16 wire, 30 transport and 5 probe-service tests**, **51 total**, none failed or ignored; strict module Clippy/warnings and formatting also passed. The new sharing test checks external-thread cancellation, cloned/independent wrapper observations, wrapper-to-host cancellation and an initially cancelled flag. The new loopback probe test sets the shared flag after receiving the no-auth greeting, verifies the unchanged three-byte `[1,0,Cancelled=7]` response and confirms socket EOF.
+
+Evidence and test logs remain ignored under `.artifacts/mcw-socks5-shared-cancel/.artifacts/shared-cancel/`. Verified module canonical LF SHA256 is **`ada149ed109017d4d90cf0d3c5b3cdef25db701350291276738c5620f837f826`**. This component follow-up changes no shared app/lib/Inbox/bridge/CI file and adds no external crate or shipping executable. The host owner owns the actual five-operation Tor/readiness composition and current caller verification; this native test does not certify bridge cancellation routing, exact elapsed timing or other platforms. The prior composed GUI proofs above remain tied to their recorded revisions.

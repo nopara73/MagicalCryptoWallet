@@ -6,6 +6,8 @@ use socks5::probe_service::{self as service, Error, Failure, PROBE};
 use socks5::transport::Cancellation;
 use std::io::{Read, Write};
 use std::net::{Shutdown, TcpListener};
+use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::thread;
 use std::time::{Duration, Instant};
 
@@ -138,4 +140,31 @@ fn cancelled_probe_and_invalid_request_open_no_socket() {
         listener.accept().unwrap_err().kind(),
         std::io::ErrorKind::WouldBlock
     );
+}
+
+#[test]
+fn host_flag_cancels_active_probe_and_closes_socket() {
+    let host_flag = Arc::new(AtomicBool::new(false));
+    let cancellation = Cancellation::from_flag(Arc::clone(&host_flag));
+    let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+    let port = listener.local_addr().unwrap().port();
+    let task = thread::spawn(move || {
+        let (mut stream, _) = listener.accept().unwrap();
+        stream
+            .set_read_timeout(Some(Duration::from_secs(2)))
+            .unwrap();
+        let mut greeting = [0; 3];
+        stream.read_exact(&mut greeting).unwrap();
+        assert_eq!(greeting, [5, 1, 0]);
+        host_flag.store(true, Ordering::Release);
+        assert_eq!(stream.read(&mut [0; 1]).unwrap(), 0);
+    });
+    let mut request = vec![1, 1, 127, 0, 0, 1];
+    request.extend_from_slice(&port.to_be_bytes());
+    assert_eq!(
+        service::execute(PROBE, &request, &cancellation).unwrap(),
+        [1, 0, Failure::Cancelled as u8]
+    );
+    assert!(cancellation.is_cancelled());
+    task.join().unwrap();
 }

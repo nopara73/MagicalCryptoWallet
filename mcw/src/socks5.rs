@@ -550,6 +550,11 @@ pub mod transport {
             Self::default()
         }
 
+        /// Shares a host-owned cancellation flag without copying or resetting it.
+        pub fn from_flag(flag: Arc<AtomicBool>) -> Self {
+            Self(flag)
+        }
+
         pub fn cancel(&self) {
             self.0.store(true, Ordering::Release);
         }

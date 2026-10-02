@@ -10,7 +10,8 @@ use socks5::wire::{
 };
 use std::io::{self, Read, Write};
 use std::net::{Shutdown, SocketAddr, TcpListener, TcpStream};
-use std::sync::mpsc;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::{Arc, mpsc};
 use std::thread::{self, JoinHandle};
 use std::time::{Duration, Instant};
 
@@ -27,6 +28,32 @@ fn options() -> ConnectOptions {
 
 fn control() -> IoControl {
     IoControl::new(Duration::from_secs(3), &Cancellation::new()).unwrap()
+}
+
+#[test]
+fn host_cancellation_flag_is_shared_without_reset_in_both_directions() {
+    let host_flag = Arc::new(AtomicBool::new(false));
+    let cancellation = Cancellation::from_flag(Arc::clone(&host_flag));
+    let cloned = cancellation.clone();
+    let observer = Cancellation::from_flag(Arc::clone(&host_flag));
+    assert!(!cancellation.is_cancelled());
+
+    thread::spawn(move || host_flag.store(true, Ordering::Release))
+        .join()
+        .unwrap();
+    assert!(cancellation.is_cancelled());
+    assert!(cloned.is_cancelled());
+    assert!(observer.is_cancelled());
+
+    let host_flag = Arc::new(AtomicBool::new(false));
+    let cancellation = Cancellation::from_flag(Arc::clone(&host_flag));
+    cancellation.cancel();
+    assert!(host_flag.load(Ordering::Acquire));
+    assert!(Cancellation::from_flag(host_flag).is_cancelled());
+
+    let already_cancelled = Arc::new(AtomicBool::new(true));
+    assert!(Cancellation::from_flag(already_cancelled).is_cancelled());
+    assert!(!Cancellation::new().is_cancelled());
 }
 
 fn destination() -> Destination {
