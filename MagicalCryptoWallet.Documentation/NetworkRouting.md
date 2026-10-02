@@ -1,6 +1,6 @@
 # Network routing
 
-With Tor enabled, wallet transactions, transaction-specific CPFP lookups, remote Payjoin, CoinJoin requests, and wallet-selected block downloads use Tor. Onion addresses always require Tor. Exact loopback destinations (localhost, 127.0.0.1, and ::1) connect locally.
+With Tor enabled, wallet transactions, transaction-specific CPFP lookups, CoinJoin requests, and wallet-selected block downloads use Tor. Onion addresses always require Tor. Exact loopback destinations (localhost, 127.0.0.1, and ::1) connect locally.
 
 Public prices, fee estimates, release announcements, authenticated installer downloads, and Tor outage reports use direct connections by default. Installer signatures, announcement authentication, URL restrictions, and checksum verification still apply. Release checks also work with Tor disabled; regtest skips them.
 
