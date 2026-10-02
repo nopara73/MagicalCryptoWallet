@@ -1,6 +1,7 @@
 param(
     [string]$SharedRoot = 'C:\Users\user\OneDrive\Documents\ChatGPT\MagicalCryptoWallet',
     [string]$VerificationBase,
+    [string]$NativeLibraryPath,
     [switch]$VerifyPrivacyControl
 )
 $ErrorActionPreference = 'Stop'
@@ -11,6 +12,12 @@ $managerSource = [IO.File]::ReadAllText((Join-Path $taskRoot 'MagicalCryptoWalle
 $readerSource = [IO.File]::ReadAllText((Join-Path $taskRoot 'MagicalCryptoWallet/Tor/Control/TorControlReplyReader.cs'))
 if (-not $managerSource.Contains('readReply') -or -not $readerSource.Contains('McwTorControlCodec.ReadReplyAsync')) {
     throw 'Apply the published privacy caller/host patches before verifying the explicit wallet readiness fixture.'
+}
+$managedArguments = @('-c','Release','-m:1','-p:UseSharedCompilation=false','-p:NuGetAudit=false','-p:CopyToOutputDirectory=Never')
+if ($NativeLibraryPath) {
+    $NativeLibraryPath = [IO.Path]::GetFullPath($NativeLibraryPath)
+    if (-not (Test-Path -LiteralPath $NativeLibraryPath)) { throw 'The supplied retained native library is missing.' }
+    $managedArguments += ('-p:NativeLibraryPath=' + $NativeLibraryPath)
 }
 $slotHandle = $null
 $freeGiB = [double](Get-CimInstance Win32_OperatingSystem).FreePhysicalMemory / 1MB
@@ -62,7 +69,7 @@ try {
 </Project>
 '@
     [IO.File]::WriteAllText((Join-Path $managedRoot 'SocksProbe.csproj'),$project)
-    & dotnet build (Join-Path $managedRoot 'SocksProbe.csproj') -c Release -m:1 -p:UseSharedCompilation=false -p:NuGetAudit=false -p:CopyToOutputDirectory=Never 2>&1 | Tee-Object -FilePath (Join-Path $outputRoot 'managed-build.txt')
+    & dotnet build (Join-Path $managedRoot 'SocksProbe.csproj') @managedArguments 2>&1 | Tee-Object -FilePath (Join-Path $outputRoot 'managed-build.txt')
     if ($LASTEXITCODE) { throw 'Real managed caller compilation failed.' }
     $runRoot = Join-Path $outputRoot 'runtime'
     [IO.Directory]::CreateDirectory($runRoot) | Out-Null
@@ -86,7 +93,7 @@ try {
     if ($VerifyPrivacyControl) {
         if ([double](Get-CimInstance Win32_OperatingSystem).FreePhysicalMemory / 1MB -lt 2) { throw 'Control verification deferred: less than 2 GiB free.' }
         $controlProject = Join-Path $taskRoot 'Contrib/McwMigration/PrivacyControlProbe/PrivacyControlProbe.csproj'
-        & dotnet build $controlProject -c Release -m:1 -p:UseSharedCompilation=false -p:NuGetAudit=false -p:CopyToOutputDirectory=Never 2>&1 | Tee-Object -FilePath (Join-Path $outputRoot 'privacy-managed-build.txt')
+        & dotnet build $controlProject @managedArguments 2>&1 | Tee-Object -FilePath (Join-Path $outputRoot 'privacy-managed-build.txt')
         if ($LASTEXITCODE) { throw 'Unchanged privacy control fixture build failed.' }
         $controlRuntime = Join-Path $outputRoot 'privacy-runtime'
         [IO.Directory]::CreateDirectory($controlRuntime) | Out-Null
@@ -127,7 +134,7 @@ try {
 </Project>
 '@
     [IO.File]::WriteAllText((Join-Path $coordinatorRoot 'CoordinatorProbe.csproj'),$coordinatorProject)
-    & dotnet build (Join-Path $coordinatorRoot 'CoordinatorProbe.csproj') -c Release -m:1 -p:UseSharedCompilation=false -p:NuGetAudit=false -p:CopyToOutputDirectory=Never 2>&1 | Tee-Object -FilePath (Join-Path $outputRoot 'coordinator-build.txt')
+    & dotnet build (Join-Path $coordinatorRoot 'CoordinatorProbe.csproj') @managedArguments 2>&1 | Tee-Object -FilePath (Join-Path $outputRoot 'coordinator-build.txt')
     if ($LASTEXITCODE) { throw 'Actual external coordinator build failed.' }
     $coordinatorReport = Join-Path $coordinatorRoot 'results.json'
     $coordinatorError = Join-Path $outputRoot 'coordinator-stderr.txt'
@@ -147,6 +154,10 @@ try {
     & dumpbin.exe /nologo /dependents $binary | Tee-Object -FilePath (Join-Path $outputRoot 'runtime-imports.txt')
     if ($LASTEXITCODE) { throw 'Runtime audit failed.' }
     $result | Add-Member -NotePropertyName native_binary_sha256 -NotePropertyValue (Get-FileHash -LiteralPath $binary -Algorithm SHA256).Hash.ToLowerInvariant()
+    if ($NativeLibraryPath) {
+        $result | Add-Member -NotePropertyName retained_wabisabi_library_sha256 -NotePropertyValue (Get-FileHash -LiteralPath $NativeLibraryPath -Algorithm SHA256).Hash.ToLowerInvariant()
+        $result | Add-Member -NotePropertyName retained_wabisabi_crypto_exercised -NotePropertyValue $false
+    }
     $result | Add-Member -NotePropertyName verified_utc -NotePropertyValue ([DateTime]::UtcNow.ToString('O'))
     if (-not $VerificationBase) {
         $baseRecord = Join-Path $outputRoot 'combined-base.json'
