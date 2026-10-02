@@ -130,7 +130,7 @@ public class TransactionTreeBuilder
 			OrderIndex = index,
 			Labels = transactionSummary.Labels,
 			Date = date,
-			DateString = date.ToUserFacingFriendlyString(),
+			DateString = date.ToUserFacingString(),
 			DateToolTipString = date.ToUserFacingString(),
 			CanCancelTransaction = transactionSummary.Transaction.IsCancellable(_wallet.KeyManager) && haveFeeEstimations,
 			CanSpeedUpTransaction = transactionSummary.Transaction.IsSpeedupable(_wallet.KeyManager) && haveFeeEstimations,
@@ -170,17 +170,6 @@ public class TransactionTreeBuilder
 			Children = children,
 		};
 
-		var dates = children.Select(tx => tx.Date).ToImmutableArray();
-		var firstDate = dates.Min().ToLocalTime();
-		var lastDate = dates.Max().ToLocalTime();
-		if (firstDate.Day == lastDate.Day)
-		{
-			foreach (var child in children)
-			{
-				child.DateString = child.Date.ToLocalTime().ToOnlyTimeString();
-			}
-		}
-
 		foreach (var child in children)
 		{
 			child.IsChild = true;
@@ -196,16 +185,10 @@ public class TransactionTreeBuilder
 		var dates = coinjoins.Select(tx => tx.Date).ToImmutableArray();
 		var firstDate = dates.Min().ToLocalTime();
 		var lastDate = dates.Max().ToLocalTime();
-		var isSameDay = firstDate.Day == lastDate.Day;
 
 		foreach (var coinjoin in coinjoins)
 		{
 			coinjoin.IsChild = true;
-
-			if (isSameDay)
-			{
-				coinjoin.DateString = coinjoin.Date.ToLocalTime().ToOnlyTimeString();
-			}
 		}
 
 		return new CoinJoinTransactionGroupModel
@@ -214,10 +197,8 @@ public class TransactionTreeBuilder
 			OrderIndex = first.OrderIndex,
 			Labels = first.Labels,
 			Date = lastDate,
-			DateString = lastDate.ToUserFacingFriendlyString(),
-			DateToolTipString = isSameDay
-				? $"{firstDate.ToUserFacingString(withTime: false)}"
-				: $"{firstDate.ToUserFacingString(withTime: true)} - {lastDate.ToUserFacingString(withTime: true)}",
+			DateString = lastDate.ToUserFacingString(),
+			DateToolTipString = $"{firstDate.ToUserFacingString()} - {lastDate.ToUserFacingString()}",
 			Status = coinjoins.All(x => x.IsConfirmed)
 				? TransactionStatus.Confirmed
 				: TransactionStatus.Pending,
@@ -243,7 +224,7 @@ public class TransactionTreeBuilder
 			Amount = transactionSummary.Amount,
 			OrderIndex = index,
 			Date = date,
-			DateString = date.ToUserFacingFriendlyString(),
+			DateString = date.ToUserFacingString(),
 			DateToolTipString = date.ToUserFacingString(),
 			Labels = transactionSummary.Labels,
 			Status = status,
