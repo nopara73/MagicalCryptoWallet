@@ -1,0 +1,63 @@
+{
+  "source": "7ae424b5f5f3734ca1870962a2d913769c59b26d",
+  "platform": "nt",
+  "hostPatchSha256": "3ee857c047fd36a6b0938125b583c46bede84e4df0c1816158569e7b619433bc",
+  "nativeBinarySha256": "c8efe39e553e739c2135d5a0957a63c499b56e18c9f7aeed3a2514c8ed572534",
+  "sources": {
+    "mcw/src/serialization_service/mod.rs": "2c7976ce9dbc32e718177899481d0c10593d109439a80493783a783531478355",
+    "mcw/src/serialization_service/rpc.rs": "c279c2b61dcbe367dd6460312f02aae3b2bc4f7651a28dfd288b7e6be8479a33",
+    "mcw/src/serialization_service/tokens.rs": "b46568eecb9c6751a704fb1c6f1f706a569ec4e7d2f847134ab1f780056815bd",
+    "MagicalCryptoWallet/Mcw/Serialization/RpcJson.cs": "19125b804f80fcc9292f68b6b8a8191e708e89b361698db74e6658e3fd3dae26",
+    "MagicalCryptoWallet/Mcw/Serialization/RpcObjectCodec.cs": "c0f9ba01e7095c0dc34575407a5314a2a2e50e6d8a7d0811eff26f8d44d990d9",
+    "MagicalCryptoWallet/Mcw/Serialization/RpcTokens.cs": "076233b5df0a12d68019a4847ba5433bc143ddf50d9d2143bdd75039a921a4ea",
+    "MagicalCryptoWallet/Mcw/Serialization/RpcValue.cs": "a1eee2358398e8147321141140fdc3beb4a88f1e8db55f069b33705fc29ba2ad",
+    "MagicalCryptoWallet/Rpc/JsonRpcErrorCodes.cs": "09ff1b8c9fce29a099e0eded9fcfc899cd9ac3de3d2cbecc7d1d16421630c5a4",
+    "MagicalCryptoWallet/Rpc/JsonRpcInitializationAttribute.cs": "dc6c3a1eec34d177e5a0e36fdb0a51ba551bcc829b6b24d97a995d42ccbdfbb2",
+    "MagicalCryptoWallet/Rpc/JsonRpcMethodAttribute.cs": "94ca37ff7bb72aad4d53acd20d2590bda09e1eb67302c2350550759dce5a0ddb",
+    "MagicalCryptoWallet/Rpc/JsonRpcMethodMetadata.cs": "d7299c52cc08bb109b6f3f34f216fbb2348d8a3dc0c823698eb5d57df2efdf76",
+    "MagicalCryptoWallet/Rpc/JsonRpcRequest.cs": "e1e499757e8ad89f62943bda88995623459ee7585aec2d534ee1a6857a0965c6",
+    "MagicalCryptoWallet/Rpc/JsonRpcRequestHandler.cs": "b7d997e4bb84daf1de43cc20de364249ef31977589a46714641e9a746cd9b3c7",
+    "MagicalCryptoWallet/Rpc/JsonRpcResponse.cs": "9ccb6f574b5a0c37cb8af9b854d714c42e6ae0aa81c199ebc3d60b90ebbc229a",
+    "MagicalCryptoWallet/Rpc/JsonRpcServer.cs": "da969dc0e5e533d4a8711ddbf117f380c036b13b58a00750b126f319cc6d3438",
+    "MagicalCryptoWallet/Rpc/JsonRpcServerConfiguration.cs": "b59ffbb943b6eb887d6d26ed2f9610d7c592f4ba31aae31f47229b375e4f690d",
+    "MagicalCryptoWallet/Rpc/JsonRpcServiceMetadataProvider.cs": "95bc51199fceafe03efd0a5b7c325ddaf80e9d7eb4a98433b91690e3bd1a01b6",
+    "Contrib/McwMigration/Patches/json-rpc-host.patch": "3ee857c047fd36a6b0938125b583c46bede84e4df0c1816158569e7b619433bc",
+    "Contrib/McwMigration/Patches/json-rpc-callers.patch": "ed0221fbbb40cf8a046f6b48413bf13ffbc0effe8e06a8ed08fb0507946ac571",
+    "MagicalCryptoWallet.Tests/Helpers/NativeRpcTest.cs": "c018a071c3dc61b835e24a8f580a6899437340221e91a743fd84cb7a4f3c5409",
+    "Contrib/Mcw/RpcProbe/Program.cs": "e56472c6586bdcd53e87654d455d9fd9497f4728f486d3ac08c8133699f66faf",
+    "Contrib/Mcw/RpcProbe/RpcProbe.csproj": "b1a61eec083d2d1a60c3649193f6de05e28d24020a5f3592ba3b0cea3c57c44c",
+    "Contrib/Mcw/RpcProbe/SyntheticRpc.cs": "80defab94193058d97f2c750dc23523a60537d61af41dd6231c52e5968f1607d",
+    "Contrib/Mcw/RpcProbe/expected.tsv": "d0fe7e2bdcf9e9876a5b892289fa2658eb14b49ea7d5ed9bc42f328102a2b482"
+  },
+  "candidateSources": {
+    "MagicalCryptoWallet/Rpc/JsonRpcRequest.cs": "e1e499757e8ad89f62943bda88995623459ee7585aec2d534ee1a6857a0965c6",
+    "MagicalCryptoWallet/Rpc/JsonRpcResponse.cs": "9ccb6f574b5a0c37cb8af9b854d714c42e6ae0aa81c199ebc3d60b90ebbc229a",
+    "MagicalCryptoWallet/Rpc/JsonRpcRequestHandler.cs": "b7d997e4bb84daf1de43cc20de364249ef31977589a46714641e9a746cd9b3c7",
+    "MagicalCryptoWallet/Rpc/JsonRpcServer.cs": "da969dc0e5e533d4a8711ddbf117f380c036b13b58a00750b126f319cc6d3438"
+  },
+  "result": {
+    "fixtures": 95,
+    "failures": [],
+    "chunkBytes": 700000,
+    "http": true,
+    "disconnectedFailsClosed": true
+  },
+  "otherTargets": "not verified by this run",
+  "checks": {
+    "rustfmt": "passed",
+    "clippy": "passed with -D warnings",
+    "nativeContractTests": 13,
+    "managedCoreClientProbeHelperBuild": "0 warnings, 0 errors",
+    "ordinaryXunitRpcSuite": "pending atomic integration",
+    "runtimeTargets": [
+      "windows-x64"
+    ],
+    "otherTargetRuntime": "not verified"
+  },
+  "verifiedAtUtc": "2026-10-02T13:11:11.258241+00:00",
+  "managedBinaries": {
+    "MagicalCryptoWallet.dll": "019fb9d88d0267b284bd8086cec286ccde311a69af6f0bcd6770d6d18500dd81",
+    "MagicalCryptoWallet.Client.dll": "d3c51e66d98148032ff38c70cdfe35c82e471cd94d55c26a4f17508ec2d3be16",
+    "RpcProbe.dll": "540e62d3df960e0a4ea906fb43c499d3d9685046d97b228d47005cd409d54e7f"
+  }
+}

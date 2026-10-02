@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><OutputType>Exe</OutputType><DisableImplicitNamespaceImports>true</DisableImplicitNamespaceImports><BuildMcwHost>true</BuildMcwHost></PropertyGroup>
+  <ItemGroup><ProjectReference Include="../../../MagicalCryptoWallet.Client/MagicalCryptoWallet.Client.csproj" /></ItemGroup>
+  <ItemGroup><Compile Include="../../../MagicalCryptoWallet.Tests/TestableRpcService.cs" Link="TestableRpcService.cs" /></ItemGroup>
+  <ItemGroup><Compile Include="../../../MagicalCryptoWallet.Tests/Helpers/NativeRpcTest.cs" Link="NativeRpcTest.cs" /></ItemGroup>
+</Project>

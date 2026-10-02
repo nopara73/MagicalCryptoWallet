@@ -1,0 +1,17 @@
+{
+  "base": "d60e01b1b3e27af4aba789cde8ccddfba11952f9",
+  "coreAssemblySha256": "729335915013456b250faa85cb6b43ff61f4a238a42a37c76618f83077d276d0",
+  "rpcSources": {},
+  "resolvedOraclePackages": [
+    "NBitcoin/10.0.13",
+    "Newtonsoft.Json/13.0.4"
+  ],
+  "goldenRows": 83,
+  "goldenSha256": "6790b2755a8f7b3dc625fe086981f2463b01df9296c6dc4b2a525c52d55ecaa7",
+  "expectedRows": 95,
+  "intentionalRepairs": {
+    "33": "omit notification response slots in a batch",
+    "35": "null root produces a controlled parse error"
+  },
+  "source": "actual baseline RPC handler before replacement; synthetic methods only"
+}

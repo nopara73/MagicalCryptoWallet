@@ -1,0 +1,530 @@
+diff --git a/MagicalCryptoWallet.Tests/MagicalCryptoWallet.Tests.csproj b/MagicalCryptoWallet.Tests/MagicalCryptoWallet.Tests.csproj
+index 048e7ee6f7..173f82a4d8 100644
+--- a/MagicalCryptoWallet.Tests/MagicalCryptoWallet.Tests.csproj
++++ b/MagicalCryptoWallet.Tests/MagicalCryptoWallet.Tests.csproj
+@@ -24,6 +24,7 @@
+ 	</ItemGroup>
+ 
+ 	<ItemGroup>
++		<ProjectReference Include="..\Contrib\Mcw\RpcProbe\RpcProbe.csproj" ReferenceOutputAssembly="false" />
+ 		<ProjectReference Include="..\MagicalCryptoWallet.Coordinator\MagicalCryptoWallet.Coordinator.csproj" />
+ 		<ProjectReference Include="..\MagicalCryptoWallet.Fluent.Generators\MagicalCryptoWallet.Fluent.Generators.csproj" />
+ 		<ProjectReference Include="..\MagicalCryptoWallet.Fluent\MagicalCryptoWallet.Fluent.csproj" />
+diff --git a/MagicalCryptoWallet.Tests/UnitTests/RpcTests.cs b/MagicalCryptoWallet.Tests/UnitTests/RpcTests.cs
+index 4fd35fc08d..2aace4f8dd 100644
+--- a/MagicalCryptoWallet.Tests/UnitTests/RpcTests.cs
++++ b/MagicalCryptoWallet.Tests/UnitTests/RpcTests.cs
+@@ -4,6 +4,7 @@ using NBitcoin;
+ using MagicalCryptoWallet.Blockchain.TransactionBuilding;
+ using MagicalCryptoWallet.Client.Rpc;
+ using MagicalCryptoWallet.Rpc;
++using MagicalCryptoWallet.Tests.Helpers;
+ using Xunit;
+ 
+ namespace MagicalCryptoWallet.Tests.UnitTests;
+@@ -15,15 +16,13 @@ public class RpcTests
+ 	[InlineData("{\"fee\":null,\"password\":\"secret\"}")]
+ 	public async Task NullableOptionalParametersAcceptExplicitNullAsync(string parameters)
+ 	{
+-		var handler = new JsonRpcRequestHandler<TestableRpcService>(new TestableRpcService(), Network.RegTest);
+-		var response = await handler.HandleAsync("/", $$$"""{"jsonrpc":"2.0","id":1,"method":"optional","params":{{{parameters}}}}""", CancellationToken.None);
++		var response = await NativeRpcTest.GetResponseAsync($$$"""{"jsonrpc":"2.0","id":1,"method":"optional","params":{{{parameters}}}}""");
+ 		Assert.Equal("""{"jsonrpc":"2.0","result":6,"id":"1"}""", response);
+ 	}
+ 	[Fact]
+ 	public async Task RequiredReferenceParametersRejectExplicitNullAsync()
+ 	{
+-		var handler = new JsonRpcRequestHandler<TestableRpcService>(new TestableRpcService(), Network.RegTest);
+-		var response = await handler.HandleAsync("/", """{"jsonrpc":"2.0","id":1,"method":"say","params":[null]}""", CancellationToken.None);
++		var response = await NativeRpcTest.GetResponseAsync("""{"jsonrpc":"2.0","id":1,"method":"say","params":[null]}""");
+ 		Assert.Contains("\"code\":-32602", response);
+ 	}
+ 	public static TheoryData<string, string> RequestResponse
+@@ -102,9 +101,7 @@ public class RpcTests
+ 	[MemberData(nameof(RequestResponse))]
+ 	public async Task ParsingRequestTestsAsync(string request, string expectedResponse)
+ 	{
+-		var handler = new JsonRpcRequestHandler<TestableRpcService>(new TestableRpcService(), Network.Main);
+-
+-		var response = await handler.HandleAsync("", request, CancellationToken.None);
++		var response = await NativeRpcTest.GetResponseAsync(request);
+ 		Assert.Equal(expectedResponse, response);
+ 	}
+ 
+diff --git a/MagicalCryptoWallet/Rpc/JsonRpcRequest.cs b/MagicalCryptoWallet/Rpc/JsonRpcRequest.cs
+index 09bc56080d..5e282652c6 100644
+--- a/MagicalCryptoWallet/Rpc/JsonRpcRequest.cs
++++ b/MagicalCryptoWallet/Rpc/JsonRpcRequest.cs
+@@ -1,100 +1,37 @@
+-using Newtonsoft.Json;
+-using Newtonsoft.Json.Linq;
+ using System.Diagnostics.CodeAnalysis;
++using System.Linq;
++using System.IO;
++using System.Threading;
++using System.Threading.Tasks;
++using MagicalCryptoWallet.Mcw.Serialization;
+ 
+ namespace MagicalCryptoWallet.Rpc;
+ 
+-/// <summary>
+-/// A RPC call is represented by sending a Request object to a Server. The Request object has the following members:
+-/// + jsonrpc - A String specifying the version of the JSON-RPC protocol. MUST be exactly "2.0".
+-/// + method  - A String containing the name of the method to be invoked. Method names that begin with the word rpc
+-///             followed by a period character (U+002E or ASCII 46) are reserved for rpc-internal methods and extensions
+-///             and MUST NOT be used for anything else.
+-/// + params  - A Structured value that holds the parameter values to be used during the invocation of the method. This
+-///             member MAY be omitted.
+-/// + id      - An identifier established by the Client that MUST contain a String, Number, or NULL value if included.
+-///             If it is not included it is assumed to be a notification. The value SHOULD normally not be Null [1] and
+-///             Numbers SHOULD NOT contain fractional parts [2].
+-/// </summary>
+-public class JsonRpcRequest
++/// <summary>The retained application RPC format: string IDs, null notifications.</summary>
++public sealed class JsonRpcRequest(string? jsonrpc, string? id, string method, RpcValue parameters)
+ {
+-	/// <summary>
+-	/// Constructor used to deserialize the requests.
+-	/// </summary>
+-	[JsonConstructor]
+-	public JsonRpcRequest(string jsonrpc, string id, string method, JToken parameters)
+-	{
+-		JsonRPC = jsonrpc;
+-		Id = id;
+-		Method = method;
+-		Parameters = parameters;
+-	}
+-
+-	/// <summary>
+-	/// Gets a value indicating whether the JsonRpcRequest is a notification request
+-	/// which means the client is not interested in receiving a response.
+-	/// </summary>
+-	[MemberNotNullWhen(returnValue: false, nameof(Id))]
+ 	public bool IsNotification => Id is null;
+-
+-	/// <summary>
+-	/// Gets the version of the JSON-RPC protocol. MUST be exactly "2.0".
+-	/// </summary>
+-	[JsonProperty("jsonrpc", Required = Required.Default)]
+-	public string JsonRPC { get; }
+-
+-	/// <summary>
+-	/// Gets the identifier established by the Client that MUST contain a String,
+-	/// Number, or NULL value if included. If it is not included it is assumed
+-	/// to be a notification.
+-	/// The value SHOULD normally not be Null and Numbers SHOULD NOT contain
+-	/// fractional parts.
+-	/// The use of Null as a value for the id member in a Request object is
+-	/// discouraged, because this specification uses a value of Null for Responses
+-	/// with an unknown id. Also, because JSON-RPC 1.0 uses an id value of Null
+-	/// for Notifications this could cause confusion in handling.
+-	/// The Server MUST reply with the same value in the Response object if included.
+-	/// This member is used to correlate the context between the two objects.
+-	/// </summary>
+-	[JsonProperty("id")]
+-	public string Id { get; }
+-
+-	/// <summary>
+-	/// Gets the name of the method to be invoked. Method names that
+-	/// begin with the word rpc followed by a period character (U+002E or ASCII 46)
+-	/// are reserved for rpc-internal methods and extensions and MUST NOT be used
+-	/// for anything else.
+-	/// </summary>
+-	[JsonProperty("method", Required = Required.Always)]
+-	public string Method { get; }
+-
+-	/// <summary>
+-	/// Gets a structured value that holds the parameter values to be used during the
+-	/// invocation of the method. This member MAY be omitted.
+-	/// </summary>
+-	[JsonProperty("params")]
+-	public JToken Parameters { get; }
+-
+-	/// <summary>
+-	/// Parses the JSON RPC request giving back the deserialized JsonRpcRequest instance.
+-	/// Return true if the deserialization was successful, otherwise false.
+-	/// </summary>
++	public string? JsonRPC { get; } = jsonrpc;
++	public string? Id { get; } = id;
++	public string Method { get; } = method;
++	public RpcValue Parameters { get; } = parameters;
+ 	public static bool TryParse(string rawJson, [NotNullWhen(true)] out JsonRpcRequest[]? requests, out bool isBatch)
+ 	{
+-		try
+-		{
+-			isBatch = rawJson.TrimStart().StartsWith('[');
+-			rawJson = isBatch ? rawJson : $"[{rawJson}]";
+-			requests = JsonConvert.DeserializeObject<JsonRpcRequest[]>(rawJson);
+-
+-			return requests is not null;
+-		}
+-		catch (JsonException)
+-		{
+-			requests = null;
+-			isBatch = false;
+-		}
+-
+-		return false;
++		try { (requests, isBatch) = ParseAsync(rawJson).GetAwaiter().GetResult(); return true; }
++		catch (RpcJsonException) { requests = null; isBatch = false; return false; }
++	}
++	public static async Task<(JsonRpcRequest[] Requests, bool IsBatch)> ParseAsync(string rawJson, CancellationToken cancellationToken = default)
++	{
++		var envelope = await RpcJson.ParseRpcAsync(rawJson, cancellationToken).ConfigureAwait(false);
++		return FromEnvelope(envelope);
++	}
++	public static async Task<(JsonRpcRequest[] Requests, bool IsBatch)> ParseAsync(Stream input, CancellationToken cancellationToken = default) =>
++		FromEnvelope(await RpcJson.ParseRpcAsync(input, cancellationToken).ConfigureAwait(false));
++	private static (JsonRpcRequest[] Requests, bool IsBatch) FromEnvelope(RpcValue envelope)
++	{
++		var requests = envelope[1].EnumerateArray().Select(value => new JsonRpcRequest(
++			value.GetProperty("jsonrpc").GetString(), value.GetProperty("id").GetString(),
++			value.GetProperty("method").GetString()!, value.GetProperty("params"))).ToArray();
++		return (requests, envelope[0].GetBoolean());
+ 	}
+ }
+diff --git a/MagicalCryptoWallet/Rpc/JsonRpcRequestHandler.cs b/MagicalCryptoWallet/Rpc/JsonRpcRequestHandler.cs
+index aa5f04525f..c5e6768e15 100644
+--- a/MagicalCryptoWallet/Rpc/JsonRpcRequestHandler.cs
++++ b/MagicalCryptoWallet/Rpc/JsonRpcRequestHandler.cs
+@@ -4,10 +4,8 @@ using System.Reflection;
+ using System.Threading;
+ using System.Threading.Tasks;
+ using NBitcoin;
+-using Newtonsoft.Json;
+-using Newtonsoft.Json.Linq;
+ using MagicalCryptoWallet.Extensions;
+-using MagicalCryptoWallet.Rpc.JsonConverters;
++using MagicalCryptoWallet.Mcw.Serialization;
+ 
+ namespace MagicalCryptoWallet.Rpc;
+ 
+@@ -19,29 +17,13 @@ namespace MagicalCryptoWallet.Rpc;
+ public class JsonRpcRequestHandler<TService>
+ 	where TService : notnull
+ {
+-	private readonly JsonSerializerSettings _defaultSettings;
+-
+-	private readonly JsonSerializer _defaultSerializer;
++	private readonly RpcObjectCodec _codec;
+ 
+ 	public JsonRpcRequestHandler(TService service, Network network)
+ 	{
+ 		_service = service;
+ 		_metadataProvider = new JsonRpcServiceMetadataProvider(service.GetType());
+-		_defaultSettings = new()
+-    	{
+-    		NullValueHandling = NullValueHandling.Include,
+-    		ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+-
+-    		Converters = new List<JsonConverter>
+-    		{
+-    			new Uint256JsonConverter(),
+-    			new OutPointAsTxoRefJsonConverter(),
+-    			new BitcoinAddressJsonConverter(),
+-    			new DestinationJsonConverter(network),
+-    		}
+-    	};
+-		NBitcoin.JsonConverters.Serializer.RegisterFrontConverters(_defaultSettings, network);
+-		_defaultSerializer = JsonSerializer.Create(_defaultSettings);
++		_codec = new RpcObjectCodec(network);
+ 	}
+ 
+ 	private readonly TService _service;
+@@ -55,35 +37,45 @@ public class JsonRpcRequestHandler<TService>
+ 	/// <returns>The response that, after serialization, is returned as response.</returns>
+ 	public async Task<string> HandleAsync(string path, string body, CancellationToken cancellationToken)
+ 	{
+-		if (!JsonRpcRequest.TryParse(body, out var jsonRpcRequests, out var isBatch))
++		JsonRpcRequest[] requests;
++		bool isBatch;
++		try
+ 		{
+-			return CreateParseErrorResponse();
++			(requests, isBatch) = await JsonRpcRequest.ParseAsync(body, cancellationToken).ConfigureAwait(false);
+ 		}
+-
+-		return await HandleRequestsAsync(path, jsonRpcRequests, isBatch, cancellationToken).ConfigureAwait(false);
++		catch (RpcJsonException)
++		{
++			return await CreateParseErrorResponseAsync(cancellationToken).ConfigureAwait(false);
++		}
++		return await HandleRequestsAsync(path, requests, isBatch, cancellationToken).ConfigureAwait(false);
+ 	}
+ 
+-	public string CreateParseErrorResponse()
+-	{
+-		return JsonRpcResponse.CreateErrorResponse(null, JsonRpcErrorCodes.ParseError).ToJson(_defaultSettings);
+-	}
++	public string CreateParseErrorResponse() => CreateParseErrorResponseAsync().GetAwaiter().GetResult();
++	public Task<string> CreateParseErrorResponseAsync(CancellationToken cancellationToken = default) =>
++		JsonRpcResponse.CreateErrorResponse(null, JsonRpcErrorCodes.ParseError).ToJsonAsync(_codec, cancellationToken);
+ 
+ 	public async Task<string> HandleRequestsAsync(string path, JsonRpcRequest[] jsonRpcRequests, bool isBatch, CancellationToken cancellationToken)
+ 	{
+-		var results = new List<string>();
++		var results = new List<RpcValue>();
+ 
+ 		foreach (var jsonRpcRequest in jsonRpcRequests)
+ 		{
+ 			cancellationToken.ThrowIfCancellationRequested();
+ 
+-			string jsonResult = await HandleRequestAsync(path, jsonRpcRequest, cancellationToken).ConfigureAwait(false);
+-			results.Add(jsonResult);
++			var jsonResult = await HandleRequestAsync(path, jsonRpcRequest, cancellationToken).ConfigureAwait(false);
++			if (jsonResult is not null) { results.Add(jsonResult); }
+ 		}
+ 
+-		return isBatch ? $"[{string.Join(",", results)}]" : results[0];
++		if (isBatch)
++		{
++			// The old join emitted stray commas for notification slots.
++			return results.Count == 0 && jsonRpcRequests.Length > 0 ? ""
++				: await RpcJson.WriteRpcBatchAsync(RpcValue.Array(results), cancellationToken).ConfigureAwait(false);
++		}
++		return results.Count == 0 ? "" : await RpcJson.WriteRpcPayloadAsync(results[0], cancellationToken).ConfigureAwait(false);
+ 	}
+ 
+-	private async Task<string> HandleRequestAsync(string path, JsonRpcRequest jsonRpcRequest, CancellationToken cancellationToken)
++	private async Task<RpcValue?> HandleRequestAsync(string path, JsonRpcRequest jsonRpcRequest, CancellationToken cancellationToken)
+ 	{
+ 		var methodName = jsonRpcRequest.Method;
+ 
+@@ -97,8 +89,9 @@ public class JsonRpcRequestHandler<TService>
+ 			var methodParameters = procedureMetadata.Parameters;
+ 			var parameters = new List<object?>();
+ 
+-			if (jsonRpcRequest.Parameters is JArray jArray)
++			if (jsonRpcRequest.Parameters.ValueKind == RpcValueKind.Array)
+ 			{
++				var jArray = jsonRpcRequest.Parameters.EnumerateArray();
+ 				if (jArray.Count > methodParameters.Count)
+ 				{
+ 					return Error(JsonRpcErrorCodes.InvalidParams, "Too many parameters were supplied.", jsonRpcRequest.Id);
+@@ -107,11 +100,11 @@ public class JsonRpcRequestHandler<TService>
+ 				for (int i = 0; i < count; i++)
+ 				{
+ 					var parameter = methodParameters[i];
+-					if (parameter.type == typeof(string) && jArray[i].Type is not (JTokenType.String or JTokenType.Null))
++					if (parameter.type == typeof(string) && jArray[i].ValueKind is not (RpcValueKind.String or RpcValueKind.Null))
+ 					{
+ 						return Error(JsonRpcErrorCodes.InvalidParams, $"Parameter '{parameter.name}' must be a string.", jsonRpcRequest.Id);
+ 					}
+-					var item = jArray[i].ToObject(parameter.type, _defaultSerializer);
++					var item = _codec.Decode(jArray[i], parameter.type, $"[{i}]");
+ 					if (item is null && !(Nullable.GetUnderlyingType(parameter.type) is not null || parameter.isOptional && parameter.defaultValue is null))
+ 					{
+ 						return Error(JsonRpcErrorCodes.InvalidParams, $"Parameter '{parameter.name}' cannot be null.", jsonRpcRequest.Id);
+@@ -119,16 +112,17 @@ public class JsonRpcRequestHandler<TService>
+ 					parameters.Add(item);
+ 				}
+ 			}
+-			else if (jsonRpcRequest.Parameters is JObject jObj)
++			else if (jsonRpcRequest.Parameters.ValueKind == RpcValueKind.Object)
+ 			{
+-				if (jObj.Properties().Any(property => methodParameters.All(parameter => parameter.name != property.Name)))
++				var jObj = jsonRpcRequest.Parameters;
++				if (jObj.EnumerateObject().Any(property => methodParameters.All(parameter => parameter.name != property.Name)))
+ 				{
+ 					return Error(JsonRpcErrorCodes.InvalidParams, "An unknown parameter was supplied.", jsonRpcRequest.Id);
+ 				}
+ 				for (int i = 0; i < methodParameters.Count; i++)
+ 				{
+ 					var parameter = methodParameters[i];
+-					if (!jObj.ContainsKey(parameter.name))
++					if (!jObj.TryGetProperty(parameter.name, out _))
+ 					{
+ 						if (parameter.isOptional)
+ 						{
+@@ -141,12 +135,12 @@ public class JsonRpcRequestHandler<TService>
+ 							jsonRpcRequest.Id);
+ 					}
+ 
+-					var parameterValue = jObj[parameter.name]!;
+-					if (parameter.type == typeof(string) && parameterValue.Type is not (JTokenType.String or JTokenType.Null))
++					var parameterValue = jObj.GetProperty(parameter.name);
++					if (parameter.type == typeof(string) && parameterValue.ValueKind is not (RpcValueKind.String or RpcValueKind.Null))
+ 					{
+ 						return Error(JsonRpcErrorCodes.InvalidParams, $"Parameter '{parameter.name}' must be a string.", jsonRpcRequest.Id);
+ 					}
+-					var parameterTypedValue = parameterValue.ToObject(parameter.type, _defaultSerializer);
++					var parameterTypedValue = _codec.Decode(parameterValue, parameter.type, parameter.name);
+ 					if (parameterTypedValue is null && !(Nullable.GetUnderlyingType(parameter.type) is not null || parameter.isOptional && parameter.defaultValue is null))
+ 					{
+ 						return Error(
+@@ -188,7 +182,7 @@ public class JsonRpcRequestHandler<TService>
+ 
+ 			if (jsonRpcRequest.IsNotification) // the client is not interested in getting a response
+ 			{
+-				return "";
++				return null;
+ 			}
+ 
+ 			JsonRpcResponse? response;
+@@ -209,7 +203,7 @@ public class JsonRpcRequestHandler<TService>
+ 			{
+ 				response = JsonRpcResponse.CreateResultResponse(jsonRpcRequest.Id, result);
+ 			}
+-			return response.ToJson(_defaultSettings);
++			return response.ToServicePayload(_codec);
+ 		}
+ 		catch (TargetInvocationException e)
+ 		{
+@@ -222,11 +216,11 @@ public class JsonRpcRequestHandler<TService>
+ 		}
+ 	}
+ 
+-	private string Error(JsonRpcErrorCodes code, string reason, string id)
++	private RpcValue? Error(JsonRpcErrorCodes code, string reason, string? id)
+ 	{
+ 		var response = JsonRpcResponse.CreateErrorResponse(id, code, reason);
+ 		return id is { }
+-			? response.ToJson(_defaultSettings)
+-			: "";
++			? response.ToServicePayload(_codec)
++			: null;
+ 	}
+ }
+diff --git a/MagicalCryptoWallet/Rpc/JsonRpcResponse.cs b/MagicalCryptoWallet/Rpc/JsonRpcResponse.cs
+index 6ebb72edf5..9ea3336ef7 100644
+--- a/MagicalCryptoWallet/Rpc/JsonRpcResponse.cs
++++ b/MagicalCryptoWallet/Rpc/JsonRpcResponse.cs
+@@ -1,70 +1,42 @@
+-using System.Collections.Generic;
+-using Newtonsoft.Json;
++using System.Threading;
++using System.Threading.Tasks;
++using NBitcoin;
++using MagicalCryptoWallet.Mcw.Serialization;
+ 
+ namespace MagicalCryptoWallet.Rpc;
+ 
+-public abstract record JsonRpcResponse
++public abstract record JsonRpcResponse(string? Id)
+ {
+-	// Default error messages for standard JsonRpcErrorCodes
+-	private static Dictionary<JsonRpcErrorCodes, string> Messages = new()
++	public string JsonRpc => "2.0";
++	public static JsonRpcSuccessResponse CreateResultResponse(string? id, object? result = null) => new(id, result);
++	public static JsonRpcErrorResponse CreateErrorResponse(string? id, JsonRpcErrorCodes code, string? customMessage = null) =>
++		new(id, code, customMessage ?? DefaultMessage(code));
++	public string ToJson(Network network) => ToJsonAsync(new RpcObjectCodec(network)).GetAwaiter().GetResult();
++	public Task<string> ToJsonAsync(RpcObjectCodec codec, CancellationToken cancellationToken = default) => this switch
+ 	{
+-		[JsonRpcErrorCodes.ParseError] = "Parse error",
+-		[JsonRpcErrorCodes.InvalidRequest] = "Invalid Request",
+-		[JsonRpcErrorCodes.MethodNotFound] = "Method not found",
+-		[JsonRpcErrorCodes.InvalidParams] = "Invalid params",
+-		[JsonRpcErrorCodes.InternalError] = "Internal error",
++		JsonRpcSuccessResponse success => RpcJson.WriteRpcResponseAsync(Id, codec.Encode(success.Result), cancellationToken: cancellationToken),
++		JsonRpcErrorResponse failure => RpcJson.WriteRpcResponseAsync(Id, null, (int)failure.Error.code, failure.Error.message, cancellationToken),
++		_ => throw new RpcJsonException("Unknown RPC response type.")
+ 	};
+-
+-	protected JsonRpcResponse(string? id)
++	public RpcValue ToServicePayload(RpcObjectCodec codec) => this switch
+ 	{
+-		Id = id;
+-	}
+-
+-	[JsonProperty("jsonrpc", Order = 0)]
+-	public string JsonRpc => "2.0";
+-
+-	[JsonProperty("id", Order = 3)]
+-	public string? Id { get; }
+-
+-	public static JsonRpcSuccessResponse CreateResultResponse(string id, object? result = null) =>
+-		new(id, result);
+-
+-	public static JsonRpcErrorResponse CreateErrorResponse(string? id, JsonRpcErrorCodes code, string? customMessage = null) =>
+-		new(id, code, customMessage ?? GetDefaultMessageFor(code));
+-
+-	public string ToJson(JsonSerializerSettings serializerSettings) =>
+-		JsonConvert.SerializeObject(this, serializerSettings);
+-
+-	private static string GetDefaultMessageFor(JsonRpcErrorCodes code) =>
+-		Messages.TryGetValue(code, out var rpcErrorMessage)
+-			? rpcErrorMessage
+-			: "Server error";
+-}
+-
+-public record JsonRpcSuccessResponse : JsonRpcResponse
+-{
+-	public JsonRpcSuccessResponse(string id, object? result)
+-		: base(id)
++		JsonRpcSuccessResponse success => RpcValue.Array([RpcValue.String(Id), codec.Encode(success.Result), null, null]),
++		JsonRpcErrorResponse failure => RpcValue.Array([RpcValue.String(Id), null, RpcValue.Create((int)failure.Error.code), RpcValue.String(failure.Error.message)]),
++		_ => throw new RpcJsonException("Unknown RPC response type.")
++	};
++	private static string DefaultMessage(JsonRpcErrorCodes code) => code switch
+ 	{
+-		Result = result;
+-	}
+-
+-	[JsonProperty("result", Order = 1)]
+-	public object? Result { get; }
++		JsonRpcErrorCodes.ParseError => "Parse error", JsonRpcErrorCodes.InvalidRequest => "Invalid Request",
++		JsonRpcErrorCodes.MethodNotFound => "Method not found", JsonRpcErrorCodes.InvalidParams => "Invalid params",
++		JsonRpcErrorCodes.InternalError => "Internal error", _ => "Server error"
++	};
+ }
+-
+-public record JsonRpcErrorResponse : JsonRpcResponse
++public sealed record JsonRpcSuccessResponse(string? ResponseId, object? Result) : JsonRpcResponse(ResponseId);
++public sealed record JsonRpcErrorResponse : JsonRpcResponse
+ {
+-	public JsonRpcErrorResponse(string? id, JsonRpcErrorCodes code, string message)
+-		: base(id)
+-	{
+-		Error = new ErrorObject(code, message);
+-	}
+-
+-	[JsonProperty("error", Order = 1)]
++	public JsonRpcErrorResponse(string? id, JsonRpcErrorCodes code, string message) : base(id) { Error = new(code, message); }
+ 	public ErrorObject Error { get; }
+-
+-#pragma warning disable IDE1006 // Naming Styles -- The property names are defined by the JSON-RPC 2.0 specification.
+-	public record ErrorObject(JsonRpcErrorCodes code, string message);
+-#pragma warning restore IDE1006 // Naming Styles
++#pragma warning disable IDE1006
++	public sealed record ErrorObject(JsonRpcErrorCodes code, string message);
++#pragma warning restore IDE1006
+ }
+diff --git a/MagicalCryptoWallet/Rpc/JsonRpcServer.cs b/MagicalCryptoWallet/Rpc/JsonRpcServer.cs
+index 6d8adf6a8f..8629c604dd 100644
+--- a/MagicalCryptoWallet/Rpc/JsonRpcServer.cs
++++ b/MagicalCryptoWallet/Rpc/JsonRpcServer.cs
+@@ -1,8 +1,8 @@
+ using Microsoft.Extensions.Hosting;
+-using System.IO;
+ using System.Net;
+ using System.Text;
+ using MagicalCryptoWallet.Services.Terminate;
++using MagicalCryptoWallet.Mcw.Serialization;
+ 
+ namespace MagicalCryptoWallet.Rpc;
+ 
+@@ -58,17 +58,18 @@ public class JsonRpcServer : BackgroundService
+ 
+ 				if (request.HttpMethod == "POST")
+ 				{
+-					using var reader = new StreamReader(request.InputStream);
+-					string body = await reader.ReadToEndAsync(stoppingToken).ConfigureAwait(false);
+-
+ 					if (IsAuthorized(context))
+ 					{
+ 						var path = request.Url?.LocalPath ?? string.Empty;
+ 						string jsonResponse = string.Empty;
+ 
+-						if (!JsonRpcRequest.TryParse(body, out var allRpcRequests, out var isBatch))
++						JsonRpcRequest[]? allRpcRequests;
++						bool isBatch;
++						try { (allRpcRequests, isBatch) = await JsonRpcRequest.ParseAsync(request.InputStream, stoppingToken).ConfigureAwait(false); }
++						catch (RpcJsonException) { allRpcRequests = null; isBatch = false; }
++						if (allRpcRequests is null)
+ 						{
+-							jsonResponse = _requestHandler.CreateParseErrorResponse();
++							jsonResponse = await _requestHandler.CreateParseErrorResponseAsync(stoppingToken).ConfigureAwait(false);
+ 						}
+ 						else
+ 						{
