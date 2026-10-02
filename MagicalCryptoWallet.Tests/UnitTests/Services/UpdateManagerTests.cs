@@ -32,19 +32,18 @@ public class UpdateManagerTests
 		]);
 		AsyncReleaseDownloader doNothingDownloader = (_, _) => Task.CompletedTask;
 
-		using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
 		var updaterFunc = UpdateManager.CreateUpdater(nostrClientFactory, doNothingDownloader, eventBus, currentVersion: new Version(1, 0, 0), announcementNpub: TestReleaseAuthor.Npub);
 
 		// Act
-		var updateStatusObtainedTask = new TaskCompletionSource<UpdateManager.UpdateStatus>();
+		var updateStatuses = new List<UpdateManager.UpdateStatus>();
 		using var subscription =
-			eventBus.Subscribe<NewSoftwareVersionAvailable>(e => updateStatusObtainedTask.SetResult(e.UpdateStatus));
+			eventBus.Subscribe<NewSoftwareVersionAvailable>(e => updateStatuses.Add(e.UpdateStatus));
 
-		var updateTask = updaterFunc(new UpdateManager.UpdateMessage(), Unit.Instance, cts.Token);
-		var updateStatusReceived = await updateStatusObtainedTask.Task.WaitAsync(cts.Token);
-		await updateTask;
+		// The synthetic relay sends EOSE; completion proves that all announcements were processed.
+		await updaterFunc(new UpdateManager.UpdateMessage(), Unit.Instance, CancellationToken.None);
 
 		// Assert
+		var updateStatusReceived = Assert.Single(updateStatuses);
 		Assert.Equal(Version.Parse("3.5.8"), updateStatusReceived.ClientVersion);
 		Assert.False(updateStatusReceived.ClientUpToDate);
 		Assert.False(updateStatusReceived.IsReadyToInstall);
@@ -63,19 +62,17 @@ public class UpdateManagerTests
 		]);
 		AsyncReleaseDownloader doNothingDownloader = (_, _) => Task.CompletedTask;
 
-		using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
 		var updaterFunc = UpdateManager.CreateUpdater(nostrClientFactory, doNothingDownloader, eventBus, currentVersion: new Version(1, 0, 0), announcementNpub: TestReleaseAuthor.Npub);
 
 		// Act
-		var updateStatusObtainedTask = new TaskCompletionSource<UpdateManager.UpdateStatus>();
+		var updateStatuses = new List<UpdateManager.UpdateStatus>();
 		using var subscription =
-			eventBus.Subscribe<NewSoftwareVersionAvailable>(e => updateStatusObtainedTask.SetResult(e.UpdateStatus));
+			eventBus.Subscribe<NewSoftwareVersionAvailable>(e => updateStatuses.Add(e.UpdateStatus));
 
-		var updateTask = updaterFunc(new UpdateManager.UpdateMessage(), Unit.Instance, cts.Token);
-		var updateStatusReceived = await updateStatusObtainedTask.Task.WaitAsync(cts.Token);
-		await updateTask;
+		await updaterFunc(new UpdateManager.UpdateMessage(), Unit.Instance, CancellationToken.None);
 
 		// Assert
+		var updateStatusReceived = Assert.Single(updateStatuses);
 		Assert.Equal(Version.Parse("3.5.8"), updateStatusReceived.ClientVersion);
 		Assert.False(updateStatusReceived.ClientUpToDate);
 		Assert.False(updateStatusReceived.IsReadyToInstall);
@@ -94,18 +91,17 @@ public class UpdateManagerTests
 		]);
 		AsyncReleaseDownloader doNothingDownloader = (_, _) => Task.CompletedTask;
 
-		using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(100));
 		var updaterFunc = UpdateManager.CreateUpdater(nostrClientFactory, doNothingDownloader, eventBus, announcementNpub: TestReleaseAuthor.Npub);
 
 		// Act
-		var updateStatusObtainedTask = new TaskCompletionSource<UpdateManager.UpdateStatus>();
+		var updateStatuses = new List<UpdateManager.UpdateStatus>();
 		using var subscription =
-			eventBus.Subscribe<NewSoftwareVersionAvailable>(e => updateStatusObtainedTask.SetException(new Exception("Unexpected event. This should have never been called. Bug")));
+			eventBus.Subscribe<NewSoftwareVersionAvailable>(e => updateStatuses.Add(e.UpdateStatus));
 
-		var updateTask = updaterFunc(new UpdateManager.UpdateMessage(), Unit.Instance, cts.Token);
-		await Assert.ThrowsAsync<TaskCanceledException>(async () => await updateStatusObtainedTask.Task.WaitAsync(cts.Token));
+		await updaterFunc(new UpdateManager.UpdateMessage(), Unit.Instance, CancellationToken.None);
 
-		await updateTask;
+		// Assert after the relay is drained, rather than treating a timer expiry as success.
+		Assert.Empty(updateStatuses);
 	}
 
 	[Fact]
@@ -116,18 +112,16 @@ public class UpdateManagerTests
 		var nostrClientFactory = () => new TesteabletNostrClient([]);
 		AsyncReleaseDownloader doNothingDownloader = (_, _) => Task.CompletedTask;
 
-		using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(100));
 		var updaterFunc = UpdateManager.CreateUpdater(nostrClientFactory, doNothingDownloader, eventBus, announcementNpub: TestReleaseAuthor.Npub);
 
 		// Act
-		var updateStatusObtainedTask = new TaskCompletionSource<UpdateManager.UpdateStatus>();
+		var updateStatuses = new List<UpdateManager.UpdateStatus>();
 		using var subscription =
-			eventBus.Subscribe<NewSoftwareVersionAvailable>(e => updateStatusObtainedTask.SetException(new Exception("Unexpected event. This should have never been called. Bug")));
+			eventBus.Subscribe<NewSoftwareVersionAvailable>(e => updateStatuses.Add(e.UpdateStatus));
 
-		var updateTask = updaterFunc(new UpdateManager.UpdateMessage(), Unit.Instance, cts.Token);
-		await Assert.ThrowsAsync<TaskCanceledException>(async () => await updateStatusObtainedTask.Task.WaitAsync(cts.Token));
+		await updaterFunc(new UpdateManager.UpdateMessage(), Unit.Instance, CancellationToken.None);
 
-		await updateTask;
+		Assert.Empty(updateStatuses);
 	}
 
 	[Fact]

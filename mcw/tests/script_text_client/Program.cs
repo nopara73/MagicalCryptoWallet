@@ -155,6 +155,11 @@ using (McwApplicationServices.Bind(accurate))
     var parsed = await client.GetStatusAsync(RoundStateRequest.Empty, CancellationToken.None);
     Check(JsonEncoder.ToString(parsed, Encode.CoordinatorMessage) == statusJson, "actual GetStatusAsync preserves decoded response");
     Check(accurate.Requests.Count == 3, "actual request and response roots invoke three real script leaves");
+    var commentedStatus = "/* synthetic prefix */\n" + statusJson.Replace("\"ScriptPubKey\":", "/* synthetic nested comment */\"ScriptPubKey\":", StringComparison.Ordinal) + "\n// synthetic suffix\n";
+    var commentedClient = new WabiSabiHttpApiClient("synthetic-commented-status-client", new MemoryHttpFactory(commentedStatus));
+    var commented = await commentedClient.GetStatusAsync(RoundStateRequest.Empty, CancellationToken.None);
+    Check(JsonEncoder.ToString(commented, Encode.CoordinatorMessage) == statusJson, "actual HTTP status preserves retained comment tolerance");
+    Check(accurate.Requests.Count == 5, "commented status retains both native script leaves");
 }
 // An incomplete native response must not block the asynchronous HTTP entry point.
 // Always release the fixture even on failure, so this check cannot strand a worker.
@@ -204,6 +209,19 @@ using (McwApplicationServices.Bind(canceledRender))
     try { await task.WaitAsync(TimeSpan.FromSeconds(5)); throw new InvalidOperationException("Canceled native render completed."); }
     catch (OperationCanceledException) { checks++; }
     Check(factory.Handler.Bodies.Count == 0, "canceled native render never sends an HTTP payload");
+}
+var canceledParse = new DeferredServices();
+using (McwApplicationServices.Bind(canceledParse))
+{
+    using var cancellation = new CancellationTokenSource();
+    var factory = new MemoryHttpFactory(statusJson);
+    var client = new WabiSabiHttpApiClient("synthetic-canceled-parse-client", factory);
+    var task = client.GetStatusAsync(RoundStateRequest.Empty, cancellation.Token);
+    await canceledParse.Entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+    cancellation.Cancel();
+    try { await task.WaitAsync(TimeSpan.FromSeconds(5)); throw new InvalidOperationException("Canceled native parse completed."); }
+    catch (OperationCanceledException) { checks++; }
+    Check(factory.Handler.Bodies.Count == 1 && canceledParse.RequestCount == 1, "pending status parse cancellation stops before its next native leaf");
 }
 using (McwApplicationServices.Bind(failed))
 {

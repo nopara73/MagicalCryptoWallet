@@ -35,7 +35,7 @@ public static class ClientScriptTextJson
 		// Resolve the native leaves asynchronously before the retained synchronous
 		// schema decoder runs. Each occurrence receives its own native result;
 		// nothing is cached across responses or replaced with a managed parse.
-		using var document = JsonDocument.Parse(json);
+		using var document = JsonDocument.Parse(json, JsonDecoder.Options);
 		var scripts = new Dictionary<string, Queue<byte[]>>(StringComparer.Ordinal);
 		foreach (var text in StatusScriptTexts(document.RootElement))
 		{

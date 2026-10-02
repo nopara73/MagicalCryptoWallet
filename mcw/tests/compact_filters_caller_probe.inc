@@ -25,9 +25,9 @@ if (args.Length != 2) { return 2; }
 var reportPath = Path.GetFullPath(args[0]);
 var syntheticRoot = Path.GetFullPath(args[1]);
 Directory.CreateDirectory(syntheticRoot);
-// This affects only the synthetic managed child. Retained test helpers keep
-// their actual implementation while every application-data path stays here.
-Environment.SetEnvironmentVariable("APPDATA", syntheticRoot);
+// Keep retained fixture state inside this synthetic child on every desktop OS.
+// Production EnvironmentHelpers and the user's home directory stay unchanged.
+MagicalCryptoWallet.Tests.Helpers.Common.UseSyntheticDataRoot(syntheticRoot);
 MagicalCryptoWallet.Logging.Logger.Configure(filePath: Path.Combine(syntheticRoot, "caller.log"),
     logModes: [MagicalCryptoWallet.Logging.LogMode.File]);
 using var watchdog = new Timer(static _ => Environment.Exit(78), null,

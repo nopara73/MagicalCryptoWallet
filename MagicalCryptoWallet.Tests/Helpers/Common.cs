@@ -9,7 +9,18 @@ namespace MagicalCryptoWallet.Tests.Helpers;
 public static class Common
 {
 	private static readonly string RunId = Guid.NewGuid().ToString("N");
-	public static string DataDir => EnvironmentHelpers.GetDataDir(Path.Combine("MagicalCryptoWallet", "Tests", RunId));
+	private static string? SyntheticDataRoot { get; set; }
+	public static string DataDir => SyntheticDataRoot is { } root
+		? Path.Combine(root, "MagicalCryptoWallet", "Tests", RunId)
+		: EnvironmentHelpers.GetDataDir(Path.Combine("MagicalCryptoWallet", "Tests", RunId));
+
+	// Verification children can confine retained fixtures without changing the
+	// user's home directory or the application's storage-path implementation.
+	internal static void UseSyntheticDataRoot(string directory)
+	{
+		SyntheticDataRoot = Path.GetFullPath(directory);
+		Directory.CreateDirectory(DataDir);
+	}
 
 	public static string GetWorkDir([CallerFilePath] string callerFilePath = "", [CallerMemberName] string callerMemberName = "")
 	{
