@@ -1,4 +1,4 @@
-param([string]$SharedRoot='C:\Users\user\OneDrive\Documents\ChatGPT\MagicalCryptoWallet',[switch]$Format)
+param([string]$SharedRoot='C:\Users\user\OneDrive\Documents\ChatGPT\MagicalCryptoWallet',[switch]$Format,[string]$OutputDirectory)
 $ErrorActionPreference='Stop'
 $componentRoot=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
 $rustBin=Join-Path $SharedRoot '.artifacts/mcw-tools/rustup/toolchains/1.99.0-x86_64-pc-windows-msvc/bin'
@@ -17,7 +17,7 @@ try{
         if(-not $vsRoot){throw 'Installed linker not available'}
         & (Join-Path $vsRoot 'Common7/Tools/Launch-VsDevShell.ps1') -Arch amd64 -HostArch amd64 -SkipAutomaticLocation *> $null
     }
-    $output=Join-Path $componentRoot '.artifacts/native-ui-markdown-verification'
+    $output=if($OutputDirectory){[IO.Path]::GetFullPath($OutputDirectory)}else{Join-Path $componentRoot ('.artifacts/native-ui-markdown-verification/runs/'+[DateTime]::UtcNow.ToString('yyyyMMddTHHmmssfffZ'))}
     [IO.Directory]::CreateDirectory($output)|Out-Null
     $source=Join-Path $PSScriptRoot 'native_ui_markdown_conformance.rs'
     foreach($formatSource in $source,(Join-Path $PSScriptRoot 'native_ui_markdown_probe.rs')){
@@ -25,6 +25,16 @@ try{
         & (Join-Path $rustBin 'rustfmt.exe') --edition 2024 --check $formatSource
         if($LASTEXITCODE){throw 'Formatting check failed'}
     }
+    $inputs=Join-Path $componentRoot '.artifacts/native-ui-markdown-inputs'
+    if(-not (Test-Path -LiteralPath $inputs)){
+        & python (Join-Path $PSScriptRoot 'native_ui_markdown_inventory.py')
+        if($LASTEXITCODE){throw 'Input inventory failed'}
+    }
+    $managedProject=Join-Path $componentRoot 'Contrib/McwMigration/NativeUiVerification/NativeUiVerification.csproj'
+    & dotnet restore $managedProject --disable-parallel --locked-mode -p:Configuration=Release -m:1
+    if($LASTEXITCODE){throw 'Managed presentation restore failed'}
+    & python (Join-Path $PSScriptRoot 'native_ui_markdown_bindings.py') --write (Join-Path $output 'compiler-inputs-before.json')
+    if($LASTEXITCODE){throw 'Compiler input binding failed'}
     & (Join-Path $rustBin 'clippy-driver.exe') --edition=2024 --crate-type=lib -Dwarnings -C codegen-units=1 (Join-Path $componentRoot 'mcw/src/markdown/mod.rs') -o (Join-Path $output 'markdown-lint.rlib')
     if($LASTEXITCODE){throw 'Shipping Markdown lint failed'}
     & $rustc --edition=2024 --test -Dwarnings -C codegen-units=1 $source -o (Join-Path $output 'native_ui_markdown_conformance.exe')
@@ -33,20 +43,20 @@ try{
     if($LASTEXITCODE){throw 'Markdown tests failed'}
     & $rustc --edition=2024 -Dwarnings -C codegen-units=1 (Join-Path $PSScriptRoot 'native_ui_markdown_probe.rs') -o (Join-Path $output 'native_ui_markdown_probe.exe')
     if($LASTEXITCODE){throw 'Markdown wire probe compilation failed'}
-    & python (Join-Path $PSScriptRoot 'native_ui_markdown_inventory.py')
-    if($LASTEXITCODE){throw 'Input inventory failed'}
     $wireOutput=Join-Path $output 'wire'
     [IO.Directory]::CreateDirectory($wireOutput)|Out-Null
-    foreach($inputFile in Get-ChildItem -LiteralPath (Join-Path $componentRoot '.artifacts/native-ui-markdown-inputs') -Filter '*.md'){
+    foreach($inputFile in Get-ChildItem -LiteralPath $inputs -Filter '*.md'){
         & (Join-Path $output 'native_ui_markdown_probe.exe') $inputFile.FullName (Join-Path $wireOutput ($inputFile.BaseName+'.bin'))
         if($LASTEXITCODE){throw ('Wire probe failed: '+$inputFile.Name)}
     }
-    $managedProject=Join-Path $componentRoot 'Contrib/McwMigration/NativeUiVerification/NativeUiVerification.csproj'
-    & dotnet build $managedProject -m:1
+    & dotnet build $managedProject -c Release --no-restore -m:1
     if($LASTEXITCODE){throw 'Managed presentation compilation failed'}
-    & dotnet run --project $managedProject --no-build -- (Join-Path $output 'render') $wireOutput
+    & dotnet run --project $managedProject -c Release --no-build -- (Join-Path $output 'render') $wireOutput
     if($LASTEXITCODE){throw 'Managed presentation verification failed'}
-    & python (Join-Path $PSScriptRoot 'native_ui_markdown_legacy_compare.py')
+    & python (Join-Path $PSScriptRoot 'native_ui_markdown_legacy_compare.py') --output $output
     if($LASTEXITCODE){throw 'Legacy presentation comparison failed'}
-    [ordered]@{scope='bounded Markdown parse service; no full UI rewrite';rust=$version;native_target='x86_64-pc-windows-msvc';test_log='conformance-results.txt';completed_utc=[DateTime]::UtcNow.ToString('O');production_integrated=$false;dependency_removed=$false}|ConvertTo-Json|Set-Content -LiteralPath (Join-Path $output 'verification.json') -Encoding utf8
+    & python (Join-Path $PSScriptRoot 'native_ui_markdown_bindings.py') --check (Join-Path $output 'compiler-inputs-before.json') --report (Join-Path $output 'compiler-inputs-after.json')
+    if($LASTEXITCODE){throw 'Compiler inputs changed during verification'}
+    [ordered]@{scope='bounded Markdown parse service; no full UI rewrite';rust=$version;native_target='x86_64-pc-windows-msvc';test_log='conformance-results.txt';compiler_inputs_before='compiler-inputs-before.json';compiler_inputs_after='compiler-inputs-after.json';completed_utc=[DateTime]::UtcNow.ToString('O');production_integrated=$false;dependency_removed=$false;native_in_progress_cancellation_verified=$false}|ConvertTo-Json|Set-Content -LiteralPath (Join-Path $output 'verification.json') -Encoding utf8
+    Write-Output "Candidate verification evidence: $output"
 }finally{$slotHandle.Dispose()}

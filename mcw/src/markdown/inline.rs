@@ -1,7 +1,14 @@
 use super::{BOLD, Budget, CODE, Error, ITALIC, MAX_RUNS, Run, STRIKE};
 use std::collections::BTreeMap;
 type References = BTreeMap<String, (String, Option<String>)>;
-pub(super) fn reference(line: &str) -> Option<(String, String, Option<String>)> {
+type Reference = (String, String, Option<String>);
+pub(super) fn reference(line: &str, budget: &mut Budget<'_>) -> Result<Option<Reference>, Error> {
+    // Reference parsing is linear in this one line. Reserve its work before
+    // trimming, searching or allocating; callers may inspect a line again.
+    budget.charge(line.len())?;
+    Ok(reference_content(line))
+}
+fn reference_content(line: &str) -> Option<Reference> {
     let line = line.trim();
     let rest = line.strip_prefix('[')?;
     let end = rest.find("]:")?;
@@ -14,6 +21,34 @@ pub(super) fn reference(line: &str) -> Option<(String, String, Option<String>)> 
         return None;
     }
     Some((name, destination, title))
+}
+fn scan(
+    bytes: &[u8],
+    limit: usize,
+    budget: &mut Budget<'_>,
+    matches: impl Fn(u8) -> bool,
+) -> Result<Option<usize>, Error> {
+    // Cap the slice BEFORE searching. Every chunk is reserved and cancellation
+    // checked BEFORE inspecting it, including searches with no terminator.
+    let window = &bytes[..bytes.len().min(limit)];
+    for (index, chunk) in window.chunks(64).enumerate() {
+        budget.charge(chunk.len())?;
+        if let Some(offset) = chunk.iter().position(|byte| matches(*byte)) {
+            return Ok(Some(index * 64 + offset));
+        }
+    }
+    Ok(None)
+}
+fn find_byte(
+    bytes: &[u8],
+    byte: u8,
+    limit: usize,
+    budget: &mut Budget<'_>,
+) -> Result<Option<usize>, Error> {
+    scan(bytes, limit, budget, |candidate| candidate == byte)
+}
+fn run_length(bytes: &[u8], byte: u8, budget: &mut Budget<'_>) -> Result<usize, Error> {
+    Ok(scan(bytes, bytes.len(), budget, |candidate| candidate != byte)?.unwrap_or(bytes.len()))
 }
 fn key(text: &str) -> String {
     text.split_whitespace()
@@ -89,7 +124,7 @@ pub(super) fn parse(
     while i < bytes.len() {
         budget.charge(1)?;
         if bytes[i] == b'<'
-            && let Some(end) = text[i..].find('>').filter(|n| *n <= 6)
+            && let Some(end) = find_byte(&bytes[i..], b'>', 7, budget)?
         {
             let tag = &text[i..i + end + 1];
             if tag.eq_ignore_ascii_case("<br>")
@@ -107,7 +142,7 @@ pub(super) fn parse(
             continue;
         }
         if bytes[i] == b'&'
-            && let Some(end) = text[i..].find(';').filter(|n| *n <= 32)
+            && let Some(end) = find_byte(&bytes[i..], b';', 33, budget)?
             && let Some(decoded) = entity(&text[i + 1..i + end])
         {
             push(&mut out, &decoded, style, link, title, budget)?;
@@ -115,7 +150,7 @@ pub(super) fn parse(
             continue;
         }
         if bytes[i] == b'`' {
-            let count = bytes[i..].iter().take_while(|b| **b == b'`').count();
+            let count = run_length(&bytes[i..], b'`', budget)?;
             let token = &text[i..i + count];
             let start = i + count;
             if let Some(end) = find_token(text, start, token, budget)? {
@@ -136,7 +171,8 @@ pub(super) fn parse(
         }
         if matches!(bytes[i], b'*' | b'_' | b'~') {
             let ch = bytes[i];
-            let available = bytes[i..].iter().take_while(|b| **b == ch).count();
+            let available = scan(&bytes[i..], 3, budget, |candidate| candidate != ch)?
+                .unwrap_or((bytes.len() - i).min(3));
             let count = if ch == b'~' {
                 if available >= 2 { 2 } else { 0 }
             } else {
@@ -185,12 +221,15 @@ pub(super) fn parse(
             let mut target = None;
             let mut consumed = 0;
             if let Some(rest) = after.strip_prefix('(') {
+                // A failed destination can otherwise rescan the same long
+                // suffix at each label. Charge before its linear parser runs.
+                budget.charge(rest.len())?;
                 if let Some((dest, title, length)) = destination(rest, true) {
                     target = Some((dest, title));
                     consumed = length + 1;
                 }
             } else if let Some(rest) = after.strip_prefix('[') {
-                if let Some(close) = rest.find(']') {
+                if let Some(close) = find_byte(rest.as_bytes(), b']', rest.len(), budget)? {
                     let name = if close == 0 { label } else { &rest[..close] };
                     target = references.get(&key(name)).cloned();
                     consumed = close + 2;
@@ -225,7 +264,7 @@ pub(super) fn parse(
         }
         if bytes[i] == b'<'
             && link.is_none()
-            && let Some(end) = text[i + 1..].find('>').filter(|n| *n <= 4096)
+            && let Some(end) = find_byte(&bytes[i + 1..], b'>', 4097, budget)?
         {
             let target = &text[i + 1..i + 1 + end];
             if safe_link(target) {
@@ -287,11 +326,7 @@ fn find_token(
     while i < text.len() {
         budget.charge(1)?;
         if text.as_bytes()[i] == token.as_bytes()[0] {
-            let count = text.as_bytes()[i..]
-                .iter()
-                .take_while(|b| **b == token.as_bytes()[0])
-                .count();
-            budget.charge(count)?;
+            let count = run_length(&text.as_bytes()[i..], token.as_bytes()[0], budget)?;
             if count == token.len() {
                 return Ok(Some(i));
             }
@@ -320,10 +355,7 @@ fn find_close(
             continue;
         }
         if text.as_bytes()[i] == b'`' {
-            let count = text.as_bytes()[i..]
-                .iter()
-                .take_while(|b| **b == b'`')
-                .count();
+            let count = run_length(&text.as_bytes()[i..], b'`', budget)?;
             if let Some(end) = find_token(text, i + count, &text[i..i + count], budget)? {
                 i = end + count;
                 continue;
@@ -332,11 +364,7 @@ fn find_close(
             continue;
         }
         if text.as_bytes()[i] == ch {
-            let count = text.as_bytes()[i..]
-                .iter()
-                .take_while(|b| **b == ch)
-                .count();
-            budget.charge(count)?;
+            let count = run_length(&text.as_bytes()[i..], ch, budget)?;
             if closes(text, i, count, ch) {
                 let mut consumed = 0;
                 while inner.last().is_some_and(|n| *n <= count - consumed) {
@@ -511,4 +539,80 @@ fn entity(text: &str) -> Option<String> {
         .into()
     };
     Some(value)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::sync::atomic::{AtomicBool, Ordering};
+
+    #[test]
+    fn search_windows_include_the_last_allowed_byte_but_never_the_suffix() {
+        let cancel = AtomicBool::new(false);
+        for limit in [7, 33, 4097] {
+            let mut bytes = vec![b'x'; super::super::MAX_INPUT];
+            bytes[limit] = b'>';
+            let mut budget = Budget {
+                cancel: &cancel,
+                work: 0,
+                runs: 0,
+            };
+            assert_eq!(find_byte(&bytes, b'>', limit, &mut budget), Ok(None));
+            assert_eq!(budget.work, limit);
+            bytes[limit - 1] = b'>';
+            budget.work = 0;
+            assert_eq!(
+                find_byte(&bytes, b'>', limit, &mut budget),
+                Ok(Some(limit - 1))
+            );
+            assert_eq!(budget.work, limit);
+        }
+        let mut budget = Budget {
+            cancel: &cancel,
+            work: 0,
+            runs: 0,
+        };
+        assert_eq!(find_byte("🦀>".as_bytes(), b'>', 4, &mut budget), Ok(None));
+        assert_eq!(
+            find_byte("🦀>".as_bytes(), b'>', 5, &mut budget),
+            Ok(Some(4))
+        );
+    }
+
+    #[test]
+    fn exhausted_work_is_rejected_before_even_an_immediate_match() {
+        let cancel = AtomicBool::new(false);
+        let mut budget = Budget {
+            cancel: &cancel,
+            work: super::super::MAX_WORK - 63,
+            runs: 0,
+        };
+        let bytes = vec![b'>'; super::super::MAX_INPUT];
+        assert_eq!(
+            find_byte(&bytes, b'>', 4097, &mut budget),
+            Err(Error::Limit)
+        );
+        assert_eq!(budget.work, super::super::MAX_WORK + 1);
+    }
+
+    #[test]
+    fn cancellation_after_search_progress_is_checked_before_the_next_chunk() {
+        let cancel = AtomicBool::new(false);
+        let bytes = vec![b'x'; super::super::MAX_INPUT];
+        let mut budget = Budget {
+            cancel: &cancel,
+            work: 0,
+            runs: 0,
+        };
+        assert_eq!(find_byte(&bytes, b'>', 64, &mut budget), Ok(None));
+        assert_eq!(budget.work, 64);
+        cancel.store(true, Ordering::Relaxed);
+        assert_eq!(
+            find_byte(&bytes[64..], b'>', 4097, &mut budget),
+            Err(Error::Cancelled)
+        );
+        assert_eq!(budget.work, 128);
+        assert_eq!(run_length(&bytes, b'x', &mut budget), Err(Error::Cancelled));
+        assert_eq!(budget.work, 192);
+    }
 }

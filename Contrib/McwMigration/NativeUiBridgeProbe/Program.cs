@@ -28,6 +28,13 @@ await Rejected(new byte[] { 2, (byte)'x' });
 await Rejected(new byte[] { 1, 0 });
 var oversized = new byte[MarkdownPresentation.MaximumInputBytes + 2]; oversized[0] = 1;
 await Rejected(oversized);
+foreach (var (character, terminator) in new[] { ('<', '>'), ('&', ';') })
+{
+    var source = new string(character, MarkdownPresentation.MaximumInputBytes - 1) + terminator;
+    try { await MarkdownPresentation.ParseAsync(source); }
+    catch (IOException error) when (error.Message.Contains("Markdown capacity exceeded", StringComparison.Ordinal)) { continue; }
+    throw new InvalidOperationException("Adversarial Markdown did not hit the charged work limit.");
+}
 // Requests and cancellation share the existing stream. It remains usable after
 // a canceled wait; a bounded stateless parse may finish before CANCEL is read.
 using var cancel = new CancellationTokenSource();
@@ -38,7 +45,8 @@ try { await pending; } catch (OperationCanceledException) { canceled = true; }
 var concurrent = await Task.WhenAll(Enumerable.Range(0, 12).Select(i => MarkdownPresentation.ParseAsync($"## Message {i}\n\n- item")));
 if (concurrent.Any(d => d.Blocks.Count != 2)) throw new InvalidOperationException("Concurrent shared-stream requests failed.");
 File.WriteAllText(report, JsonSerializer.Serialize(new { realHost = true, operation = "0x1100", documents, currentBlocks = current.Blocks.Count,
-    malformedRejected = 4, canceled, concurrent = concurrent.Length, utc = DateTime.UtcNow }));
+    malformedRejected = 4, adversarialLimits = 2, canceled, nativeInProgressCancellationVerified = false,
+    concurrent = concurrent.Length, utc = DateTime.UtcNow }));
 return 0;
 
 static async Task Rejected(byte[] payload)

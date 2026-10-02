@@ -249,6 +249,31 @@ fn adversarial_delimiter_input_is_bounded_and_never_panics() {
     }
 }
 #[test]
+fn late_angle_and_entity_terminators_exhaust_charged_work() {
+    for (byte, terminator) in [("<", ">"), ("&", ";")] {
+        let text = byte.repeat(MAX_INPUT - 1) + terminator;
+        assert_eq!(parse(&text, &AtomicBool::new(false)), Err(Error::Limit));
+        assert_eq!(parse(&text, &AtomicBool::new(true)), Err(Error::Cancelled));
+    }
+    let text = "[x](<".repeat(10_000);
+    assert_eq!(parse(&text, &AtomicBool::new(false)), Err(Error::Limit));
+}
+#[test]
+fn bounded_autolinks_keep_the_existing_length_and_unicode_boundaries() {
+    let prefix = "https://example.test/";
+    let approved = prefix.to_owned() + &"a".repeat(4096 - prefix.len());
+    let document = parsed(&format!("<{approved}>"));
+    assert_eq!(
+        document.blocks[0].runs[0].link.as_deref(),
+        Some(approved.as_str())
+    );
+    let unapproved = approved + "a";
+    let document = parsed(&format!("<{unapproved}>"));
+    assert!(document.blocks[0].runs.iter().all(|run| run.link.is_none()));
+    let unicode = format!("<{}>", "🦀".repeat(1025));
+    assert_eq!(flat(&parsed(&unicode).blocks[0]), unicode);
+}
+#[test]
 fn serialized_output_preserves_utf8_and_document_count_with_no_platform_dependencies() {
     let d = parsed("## Café\n\n- 你好\n");
     let encoded = encode(&d).unwrap();

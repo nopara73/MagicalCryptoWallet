@@ -15,6 +15,7 @@ pub const BOLD: u8 = 1;
 pub const ITALIC: u8 = 2;
 pub const CODE: u8 = 4;
 pub const STRIKE: u8 = 8;
+const MAX_WORK: usize = 8_000_000;
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum Error {
     InvalidInput,
@@ -64,7 +65,7 @@ struct Budget<'a> {
 impl Budget<'_> {
     fn charge(&mut self, n: usize) -> Result<(), Error> {
         self.work = self.work.checked_add(n).ok_or(Error::Limit)?;
-        if self.work > 8_000_000 {
+        if self.work > MAX_WORK {
             return Err(Error::Limit);
         }
         if self.cancel.load(Ordering::Relaxed) {
@@ -94,7 +95,7 @@ pub fn parse(source: &str, cancel: &AtomicBool) -> Result<Document, Error> {
         .collect();
     let mut references = std::collections::BTreeMap::new();
     for line in &lines {
-        if let Some((name, destination, title)) = inline::reference(line) {
+        if let Some((name, destination, title)) = inline::reference(line, &mut budget)? {
             references.entry(name).or_insert((destination, title));
         }
     }
@@ -104,7 +105,7 @@ pub fn parse(source: &str, cancel: &AtomicBool) -> Result<Document, Error> {
     while index < lines.len() {
         budget.charge(1)?;
         let line = lines[index];
-        if line.trim().is_empty() || inline::reference(line).is_some() {
+        if line.trim().is_empty() || inline::reference(line, &mut budget)?.is_some() {
             index += 1;
             continue;
         }
@@ -289,7 +290,7 @@ pub fn parse(source: &str, cancel: &AtomicBool) -> Result<Document, Error> {
                     || rule(next)
                     || list_marker(next).is_some()
                     || next.starts_with('>')
-                    || inline::reference(next).is_some())
+                    || inline::reference(next, &mut budget)?.is_some())
             {
                 break;
             }

@@ -4,8 +4,8 @@ Worker `native-ui`, chat `01a0fc5c-ff37-73e2-b69c-5d8a4834ef19`.
 Scope: the retained release-highlights dialog only. Avalonia, ReactiveUI and
 Skia remain. The preserved whole-UI drafts are excluded and unregistered.
 
-State: parser/typed adapter/headless checks, proposed real-host integration and
-production caller build verified. **No production cutover or package
+State: corrected parser/typed adapter/headless checks, fresh proposed real-host
+integration and current retained Fluent build verified. **No production cutover or package
 retirement is claimed until the shared registration/caller/package batch lands.**
 
 ## Implementation and ownership
@@ -45,7 +45,11 @@ code4, strike8. Empty links/titles mean absent. The managed decoder rejects
 unknown bits/tags, invalid levels/depth/UTF-8/NUL, unsafe links and trailing data.
 
 Limits: 262144 input bytes, 1000000 output bytes, 4096 blocks, 32768 runs,
-nesting32 and a finite parser work budget. Diagnostics never echo input.
+nesting32 and an eight-million-unit parser work budget. Tag/entity/autolink
+windows are capped before scanning; each at-most64-byte chunk reserves work and
+checks cancellation before inspection. Delimiter runs and reference closers use
+the same accounting. Failed destinations and one-line reference parsing reserve
+their linear suffix work before searching. Diagnostics never echo input.
 Headings, lists/lazy continuation, emphasis, links/reference links, line breaks,
 historical literal `<br>` breaks, plain code, quotes and rules are supported.
 Unsupported markup stays inert. This is the retained release-note grammar,
@@ -55,15 +59,18 @@ are link data; opening requires a click/keyboard action and follows existing
 
 Each view attachment owns its request. Replacement/detach cancels the wait and
 generation checks suppress stale replies/errors. The real host's current
-bounded synchronous dispatch may finish before it reads CANCEL; no claim is
-made that host CPU parsing is interrupted in flight. No parser fallback runs
+prepared registration passes `AtomicBool(false)`. **Native in-progress
+cancellation remains an explicit integration gate** until the shared reader
+passes its live request cancellation token to the parser and a runtime probe
+proves it. Unit checks demonstrate token checks after charged search progress;
+managed canceled waits/late-response draining are separate evidence. No parser fallback runs
 if the host is absent. The old current packaged content extraction is preserved
 exactly, including its empty `MarkdownText` result; no release copy is edited.
 
 ## Evidence and reproduction
 
 `mcw/tests/native_ui_markdown_verify.ps1 -Format` acquires a shared build slot,
-uses Rust1.99 single-job/native linker, runs twelve grammar/bounds/fuzz/wire
+uses Rust1.99 single-job/native linker, runs seventeen grammar/bounds/fuzz/wire
 tests, dispatches thirteen actual/historical inputs, decodes real Rust output
 through the shipping managed leaf, and compares exact semantic blocks/levels/
 depth/text/styles/link destinations with captured Markdown.Avalonia.Full11.0.3
@@ -79,8 +86,9 @@ replacement/detach cancellation, stale completion and explicit bridge errors.
 The dark/narrow and light/wide captures were inspected visually.
 
 Strict Clippy on the shipping Markdown module and managed/headless builds
-completed with zero warnings/errors. The production Fluent caller, including
-its compiled bindings and link codebehind, also built with zero warnings/errors.
+completed with zero warnings/errors. Current retained Fluent source also builds
+with zero warnings/errors, with the new adapter/control present. Its live dialog
+still uses the old renderer; the pending caller/style patch is not activated.
 
 `native_ui_markdown_host_verify.ps1 -ProposedRegistration` builds an ignored
 snapshot with the exact proposed shared registration and a synthetic test
@@ -91,8 +99,9 @@ After incorporation run the script without `-ProposedRegistration` to verify
 the published host. Debug proof does not establish a native release import
 audit or five-target shipping completion.
 
-The proposed real host exited cleanly after thirteen corpus inputs, four
-malformed request rejections, in-flight wait cancellation and twelve concurrent
+The fresh proposed real host exited cleanly after thirteen corpus inputs, four
+malformed request rejections, two adversarial work-limit rejections, canceled
+managed-wait recovery and twelve concurrent
 requests over the one stream; the actual current packaged input yielded zero
 blocks, preserving its existing extraction result.
 
@@ -103,11 +112,42 @@ Tests/VisualPreview also omitted three Debug-only Avalonia packages under the
 Release configuration; those remain conditional source references and are not
 additional dependency retirements. Do not publish unrelated configuration churn.
 
-That snapshot's fresh caller artifact build is currently blocked by preexisting
+That historical snapshot's caller artifact build was blocked by preexisting
 `RpcObjectCodec.cs` compiler errors CS0234 at line8 and CS0118 at line14. The JSON
 owner and coordinator received the exact errors; its source was preserved.
-The earlier caller/real-host proof does not claim compilation of this newer
-master or production retirement. Recheck after the shared repair is published.
+The shared repair is now present at base `2a091f3dd7`, and the current retained
+Fluent source compiles. Neither result establishes proposed-cutover artifact
+retirement; actual shared host/caller/package integration remains pending.
+
+The previous saved host snapshot's `inline.rs` differed from the initially
+published compiler bytes through Clippy refactors. Its old proof records,
+snapshot source, binary and thirteen inputs are preserved under
+`.artifacts/native-ui-markdown-history/audit-before-20261002T140413Z/`, with a
+preservation/hash manifest. They are historical evidence, not a retrospectively
+bound publication proof.
+
+New runs use fresh directories and `native_ui_markdown_bindings.py`. It checks
+the immutable fixture hash and thirteen exact input bytes, records raw/LF source
+hashes before/after compilation, rejects changes during a run, and requires the
+snapshot Markdown source to match the actual working parser bytes exactly.
+Publication binding compares captured source Git blobs with a concrete commit.
+The source hash manifest is evidence for that commit, not whichever later
+master happens to contain it. Snapshot registration remains proposed.
+
+Fresh candidate evidence at base `2a091f3dd7`:
+
+- `.artifacts/native-ui-markdown-verification/runs/20261002T141241336Z/`:
+  seventeen tests, strict lint, thirteen exact legacy comparisons and sixteen
+  renderer cases; 1283 captured compiler source inputs unchanged during the run.
+- `.artifacts/native-ui-markdown-verification/host-runs/20261002T141336671Z/`:
+  matching parser bytes, actual shared managed host, thirteen exact corpus
+  comparisons, malformed/adversarial/concurrent checks, clean exit, current
+  retained Fluent build, and before/after source and built-binary hashes.
+
+The immutable fixture SHA256 remains
+`02e8b976e6671d70f07eca2c354b0014c2486065c8f9ef9d3b01ffb72328002e`.
+Activation, operation registration, native in-progress cancellation and
+fifteen-package retirement flags remain false until atomic integration/proof.
 
 `native_ui_markdown_retirement.py --report <path>` checks the actual caller,
 host export/dispatch, absent legacy styles/pins/references, all five restored
