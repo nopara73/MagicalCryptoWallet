@@ -1,4 +1,8 @@
-use mcw::{bitcoin_encoding, bitcoin_script, script_text};
+use mcw::{bitcoin_encoding, bitcoin_script};
+
+// Test the actual component without waiting for shared host registration.
+#[path = "../src/script_text.rs"]
+mod script_text;
 
 fn bytes(hex: &str) -> Vec<u8> {
     bitcoin_encoding::hex_decode(hex).unwrap()

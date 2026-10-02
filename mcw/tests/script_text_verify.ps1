@@ -34,6 +34,7 @@ try {
         } catch [IO.IOException] { }
     }
     if ($null -eq $buildHandle) { Write-Output 'BUILD_SLOTS_BUSY'; exit 3 }
+    Write-Output "BUILD_SLOT=$number VERIFIER_PID=$PID ASSIGNMENT=script-text-checkpoint-test-import-check"
     $env:CARGO_BUILD_JOBS = '1'
     & $rustfmt --edition 2024 --check $textPath $testPath $probePath
     if ($LASTEXITCODE -ne 0) { throw 'Rust formatting failed' }
@@ -56,13 +57,14 @@ try {
     if ((Hash-File $referencePath) -ne $manifest.generator_sha256) { throw 'Reference generator provenance mismatch' }
     $hashes = [ordered]@{}
     foreach ($path in @($textPath, $scriptPath, $encodingPath, $testPath, $probePath, $referencePath, $fixturePath, (Join-Path $referenceRoot 'Program.cs'))) { $hashes[$path] = Hash-File $path }
-    $domain = 'extern crate self as mcw;' + "`n" + '#[path="' + $encodingPath.Replace('\','/') + '"] pub mod bitcoin_encoding;' + "`n" + '#[path="' + $scriptPath.Replace('\','/') + '"] pub mod bitcoin_script;' + "`n" + '#[path="' + $textPath.Replace('\','/') + '"] pub mod script_text;' + "`n"
+    $isolatedDomain = 'extern crate self as mcw;' + "`n" + '#[path="' + $encodingPath.Replace('\','/') + '"] pub mod bitcoin_encoding;' + "`n" + '#[path="' + $scriptPath.Replace('\','/') + '"] pub mod bitcoin_script;' + "`n"
+    $domain = $isolatedDomain + '#[path="' + $textPath.Replace('\','/') + '"] pub mod script_text;' + "`n"
     $libHarness = Join-Path $evidenceRoot 'domain.rs'
     $testHarness = Join-Path $evidenceRoot 'tests.rs'
     $probeHarness = Join-Path $evidenceRoot 'probe.rs'
     [IO.File]::WriteAllText($libHarness, $domain)
-    [IO.File]::WriteAllText($testHarness, $domain + '#[path="' + $testPath.Replace('\','/') + '"] mod conformance;' + "`n")
-    [IO.File]::WriteAllText($probeHarness, $domain + '#[path="' + $probePath.Replace('\','/') + '"] mod probe; fn main() { probe::run(); }' + "`n")
+    [IO.File]::WriteAllText($testHarness, $isolatedDomain + '#[path="' + $testPath.Replace('\','/') + '"] mod conformance;' + "`n")
+    [IO.File]::WriteAllText($probeHarness, $isolatedDomain + '#[path="' + $probePath.Replace('\','/') + '"] mod probe; fn main() { probe::run(); }' + "`n")
     & $clippy --edition=2024 --crate-type=lib --emit=metadata -D warnings $libHarness -o (Join-Path $evidenceRoot 'clippy-lib.rmeta')
     if ($LASTEXITCODE -ne 0) { throw 'Domain Clippy failed' }
     & $clippy --edition=2024 --test --emit=metadata -D warnings $testHarness -o (Join-Path $evidenceRoot 'clippy-tests.rmeta')

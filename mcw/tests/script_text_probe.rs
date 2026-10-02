@@ -1,5 +1,11 @@
 //! Development-only line protocol; no package or shipping executable.
-use mcw::{bitcoin_encoding, script_text};
+use mcw::bitcoin_encoding;
+// The source needs this crate-root alias when Cargo compiles this test alone;
+// the embedded development harness already supplies it at its outer root.
+#[allow(unused_imports)]
+use mcw::bitcoin_script;
+#[path = "../src/script_text.rs"]
+mod script_text;
 use std::io::{self, BufRead, Write};
 
 pub fn run() {
