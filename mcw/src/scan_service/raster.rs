@@ -5,6 +5,27 @@ use super::{Control, Error, Result};
 use std::sync::atomic::AtomicBool;
 use std::time::{Duration, Instant};
 
+// Per-thread, one-shot synchronization for tests of the real threshold path.
+// No hook, field, callback, or branch is present in a production build.
+#[cfg(test)]
+std::thread_local! {
+    static THRESHOLD_STARTED: std::cell::RefCell<Option<Box<dyn FnOnce()>>> = const { std::cell::RefCell::new(None) };
+}
+#[cfg(test)]
+pub(crate) fn on_next_threshold_start(probe: impl FnOnce() + 'static) {
+    THRESHOLD_STARTED.with(|slot| {
+        assert!(slot.borrow().is_none());
+        *slot.borrow_mut() = Some(Box::new(probe));
+    });
+}
+#[cfg(test)]
+fn threshold_started() {
+    let probe = THRESHOLD_STARTED.with(|slot| slot.borrow_mut().take());
+    if let Some(probe) = probe {
+        probe();
+    }
+}
+
 pub struct Image<'a> {
     pub width: usize,
     pub height: usize,
@@ -60,6 +81,8 @@ fn threshold(image: &Image<'_>, local: bool, control: Control<'_>) -> Result<Bin
     let mut histogram = [0u64; 256];
     for row in image.luminance.chunks(image.stride).take(image.height) {
         control.check()?;
+        #[cfg(test)]
+        threshold_started();
         for &value in &row[..image.width] {
             histogram[value as usize] += 1;
         }

@@ -1,0 +1,35 @@
+{
+  "release_contract": "Matching request only, signal cancellation before deregistration; missing/completed/mismatched registrations return false; upload abort is separate and idempotent.",
+  "id_contract": "Scanner registration IDs increase in wire arrival order, gaps allowed. Scalar high-water mark rejects completed, released, capacity-rejected and exhausted IDs. Shared managed writer must allocate and write IDs atomically; shared host enforces all operation IDs.",
+  "optimized_tests": 16,
+  "assignment": "existing bounded QR scanner runtime incorporation",
+  "proof": [
+    "Discarded queued BEGIN/APPEND/FINISH/ABORT registration and typed ticket cleanup",
+    "Completed/released/capacity-rejected/max-u64 ID reuse rejection",
+    "Once-only handle execution claim",
+    "Reader cancel synchronized inside actual threshold after control check",
+    "Reader release synchronized inside actual threshold after control check",
+    "Reader disconnect synchronized inside actual threshold after control check",
+    "No pending requests/uploads after join; next ordinary decode succeeds after cancel/release"
+  ],
+  "rust": "rustc 1.99.0 (b940084d7 2026-09-28)",
+  "schema_version": 1,
+  "shipping_stdlib_package_verified": false,
+  "camera_hardware_verified": false,
+  "target": "x86_64-pc-windows-msvc",
+  "debug_tests": 16,
+  "source_hashes": {
+    "mcw/src/scan_service/wire.rs": "8e6e90fb1e026aedb8576bda63bd958e99ec0dfae2b6acd14d10f19cb7fb5a12",
+    "mcw/src/scan_service/raster.rs": "da6e94537b7b6e815b1164fdd0845a6f0a073bebc0552e4520397bb91909feb3"
+  },
+  "shared_queue_eof_overload_verified": false,
+  "tooling_role": "Development-only static-CRT conformance binaries; no shipping runtime claim",
+  "production_host_verified": false,
+  "wire_payloads_changed": false,
+  "test_instrumentation": "Per-thread one-shot threshold callback exists only under cfg(test); absent in production",
+  "apis": {
+    "reader_release": "Reader::release(id: u64, operation: u16) -> bool",
+    "runtime_abort": "Runtime::abort(ticket: u64) -> ()"
+  },
+  "strict_clippy": "passed"
+}
