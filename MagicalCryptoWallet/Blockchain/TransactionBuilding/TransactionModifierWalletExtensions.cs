@@ -20,7 +20,7 @@ public static class TransactionModifierWalletExtensions
 {
 	public static BuildTransactionResult CancelTransaction(
 		this Wallet wallet,
-		SmartTransaction transactionToCancel)
+		SmartTransaction transactionToCancel, WalletAuthorization? authorization = null)
 	{
 		var keyManager = wallet.KeyManager;
 		var network = wallet.Network;
@@ -51,7 +51,7 @@ public static class TransactionModifierWalletExtensions
 				new FeeRate(originalFeeRate.SatoshiPerByte + i),
 				transactionToCancel.WalletInputs,
 				allowDoubleSpend: true,
-				tryToSign: true);
+				tryToSign: authorization is not null, authorization: authorization);
 
 			// Double i, so we should be able to find a suitable cancel tx in a few iterations.
 			i *= 2;
@@ -83,7 +83,7 @@ public static class TransactionModifierWalletExtensions
 		this Wallet wallet,
 		SmartTransaction transactionToSpeedUp,
 		FeeRate? preferredFeeRate,
-		CancellationToken cancellationToken)
+		CancellationToken cancellationToken, WalletAuthorization? authorization = null)
 	{
 		var keyManager = wallet.KeyManager;
 
@@ -97,13 +97,13 @@ public static class TransactionModifierWalletExtensions
 		{
 			try
 			{
-				return wallet.RbfTransaction(transactionToSpeedUp, preferredFeeRate);
+				return wallet.RbfTransaction(transactionToSpeedUp, preferredFeeRate, authorization);
 			}
 			catch (Exception rbfEx)
 			{
 				try
 				{
-					return await wallet.CpfpTransactionAsync(transactionToSpeedUp, preferredFeeRate, cancellationToken).ConfigureAwait(false);
+					return await wallet.CpfpTransactionAsync(transactionToSpeedUp, preferredFeeRate, cancellationToken, authorization).ConfigureAwait(false);
 				}
 				catch
 				{
@@ -114,7 +114,7 @@ public static class TransactionModifierWalletExtensions
 		}
 		else if (transactionToSpeedUp.IsCpfpable(keyManager))
 		{
-			return await wallet.CpfpTransactionAsync(transactionToSpeedUp, preferredFeeRate, cancellationToken).ConfigureAwait(false);
+			return await wallet.CpfpTransactionAsync(transactionToSpeedUp, preferredFeeRate, cancellationToken, authorization).ConfigureAwait(false);
 		}
 		else
 		{
@@ -122,7 +122,7 @@ public static class TransactionModifierWalletExtensions
 		}
 	}
 
-	private static BuildTransactionResult RbfTransaction(this Wallet wallet, SmartTransaction transactionToSpeedUp, FeeRate? preferredFeeRate = null)
+	private static BuildTransactionResult RbfTransaction(this Wallet wallet, SmartTransaction transactionToSpeedUp, FeeRate? preferredFeeRate = null, WalletAuthorization? authorization = null)
 	{
 		var keyManager = wallet.KeyManager;
 		var network = wallet.Network;
@@ -199,13 +199,13 @@ public static class TransactionModifierWalletExtensions
 		var allowedInputs = transactionToSpeedUp.WalletInputs.Select(coin => coin.Outpoint);
 
 		BuildTransactionResult rbf = wallet.BuildTransaction(
-			password: wallet.Password,
+			password: string.Empty,
 			payments: new PaymentIntent(payments),
 			feeStrategy: FeeStrategy.CreateFromFeeRate(rbfFeeRate),
 			allowUnconfirmed: true,
 			allowedInputs: allowedInputs,
 			allowDoubleSpend: true,
-			tryToSign: true);
+			tryToSign: authorization is not null, authorization: authorization);
 
 		rbf.Transaction.Labels = LabelsArray.Merge(rbf.Transaction.Labels, transactionToSpeedUp.Labels);
 
@@ -236,7 +236,7 @@ public static class TransactionModifierWalletExtensions
 		return rbf;
 	}
 
-	public static async Task<BuildTransactionResult> CpfpTransactionAsync(this Wallet wallet, SmartTransaction transactionToCpfp, FeeRate? preferredFeeRate, CancellationToken cancellationToken)
+	public static async Task<BuildTransactionResult> CpfpTransactionAsync(this Wallet wallet, SmartTransaction transactionToCpfp, FeeRate? preferredFeeRate, CancellationToken cancellationToken, WalletAuthorization? authorization = null)
 	{
 		var keyManager = wallet.KeyManager;
 		var ownOutput = transactionToCpfp.GetWalletOutputs(keyManager).Where(x => !x.IsSpent()).OrderByDescending(x => x.Amount).FirstOrDefault() ?? throw new InvalidOperationException($"Can't CPFP: transaction has no unspent wallet output.");
@@ -247,7 +247,7 @@ public static class TransactionModifierWalletExtensions
 
 		try
 		{
-			return await wallet.CpfpTransactionAsync(transactionToCpfp, allowedInputs, preferredFeeRate, cancellationToken).ConfigureAwait(false);
+			return await wallet.CpfpTransactionAsync(transactionToCpfp, allowedInputs, preferredFeeRate, cancellationToken, authorization).ConfigureAwait(false);
 		}
 		catch (Exception ex) when (ex is not HttpRequestException)
 		{
@@ -265,14 +265,14 @@ public static class TransactionModifierWalletExtensions
 
 				allowedInputs.Add(remainingCoins.BiasedRandomElement(80, RandomnessProviders.Secure)!);
 
-				return await wallet.CpfpTransactionAsync(transactionToCpfp, allowedInputs, preferredFeeRate, cancellationToken).ConfigureAwait(false);
+				return await wallet.CpfpTransactionAsync(transactionToCpfp, allowedInputs, preferredFeeRate, cancellationToken, authorization).ConfigureAwait(false);
 			}
 
 			throw;
 		}
 	}
 
-	public static async Task<BuildTransactionResult> CpfpTransactionAsync(this Wallet wallet, SmartTransaction transactionToCpfp, IEnumerable<SmartCoin> allowedInputs, FeeRate? preferredFeeRate, CancellationToken cancellationToken)
+	public static async Task<BuildTransactionResult> CpfpTransactionAsync(this Wallet wallet, SmartTransaction transactionToCpfp, IEnumerable<SmartCoin> allowedInputs, FeeRate? preferredFeeRate, CancellationToken cancellationToken, WalletAuthorization? authorization = null)
 	{
 		if (transactionToCpfp.Confirmed)
 		{
@@ -315,8 +315,11 @@ public static class TransactionModifierWalletExtensions
 			LabelsArray.Empty,
 			bestFeeRate,
 			allowedInputs,
-			tryToSign: true);
-		var tempTxSizeVBytes = tempTx.Transaction.Transaction.GetVirtualSize();
+			tryToSign: authorization is not null, authorization: authorization);
+		if (!tempTx.Psbt.TryGetVirtualSize(out var tempTxSizeVBytes))
+		{
+			throw new InvalidOperationException("Cannot estimate the signed CPFP transaction size.");
+		}
 
 		var totalSizeOfTheChain = ancestorsSizeVBytes + txSizeVBytes + tempTxSizeVBytes;
 		var missingFeeForBestFeeRate = (totalSizeOfTheChain * bestFeeRate.SatoshiPerByte) - feePaidByAncestorsAndTx;
@@ -327,7 +330,7 @@ public static class TransactionModifierWalletExtensions
 			LabelsArray.Empty,
 			cpfpFeeRate,
 			allowedInputs,
-			tryToSign: true);
+			tryToSign: authorization is not null, authorization: authorization);
 
 		cpfp.Transaction.SetSpeedup();
 

@@ -51,7 +51,6 @@ public class Wallet : BackgroundService
 		CpfpInfoProvider cpfpInfoProvider,
 		EventBus eventBus)
 	{
-		Password = "";
 		Network = network;
 		KeyManager = keyManager;
 		ServiceConfiguration = serviceConfiguration;
@@ -67,36 +66,26 @@ public class Wallet : BackgroundService
 		BatchedPayments = new PaymentBatch();
 		OutputProvider = new PaymentAwareOutputProvider(DestinationProvider, BatchedPayments, RandomnessProviders.Secure);
 		_eventBus = eventBus;
-		WalletId = new WalletId(Guid.NewGuid());
 
 		_eventBus.Subscribe<MiningFeeRatesChanged>(e => FeeRateEstimations = e.AllFeeEstimate)
 			.DisposeUsing(_disposables);
 		_eventBus.Subscribe<WalletRelevantTransactionProcessed>(e =>
 		{
-			if (e.WalletName == WalletName)
-			{
-				WalletRelevantTransactionProcessed(e.Result);
-			}
+			WalletRelevantTransactionProcessed(e.Result);
 		})
 			.DisposeUsing(_disposables);
 		_eventBus.Subscribe<NewTransactionInMempool>(e => Mempool_TransactionReceived(e.Transaction))
-			.DisposeUsing(_disposables);
-		_eventBus.Subscribe<FilterProcessed>(e => _lastFilterProcess = e.Filter.Header.Height)
 			.DisposeUsing(_disposables);
 	}
 
 	private readonly EventBus _eventBus;
 	private readonly FilterStore _filterStore;
-	private ChainHeight _lastFilterProcess = 0;
 	public AllTransactionStore TransactionStore { get; }
 	public FilterHeaderChain FilterHeaderChain { get; }
 
-	public WalletId WalletId { get; }
-	public bool Loaded { get; private set; }
 	public KeyManager KeyManager { get; }
 	public ServiceConfiguration ServiceConfiguration { get; }
 	public FeeRateEstimations? FeeRateEstimations { get; private set; }
-	public string WalletName => KeyManager.WalletName;
 
 	public CoinsRegistry Coins { get; }
 
@@ -110,10 +99,8 @@ public class Wallet : BackgroundService
 	public CpfpInfoProvider CpfpInfoProvider { get; }
 	public WalletFilterProcessor WalletFilterProcessor { get; }
 
-	public bool IsLoggedIn { get; private set; }
-	public string Password { get; set; }
-
-	public IKeyChain? KeyChain { get; private set; }
+	public Task InitialSynchronizationFinished => WalletFilterProcessor.InitialSynchronizationFinished;
+	public bool HasCachedData { get; private set; }
 
 	public IDestinationProvider DestinationProvider { get; }
 
@@ -218,33 +205,19 @@ public class Wallet : BackgroundService
 		return pcPrivate;
 	}
 
-	public bool TryLogin(string password, out string? compatibilityPasswordUsed)
+	public void InitializeLocalState()
 	{
-		compatibilityPasswordUsed = null;
-
-		if (KeyManager.IsWatchOnly)
-		{
-			IsLoggedIn = true;
-			Password = "";
-		}
-		else if (PasswordHelper.TryPassword(KeyManager, password, out compatibilityPasswordUsed))
-		{
-			IsLoggedIn = true;
-			Password = compatibilityPasswordUsed ?? Guard.Correct(password);
-			KeyChain = new KeyChain(KeyManager, Password);
-		}
-
-		return IsLoggedIn;
-	}
-
-	public void Logout()
-	{
-		IsLoggedIn = false;
+		if (HasCachedData) { return; }
+		KeyManager.GetKeys();
+		TransactionProcessor.Process(TransactionStore.ConfirmedStore.GetTransactions(), isHistoricalReplay: true);
+		TransactionProcessor.Process(TransactionStore.MempoolStore.GetTransactions(), isHistoricalReplay: true);
+		HasCachedData = true;
 	}
 
 	/// <inheritdoc/>
 	public override async Task StartAsync(CancellationToken cancellationToken)
 	{
+		InitializeLocalState();
 		await WalletFilterProcessor.StartAsync(cancellationToken).ConfigureAwait(false);
 		Logger.LogTrace(FormatLog("Wallet filter processor is started.", this));
 
@@ -255,8 +228,6 @@ public class Wallet : BackgroundService
 
 		await base.StartAsync(cancellationToken).ConfigureAwait(false);
 
-		Loaded = true;
-		_eventBus.Publish(new WalletLoaded(this));
 	}
 
 	/// <inheritdoc />
@@ -283,9 +254,13 @@ public class Wallet : BackgroundService
 	{
 		await base.StopAsync(cancel).ConfigureAwait(false);
 		await WalletFilterProcessor.StopAsync(cancel).ConfigureAwait(false);
-		WalletFilterProcessor.Dispose();
+	}
 
+	public override void Dispose()
+	{
+		WalletFilterProcessor.Dispose();
 		_disposables.Dispose();
+		base.Dispose();
 	}
 
 	private void WalletRelevantTransactionProcessed(ProcessedResult e)
@@ -330,21 +305,7 @@ public class Wallet : BackgroundService
 		// Make sure that the keys are asserted in case of an empty HdPubKeys array.
 		KeyManager.GetKeys();
 
-		TransactionProcessor.Process(TransactionStore.ConfirmedStore.GetTransactions());
-
-		int i = 0;
-		while (_lastFilterProcess < FilterHeaderChain.ServerTipHeight)
-		{
-			i++;
-
-			// Every ten seconds, log a message to indicate that the wallet is waiting for filters to be processed.
-			if (i % 100 == 0)
-			{
-				Logger.LogDebug(FormatLog($"Waiting until filters are processed ({_lastFilterProcess} < {FilterHeaderChain.ServerTipHeight})", this));
-			}
-
-			await Task.Delay(100, cancellationToken).ConfigureAwait(false);
-		}
+		InitializeLocalState();
 
 		Logger.LogTrace(FormatLog("Waiting for initial synchronization to finish.", this));
 		await WalletFilterProcessor.InitialSynchronizationFinished.WaitAsync(cancellationToken).ConfigureAwait(false);
@@ -377,11 +338,11 @@ public class Wallet : BackgroundService
 				}
 			}
 
-			TransactionProcessor.Process(txsToProcess);
+			TransactionProcessor.Process(txsToProcess, isHistoricalReplay: true);
 		}
 		else
 		{
-			TransactionProcessor.Process(TransactionStore.MempoolStore.GetTransactions());
+			TransactionProcessor.Process(TransactionStore.MempoolStore.GetTransactions(), isHistoricalReplay: true);
 		}
 	}
 

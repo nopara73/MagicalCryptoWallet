@@ -61,9 +61,17 @@ public static class MagicalCryptoWalletLibGenerator
 		// ==========================================
 		// Wallet Accessors
 		// ==========================================
-		DefineAccessor("wallet-name", (Wallet w) => w.WalletName);
+
 		DefineAccessor("wallet-keymanager", (Wallet w) => w.KeyManager);
-		DefineAccessor("wallet-loaded?", (Wallet w) => w.Loaded);
+
+
+		DefineAccessor("wallet-state", (WalletSessionSnapshot s) => s.Status);
+		DefineAccessor("wallet-synchronized?", (WalletSessionSnapshot s) => s.IsSynchronized);
+		DefineAccessor("wallet-has-cached-data?", (WalletSessionSnapshot s) => s.HasCachedData);
+		DefineAccessor("wallet-sync-height", (WalletSessionSnapshot s) => s.SyncHeight);
+		DefineAccessor("wallet-target-height", (WalletSessionSnapshot s) => s.TargetHeight);
+		DefineAccessor("wallet-coinjoin-requires-authorization?", (WalletSessionSnapshot s) => s.CoinJoinRequiresAuthorization);
+		DefineAccessor("wallet-error", (WalletSessionSnapshot s) => s.Error);
 
 		// KeyManager accessors (chained via wallet-keymanager)
 		DefineAccessorWithGetter("wallet-path", (KeyManager km) => km.FilePath, "wallet-keymanager");
@@ -243,11 +251,16 @@ public static class MagicalCryptoWalletLibGenerator
 		       (define (wallet-balance wallet)
 		         (foldl + 0 (map coin-amount (wallet-unspent-coins wallet))))
 
-		       (define (wallet-info wallet)
-		         `(("name"     ,(wallet-name wallet))
-		           ("loaded"   ,(wallet-loaded? wallet))
-		           ("readOnly" ,(wallet-watch-only? wallet))
-		           ("path"     ,(wallet-path wallet))))
+		       (define (wallet-info)
+		         (let ((status (wallet-status)))
+		           `(("state" ,(wallet-state status))
+		             ("hasCachedData" ,(wallet-has-cached-data? status))
+		             ("synchronized" ,(wallet-synchronized? status))
+		             ("syncHeight" ,(wallet-sync-height status))
+		             ("targetHeight" ,(wallet-target-height status))
+		             ("coinJoinRequiresAuthorization" ,(wallet-coinjoin-requires-authorization? status))
+		             ("error" ,(wallet-error status))
+		             ("balance" ,(if (wallet-has-cached-data? status) (wallet-balance (wallet)) #f)))))
 
 		       ;;; ----------------------
 		       ;;; Wallet Address Functions
@@ -758,44 +771,6 @@ public static class MagicalCryptoWalletLibGenerator
 		                        `(("labels" ,(string-join ", " (coin-labels coin))))))
 		              (wallet-unspent-coins wallet)))
 
-		       (define (full-wallet-info wallet)
-		         (let* ((segwit-pubkey (wallet-segwit-extpubkey wallet))
-		                (taproot-pubkey (wallet-taproot-extpubkey wallet))
-		                (has-taproot? (and taproot-pubkey
-		                                   (not (string-empty? (extpubkey->string taproot-pubkey)))))
-		                (segwit-account
-		                  `(("name" "segwit")
-		                    ("publicKey" ,(extpubkey->string segwit-pubkey))
-		                    ("keyPath" ,(native->string (wallet-segwit-account-keypath wallet)))))
-		                (taproot-account
-		                  `(("name" "taproot")
-		                    ("publicKey" ,(extpubkey->string taproot-pubkey))
-		                    ("keyPath" ,(native->string (wallet-taproot-account-keypath wallet)))))
-		                (accounts (if has-taproot?
-		                              (list segwit-account taproot-account)
-		                              (list segwit-account)))
-		                (base-info
-		                  `(("walletName" ,(wallet-name wallet))
-		                    ("walletFile" ,(wallet-path wallet))
-		                    ("loaded" ,(wallet-loaded? wallet))
-		                    ("masterKeyFingerprint" ,(wallet-master-key-fingerprint wallet))
-		                    ("anonScoreTarget" ,(wallet-anonscore-target wallet))
-		                    ("isWatchOnly" ,(wallet-watch-only? wallet))
-		                    ("isHardwareWallet" ,(wallet-hardware-wallet? wallet))
-		                    ("isAutoCoinjoin" ,(wallet-auto-coinjoin? wallet))
-		                    ("isNonPrivateCoinIsolation" ,(wallet-non-private-coin-isolation? wallet))
-		                    ("accounts" ,accounts))))
-		           (if (wallet-loaded? wallet)
-		               (append base-info
-		                       `(("balance" ,(wallet-balance wallet))
-		                         ("coinjoinStatus" "unknown")))
-		               base-info)))
-
-		       (define (open-wallet wallet)
-		         (wallet-info
-		           (if (not (wallet-loaded? wallet))
-		               (__start_wallet wallet)
-		               wallet)))
 		       """;
 	}
 }

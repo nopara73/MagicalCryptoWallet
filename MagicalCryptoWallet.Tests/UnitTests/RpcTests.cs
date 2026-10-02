@@ -10,6 +10,22 @@ namespace MagicalCryptoWallet.Tests.UnitTests;
 
 public class RpcTests
 {
+	[Theory]
+	[InlineData("[null,\"secret\"]")]
+	[InlineData("{\"fee\":null,\"password\":\"secret\"}")]
+	public async Task NullableOptionalParametersAcceptExplicitNullAsync(string parameters)
+	{
+		var handler = new JsonRpcRequestHandler<TestableRpcService>(new TestableRpcService(), Network.RegTest);
+		var response = await handler.HandleAsync("/", $$$"""{"jsonrpc":"2.0","id":1,"method":"optional","params":{{{parameters}}}}""", CancellationToken.None);
+		Assert.Equal("""{"jsonrpc":"2.0","result":6,"id":"1"}""", response);
+	}
+	[Fact]
+	public async Task RequiredReferenceParametersRejectExplicitNullAsync()
+	{
+		var handler = new JsonRpcRequestHandler<TestableRpcService>(new TestableRpcService(), Network.RegTest);
+		var response = await handler.HandleAsync("/", """{"jsonrpc":"2.0","id":1,"method":"say","params":[null]}""", CancellationToken.None);
+		Assert.Contains("\"code\":-32602", response);
+	}
 	public static TheoryData<string, string> RequestResponse
 	{
 		get

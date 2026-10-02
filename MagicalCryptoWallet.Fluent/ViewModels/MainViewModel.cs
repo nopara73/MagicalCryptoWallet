@@ -71,13 +71,29 @@ public partial class MainViewModel : ViewModelBase
 					(dialogIsOpen, fullScreenIsOpen, compactIsOpen) => !(dialogIsOpen || fullScreenIsOpen || compactIsOpen))
 				.ObserveOn(RxApp.MainThreadScheduler);
 
-		CurrentWallet =
-			this.WhenAnyValue(x => x.MainScreen.CurrentPage)
-				.WhereNotNull()
-				.OfType<WalletViewModel>();
+		IsOobeBackgroundVisible = !UiContext.WalletSetupService.HasWallet && UiContext.ApplicationSettings.Oobe;
 
+		SearchBar = CreateSearchBar();
+
+		NetworkBadgeName =
+			UiContext.ApplicationSettings.Network == Network.Main
+			? ""
+			: UiContext.ApplicationSettings.Network.Name;
+	}
+
+	private bool _windowShown;
+	public void OnWindowShown()
+	{
+		if (_windowShown) { return; }
+		_windowShown = true;
 		IsOobeBackgroundVisible = UiContext.ApplicationSettings.Oobe;
-		var isFirstLaunch = !UiContext.WalletRepository.HasWallet || UiContext.ApplicationSettings.Oobe;
+		var session = UiContext.Services.WalletSession.Snapshot;
+		if (session.State == MagicalCryptoWallet.Wallets.WalletSessionState.Faulted && !UiContext.WalletSetupService.HasWallet)
+		{
+			UiContext.Navigate().To(new WalletRecoveryViewModel(UiContext), NavigationTarget.HomeScreen, NavigationMode.Clear);
+			return;
+		}
+		var isFirstLaunch = session.State == MagicalCryptoWallet.Wallets.WalletSessionState.Unconfigured;
 
 		RxApp.MainThreadScheduler.Schedule(async () =>
 		{
@@ -87,7 +103,7 @@ public partial class MainViewModel : ViewModelBase
 
 				await UiContext.Navigate().To().WelcomePage().GetResultAsync();
 
-				if (UiContext.WalletRepository.HasWallet)
+				if (UiContext.WalletSetupService.HasWallet)
 				{
 					UiContext.ApplicationSettings.Oobe = false;
 					IsOobeBackgroundVisible = false;
@@ -100,24 +116,17 @@ public partial class MainViewModel : ViewModelBase
 			UiContext.ApplicationSettings.LastVersionHighlightsDisplayed = Constants.ClientVersion;
 			if (!isFirstLaunch && Constants.ClientVersion > lastVersionHighlightsDisplayed)
 			{
-				await uiContext.Navigate().NavigateDialogAsync(new ReleaseHighlightsDialogViewModel(UiContext),
+				await UiContext.Navigate().NavigateDialogAsync(new ReleaseHighlightsDialogViewModel(UiContext),
 					navigationMode: NavigationMode.Clear);
 			}
 		});
 
-		SearchBar = CreateSearchBar();
-
-		NetworkBadgeName =
-			UiContext.ApplicationSettings.Network == Network.Main
-			? ""
-			: UiContext.ApplicationSettings.Network.Name;
 	}
 
 	public IObservable<bool> IsMainContentEnabled { get; }
 
 	public string NetworkBadgeName { get; }
 
-	public IObservable<WalletViewModel> CurrentWallet { get; }
 
 	public TargettedNavigationStack MainScreen { get; }
 
@@ -172,7 +181,7 @@ public partial class MainViewModel : ViewModelBase
 
 	public void Initialize()
 	{
-		UiContext.WalletRepository.WhenAnyValue(x => x.Wallet)
+		UiContext.WalletSetupService.WhenAnyValue(x => x.Wallet)
 			.Select(wallet => wallet?.IsCoinjoinRunning ?? Observable.Return(false))
 			.Switch()
 			.BindTo(this, x => x.IsCoinJoinActive);

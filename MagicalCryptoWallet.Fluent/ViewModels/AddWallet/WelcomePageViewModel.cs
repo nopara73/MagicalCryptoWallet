@@ -43,7 +43,7 @@ public partial class WelcomePageViewModel : DialogViewModelBase<Unit>
 		{
 			SelectedIndex++;
 		}
-		else if (!UiContext.WalletRepository.HasWallet)
+		else if (!UiContext.WalletSetupService.HasWallet)
 		{
 			Navigate().To().AddWalletPage();
 		}

@@ -15,7 +15,7 @@ namespace MagicalCryptoWallet.Fluent.Models.Wallets;
 public record SyncProgressCardModel(uint Initial, uint Current, uint Target)
 {
 	public double Percent =>
-		Target == 0 ? 0
+		Target == 0 ? (Current == 0 ? 100 : 0)
 		: Target <= Initial ? (Current >= Target ? 100 : 0)
 		: Math.Clamp(100.0 * ((double)Current - Initial) / (Target - Initial), 0, 100);
 
@@ -30,7 +30,7 @@ public record WalletLoadProgress(
 	SyncProgressCardModel CompactFilters,
 	SyncProgressCardModel Blocks);
 
-public partial class WalletLoadWorkflow
+public partial class WalletSyncProgress : IDisposable
 {
 	private const uint TargetPeers = 12;
 
@@ -41,17 +41,16 @@ public partial class WalletLoadWorkflow
 	private uint _filterHeadersTip;
 	private uint _compactFiltersTip;
 	private uint _walletSyncHeight;
-	private readonly Subject<WalletLoadProgress> _progress;
-	[AutoNotify] private bool _isLoading;
+	private readonly BehaviorSubject<WalletLoadProgress> _progress;
 
 	// The progress of every stage syncing the wallet is measured from.
 	private readonly uint _walletStartHeight;
 
-	public WalletLoadWorkflow(IServices services, Wallet wallet)
+	public WalletSyncProgress(IServices services, Wallet wallet)
 	{
 		_services = services;
 		_wallet = wallet;
-		_progress = new();
+		_progress = new(new(0, new(0,0,12), new(0,0,0), new(0,0,0), new(0,0,0), new(0,0,0)));
 
 		var tipHeight = services.GetTipHeight();
 		var walletBestHeight = (uint)wallet.KeyManager.GetBestHeight();
@@ -91,68 +90,16 @@ public partial class WalletLoadWorkflow
 			.Subscribe(x => _walletSyncHeight = x.Height)
 			.DisposeWith(_disposables);
 
-		LoadCompleted = services.EventBus.AsObservable<WalletLoaded>()
+		Observable.Create<WalletSessionSnapshot>(observer => services.WalletSession.Subscribe(observer.OnNext))
 			.ObserveOn(RxApp.MainThreadScheduler)
-			.Where(x => x.Wallet == _wallet)
-			.Select(x => x.Wallet.Loaded)
-			.ToSignal();
+			.Subscribe(snapshot => { _walletSyncHeight = snapshot.SyncHeight ?? _walletSyncHeight; UpdateProgress(); })
+			.DisposeWith(_disposables);
+		Observable.Interval(TimeSpan.FromSeconds(1)).ObserveOn(RxApp.MainThreadScheduler)
+			.Subscribe(_ => UpdateProgress()).DisposeWith(_disposables);
 	}
 
 	public IObservable<WalletLoadProgress> Progress => _progress;
-
-	public IObservable<Unit> LoadCompleted { get; }
-
-	public void Start()
-	{
-		Observable.FromAsync(() => Task.CompletedTask)
-			.ObserveOn(RxApp.MainThreadScheduler)
-			.Take(1)
-			.SubscribeAsync(_ => LoadWalletAsync())
-			.DisposeWith(_disposables);
-
-		Observable.Interval(TimeSpan.FromSeconds(1))
-			.ObserveOn(RxApp.MainThreadScheduler)
-			.Subscribe(_ => UpdateProgress())
-			.DisposeWith(_disposables);
-	}
-
-	public void Stop()
-	{
-		_disposables.Dispose();
-	}
-
-	private async Task LoadWalletAsync()
-	{
-		IsLoading = true;
-
-		await WaitForHeightsAsync().ConfigureAwait(false);
-
-		try
-		{
-			await Task.Run(async () => await _services.StartWalletAsync(_wallet));
-		}
-		catch (OperationCanceledException ex)
-		{
-			Logger.LogTrace(ex);
-		}
-		catch (Exception ex)
-		{
-			Logger.LogError(ex);
-		}
-	}
-
-	private async Task WaitForHeightsAsync()
-	{
-		// Wait until "server tip height" is initialized.
-		var waitForNetworkHeight = _services.EventBus.WaitForEventAsync<NetworkTipHeightChanged>(
-			() => _services.GetServerTipHeight() > 0);
-
-		// Wait until "client tip height" is initialized.
-		var waitForClientHeight = _services.EventBus.WaitForEventAsync<ClientTipHeightChanged>(
-			() => _services.GetTip() is not null);
-
-		await Task.WhenAll(waitForNetworkHeight, waitForClientHeight).ConfigureAwait(false);
-	}
+	public void Dispose() { _disposables.Dispose(); _progress.Dispose(); }
 
 	private void UpdateProgress()
 	{

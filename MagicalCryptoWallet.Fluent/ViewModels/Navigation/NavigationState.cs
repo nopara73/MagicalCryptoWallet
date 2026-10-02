@@ -49,8 +49,6 @@ public class NavigationState : ReactiveObject, INavigate
 
 	public UiContext UiContext { get; }
 
-	public IWalletViewModel? Wallet => _walletNavigation.Wallet;
-	public IWalletModel? WalletModel => _walletNavigation.WalletModel;
 
 	public INavigationStack<RoutableViewModel> HomeScreen { get; }
 
@@ -85,9 +83,9 @@ public class NavigationState : ReactiveObject, INavigate
 		return new FluentNavigate(UiContext);
 	}
 
-	public IWalletViewModel? To(IWalletModel wallet)
+	public IWalletViewModel? OpenWalletHome()
 	{
-		return _walletNavigation.To(wallet);
+		return _walletNavigation.OpenWalletHome();
 	}
 
 	public async Task<DialogResult<TResult>> NavigateDialogAsync<TResult>(DialogViewModelBase<TResult> dialog, NavigationTarget target = NavigationTarget.Default, NavigationMode navigationMode = NavigationMode.Normal)

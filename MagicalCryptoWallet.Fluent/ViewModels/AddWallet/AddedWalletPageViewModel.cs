@@ -10,15 +10,14 @@ namespace MagicalCryptoWallet.Fluent.ViewModels.AddWallet;
 [NavigationMetaData(Title = "Success")]
 public partial class AddedWalletPageViewModel : RoutableViewModel
 {
-	private readonly WalletSettingsModel _walletSettings;
+	private readonly WalletSetupDraft _draft;
 	private IWalletModel? _wallet;
 
-	public AddedWalletPageViewModel(UiContext uiContext, WalletSettingsModel walletSettings, WalletCreationOptions options) : base(uiContext)
+	public AddedWalletPageViewModel(UiContext uiContext, WalletSetupDraft walletDraft, WalletCreationOptions options) : base(uiContext)
 	{
-		_walletSettings = walletSettings;
+		_draft = walletDraft;
 
-		WalletName = options.WalletName!;
-		WalletType = walletSettings.WalletType;
+		WalletType = walletDraft.WalletType;
 
 		SetupCancel(enableCancel: false, enableCancelOnEscape: false, enableCancelOnPressed: false);
 		EnableBack = false;
@@ -28,18 +27,21 @@ public partial class AddedWalletPageViewModel : RoutableViewModel
 
 	public WalletType WalletType { get; }
 
-	public string WalletName { get; }
 
 	private async Task OnNextAsync(WalletCreationOptions options)
 	{
-		if (_wallet is not { })
+		try { _wallet ??= UiContext.WalletSetupService.Commit(_draft); }
+		catch (Exception ex)
 		{
+			await ShowErrorAsync("Wallet setup", ex.Message, "Unable to save the wallet");
+			Navigate().Clear();
+			if (UiContext.Services.WalletSession.Snapshot.State == WalletSessionState.Faulted)
+			{ UiContext.Navigate().To(new MagicalCryptoWallet.Fluent.ViewModels.Wallets.WalletRecoveryViewModel(UiContext), NavigationTarget.HomeScreen, NavigationMode.Clear); }
 			return;
 		}
 
 		IsBusy = true;
 
-		await AutoLoginAsync(options);
 
 		IsBusy = false;
 
@@ -47,14 +49,13 @@ public partial class AddedWalletPageViewModel : RoutableViewModel
 
 		Navigate().Clear();
 
-		UiContext.Navigate().To(_wallet);
+		UiContext.Navigate().OpenWalletHome();
 	}
 
 	protected override void OnNavigatedTo(bool isInHistory, CompositeDisposable disposables)
 	{
 		base.OnNavigatedTo(isInHistory, disposables);
 
-		_wallet = UiContext.WalletRepository.SaveWallet(_walletSettings);
 
 		if (NextCommand is not null && NextCommand.CanExecute(default))
 		{
@@ -62,25 +63,4 @@ public partial class AddedWalletPageViewModel : RoutableViewModel
 		}
 	}
 
-	private async Task AutoLoginAsync(WalletCreationOptions? options)
-	{
-		if (_wallet is not { })
-		{
-			return;
-		}
-
-		var password =
-			options switch
-			{
-				WalletCreationOptions.AddNewWallet add => add.SelectedWalletBackup?.Password,
-				WalletCreationOptions.RecoverWallet rec => rec.WalletBackup?.Password,
-				WalletCreationOptions.ConnectToHardwareWallet => "",
-				_ => null
-			};
-
-		if (password is { })
-		{
-			await _wallet.Auth.LoginAsync(password);
-		}
-	}
 }

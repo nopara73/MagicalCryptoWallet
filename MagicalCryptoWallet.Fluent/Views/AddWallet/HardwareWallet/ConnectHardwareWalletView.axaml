@@ -31,7 +31,7 @@
 
         <DockPanel HorizontalAlignment="Center" VerticalAlignment="Center">
           <TextBlock Text="{Binding Message}" TextWrapping="Wrap" TextAlignment="Center" DockPanel.Dock="Top" />
-          <Button IsVisible="{Binding ExistingWalletFound}" Margin="0 5 0 0" Command="{Binding NavigateToExistingWalletLoginCommand}" Content="Open wallet" Classes="h7 plain activeHyperLink" HorizontalAlignment="Center" VerticalAlignment="Bottom" DockPanel.Dock="Bottom" />
+
         </DockPanel>
 
         <Panel IsVisible="{Binding !ConfirmationRequired}">

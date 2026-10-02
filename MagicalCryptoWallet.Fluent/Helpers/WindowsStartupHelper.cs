@@ -1,4 +1,5 @@
 using Microsoft.Win32;
+using MagicalCryptoWallet.Client;
 using System.IO;
 using System.Runtime.InteropServices;
 using MagicalCryptoWallet.Helpers;
@@ -9,16 +10,17 @@ public static class WindowsStartupHelper
 {
 	private const string KeyPath = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run";
 
-	public static void AddOrRemoveRegistryKey(bool runOnSystemStartup, string keyPath = KeyPath)
+	public static void AddOrRemoveRegistryKey(bool runOnSystemStartup, string keyPath = KeyPath, StartupLaunch? launch = null)
 	{
 		if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
 		{
 			throw new InvalidOperationException("Registry modification can only be done on Windows.");
 		}
 
-		string pathToExeFile = EnvironmentHelpers.GetExecutablePath();
+		launch ??= StartupLaunch.Default;
+		string pathToExeFile = launch.Executable;
 
-		string pathToExecWithArgs = $"\"{pathToExeFile}\" {StartupHelper.SilentArgument}";
+		string pathToExecWithArgs = launch.WindowsCommandLine;
 
 		if (!File.Exists(pathToExeFile))
 		{
@@ -40,7 +42,7 @@ public static class WindowsStartupHelper
 		}
 
 		var existingPath = key.GetValue(nameof(MagicalCryptoWallet));
-		if (existingPath is null && runOnSystemStartup)
+		if (runOnSystemStartup)
 		{
 			key.SetValue(nameof(MagicalCryptoWallet), pathToExecWithArgs);
 		}

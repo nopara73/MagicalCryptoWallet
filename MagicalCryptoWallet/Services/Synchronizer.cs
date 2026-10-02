@@ -90,6 +90,10 @@ public static class FilterProviders
 		var batchClient = bitcoinRpcClient.PrepareBatch();
 		var blockHashTasks = heights.Select(h => batchClient.GetBlockHashAsync(h, cancellationToken)).ToArray();
 		await batchClient.SendBatchAsync(cancellationToken).ConfigureAwait(false);
+		// Batch transport completion can precede completion of the individual response tasks.
+		// Pending responses are not evidence of a reorg, and must never remove the stored tip.
+		try { await Task.WhenAll(blockHashTasks).ConfigureAwait(false); }
+		catch (RPCException ex) when (ex.RPCCode == RPCErrorCode.RPC_INVALID_PARAMETER) { /* A genuine reorg can shorten the requested range. */ }
 
 		var blockHashes = blockHashTasks
 			.TakeWhile(t => t.IsCompletedSuccessfully)

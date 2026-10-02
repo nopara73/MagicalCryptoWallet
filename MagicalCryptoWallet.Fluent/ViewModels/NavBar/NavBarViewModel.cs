@@ -1,3 +1,5 @@
+using System.Reactive.Disposables;
+using System.Reactive.Disposables.Fluent;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive.Linq;
@@ -10,39 +12,25 @@ using MagicalCryptoWallet.Fluent.ViewModels.Wallets;
 namespace MagicalCryptoWallet.Fluent.ViewModels.NavBar;
 
 [AppLifetime]
-public partial class NavBarViewModel : ViewModelBase, IWalletNavigation
+public partial class NavBarViewModel : ViewModelBase, IWalletNavigation, IDisposable
 {
-	[AutoNotify] private WalletPageViewModel? _wallet;
+	private readonly CompositeDisposable _lifetime = new();
+	[AutoNotify] private WalletViewModel? _home;
 
 	public NavBarViewModel(UiContext uiContext) : base(uiContext)
 	{
 		BottomItems = new ObservableCollection<NavBarItemViewModel>();
-		UiContext.WalletRepository.WhenAnyValue(x => x.Wallet)
+		UiContext.WalletSetupService.WhenAnyValue(x => x.Wallet)
 			.WhereNotNull()
 			.ObserveOn(RxApp.MainThreadScheduler)
-			.Subscribe(wallet => Wallet = new WalletPageViewModel(UiContext, wallet));
+			.Subscribe(wallet => { Home?.Dispose(); Home = wallet.IsHardwareWallet ? new HardwareWalletViewModel(UiContext, wallet) : new WalletViewModel(UiContext, wallet); }).DisposeWith(_lifetime);
 	}
 
 	public ObservableCollection<NavBarItemViewModel> BottomItems { get; }
 
-	// AutoInterfaces cannot be seen by AutoNotifyGenerator.
-	public IWalletModel? WalletModel
-	{
-		get;
-		private set => this.RaiseAndSetIfChanged(ref field, value);
-	}
-
-	IWalletViewModel? IWalletNavigation.Wallet => Wallet?.WalletViewModel;
-
 	public void Activate()
 	{
-		this.WhenAnyValue(x => x.Wallet)
-			.WhereNotNull()
-			.Subscribe(wallet =>
-			{
-				WalletModel = wallet.WalletModel;
-				wallet.IsSelected = true;
-			});
+		this.WhenAnyValue(x => x.Home).WhereNotNull().Subscribe(_ => OpenWalletHome()).DisposeWith(_lifetime);
 	}
 
 	public async Task InitialiseAsync()
@@ -57,13 +45,11 @@ public partial class NavBarViewModel : ViewModelBase, IWalletNavigation
 		}
 	}
 
-	IWalletViewModel? IWalletNavigation.To(IWalletModel wallet)
+	public IWalletViewModel? OpenWalletHome()
 	{
-		if (Wallet is not { } page || !ReferenceEquals(page.WalletModel, wallet))
-		{
-			throw new InvalidOperationException("This is not the configured wallet.");
-		}
-		page.OpenCommand.Execute(default);
-		return page.WalletViewModel;
+		if (Home is { } home) { UiContext.Navigate().To(home, NavigationTarget.HomeScreen, NavigationMode.Clear); }
+		return Home;
 	}
+	public void Dispose() { _lifetime.Dispose(); Home?.Dispose(); }
+
 }

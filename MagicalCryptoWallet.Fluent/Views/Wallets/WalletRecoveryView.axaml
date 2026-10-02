@@ -1,0 +1,13 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:MagicalCryptoWallet.Fluent.ViewModels.Wallets"
+             x:Class="MagicalCryptoWallet.Fluent.Views.Wallets.WalletRecoveryView"
+             x:DataType="vm:WalletRecoveryViewModel" x:CompileBindings="True">
+  <StackPanel Spacing="16" MaxWidth="620" HorizontalAlignment="Center" VerticalAlignment="Center">
+    <PathIcon Data="{StaticResource normal_transaction}" Width="48" Height="48" />
+    <TextBlock Text="Wallet needs recovery" FontSize="24" />
+    <TextBlock Text="{Binding Error}" TextWrapping="Wrap" />
+    <TextBlock Text="Restore the configured wallet file from your backup, then retry." TextWrapping="Wrap" />
+    <SelectableTextBlock Text="{Binding StorageDirectory}" TextWrapping="Wrap" Opacity="0.7" />
+    <Button Content="Retry" Command="{Binding RetryCommand}" HorizontalAlignment="Left" />
+  </StackPanel>
+</UserControl>

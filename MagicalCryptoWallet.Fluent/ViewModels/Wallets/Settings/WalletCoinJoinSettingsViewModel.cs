@@ -1,3 +1,5 @@
+using System.Reactive.Disposables.Fluent;
+using System.Reactive.Disposables;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
@@ -20,8 +22,9 @@ namespace MagicalCryptoWallet.Fluent.ViewModels.Wallets.Settings;
 	NavBarPosition = NavBarPosition.None,
 	NavigationTarget = NavigationTarget.DialogScreen,
 	Searchable = false)]
-public partial class WalletCoinJoinSettingsViewModel : RoutableViewModel
+public partial class WalletCoinJoinSettingsViewModel : RoutableViewModel, IDisposable
 {
+	private readonly CompositeDisposable _lifetime = new();
 	private readonly IWalletModel _wallet;
 
 	[AutoNotify] private string _anonScoreTarget;
@@ -91,7 +94,7 @@ public partial class WalletCoinJoinSettingsViewModel : RoutableViewModel
 				MaximizePrivacyProfileSelected = selectedProfile?.Name == "MaximizePrivacy";
 				EconomicalProfileSelected = selectedProfile?.Name == "Economical";
 				DefaultProfileSelected = selectedProfile?.Name == "Default";
-			});
+			}).DisposeWith(_lifetime);
 
 		this.ValidateProperty(x => x.AnonScoreTarget, ValidateAnonScoreTarget);
 
@@ -107,7 +110,7 @@ public partial class WalletCoinJoinSettingsViewModel : RoutableViewModel
 						_wallet.Settings.PlebStopThreshold = result;
 						_wallet.Settings.Save();
 					}
-				});
+				}).DisposeWith(_lifetime);
 
 
 	}
@@ -159,4 +162,6 @@ public partial class WalletCoinJoinSettingsViewModel : RoutableViewModel
 		_wallet.Settings.Save();
 		return Task.CompletedTask;
 	}
+	public void Dispose() { _lifetime.Dispose();  }
+
 }

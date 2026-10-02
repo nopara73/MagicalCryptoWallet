@@ -34,20 +34,19 @@ public abstract partial class CoinListModel : ICoinListModel, IDisposable
 		var transactionProcessed = walletModel.Transactions.TransactionProcessed;
 		var anonScoreTargetChanged = this.WhenAnyValue(x => x.WalletModel.Settings.AnonScoreTarget).Skip(1).ToSignal();
 		var isCoinjoinRunningChanged = walletModel.IsCoinjoinRunning.ToSignal();
-		var isSelected = this.WhenAnyValue(x => x.WalletModel.IsSelected).Skip(1).ToSignal();
+
 
 		var signals =
 			transactionProcessed
 				.Merge(anonScoreTargetChanged)
 				.Merge(isCoinjoinRunningChanged)
-				.Merge(isSelected)
 				.Publish();
 
 		List = signals.Fetch(CreateCoinModels, x => x.Key).DisposeWith(_disposables);
 		Pockets = signals.Fetch(GetPockets, x => x.Labels).DisposeWith(_disposables);
 
 		signals
-			.Do(_ => Logger.LogDebug($"Refresh signal emitted in {walletModel.Name}"))
+			.Do(_ => Logger.LogDebug("Refreshing the wallet coin list."))
 			.Subscribe()
 			.DisposeWith(_disposables);
 

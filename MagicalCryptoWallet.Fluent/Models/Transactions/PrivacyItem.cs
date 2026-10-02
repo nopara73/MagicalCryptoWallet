@@ -1,3 +1,3 @@
-﻿namespace MagicalCryptoWallet.Fluent.Models.Transactions;
+namespace MagicalCryptoWallet.Fluent.Models.Transactions;
 
 public abstract record PrivacyItem();

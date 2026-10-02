@@ -116,8 +116,6 @@ public partial class RecoverMultiShareWalletViewModel : RoutableViewModel
 
 	private async Task OnNextAsync(WalletCreationOptions.RecoverWallet options)
 	{
-		var (walletName, _, _, _) = options;
-		ArgumentException.ThrowIfNullOrEmpty(walletName);
 
 		if (Share is not { } share)
 		{
@@ -156,12 +154,12 @@ public partial class RecoverMultiShareWalletViewModel : RoutableViewModel
 					password,
 					shares);
 				options = options with { WalletBackup = recoveryWordsBackup, MinGapLimit = MinGapLimit, BirthHeight = BirthHeight};
-				var walletSettings = await UiContext.WalletRepository.NewWalletAsync(options);
+				var walletSettings = await UiContext.WalletSetupService.NewWalletAsync(options);
 
 				var filterMinHeight = UiContext.Services.GetMinimumBlockHeight();
 				if (filterMinHeight is { } minHeight && BirthHeight < minHeight)
 				{
-					UiContext.WalletRepository.SaveWallet(walletSettings);
+					UiContext.WalletSetupService.Commit(walletSettings);
 					UiContext.Services.UiConfig.ToFile();
 
 					await ShowErrorAsync(
@@ -239,7 +237,7 @@ public partial class RecoverMultiShareWalletViewModel : RoutableViewModel
 	{
 		base.OnNavigatedTo(isInHistory, disposables);
 
-		var enableCancel = UiContext.WalletRepository.HasWallet;
+		var enableCancel = UiContext.WalletSetupService.HasWallet;
 		SetupCancel(enableCancel: enableCancel, enableCancelOnEscape: enableCancel, enableCancelOnPressed: false);
 	}
 }

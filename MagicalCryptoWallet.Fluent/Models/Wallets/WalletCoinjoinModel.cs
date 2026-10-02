@@ -1,3 +1,5 @@
+using System.Reactive.Disposables.Fluent;
+using System.Reactive.Disposables;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading;
@@ -6,6 +8,8 @@ using ReactiveUI;
 using MagicalCryptoWallet.Fluent.Extensions;
 using MagicalCryptoWallet.Fluent.Infrastructure;
 using MagicalCryptoWallet.WabiSabi.Client.CoinJoin.Manager;
+using MagicalCryptoWallet.WabiSabi.Client;
+using MagicalCryptoWallet.WabiSabi.Client.CoinJoin.Client;
 using MagicalCryptoWallet.WabiSabi.Client.CoinJoinProgressEvents;
 using MagicalCryptoWallet.WabiSabi.Client.StatusChangedEvents;
 using MagicalCryptoWallet.Wallets;
@@ -13,67 +17,21 @@ using MagicalCryptoWallet.Wallets;
 namespace MagicalCryptoWallet.Fluent.Models.Wallets;
 
 [AppLifetime]
-public partial class WalletCoinjoinModel : ReactiveObject
+public partial class WalletCoinjoinModel : ReactiveObject, IDisposable
 {
-	private readonly Wallet _wallet;
-	private CoinJoinManager _coinJoinManager;
+	private readonly CompositeDisposable _lifetime = new();
+	private readonly CoinJoinManager _coinJoinManager;
 	[AutoNotify] private bool _isCoinjoining;
 
-	public WalletCoinjoinModel(Wallet wallet, CoinJoinManager coinjoinManager, WalletSettingsModel settings)
+	public WalletCoinjoinModel(CoinJoinManager coinjoinManager)
 	{
-		_wallet = wallet;
 		_coinJoinManager = coinjoinManager;
 
-		StatusUpdated = Observable
-			.FromEventPattern<StatusChangedEventArgs>(_coinJoinManager, nameof(CoinJoinManager.StatusChanged))
-			.Where(x => x.EventArgs.Wallet == wallet)
-			.Select(x => x.EventArgs)
-			.Where(x => x is WalletStartedCoinJoinEventArgs or WalletStoppedCoinJoinEventArgs or StartErrorEventArgs
-				or CoinJoinStatusEventArgs or CompletedEventArgs or StartedEventArgs)
-			.ObserveOn(RxApp.MainThreadScheduler);
-
-		settings.WhenAnyValue(x => x.AutoCoinjoin)
-				.Skip(1) // The first one is triggered at the creation.
-				.DoAsync(async (autoCoinJoin) =>
-				{
-					if (autoCoinJoin)
-					{
-						await StartAsync(stopWhenAllMixed: false, false);
-					}
-					else
-					{
-						await StopAsync();
-					}
-				})
-				.Subscribe();
-
-		var coinjoinInputStarted =
-			StatusUpdated.OfType<CoinJoinStatusEventArgs>()
-						 .Where(e => e.CoinJoinProgressEventArgs is EnteringInputRegistrationPhase)
-						 .Select(_ => true);
-
-		var coinjoinStarted =
-			StatusUpdated.OfType<StartedEventArgs>()
-				.Select(_ => true);
-
-		var coinjoinStopped =
-			StatusUpdated.OfType<WalletStoppedCoinJoinEventArgs>()
-				.Select(_ => false);
-
-		var coinjoinCompleted =
-			StatusUpdated.OfType<CompletedEventArgs>()
-				.Select(_ => false);
-
-		IsRunning =
-			coinjoinInputStarted.Merge(coinjoinStopped)
-				.Merge(coinjoinCompleted)
-						   .ObserveOn(RxApp.MainThreadScheduler);
-
-		IsRunning.BindTo(this, x => x.IsCoinjoining);
-
-		IsStarted =
-			coinjoinStarted.Merge(coinjoinStopped)
-				.ObserveOn(RxApp.MainThreadScheduler);
+		StatusUpdated = Observable.Create<StatusChangedEventArgs>(observer => coinjoinManager.SubscribeStatus(observer.OnNext)).ObserveOn(RxApp.MainThreadScheduler);
+		var snapshots = Observable.Create<CoinJoinSnapshot>(observer => coinjoinManager.Subscribe(observer.OnNext)).ObserveOn(RxApp.MainThreadScheduler);
+		IsRunning = snapshots.Select(snapshot => snapshot.IsRunning).DistinctUntilChanged();
+		IsStarted = snapshots.Select(snapshot => snapshot.State != CoinJoinClientState.Idle).DistinctUntilChanged();
+		IsRunning.BindTo(this, x => x.IsCoinjoining).DisposeWith(_lifetime);
 	}
 
 	public IObservable<StatusChangedEventArgs> StatusUpdated { get; }
@@ -84,11 +42,13 @@ public partial class WalletCoinjoinModel : ReactiveObject
 
 	public async Task StartAsync(bool stopWhenAllMixed, bool overridePlebStop)
 	{
-		_coinJoinManager.RequestCoinJoinStart(_wallet, stopWhenAllMixed, overridePlebStop);
+		_coinJoinManager.RequestCoinJoinStart( stopWhenAllMixed, overridePlebStop);
 	}
 
 	public async Task StopAsync()
 	{
-		_coinJoinManager.RequestCoinJoinStop(_wallet);
+		_coinJoinManager.RequestCoinJoinStop();
 	}
+	public void Dispose() { _lifetime.Dispose();  }
+
 }

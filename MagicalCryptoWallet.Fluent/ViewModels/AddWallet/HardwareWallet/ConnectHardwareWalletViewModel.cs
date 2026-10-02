@@ -18,16 +18,13 @@ public partial class ConnectHardwareWalletViewModel : RoutableViewModel
 	private readonly WalletCreationOptions.ConnectToHardwareWallet _options;
 	[AutoNotify] private string _message;
 	[AutoNotify] private bool _isSearching;
-	[AutoNotify] private bool _existingWalletFound;
 	[AutoNotify] private bool _confirmationRequired;
 
 	public ConnectHardwareWalletViewModel(UiContext uiContext, WalletCreationOptions.ConnectToHardwareWallet options) : base(uiContext)
 	{
 		_options = options;
 
-		ArgumentException.ThrowIfNullOrEmpty(options.WalletName);
 		_message = "";
-		WalletName = options.WalletName;
 		AbandonedTasks = new AbandonedTasks();
 		CancelCts = new CancellationTokenSource();
 
@@ -35,7 +32,6 @@ public partial class ConnectHardwareWalletViewModel : RoutableViewModel
 
 		NextCommand = ReactiveCommand.Create(OnNext);
 
-		NavigateToExistingWalletLoginCommand = ReactiveCommand.Create(OnNavigateToExistingWalletLogin);
 
 		this.WhenAnyValue(x => x.Message)
 			.ObserveOn(RxApp.MainThreadScheduler)
@@ -48,11 +44,8 @@ public partial class ConnectHardwareWalletViewModel : RoutableViewModel
 
 	private AbandonedTasks AbandonedTasks { get; }
 
-	public string WalletName { get; }
 
-	public IWalletModel? ExistingWallet { get; set; }
 
-	public ICommand NavigateToExistingWalletLoginCommand { get; }
 
 	public WalletType Ledger => WalletType.Ledger;
 
@@ -73,15 +66,6 @@ public partial class ConnectHardwareWalletViewModel : RoutableViewModel
 		StartDetection();
 	}
 
-	private void OnNavigateToExistingWalletLogin()
-	{
-		if (ExistingWallet is { })
-		{
-			Navigate().Clear();
-			UiContext.Navigate().To(ExistingWallet);
-		}
-	}
-
 	private void StartDetection()
 	{
 		Message = "";
@@ -92,7 +76,6 @@ public partial class ConnectHardwareWalletViewModel : RoutableViewModel
 		}
 
 		DetectedDevice = null;
-		ExistingWalletFound = false;
 		AbandonedTasks.AddAndClearCompleted(DetectionAsync(CancelCts.Token));
 	}
 
@@ -130,15 +113,6 @@ public partial class ConnectHardwareWalletViewModel : RoutableViewModel
 		}
 
 		var device = devices[0];
-
-		var existingWallet = UiContext.WalletRepository.GetExistingWallet(device);
-		if (existingWallet is { })
-		{
-			ExistingWallet = existingWallet;
-			Message = "The connected hardware wallet is already added to the software, click below to open it or click Rescan to search again.";
-			ExistingWalletFound = true;
-			return;
-		}
 
 		if (!device.IsInitialized())
 		{
@@ -190,7 +164,7 @@ public partial class ConnectHardwareWalletViewModel : RoutableViewModel
 	{
 		base.OnNavigatedTo(isInHistory, disposables);
 
-		var enableCancel = UiContext.WalletRepository.HasWallet;
+		var enableCancel = UiContext.WalletSetupService.HasWallet;
 
 		SetupCancel(enableCancel: enableCancel, enableCancelOnEscape: enableCancel, enableCancelOnPressed: false);
 

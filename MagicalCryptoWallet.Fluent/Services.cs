@@ -45,7 +45,7 @@ public class Services : IServices
 		Guard.NotNull(nameof(global.TransactionStore), global.TransactionStore);
 		Guard.NotNull(nameof(global.ExternalSourcesHttpClientFactory), global.ExternalSourcesHttpClientFactory);
 		Guard.NotNull(nameof(global.Config), global.Config);
-		Guard.NotNull(nameof(global.WalletManager), global.WalletManager);
+		Guard.NotNull(nameof(global.WalletSession), global.WalletSession);
 		Guard.NotNull(nameof(global.TransactionBroadcaster), global.TransactionBroadcaster);
 		Guard.NotNull(nameof(global.HostedServices), global.HostedServices);
 		Guard.NotNull(nameof(uiConfig), uiConfig);
@@ -64,7 +64,7 @@ public class Services : IServices
 		Scheme = global.Scheme;
 		DataDir = global.DataDir;
 		PersistentConfig = global.Config.PersistentConfig;
-		WalletManager = global.WalletManager;
+		WalletSession = global.WalletSession;
 		UiConfig = uiConfig;
 		Config = global.Config;
 		EventBus = global.EventBus;
@@ -73,7 +73,7 @@ public class Services : IServices
 	public string DataDir { get; }
 	public string PersistentConfigFilePath => Path.Combine(DataDir, PersistentConfig.GetConfigFileName());
 	public PersistentConfig PersistentConfig { get; }
-	public WalletManager WalletManager { get; }
+	public WalletSession WalletSession { get; }
 	public UiConfig UiConfig { get; }
 	public Config Config { get; }
 	public EventBus EventBus { get; }
@@ -94,17 +94,13 @@ public class Services : IServices
 	public IEnumerable<LabelsArray> GetTransactionLabels() => _transactionStore.GetLabels();
 	public bool TryGetTransaction(uint256 hash, [NotNullWhen(true)] out SmartTransaction? tx) => _transactionStore.TryGetTransaction(hash, out tx);
 
-	// WalletManager info
-	public Network GetNetwork() => WalletManager.Network;
-	public Wallet GetWallet() => WalletManager.GetWallet() ?? throw new InvalidOperationException("No wallet is configured.");
-	public bool HasWallet() => WalletManager.HasWallet();
-	public void RenameWallet(Wallet wallet, string newWalletName) => WalletManager.RenameWallet(wallet, newWalletName);
-	public string GetWalletsDir() => WalletManager.WalletDirectories.WalletsDir;
-	public string GetNextWalletName(string prefix) => WalletManager.WalletDirectories.GetNextWalletName(prefix);
-	public string GetWalletFilePath(string walletName) => WalletManager.WalletDirectories.GetWalletFilePaths(walletName + ".json");
-	public (ErrorSeverity Severity, string Message)? ValidateWalletName(string walletName) => WalletManager.ValidateWalletName(walletName);
-	public Task StartWalletAsync(Wallet wallet) => WalletManager.StartWalletAsync(wallet);
-	public void AddWallet(KeyManager keyManager) => WalletManager.AddWallet(keyManager);
+	// WalletSession info
+	public Network GetNetwork() => WalletSession.Network;
+
+
+
+
+
 
 	// Tor info
 	public string GetTorLogFilePath() => _torSettings.LogFilePath;
@@ -131,7 +127,19 @@ public class Services : IServices
 	public T? GetHostedService<T>() where T : class, Microsoft.Extensions.Hosting.IHostedService => _hostedServices.GetOrDefault<T>();
 
 	// Transaction
-	public Task SendTransactionAsync(SmartTransaction transaction) => _transactionBroadcaster.SendTransactionAsync(transaction);
+	public async Task SendTransactionAsync(SmartTransaction transaction)
+	{
+		WalletSession.EnsureReady();
+		var manager = GetHostedService<MagicalCryptoWallet.WabiSabi.Client.CoinJoin.Manager.CoinJoinManager>();
+		manager?.WalletEnteredSendWorkflow();
+		try
+		{
+			if (manager is not null) { await manager.WalletEnteredSendingAsync().ConfigureAwait(false); }
+			WalletSession.EnsureReady();
+			await _transactionBroadcaster.SendTransactionAsync(transaction).ConfigureAwait(false);
+		}
+		finally { manager?.WalletLeftSendWorkflow(); }
+	}
 
 	// HttpClientFactory wrapper functions
 	public HttpClient CreateHttpClient(string name) => _httpClientFactory.CreateClient(name);

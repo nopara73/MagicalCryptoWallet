@@ -1,3 +1,5 @@
+using System.Reactive.Disposables;
+using System.Reactive.Disposables.Fluent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -17,11 +19,11 @@ namespace MagicalCryptoWallet.Fluent.Models.Wallets;
 
 public partial interface IWalletModel : INotifyPropertyChanged
 {
-	bool IsLoggedIn { get; set; }
 
-	bool IsLoaded { get; set; }
 
-	bool IsSelected { get; set; }
+
+	WalletSessionSnapshot SessionStatus { get; }
+	IObservable<WalletSessionSnapshot> Status { get; }
 
 	IObservable<bool> IsCoinjoinRunning { get; }
 
@@ -31,9 +33,7 @@ public partial interface IWalletModel : INotifyPropertyChanged
 
 	AddressesModel Addresses { get; }
 
-	WalletId Id { get; }
 
-	string Name { get; }
 
 	Network Network { get; }
 
@@ -49,9 +49,9 @@ public partial interface IWalletModel : INotifyPropertyChanged
 
 	WalletCoinsModel Coins { get; }
 
-	WalletAuthModel Auth { get; }
+	WalletAuthorizationModel Auth { get; }
 
-	WalletLoadWorkflow Loader { get; }
+	WalletSyncProgress SyncProgress { get; }
 
 	WalletSettingsModel Settings { get; }
 
@@ -59,7 +59,6 @@ public partial interface IWalletModel : INotifyPropertyChanged
 
 	WalletCoinjoinModel? Coinjoin { get; }
 
-	IObservable<bool> Loaded { get; }
 
 	AmountProvider AmountProvider { get; }
 
@@ -75,19 +74,17 @@ public partial interface IWalletModel : INotifyPropertyChanged
 
 	PrivacySuggestionsModel GetPrivacySuggestionsModel(SendFlowModel sendFlow);
 
-	void Rename(string newWalletName);
 }
 
 [AppLifetime]
-public partial class WalletModel : ReactiveObject, IWalletModel
+public partial class WalletModel : ReactiveObject, IWalletModel, IDisposable
 {
+	private readonly CompositeDisposable _lifetime = new();
 	private readonly IServices _services;
 	private readonly Lazy<WalletCoinjoinModel?> _coinjoin;
 	private readonly Lazy<WalletCoinsModel> _coins;
 
-	[AutoNotify] private bool _isLoggedIn;
-	[AutoNotify] private bool _isLoaded;
-	[AutoNotify] private bool _isSelected;
+	[AutoNotify] private WalletSessionSnapshot _sessionStatus;
 
 	public WalletModel(IServices services, Wallet wallet, AmountProvider amountProvider)
 	{
@@ -95,15 +92,24 @@ public partial class WalletModel : ReactiveObject, IWalletModel
 		Wallet = wallet;
 		AmountProvider = amountProvider;
 
-		Auth = new WalletAuthModel(Wallet);
-		Loader = new WalletLoadWorkflow(services, Wallet);
+		Auth = new WalletAuthorizationModel(services.WalletSession, Wallet);
+		_sessionStatus = services.WalletSession.Snapshot;
+		Status = Observable.Create<WalletSessionSnapshot>(observer => services.WalletSession.Subscribe(observer.OnNext))
+			.ObserveOn(RxApp.MainThreadScheduler).Replay(1).RefCount();
+		Status.BindTo(this, x => x.SessionStatus).DisposeWith(_lifetime);
+		Status.Subscribe(_ =>
+		{
+			this.RaisePropertyChanged(nameof(AvailableScriptPubKeyTypes));
+			this.RaisePropertyChanged(nameof(SeveralReceivingScriptTypes));
+		}).DisposeWith(_lifetime);
+		SyncProgress = new WalletSyncProgress(services, Wallet);
 		Settings = new WalletSettingsModel(services, Wallet.KeyManager);
 
 		_coinjoin = new(() =>
 		{
 			var coinJoinManager = services.GetHostedService<CoinJoinManager>();
 			return coinJoinManager is not null
-				? new WalletCoinjoinModel(Wallet, coinJoinManager, Settings)
+				? new WalletCoinjoinModel(coinJoinManager)
 				: null;
 		});
 
@@ -113,36 +119,19 @@ public partial class WalletModel : ReactiveObject, IWalletModel
 
 		Addresses = new AddressesModel(services, Wallet);
 
-		Loaded = services.EventBus.AsObservable<WalletLoaded>()
-			.ObserveOn(RxApp.MainThreadScheduler)
-			.Select(_ => Wallet.Loaded);
-
 		Privacy = new WalletPrivacyModel(this, Wallet);
 
-		Balances = Transactions.TransactionProcessed
+		Balances = Transactions.TransactionProcessed.Merge(Status.Where(x => x.HasCachedData).Select(_ => System.Reactive.Unit.Default))
+			.Where(_ => services.WalletSession.Snapshot.HasCachedData)
 			.Select(_ => Wallet.Coins.TotalAmount())
 			.Select(AmountProvider.Create);
 
 		HasBalance = Balances.Select(x => x.HasBalance);
 
-		// Start the Loader after wallet is logged in
-		this.WhenAnyValue(x => x.Auth.IsLoggedIn)
-			.Where(x => x)
-			.Take(1)
-			.Do(_ => Loader.Start())
-			.Subscribe();
 
-		// Stop the loader after load is completed
-		Loaded.Where(x => x)
-			 .Do(_ => Loader.Stop())
-			 .Subscribe();
-
-		this.WhenAnyValue(x => x.Auth.IsLoggedIn)
-			.BindTo(this, x => x.IsLoggedIn);
-
-		this.WhenAnyObservable(x => x.Loaded)
-			.BindTo(this, x => x.IsLoaded);
 	}
+
+	public IObservable<WalletSessionSnapshot> Status { get; }
 
 	public IObservable<bool> IsCoinjoinRunning => _coinjoin.Value?.IsRunning ?? Observable.Return(false);
 
@@ -154,9 +143,6 @@ public partial class WalletModel : ReactiveObject, IWalletModel
 
 	internal Wallet Wallet { get; }
 
-	public WalletId Id => Wallet.WalletId;
-
-	public string Name => Wallet.WalletName;
 
 	public Network Network => Wallet.Network;
 
@@ -172,17 +158,15 @@ public partial class WalletModel : ReactiveObject, IWalletModel
 
 	public WalletCoinsModel Coins => _coins.Value;
 
-	public WalletAuthModel Auth { get; }
+	public WalletAuthorizationModel Auth { get; }
 
-	public WalletLoadWorkflow Loader { get; }
+	public WalletSyncProgress SyncProgress { get; }
 
 	public WalletSettingsModel Settings { get; }
 
 	public WalletPrivacyModel Privacy { get; }
 
 	public WalletCoinjoinModel? Coinjoin => _coinjoin.Value;
-
-	public IObservable<bool> Loaded { get; }
 
 	public AmountProvider AmountProvider { get; }
 
@@ -210,9 +194,6 @@ public partial class WalletModel : ReactiveObject, IWalletModel
 		return new PrivacySuggestionsModel(_services, sendFlow);
 	}
 
-	public void Rename(string newWalletName)
-	{
-		_services.RenameWallet(Wallet, newWalletName);
-		this.RaisePropertyChanged(nameof(Name));
-	}
+	public void Dispose() { _lifetime.Dispose(); SyncProgress.Dispose(); Transactions.Dispose(); Settings.Dispose(); if (_coinjoin.IsValueCreated) { _coinjoin.Value?.Dispose(); } }
+
 }

@@ -1,4 +1,4 @@
-﻿using MagicalCryptoWallet.Blockchain.TransactionBuilding;
+using MagicalCryptoWallet.Blockchain.TransactionBuilding;
 
 namespace MagicalCryptoWallet.Fluent.Models.Wallets;
 

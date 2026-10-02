@@ -1,3 +1,5 @@
+using MagicalCryptoWallet.Fluent.Helpers;
+using MagicalCryptoWallet.Fluent.Models;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
@@ -49,16 +51,17 @@ public partial class CancelTransactionDialogViewModel : RoutableViewModel
 
 		try
 		{
-			var isAuthorized = await AuthorizeForPasswordAsync();
+			using var authorized = new TransactionAuthorizationInfo(cancellingTransaction.CancelTransaction);
+			var isAuthorized = await AuthorizationHelpers.AuthorizeTransactionAsync(UiContext, _wallet, authorized);
 			if (isAuthorized)
 			{
-				await _wallet.Transactions.SendAsync(cancellingTransaction);
+				await UiContext.Services.SendTransactionAsync(authorized.Transaction);
 				var (title, caption) = ("Success", "Your transaction has been successfully cancelled.");
 
 				var mainViewModel = UiContext.MainViewModel
 					?? throw new InvalidOperationException("MainViewModel is not initialized.");
 
-				var wallet = UiContext.Services.GetWallet();
+				var wallet = (UiContext.Services.WalletSession.GetWallet() ?? throw new InvalidOperationException("No wallet is configured."));
 
 				UiContext.Navigate().To().SendSuccess(cancellingTransaction.CancelTransaction.Transaction, title, caption, NavigationTarget.CompactDialogScreen);
 			}
@@ -73,13 +76,4 @@ public partial class CancelTransactionDialogViewModel : RoutableViewModel
 		IsBusy = false;
 	}
 
-	private async Task<bool> AuthorizeForPasswordAsync()
-	{
-		if (_wallet.Auth.HasPassword)
-		{
-			return await Navigate().To().PasswordAuthDialog(_wallet, "Send").GetResultAsync();
-		}
-
-		return true;
-	}
 }

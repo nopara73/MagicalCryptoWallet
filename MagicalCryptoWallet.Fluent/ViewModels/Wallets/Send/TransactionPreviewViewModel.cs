@@ -28,6 +28,7 @@ namespace MagicalCryptoWallet.Fluent.ViewModels.Wallets.Send;
 public partial class TransactionPreviewViewModel : RoutableViewModel
 {
 	private readonly Stack<(BuildTransactionResult, TransactionInfo)> _undoHistory;
+	private WalletAuthorization? _constructionAuthorization;
 	private readonly Wallet _wallet;
 	private readonly IWalletModel _walletModel;
 	private readonly SendFlowModel _sendFlow;
@@ -260,9 +261,15 @@ public partial class TransactionPreviewViewModel : RoutableViewModel
 
 		try
 		{
+			UiContext.Services.WalletSession.EnsureReady();
+			var needsSecrets = _info.AllRecipients.Any(recipient => recipient.Destination is Destination.Silent);
+			if (needsSecrets && _constructionAuthorization is null)
+			{
+				_constructionAuthorization = await AuthorizationHelpers.AuthorizeAsync(UiContext, _walletModel);
+				if (_constructionAuthorization is null) { return null; }
+			}
 			IsBusy = true;
-
-			return await Task.Run(() => TransactionHelpers.BuildTransaction(_wallet, _info, tryToSign: false));
+			return await Task.Run(() => TransactionHelpers.BuildTransaction(_wallet, _info, tryToSign: needsSecrets, authorization: _constructionAuthorization));
 		}
 		catch (Exception ex) when (ex is NotEnoughFundsException or TransactionFeeOverpaymentException || (ex is InvalidTxException itx && itx.Errors.OfType<FeeTooHighPolicyError>().Any()))
 		{
@@ -400,6 +407,8 @@ public partial class TransactionPreviewViewModel : RoutableViewModel
 		{
 			_cancellationTokenSource.Cancel();
 			_cancellationTokenSource.Dispose();
+			_constructionAuthorization?.Dispose();
+			_constructionAuthorization = null;
 		}
 
 		base.OnNavigatedFrom(isInHistory);
@@ -411,15 +420,18 @@ public partial class TransactionPreviewViewModel : RoutableViewModel
 	{
 		try
 		{
-			var transaction = await Task.Run(() => TransactionHelpers.BuildTransaction(_wallet, _info));
-			var transactionAuthorizationInfo = new TransactionAuthorizationInfo(transaction);
-			var authResult = await AuthorizeAsync(transactionAuthorizationInfo);
+			UiContext.Services.WalletSession.EnsureReady();
+			var transaction = Transaction ?? throw new InvalidOperationException("Review a transaction before sending it.");
+			using var transactionAuthorizationInfo = new TransactionAuthorizationInfo(transaction);
+			var authResult = _constructionAuthorization is not null && transaction.Signed;
+			if (authResult) { transactionAuthorizationInfo.Authorization = _constructionAuthorization!.Retain(); }
+			else { authResult = await AuthorizeAsync(transactionAuthorizationInfo); }
 			if (authResult)
 			{
 				IsBusy = true;
 
 				var finalTransaction =
-					await GetFinalTransactionAsync(transactionAuthorizationInfo.Transaction, _info);
+					await GetFinalTransactionAsync(transactionAuthorizationInfo.Transaction, _info, transactionAuthorizationInfo.Authorization);
 				await SendTransactionAsync(finalTransaction);
 				_wallet.UpdateUsedHdPubKeysLabels(transaction.HdPubKeysWithNewLabels);
 				_cancellationTokenSource.Cancel();
@@ -440,32 +452,22 @@ public partial class TransactionPreviewViewModel : RoutableViewModel
 		}
 	}
 
-	private async Task<bool> AuthorizeAsync(TransactionAuthorizationInfo transactionAuthorizationInfo)
-	{
-		if (!_walletModel.IsHardwareWallet && !_walletModel.Auth.HasPassword) // Do not show authentication dialog when password is empty
-		{
-			return true;
-		}
-
-		var authDialog = AuthorizationHelpers.GetAuthorizationDialog(UiContext, _walletModel, transactionAuthorizationInfo);
-		var authDialogResult = await NavigateDialogAsync(authDialog, authDialog.DefaultTarget, NavigationMode.Clear);
-
-		return authDialogResult.Result;
-	}
+	private Task<bool> AuthorizeAsync(TransactionAuthorizationInfo transactionAuthorizationInfo) =>
+		AuthorizationHelpers.AuthorizeTransactionAsync(UiContext, _walletModel, transactionAuthorizationInfo);
 
 	private async Task SendTransactionAsync(SmartTransaction transaction)
 	{
 		await UiContext.Services.SendTransactionAsync(transaction);
 	}
 
-	private async Task<SmartTransaction> GetFinalTransactionAsync(SmartTransaction transaction, TransactionInfo transactionInfo)
+	private async Task<SmartTransaction> GetFinalTransactionAsync(SmartTransaction transaction, TransactionInfo transactionInfo, WalletAuthorization? authorization)
 	{
-		if (transactionInfo.PayJoinClient is { })
+		if (transactionInfo.PayJoinClient is { } && authorization is not null)
 		{
 			try
 			{
 				var payJoinTransaction = await Task.Run(() =>
-					TransactionHelpers.BuildTransaction(_wallet, transactionInfo, isPayJoin: true));
+					TransactionHelpers.BuildTransaction(_wallet, transactionInfo, isPayJoin: true, tryToSign: true, authorization: authorization));
 				return payJoinTransaction.Transaction;
 			}
 			catch (Exception ex)
@@ -492,8 +494,8 @@ public partial class TransactionPreviewViewModel : RoutableViewModel
 
 		var usedCoins = transaction.SpentCoins;
 		var pockets = _sendFlow.GetPockets();
-		var labelSelection = new LabelSelectionViewModel(UiContext, _wallet.KeyManager, _wallet.Password, _info, isSilent: true);
-		await labelSelection.ResetAsync(pockets, coinsToExclude: cjManager?.CoinsInCriticalPhase[_wallet.WalletId].ToList() ?? []);
+		var labelSelection = new LabelSelectionViewModel(UiContext, _wallet.KeyManager, string.Empty, _info, isSilent: true);
+		await labelSelection.ResetAsync(pockets, coinsToExclude: cjManager?.CoinsInCriticalPhase.ToList() ?? []);
 
 		_info.IsOtherPocketSelectionPossible = labelSelection.IsOtherSelectionPossible(usedCoins, _info.Recipient);
 	}
@@ -551,7 +553,12 @@ public partial class TransactionPreviewViewModel : RoutableViewModel
 
 		if (suggestion.Transaction is { } transaction)
 		{
-			UpdateTransaction(CurrentTransactionSummary, transaction);
+			if (_info.AllRecipients.Any(recipient => recipient.Destination is Destination.Silent))
+			{
+				// Silent-payment suggestions must be resolved with this operation's credentials before review.
+				await BuildAndUpdateAsync();
+			}
+			else { UpdateTransaction(CurrentTransactionSummary, transaction); }
 		}
 	}
 }

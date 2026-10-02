@@ -15,8 +15,13 @@ namespace MagicalCryptoWallet.Client;
 public class MagicalCryptoWalletApplication
 {
 	public MagicalCryptoWalletAppBuilder AppConfig { get; }
-	public Global Global { get; }
-	public Config Config { get; }
+	private Global? _global;
+	public Global Global => _global ?? throw new InvalidOperationException("The application has not acquired its data-directory lock.");
+	public bool HasStarted => _global is not null;
+	public string DataDirectory { get; }
+	public DesktopActivation? Activation { get; private set; }
+	private Config? _config;
+	public Config Config => _config ?? throw new InvalidOperationException("Configuration is not initialized.");
 	public SingleInstanceChecker SingleInstanceChecker { get; }
 	public TerminateService TerminateService { get; }
 	private static Guid InstanceGuid { get; } = Guid.NewGuid();
@@ -26,13 +31,9 @@ public class MagicalCryptoWalletApplication
 		AppConfig = magicalcryptowalletAppBuilder;
 
 		CheckVersionAndHelp();
-		Directory.CreateDirectory(Config.DataDir);
-		SetupLogger();
-		Config = new Config(LoadOrCreateConfigs(), magicalcryptowalletAppBuilder.Arguments);
-		Logger.LogDebug($"Magical Crypto Wallet was started with these argument(s): {string.Join(" ", AppConfig.Arguments.DefaultIfEmpty("none"))}.");
-
-		Global = new Global(Config.DataDir, Config);
-		SingleInstanceChecker = new(Config.DataDir);
+		DataDirectory = Configuration.Config.ResolveDataDirectory(AppConfig.Arguments);
+		Directory.CreateDirectory(DataDirectory);
+		SingleInstanceChecker = new(DataDirectory);
 		TerminateService = new(TerminateApplicationAsync, AppConfig.Terminate);
 	}
 
@@ -108,18 +109,29 @@ public class MagicalCryptoWalletApplication
 
 	private ExitCode? ProcessAppArguments()
 	{
-		if (AppConfig.MustCheckSingleInstance)
+		if (AppConfig.MustCheckSingleInstance && !SingleInstanceChecker.IsFirstInstance())
 		{
-			var isFirst = SingleInstanceChecker.IsFirstInstance();
-
-			if (!isFirst)
-			{
-				Logger.LogCritical($"Magical Crypto Wallet is already running. Please stop the other instance first.");
-				return ExitCode.FailedAlreadyRunningError;
-			}
+			var network = ResolveRequestedNetwork();
+			if (AppConfig.IsDesktop && DesktopActivation.RequestAsync(DataDirectory, network,
+				AppConfig.Arguments.Contains("startsilent", StringComparer.Ordinal)).GetAwaiter().GetResult()) { return ExitCode.Ok; }
+			Console.Error.WriteLine("This data directory is already in use by another process or network.");
+			return ExitCode.FailedAlreadyRunningError;
 		}
+		try
+		{
+			SetupLogger();
+			_config = new Config(LoadOrCreateConfigs(), AppConfig.Arguments);
+			_global = new Global(DataDirectory, Config);
+			if (AppConfig.IsDesktop) { Activation = new DesktopActivation(DataDirectory, Config.Network); }
+			return null;
+		}
+		catch { SingleInstanceChecker.Dispose(); throw; }
+	}
 
-		return null;
+	private Network ResolveRequestedNetwork()
+	{
+		var fallback = File.Exists(Path.Combine(DataDirectory, "network")) ? File.ReadAllText(Path.Combine(DataDirectory, "network")).Trim() : "Main";
+		return Configuration.Config.ResolveNetwork(AppConfig.Arguments, fallback);
 	}
 
 	private void BeforeStarting()
@@ -145,33 +157,12 @@ public class MagicalCryptoWalletApplication
 	{
 		CreateConfigFiles();
 
-		var networkFilePath = Path.Combine(Config.DataDir, "network");
+		var networkFilePath = Path.Combine(DataDirectory, "network");
 		Logger.LogInfo($"Loading network file '{networkFilePath}'.");
 
-		Network? network;
-		var networkFileExists = File.Exists(networkFilePath);
-		if (Config.GetCliArgsValue("network", AppConfig.Arguments, out var networkName))
-		{
-			network = Network.GetNetwork(networkName) ?? Network.Main;
-			if (!networkFileExists)
-			{
-				PersistentConfigManager.UpdateNetwork(networkFilePath, network);
-			}
-		}
-		else
-		{
-			if (networkFileExists)
-			{
-				networkName = File.ReadAllText(networkFilePath).Trim();
-				network = Network.GetNetwork(networkName) ?? Network.Main;
-			}
-			else
-			{
-				network = Network.Main;
-				PersistentConfigManager.UpdateNetwork(networkFilePath, network);
-			}
-		}
-
+		var network = ResolveRequestedNetwork();
+		var networkName = network.Name;
+		if (!File.Exists(networkFilePath)) { PersistentConfigManager.UpdateNetwork(networkFilePath, network); }
 		var configFileName = networkName switch
 		{
 			_ when network == Network.Main => "Config.json",
@@ -180,7 +171,7 @@ public class MagicalCryptoWalletApplication
 			_ when network == Bitcoin.Instance.Signet => "Config.Signet.json",
 			_ => throw new NotSupportedException($"Network '{networkName}' is not supported."),
 		};
-		var configFilePath = Path.Combine(Config.DataDir, configFileName);
+		var configFilePath = Path.Combine(DataDirectory, configFileName);
 
 		Logger.LogInfo($"Loading config file '{configFilePath}'.");
 		var persistentConfig = PersistentConfigManager.LoadFile(configFilePath);
@@ -196,13 +187,13 @@ public class MagicalCryptoWalletApplication
 
 	private void CreateConfigFiles()
 	{
-		CreateConfigFileIfNotExists(Path.Combine(Config.DataDir, "Config.RegTest.json"),
+		CreateConfigFileIfNotExists(Path.Combine(DataDirectory, "Config.RegTest.json"),
 			PersistentConfigManager.DefaultRegTestConfig);
-		CreateConfigFileIfNotExists(Path.Combine(Config.DataDir, "Config.TestNet.json"),
+		CreateConfigFileIfNotExists(Path.Combine(DataDirectory, "Config.TestNet.json"),
 			PersistentConfigManager.DefaultTestNetConfig);
-		CreateConfigFileIfNotExists(Path.Combine(Config.DataDir, "Config.Signet.json"),
+		CreateConfigFileIfNotExists(Path.Combine(DataDirectory, "Config.Signet.json"),
 			PersistentConfigManager.DefaultSignetConfig);
-		CreateConfigFileIfNotExists(Path.Combine(Config.DataDir, "Config.json"),
+		CreateConfigFileIfNotExists(Path.Combine(DataDirectory, "Config.json"),
 			PersistentConfigManager.DefaultMainNetConfig);
 		return;
 
@@ -232,7 +223,8 @@ public class MagicalCryptoWalletApplication
 	{
 		Logger.LogInfo($"{AppConfig.AppName} stopped gracefully ({InstanceGuid}).", callerFilePath: "", callerLineNumber: -1);
 
-		await Global.DisposeAsync().ConfigureAwait(false);
+		if (_global is { } global) { await global.DisposeAsync().ConfigureAwait(false); }
+		if (Activation is { } activation) { await activation.DisposeAsync().ConfigureAwait(false); }
 	}
 
 	private void SetupLogger()
@@ -241,7 +233,7 @@ public class MagicalCryptoWalletApplication
 			? parsedLevel
 			: LogLevel.Info;
 
-		Logger.Configure(Path.Combine(Config.DataDir, "Logs.txt"), logLevel, Config.LogModes);
+		Logger.Configure(Path.Combine(DataDirectory, "Logs.txt"), logLevel, Config.LogModes);
 	}
 
 	private void ShowHelp()

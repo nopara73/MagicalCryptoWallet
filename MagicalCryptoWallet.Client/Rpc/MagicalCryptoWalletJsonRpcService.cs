@@ -32,14 +32,14 @@ public class MagicalCryptoWalletJsonRpcService : IJsonRpcService
 	}
 
 	private Global Global { get; }
-	private Wallet? ActiveWallet => Global?.WalletManager.GetWallet();
+	private Wallet? ActiveWallet => Global?.WalletSession.GetWallet();
 
 	[JsonRpcMethod("listunspentcoins")]
 	public JsonRpcResultList GetUnspentCoinList()
 	{
 		var activeWallet = Guard.NotNull(nameof(ActiveWallet), ActiveWallet);
 
-		AssertWalletIsLoaded();
+		AssertCachedData();
 		var serverTipHeight = Global.FilterHeaders.ServerTipHeight;
 		return activeWallet.Coins.Where(x => !x.IsSpent()).Select(
 			x => new JsonRpcResult
@@ -61,7 +61,7 @@ public class MagicalCryptoWalletJsonRpcService : IJsonRpcService
 	{
 		var activeWallet = Guard.NotNull(nameof(ActiveWallet), ActiveWallet);
 
-		AssertWalletIsLoaded();
+		AssertCachedData();
 		var serverTipHeight = Global.FilterHeaders.ServerTipHeight;
 		if (activeWallet.Coins is not { } coinRegistry)
 		{
@@ -83,42 +83,49 @@ public class MagicalCryptoWalletJsonRpcService : IJsonRpcService
 	}
 
 	[JsonRpcMethod("createwallet", initializable: false)]
-	public object CreateWallet(string walletName, string password)
+	public object CreateWallet(string password)
 	{
-		Global.WalletManager.EnsureCanAddWallet();
-		var walletGenerator = new WalletGenerator(Global.WalletManager.WalletDirectories.WalletsDir, Global.Network);
+		Global.WalletSession.EnsureCanConfigure();
+		var walletGenerator = new WalletGenerator(Global.WalletSession.WalletDirectories.WalletsDir, Global.Network);
 		walletGenerator.TipHeight = Global.FilterHeaders.TipHeight;
-		var (keyManager, mnemonic) = walletGenerator.GenerateWallet(walletName, password, mnemonic: null, toFile: false);
-		Global.WalletManager.AddWallet(keyManager);
+		var (keyManager, mnemonic) = walletGenerator.GenerateDraft(password, mnemonic: null);
+		Global.WalletSession.Configure(keyManager);
 		return mnemonic.ToString();
 	}
 
 	[JsonRpcMethod("recoverwallet", initializable: false)]
-	public void RecoverWallet(string walletName, string mnemonicStr, string password = "")
+	public void RecoverWallet(string mnemonicStr, string password = "")
 	{
-		Global.WalletManager.EnsureCanAddWallet();
-		var walletGenerator = new WalletGenerator(Global.WalletManager.WalletDirectories.WalletsDir, Global.Network);
+		Global.WalletSession.EnsureCanConfigure();
+		var walletGenerator = new WalletGenerator(Global.WalletSession.WalletDirectories.WalletsDir, Global.Network);
 		walletGenerator.TipHeight = 0;
 		if (!TryParseMnemonic(mnemonicStr, out var mnemonic))
 		{
 			throw new ArgumentException("Invalid value for mnemonic");
 		}
 
-		var (keyManager, _) = walletGenerator.GenerateWallet(walletName, password, mnemonic, toFile: false);
-		Global.WalletManager.AddWallet(keyManager);
+		var (keyManager, _) = walletGenerator.GenerateDraft(password, mnemonic);
+		Global.WalletSession.Configure(keyManager);
 	}
 
-	[JsonRpcMethod("loadwallet", initializable: false)]
-	public async Task LoadWalletAsync()
-	{
-		var wallet = ActiveWallet ?? throw new InvalidOperationException("No wallet is configured.");
-		await Global.WalletManager.StartWalletAsync(wallet).ConfigureAwait(false);
-	}
-
-	[JsonRpcMethod("getwalletinfo")]
+	[JsonRpcMethod("getwalletinfo", initializable: false)]
 	public JsonRpcResult WalletInfo()
 	{
-		var activeWallet = Guard.NotNull(nameof(ActiveWallet), ActiveWallet);
+		var session = Global.WalletSession.Snapshot;
+		var info = new JsonRpcResult
+		{
+			["state"] = session.State.ToString(),
+			["hasCachedData"] = session.HasCachedData,
+			["synchronized"] = session.IsSynchronized,
+			["syncHeight"] = session.SyncHeight,
+			["targetHeight"] = session.TargetHeight,
+			["coinJoinRequiresAuthorization"] = session.CoinJoinRequiresAuthorization,
+			["publicMetadataRequiresAuthorization"] = session.PublicMetadataRequiresAuthorization,
+			["error"] = session.Error,
+			["balance"] = null,
+			["accounts"] = Array.Empty<object>()
+		};
+		if (ActiveWallet is not { } activeWallet) { return info; }
 
 		var km = activeWallet.KeyManager;
 		var segwit = new JsonRpcResult
@@ -127,20 +134,15 @@ public class MagicalCryptoWalletJsonRpcService : IJsonRpcService
 			["publicKey"] = km.SegwitExtPubKey.ToString(Global.Network),
 			["keyPath"] = $"m/{km.SegwitAccountKeyPath}"
 		};
-		var info = new JsonRpcResult
-		{
-			["walletName"] = activeWallet.WalletName,
-			["walletFile"] = km.FilePath,
-			["loaded"] = activeWallet.Loaded,
-			["masterKeyFingerprint"] = km.MasterFingerprint?.ToString() ?? "",
-			["anonScoreTarget"] = activeWallet.AnonScoreTarget,
-			["isWatchOnly"] = activeWallet.KeyManager.IsWatchOnly,
-			["isHardwareWallet"] = activeWallet.KeyManager.IsHardwareWallet,
-			["isAutoCoinjoin"] = activeWallet.KeyManager.AutoCoinJoin,
-			["isNonPrivateCoinIsolation"] = activeWallet.KeyManager.NonPrivateCoinIsolation,
-			["onlyUsePrivateFundsForPayments"] = activeWallet.KeyManager.OnlyUsePrivateFundsForPayments,
-			["accounts"] = new[] { segwit }
-		};
+		info["walletFile"] = km.FilePath;
+		info["masterKeyFingerprint"] = km.MasterFingerprint?.ToString();
+		info["anonScoreTarget"] = activeWallet.AnonScoreTarget;
+		info["isWatchOnly"] = km.IsWatchOnly;
+		info["isHardwareWallet"] = km.IsHardwareWallet;
+		info["isAutoCoinjoin"] = km.AutoCoinJoin;
+		info["isNonPrivateCoinIsolation"] = km.NonPrivateCoinIsolation;
+		info["onlyUsePrivateFundsForPayments"] = km.OnlyUsePrivateFundsForPayments;
+		info["accounts"] = new[] { segwit };
 
 		if (km.TaprootExtPubKey is { } taprootExtPubKey)
 		{
@@ -156,13 +158,13 @@ public class MagicalCryptoWalletJsonRpcService : IJsonRpcService
 			};
 		}
 
-		if (activeWallet.Loaded)
+		if (session.HasCachedData)
 		{
-			// The following elements are valid only after the wallet is fully synchronized
+			// Public balances are cached until synchronized is true.
 			info["balance"] = activeWallet.Coins
 				.Where(c => !c.IsSpent())
 				.Sum(c => c.Amount.Satoshi);
-			info["coinjoinStatus"] = GetCoinjoinStatus(activeWallet);
+			info["coinjoinStatus"] = GetCoinjoinStatus();
 		}
 
 		return info;
@@ -171,7 +173,7 @@ public class MagicalCryptoWalletJsonRpcService : IJsonRpcService
 	[JsonRpcMethod("getnewaddress")]
 	public JsonRpcResult GenerateReceiveAddress(string label, bool taproot = true)
 	{
-		AssertWalletIsLoaded();
+		if (!Global.WalletSession.Snapshot.HasCachedData) { throw new InvalidOperationException("Public wallet data is not ready."); }
 		label = Guard.NotNullOrEmptyOrWhitespace(nameof(label), label, true);
 		var activeWallet = Guard.NotNull(nameof(ActiveWallet), ActiveWallet);
 
@@ -228,16 +230,17 @@ public class MagicalCryptoWalletJsonRpcService : IJsonRpcService
 
 		var feeStrategy = GetFeeStrategy(feeTarget, feeRate);
 
-		AssertWalletIsLoaded();
+		AssertWalletReady();
 		var payment = new PaymentIntent(
 			payments.Select(
 				p =>
 				new DestinationRequest(p.Sendto, MoneyRequest.Create(p.Amount, p.SubtractFee), new LabelsArray(p.Label))));
+		using var authorization = Authorize(password);
 		var result = ActiveWallet!.BuildTransaction(
 			password,
 			payment,
 			feeStrategy,
-			allowUnconfirmed: true);
+			allowUnconfirmed: true, authorization: authorization);
 		var smartTx = result.Transaction;
 
 		return smartTx.Transaction.ToHex();
@@ -255,16 +258,17 @@ public class MagicalCryptoWalletJsonRpcService : IJsonRpcService
 
 		var feeStrategy = GetFeeStrategy(feeTarget, feeRate);
 
-		AssertWalletIsLoaded();
+		AssertWalletReady();
 		var payment = new PaymentIntent(
 			payments.Select(
 				p =>
 				new DestinationRequest(p.Sendto, MoneyRequest.Create(p.Amount, p.SubtractFee), new LabelsArray(p.Label))));
+		using var authorization = Authorize(password);
 		var result = ActiveWallet!.BuildTransactionWithoutOverpaymentProtection(
 			password,
 			payment,
 			feeStrategy,
-			allowUnconfirmed: true);
+			allowUnconfirmed: true, authorization: authorization);
 		var smartTx = result.Transaction;
 
 		return smartTx.Transaction.ToHex();
@@ -274,8 +278,8 @@ public class MagicalCryptoWalletJsonRpcService : IJsonRpcService
 	public string PayInCoinJoin(BitcoinAddress address, Money amount, string? password = null)
 	{
 		var activeWallet = Guard.NotNull(nameof(ActiveWallet), ActiveWallet);
-		AssertWalletIsLoaded();
-		AssertWalletIsLoggedIn(activeWallet, password ?? "");
+		AssertWalletReady();
+		using var authorization = Authorize(password ?? "");
 		return activeWallet.AddCoinJoinPayment(address, amount);
 	}
 
@@ -283,7 +287,7 @@ public class MagicalCryptoWalletJsonRpcService : IJsonRpcService
 	public JsonRpcResultList ListPaymentsInCoinJoin()
 	{
 		var activeWallet = Guard.NotNull(nameof(ActiveWallet), ActiveWallet);
-		AssertWalletIsLoaded();
+		AssertWalletReady();
 		var payments = activeWallet.BatchedPayments.GetPayments();
 		return payments.Select(x =>
 		{
@@ -349,9 +353,10 @@ public class MagicalCryptoWalletJsonRpcService : IJsonRpcService
 	}
 
 	[JsonRpcMethod("cancelpaymentincoinjoin")]
-	public void CancelPayment(Guid paymentId)
+	public void CancelPayment(Guid paymentId, string password = "")
 	{
-		AssertWalletIsLoaded();
+		AssertWalletReady();
+		using var authorization = Authorize(password);
 		ActiveWallet!.CancelCoinJoinPayment(paymentId);
 	}
 
@@ -359,15 +364,23 @@ public class MagicalCryptoWalletJsonRpcService : IJsonRpcService
 	public async Task<JsonRpcResult> SendTransactionAsync(PaymentInfo[] payments, int? feeTarget = null, int? feeRate = null, string? password = null)
 	{
 		password = Guard.Correct(password);
-		var txHex = BuildTransaction(payments, feeTarget, feeRate, password);
-		var smartTx = new SmartTransaction(Transaction.Parse(txHex, Global.Network), Height.Mempool);
-
-		await Global.TransactionBroadcaster.SendTransactionAsync(smartTx).ConfigureAwait(false);
-		return new JsonRpcResult
+		Global.WalletSession.EnsureReady();
+		var manager = Global.HostedServices.GetOrDefault<CoinJoinManager>();
+		manager?.WalletEnteredSendWorkflow();
+		try
 		{
-			["txid"] = smartTx.Transaction.GetHash(),
-			["tx"] = txHex
-		};
+			if (manager is not null) { await manager.WalletEnteredSendingAsync().ConfigureAwait(false); }
+			Global.WalletSession.EnsureReady();
+			var txHex = BuildTransaction(payments, feeTarget, feeRate, password);
+			var smartTx = new SmartTransaction(Transaction.Parse(txHex, Global.Network), Height.Mempool);
+			await Global.TransactionBroadcaster.SendTransactionAsync(smartTx).ConfigureAwait(false);
+			return new JsonRpcResult
+			{
+				["txid"] = smartTx.Transaction.GetHash(),
+				["tx"] = txHex
+			};
+		}
+		finally { manager?.WalletLeftSendWorkflow(); }
 	}
 
 	[JsonRpcMethod("canceltransaction")]
@@ -375,15 +388,15 @@ public class MagicalCryptoWalletJsonRpcService : IJsonRpcService
 	{
 		Guard.NotNull(nameof(txId), txId);
 		var activeWallet = Guard.NotNull(nameof(ActiveWallet), ActiveWallet);
-		AssertWalletIsLoaded();
-		AssertWalletIsLoggedIn(activeWallet, password);
+		AssertWalletReady();
+		using var authorization = Authorize(password);
 		var mempoolStore = Global.TransactionStore.MempoolStore;
 		if (!mempoolStore.TryGetTransaction(txId, out var smartTransactionToCancel))
 		{
 			throw new NotSupportedException($"Unknown transaction {txId}");
 		}
 
-		var cancellationResult = activeWallet.CancelTransaction(smartTransactionToCancel);
+		var cancellationResult = activeWallet.CancelTransaction(smartTransactionToCancel, authorization);
 		var cancellationSmartTransaction = cancellationResult.Transaction;
 		return cancellationSmartTransaction.Transaction.ToHex();
 	}
@@ -393,15 +406,15 @@ public class MagicalCryptoWalletJsonRpcService : IJsonRpcService
 	{
 		Guard.NotNull(nameof(txId), txId);
 		var activeWallet = Guard.NotNull(nameof(ActiveWallet), ActiveWallet);
-		AssertWalletIsLoaded();
-		AssertWalletIsLoggedIn(activeWallet, password);
+		AssertWalletReady();
+		using var authorization = Authorize(password);
 		var mempoolStore = Global.TransactionStore.MempoolStore;
 		if (!mempoolStore.TryGetTransaction(txId, out var smartTransactionToSpeedUp))
 		{
 			throw new NotSupportedException($"Unknown transaction {txId}");
 		}
 
-		var speedUpResult = await activeWallet.SpeedUpTransactionAsync(smartTransactionToSpeedUp, null, CancellationToken.None).ConfigureAwait(false);
+		var speedUpResult = await activeWallet.SpeedUpTransactionAsync(smartTransactionToSpeedUp, null, CancellationToken.None, authorization).ConfigureAwait(false);
 		var speedUpSmartTransaction = speedUpResult.Transaction;
 		return speedUpSmartTransaction.Transaction.ToHex();
 	}
@@ -424,7 +437,7 @@ public class MagicalCryptoWalletJsonRpcService : IJsonRpcService
 	{
 		var activeWallet = Guard.NotNull(nameof(ActiveWallet), ActiveWallet);
 
-		AssertWalletIsLoaded();
+		AssertCachedData();
 		var summary = await activeWallet.BuildHistorySummaryAsync();
 		return summary.Select(
 			x => new JsonRpcResult
@@ -443,7 +456,7 @@ public class MagicalCryptoWalletJsonRpcService : IJsonRpcService
 	{
 		var activeWallet = Guard.NotNull(nameof(ActiveWallet), ActiveWallet);
 
-		AssertWalletIsLoaded();
+		AssertCachedData();
 		var keys = activeWallet.KeyManager.GetKeys();
 		return keys.Select(
 			x => new JsonRpcResult
@@ -465,9 +478,13 @@ public class MagicalCryptoWalletJsonRpcService : IJsonRpcService
 		var coinJoinManager = GetCoinJoinManager();
 		var activeWallet = Guard.NotNull(nameof(ActiveWallet), ActiveWallet);
 
-		AssertWalletIsLoaded();
-		AssertWalletIsLoggedIn(activeWallet, password ?? "");
-		coinJoinManager.RequestCoinJoinStart(activeWallet, stopWhenAllMixed, overridePlebStop);
+		AssertWalletReady();
+		if (password is not null || Global.WalletSession.Snapshot.CoinJoinRequiresAuthorization)
+		{
+			using var authorization = Authorize(password ?? "");
+			Global.WalletSession.AuthorizeCoinJoin(authorization);
+		}
+		coinJoinManager.RequestCoinJoinStart(stopWhenAllMixed, overridePlebStop);
 	}
 
 	[JsonRpcMethod("stopcoinjoin")]
@@ -476,9 +493,9 @@ public class MagicalCryptoWalletJsonRpcService : IJsonRpcService
 		var coinJoinManager = GetCoinJoinManager();
 		var activeWallet = Guard.NotNull(nameof(ActiveWallet), ActiveWallet);
 
-		AssertWalletIsLoaded();
+		AssertWalletReady();
 
-		coinJoinManager.RequestCoinJoinStop(activeWallet);
+		coinJoinManager.RequestCoinJoinStop();
 	}
 
 	[JsonRpcMethod("getfeerates", initializable: false)]
@@ -526,10 +543,9 @@ public class MagicalCryptoWalletJsonRpcService : IJsonRpcService
 		return coinJoinManager;
 	}
 
-	private string GetCoinjoinStatus(Wallet wallet)
+	private string GetCoinjoinStatus()
 	{
-		var coinJoinManager = GetCoinJoinManager();
-		var walletCoinjoinClientState = coinJoinManager.GetCoinjoinClientState(wallet.WalletId);
+		var walletCoinjoinClientState = Global.HostedServices.GetOrDefault<CoinJoinManager>()?.ClientState ?? CoinJoinClientState.Idle;
 		return walletCoinjoinClientState switch
 		{
 			CoinJoinClientState.Idle => "Idle",
@@ -540,20 +556,18 @@ public class MagicalCryptoWalletJsonRpcService : IJsonRpcService
 		};
 	}
 
-	private void AssertWalletIsLoaded()
+	private void AssertCachedData()
 	{
-		if (ActiveWallet is not {Loaded: true})
-		{
-			throw new InvalidOperationException("There is no wallet loaded.");
-		}
+		if (!Global.WalletSession.Snapshot.HasCachedData) { throw new InvalidOperationException("Public wallet data is not ready."); }
 	}
 
-	private void AssertWalletIsLoggedIn(Wallet activeWallet, string password)
+	private void AssertWalletReady() => (Global?.WalletSession ?? throw new InvalidOperationException("The wallet session has not initialized.")).EnsureReady();
+
+	private WalletAuthorization Authorize(string password)
 	{
-		if (!activeWallet.IsLoggedIn && !activeWallet.TryLogin(password, out _))
-		{
-			throw new Exception($"'{activeWallet.WalletName}' wallet requires the passphrase to start coinjoining.");
-		}
+		var scope = WalletAuthorization.Create(ActiveWallet?.KeyManager ?? throw new InvalidOperationException("No wallet is configured."), password);
+		try { Global.WalletSession.CompleteOperationAuthorization(scope); return scope; }
+		catch { scope.Dispose(); throw; }
 	}
 
 	[JsonRpcInitialization]

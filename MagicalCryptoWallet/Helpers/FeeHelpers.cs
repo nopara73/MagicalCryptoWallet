@@ -44,7 +44,7 @@ public static class FeeHelpers
 		maxFeeRate = SeekMaxFeeRate(
 			startingFeeRate,
 			feeRate => wallet.BuildTransaction(
-				wallet.Password,
+				string.Empty,
 				payments,
 				FeeStrategy.CreateFromFeeRate(feeRate),
 				allowUnconfirmed: true,

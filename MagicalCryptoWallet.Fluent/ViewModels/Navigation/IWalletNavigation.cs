@@ -5,7 +5,5 @@ namespace MagicalCryptoWallet.Fluent.ViewModels.Navigation;
 
 public interface IWalletNavigation
 {
-	IWalletViewModel? To(IWalletModel wallet);
-	IWalletViewModel? Wallet { get; }
-	IWalletModel? WalletModel { get; }
+	IWalletViewModel? OpenWalletHome();
 }

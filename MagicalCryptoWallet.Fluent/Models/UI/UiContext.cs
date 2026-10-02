@@ -19,7 +19,7 @@ public class UiContext
 		QrCodeGenerator qrCodeGenerator,
 		QrCodeReader qrCodeReader,
 		UiClipboard clipboard,
-		WalletRepository walletRepository,
+		WalletSetupService walletSetupService,
 		CoinjoinModel coinJoinModel,
 		HardwareWalletInterface hardwareWalletInterface,
 		FileSystemModel fileSystem,
@@ -37,7 +37,7 @@ public class UiContext
 		QrCodeGenerator = qrCodeGenerator ?? throw new ArgumentNullException(nameof(qrCodeGenerator));
 		QrCodeReader = qrCodeReader ?? throw new ArgumentNullException(nameof(qrCodeReader));
 		Clipboard = clipboard ?? throw new ArgumentNullException(nameof(clipboard));
-		WalletRepository = walletRepository ?? throw new ArgumentNullException(nameof(walletRepository));
+		WalletSetupService = walletSetupService ?? throw new ArgumentNullException(nameof(walletSetupService));
 		CoinjoinModel = coinJoinModel ?? throw new ArgumentNullException(nameof(coinJoinModel));
 		HardwareWalletInterface = hardwareWalletInterface ?? throw new ArgumentNullException(nameof(hardwareWalletInterface));
 		FileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
@@ -55,7 +55,7 @@ public class UiContext
 	public IServices Services { get; }
 	public UiClipboard Clipboard { get; }
 	public QrCodeGenerator QrCodeGenerator { get; }
-	public WalletRepository WalletRepository { get; }
+	public WalletSetupService WalletSetupService { get; }
 	public CoinjoinModel CoinjoinModel { get; }
 	public QrCodeReader QrCodeReader { get; }
 	public HardwareWalletInterface HardwareWalletInterface { get; }

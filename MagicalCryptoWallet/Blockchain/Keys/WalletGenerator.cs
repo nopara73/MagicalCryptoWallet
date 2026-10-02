@@ -16,13 +16,6 @@ public class WalletGenerator
 	public const int MinShamirThreshold = 1;
 	public const int MaxShamirThreshold = 16;
 
-	private static readonly string[] ReservedFileNames = new string[]
-	{
-			"CON", "PRN", "AUX", "NUL",
-			"COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
-			"LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9",
-	};
-
 	public WalletGenerator(string walletsDir, Network network)
 	{
 		WalletsDir = walletsDir;
@@ -33,9 +26,9 @@ public class WalletGenerator
 	public Network Network { get; private set; }
 	public uint TipHeight { get; set; }
 
-	public (KeyManager KeyManager, Mnemonic Mnemonic) GenerateWallet(string walletName, string password, Mnemonic? mnemonic = null, bool toFile = true)
+	public (KeyManager KeyManager, Mnemonic Mnemonic) GenerateDraft(string password, Mnemonic? mnemonic = null)
 	{
-		string walletFilePath = GetWalletFilePath(walletName, WalletsDir);
+		string walletFilePath = Path.Combine(WalletsDir, "Wallet.json");
 
 		// Here we are not letting anything that will be autocorrected later. We need to generate the wallet exactly with the entered password because of compatibility.
 		PasswordHelper.Guard(password);
@@ -44,13 +37,13 @@ public class WalletGenerator
 			? KeyManager.CreateNew(out mnemonic, password, Network)
 			: KeyManager.CreateNew(mnemonic, password, Network);
 		km.SetFilePath(walletFilePath);
-		km.SetBestHeight(TipHeight, toFile: toFile);
+		km.SetBestHeight(TipHeight, toFile: false);
 		return (km, mnemonic);
 	}
 
-	public (KeyManager KeyManager, Share[] Shares) GenerateWallet(string walletName, string password, Share[]? shares = null, bool toFile = true)
+	public (KeyManager KeyManager, Share[] Shares) GenerateDraft(string password, Share[]? shares = null)
 	{
-		string walletFilePath = GetWalletFilePath(walletName, WalletsDir);
+		string walletFilePath = Path.Combine(WalletsDir, "Wallet.json");
 
 		// Here we are not letting anything that will be autocorrected later. We need to generate the wallet exactly with the entered password because of compatibility.
 		PasswordHelper.Guard(password);
@@ -62,37 +55,9 @@ public class WalletGenerator
 
 		var km = KeyManager.CreateNew(shares, password, Network);
 
-		km.SetBestHeight(TipHeight, toFile: toFile);
+		km.SetBestHeight(TipHeight, toFile: false);
 		km.SetFilePath(walletFilePath);
 		return (km, shares);
-	}
-
-	public static string GetWalletFilePath(string walletName, string walletsDir)
-	{
-		if (!ValidateWalletName(walletName))
-		{
-			throw new ArgumentException("Invalid wallet name.");
-		}
-
-		string walletFilePath = Path.Combine(walletsDir, $"{walletName}.json");
-		if (File.Exists(walletFilePath))
-		{
-			throw new ArgumentException("Wallet name is already taken.");
-		}
-
-		return walletFilePath;
-	}
-
-	public static bool ValidateWalletName(string walletName)
-	{
-		if (string.IsNullOrWhiteSpace(walletName))
-		{
-			return false;
-		}
-		var invalidChars = Path.GetInvalidFileNameChars();
-		var isValid = !walletName.Any(c => invalidChars.Contains(c)) && !walletName.EndsWith('.');
-		var isReserved = ReservedFileNames.Any(w => walletName.ToUpper() == w || walletName.ToUpper().StartsWith(w + "."));
-		return isValid && !isReserved;
 	}
 
 	public static byte[] GenerateShamirEntropy()

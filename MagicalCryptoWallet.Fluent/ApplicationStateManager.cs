@@ -71,7 +71,7 @@ public class ApplicationStateManager : IMainWindowService
 				{
 					if (_restartRequest)
 					{
-						AppLifetimeHelper.StartAppWithArgs();
+						AppLifetimeHelper.RequestRestart();
 					}
 
 					_lifetime.Shutdown();
@@ -188,6 +188,7 @@ public class ApplicationStateManager : IMainWindowService
 		}
 
 		MainViewModel.ApplyUiConfigWindowState();
+		MainViewModel.OnWindowShown();
 
 		_activatable?.TryLeaveBackground();
 

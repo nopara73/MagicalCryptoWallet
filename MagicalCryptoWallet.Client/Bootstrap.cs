@@ -57,7 +57,7 @@ public class Scheme
 		RegisterNativeFunction<object>("native->string", o => o?.ToString() ?? "");
 		RegisterNativeFunction<Script>("script->address", s => s.GetDestinationAddress(global.Network)!);
 		RegisterNativeFunction<ExtPubKey?>("extpubkey->string", e => e?.ToString(global.Network) ?? "");
-		RegisterNativeFunction("wallet", () => global.WalletManager.GetWallet() ?? throw new InvalidOperationException("No wallet is configured."));
+		RegisterNativeFunction("wallet", () => global.WalletSession.GetWallet() ?? throw new InvalidOperationException("No wallet is configured."));
 		RegisterNativeFunction<Wallet>("wallet-coins", w => w.Coins.AsAllCoinsView());
 
 		RegisterNativeFunction<Wallet>("wallet-hdpubkeys", w => w.KeyManager.GetKeys());
@@ -70,11 +70,8 @@ public class Scheme
 		RegisterNativeFunction("onion-service-uri", () => global.OnionServiceUri?.ToString() ?? "");
 		//RegisterNativeFunction<SmartTransaction>("broadcast-tx", tx => global.TransactionBroadcaster.SendTransactionAsync(tx));
 		RegisterNativeFunction("connected-nodes", () => global.GetNodes());
-		RegisterNativeFunction<Wallet>("__start_wallet", w =>
-		{
-			global.WalletManager.StartWalletAsync(w).GetAwaiter().GetResult();
-			return w;
-		});
+		RegisterNativeFunction("wallet-status", () => global.WalletSession.Snapshot);
+
 
 		RegisterNativeFunction<string, Closure>("on",
 			(eventName, func) => SubscribeEvent(global, eventName, func));

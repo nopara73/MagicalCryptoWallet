@@ -63,10 +63,6 @@ public static class MagicalCryptoWalletAppExtensions
 
 				if (!app.TerminateService.CancellationToken.IsCancellationRequested)
 				{
-					if (app.Global.WalletManager.GetWallet() is { } wallet)
-					{
-						await app.Global.WalletManager.StartWalletAsync(wallet).ConfigureAwait(false);
-					}
 					await app.TerminateService.ForcefulTerminationRequestedTask.ConfigureAwait(false);
 				}
 			}).ConfigureAwait(false);

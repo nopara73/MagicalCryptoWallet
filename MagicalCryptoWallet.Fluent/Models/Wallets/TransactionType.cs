@@ -1,4 +1,4 @@
-﻿namespace MagicalCryptoWallet.Fluent.Models.Wallets;
+namespace MagicalCryptoWallet.Fluent.Models.Wallets;
 
 public enum TransactionType
 {

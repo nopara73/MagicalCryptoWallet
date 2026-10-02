@@ -18,17 +18,11 @@ public static class AppLifetimeHelper
 	/// This method is only functional on the published builds
 	/// and not on debugging runs.
 	/// </remarks>
-	public static void StartAppWithArgs()
+	public static bool RestartRequested { get; private set; }
+
+	public static void RequestRestart()
 	{
-		var path = Process.GetCurrentProcess().MainModule?.FileName;
-
-		if (string.IsNullOrEmpty(path))
-		{
-			throw new InvalidOperationException($"Invalid path: '{path}'");
-		}
-
-		var startInfo = ProcessStartInfoFactory.Make(path, []);
-		using var p = Process.Start(startInfo);
+		RestartRequested = true;
 	}
 
 	/// <summary>
@@ -50,7 +44,7 @@ public static class AppLifetimeHelper
 				break;
 
 			case (false, true):
-				StartAppWithArgs();
+				RequestRestart();
 				(Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.Shutdown();
 				break;
 

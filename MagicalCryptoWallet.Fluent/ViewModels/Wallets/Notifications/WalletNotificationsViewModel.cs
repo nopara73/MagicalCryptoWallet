@@ -1,3 +1,5 @@
+using System.Reactive.Disposables;
+using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using MagicalCryptoWallet.Blockchain.TransactionProcessing;
@@ -10,8 +12,9 @@ using MagicalCryptoWallet.Fluent.ViewModels.Navigation;
 namespace MagicalCryptoWallet.Fluent.ViewModels.Wallets.Notifications;
 
 [AppLifetime]
-public partial class WalletNotificationsViewModel : ViewModelBase
+public partial class WalletNotificationsViewModel : ViewModelBase, IDisposable
 {
+	private readonly CompositeDisposable _lifetime = new();
 	private readonly IWalletNavigation _walletNavigation;
 	[AutoNotify] private bool _isBusy;
 
@@ -22,20 +25,17 @@ public partial class WalletNotificationsViewModel : ViewModelBase
 
 	public void StartListening()
 	{
-		UiContext.WalletRepository.WhenAnyValue(x => x.Wallet)
+		UiContext.WalletSetupService.WhenAnyValue(x => x.Wallet)
 			.WhereNotNull()
-			.Select(wallet => wallet.WhenAnyValue(x => x.IsLoggedIn)
-				.CombineLatest(wallet.Loaded, (loggedIn, loaded) => loggedIn && loaded)
-				.Select(ready => wallet.Transactions.NewTransactionArrived.Where(_ => ready))
-				.Switch())
+			.Select(wallet => wallet.Transactions.NewTransactionArrived)
 			.Switch()
 			.Where(x => !UiContext.ApplicationSettings.PrivacyMode)
 			.Where(x => x.EventArgs.IsNews)
-			.DoAsync(x => OnNotificationReceivedAsync(x.Wallet, x.EventArgs))
-			.Subscribe();
+			.Do(x => OnNotificationReceived(x.Wallet, x.EventArgs))
+			.Subscribe().DisposeWith(_lifetime);
 	}
 
-	private async Task OnNotificationReceivedAsync(IWalletModel wallet, ProcessedResult e)
+	private void OnNotificationReceived(IWalletModel wallet, ProcessedResult e)
 	{
 		if (!e.IsOwnCoinJoin)
 		{
@@ -46,17 +46,14 @@ public partial class WalletNotificationsViewModel : ViewModelBase
 					return;
 				}
 
-				var wvm = _walletNavigation.To(wallet);
+				var wvm = _walletNavigation.OpenWalletHome();
 				wvm?.SelectTransaction(e.Transaction.GetHash());
 			}
 
 			NotificationHelpers.Show(wallet, e, OnClick);
 		}
 
-		if (_walletNavigation.WalletModel == wallet && (e.NewlyReceivedCoins.Count != 0 || e.NewlyConfirmedReceivedCoins.Count != 0))
-		{
-			await Task.Delay(200);
-			_walletNavigation.Wallet?.SelectTransaction(e.Transaction.GetHash());
-		}
 	}
+	public void Dispose() => _lifetime.Dispose();
+
 }

@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using MagicalCryptoWallet.Fluent.Helpers;
 using MagicalCryptoWallet.Fluent;
 using MagicalCryptoWallet.Helpers;
+using MagicalCryptoWallet.Client;
+using NBitcoin;
 using MagicalCryptoWallet.Tests.Helpers;
 using Xunit;
 
@@ -16,7 +18,7 @@ public class StartMagicalCryptoWalletOnSystemStartupTests
 	[Theory]
 	[InlineData(null)]
 	[InlineData("\"C:\\Program Files\\MagicalCryptoWallet\\magicalcryptowallet.exe\" startsilent")]
-	public void ModifyWindowsStartupPreservesExistingEntries(string? existingCommand)
+	public void ModifyWindowsStartupRefreshesContextAndPreservesOtherApplications(string? existingCommand)
 	{
 		if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
 		{
@@ -34,11 +36,12 @@ public class StartMagicalCryptoWalletOnSystemStartupTests
 				key.SetValue(nameof(MagicalCryptoWallet), existingCommand);
 			}
 
-			string expectedCommand = existingCommand ?? $"\"{EnvironmentHelpers.GetExecutablePath()}\" {StartupHelper.SilentArgument}";
-			WindowsStartupHelper.AddOrRemoveRegistryKey(true, keyPath);
+			var launch = new StartupLaunch(EnvironmentHelpers.GetExecutablePath(), Path.Combine(Path.GetTempPath(), "MCW startup test", "data"), Network.RegTest);
+			string expectedCommand = launch.WindowsCommandLine;
+			WindowsStartupHelper.AddOrRemoveRegistryKey(true, keyPath, launch);
 			Assert.Equal(expectedCommand, key.GetValue(nameof(MagicalCryptoWallet)));
 
-			WindowsStartupHelper.AddOrRemoveRegistryKey(true, keyPath);
+			WindowsStartupHelper.AddOrRemoveRegistryKey(true, keyPath, launch);
 			Assert.Equal(expectedCommand, key.GetValue(nameof(MagicalCryptoWallet)));
 
 			WindowsStartupHelper.AddOrRemoveRegistryKey(false, keyPath);
@@ -62,19 +65,22 @@ public class StartMagicalCryptoWalletOnSystemStartupTests
 		Directory.CreateDirectory(autostart);
 		string existing = Path.Combine(autostart, "other-wallet.desktop");
 		await File.WriteAllTextAsync(existing, "existing application");
-		await LinuxStartupHelper.AddOrRemoveDesktopFileAsync(true, home);
+		var launch = new StartupLaunch(EnvironmentHelpers.GetExecutablePath(), Path.Combine(home, "data & keys"), Network.RegTest);
+		await LinuxStartupHelper.AddOrRemoveDesktopFileAsync(true, home, launch);
 		string desktop = Path.Combine(autostart, Constants.ApplicationId + ".desktop");
 		Assert.Contains("Name=Magical Crypto Wallet", await File.ReadAllTextAsync(desktop));
-		Assert.Contains($"Exec=\"{EnvironmentHelpers.GetExecutablePath()}\" startsilent", await File.ReadAllTextAsync(desktop));
+		Assert.Contains("Exec=" + launch.DesktopCommandLine, await File.ReadAllTextAsync(desktop));
+		Assert.Contains("--network=RegTest", await File.ReadAllTextAsync(desktop));
 		await LinuxStartupHelper.AddOrRemoveDesktopFileAsync(false, home);
 		Assert.False(File.Exists(desktop));
 		Assert.Equal("existing application", await File.ReadAllTextAsync(existing));
 
-		await MacOsStartupHelper.AddOrRemoveStartupItemAsync(true, home);
+		await MacOsStartupHelper.AddOrRemoveStartupItemAsync(true, home, launch);
 		string plist = Path.Combine(home, "Library", "LaunchAgents", Constants.SilentPlistName);
 		var xml = System.Xml.Linq.XDocument.Load(plist);
 		Assert.Contains(Constants.ApplicationId + ".startup", xml.Descendants("string").Select(x => x.Value));
 		Assert.Contains(EnvironmentHelpers.GetExecutablePath(), xml.Descendants("string").Select(x => x.Value));
+		Assert.Equal(new[] { launch.Executable }.Concat(launch.Arguments()), xml.Descendants("array").Single().Elements("string").Select(x => x.Value));
 		await MacOsStartupHelper.AddOrRemoveStartupItemAsync(false, home);
 		Assert.False(File.Exists(plist));
 	}

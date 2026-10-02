@@ -35,7 +35,6 @@ There are a few special switches that are not present in the `Config.json` file 
 * **LogLevel** to specify the level of detail used during logging
 * **DataDir** to specify the path to the directory used during runtime.
 * **BlockOnly** to instruct magicalcryptowallet to ignore p2p transactions
-* **Wallet** to instruct magicalcryptowallet to open a wallet automatically after started.
 
 ### Examples
 
@@ -51,7 +50,7 @@ Run MagicalCryptoWallet Daemon and connect to the testnet Bitcoin network.
 $ MAGICALCRYPTOWALLET_NETWORK=testnet magicalcryptowalletd
 ```
 
-The daemon automatically starts the configured wallet. Create or recover the initial wallet through the GUI or the root RPC endpoint; `loadwallet` starts it without a wallet-name parameter. Adding another wallet and named-wallet CLI selection are unsupported.
+The daemon automatically starts the configured wallet. Create or recover the initial wallet through the GUI or the root RPC endpoint. Setup starts it immediately; no load command or wallet-selection argument exists. Status and cached public data are available during startup, and protected operations authorize separately. See the [single-wallet API migration](../MagicalCryptoWallet.Documentation/SingleWallet.md).
 
 ### Version
 

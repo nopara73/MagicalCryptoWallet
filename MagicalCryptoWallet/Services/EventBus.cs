@@ -134,12 +134,12 @@ public record P2pNodeAdded(EndPoint EndPoint, Node Node);
 public record P2pNodeRemoved(EndPoint EndPoint, Node Node);
 public record CpfpInfoArrived;
 
-public record WalletLoaded(Wallet Wallet);
+
 
 public record NewTransactionInMempool(SmartTransaction Transaction);
 public record ChainReorganized(ChainHeight invalidBlockHeight, uint256 invalidBlockHash);
 public record FiltersReceived(FilterModel[] Filters);
-public record WalletRelevantTransactionProcessed(string WalletName, ProcessedResult Result);
+public record WalletRelevantTransactionProcessed(ProcessedResult Result, bool IsHistoricalReplay = false);
 public record NodeDisconnectedQuickly(EndPoint EndPoint, Node Node);
 public record MisbehavingNodeDetected(EndPoint EndPoint, Node Node);
 public record NodeTimeoutDownloadingBlock(EndPoint EndPoint, Node Node);

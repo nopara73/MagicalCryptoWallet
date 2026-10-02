@@ -166,7 +166,7 @@ public class CoinjoinCostsTests
 			var round = WabiSabiFactory.CreateRound(parameters);
 
 			_keyManager = ServiceFactory.CreateKeyManager("");
-			_keyChain = new KeyChain(_keyManager, "");
+			_keyChain = new SyntheticKeyChain(_keyManager, "");
 			_commitment = new CoinJoinInputCommitmentData(parameters.CoordinationIdentifier, round.Id);
 			_state = new ConstructionState(parameters);
 		}

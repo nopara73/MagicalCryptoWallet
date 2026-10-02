@@ -10,14 +10,10 @@ namespace MagicalCryptoWallet.Helpers;
 
 public static class ImportWalletHelper
 {
-	public static async Task<KeyManager> ImportWalletAsync(WalletManager walletManager, string walletName, string filePath)
+	public static async Task<KeyManager> ImportWalletAsync(WalletSession walletSession, string filePath)
 	{
-		walletManager.EnsureCanAddWallet();
-		if (walletManager.ValidateWalletName(walletName) is { } error)
-		{
-			throw new InvalidOperationException(error.Message);
-		}
-		var walletFullPath = walletManager.WalletDirectories.GetWalletFilePaths(walletName + ".json");
+		walletSession.EnsureCanConfigure();
+		var walletFullPath = walletSession.WalletDirectories.NewWalletFilePath;
 
 		string jsonString = await File.ReadAllTextAsync(filePath).ConfigureAwait(false);
 		var jsonWallet = JObject.Parse(jsonString);
@@ -26,7 +22,7 @@ public static class ImportWalletHelper
 		var isColdcardJson = jsonWallet.Count <= 3;
 
 		KeyManager km = isColdcardJson
-			? GetKeyManagerByColdcardJson(walletManager, jsonWallet)
+			? GetKeyManagerByColdcardJson(walletSession, jsonWallet)
 			: GetKeyManagerByMagicalCryptoWalletJson(filePath);
 
 		if (isColdcardJson)
@@ -48,7 +44,7 @@ public static class ImportWalletHelper
 		return km;
 	}
 
-	private static KeyManager GetKeyManagerByColdcardJson(WalletManager manager, JObject jsonWallet)
+	private static KeyManager GetKeyManagerByColdcardJson(WalletSession manager, JObject jsonWallet)
 	{
 		var segwitXpubString = jsonWallet["ExtPubKey"]?.ToString()
 			?? throw new ArgumentNullException($"Can't get KeyManager, ExtPubKey was null.");

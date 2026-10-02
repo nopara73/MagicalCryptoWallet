@@ -1,3 +1,5 @@
+using System.Reactive.Disposables.Fluent;
+using System.Reactive.Disposables;
 using NBitcoin;
 using ReactiveUI;
 using System.Reactive.Linq;
@@ -11,13 +13,13 @@ using MagicalCryptoWallet.Wallets;
 namespace MagicalCryptoWallet.Fluent.Models.Wallets;
 
 [AppLifetime]
-public partial class WalletSettingsModel : ReactiveObject
+public partial class WalletSettingsModel : ReactiveObject, IDisposable
 {
+	private readonly CompositeDisposable _lifetime = new();
 	private readonly IServices _services;
 	private readonly KeyManager _keyManager;
 	private bool _isDirty;
 
-	[AutoNotify] private bool _isNewWallet;
 	[AutoNotify] private bool _autoCoinjoin;
 	[AutoNotify] private bool _preferPsbtWorkflow;
 	[AutoNotify] private Money _plebStopThreshold;
@@ -27,14 +29,11 @@ public partial class WalletSettingsModel : ReactiveObject
 	[AutoNotify] private ScriptType _defaultReceiveScriptType;
 	[AutoNotify] private PreferredScriptPubKeyType _changeScriptPubKeyType;
 
-	public WalletSettingsModel(IServices services, KeyManager keyManager, bool isNewWallet = false, bool isCoinJoinPaused = false)
+	public WalletSettingsModel(IServices services, KeyManager keyManager)
 	{
 		_services = services;
 		_keyManager = keyManager;
 
-		_isNewWallet = isNewWallet;
-		_isDirty = isNewWallet;
-		IsCoinJoinPaused = isCoinJoinPaused;
 
 		_autoCoinjoin = _keyManager.AutoCoinJoin;
 		_preferPsbtWorkflow = _keyManager.PreferPsbtWorkflow;
@@ -57,43 +56,24 @@ public partial class WalletSettingsModel : ReactiveObject
 				x => x.OnlyUsePrivateFundsForPayments)
 			.Skip(1)
 			.Do(_ => SetValues())
-			.Subscribe();
+			.Subscribe().DisposeWith(_lifetime);
 
 		this.WhenAnyValue(
 				x => x.DefaultReceiveScriptType,
 				x => x.ChangeScriptPubKeyType)
 			.Do(_ => SetValues())
-			.Subscribe();
+			.Subscribe().DisposeWith(_lifetime);
 	}
 
 	public WalletType WalletType { get; }
 
 	public int MinGapLimit => _keyManager.MinGapLimit;
 
-	public bool IsCoinJoinPaused { get; set; }
 
-	/// <summary>
-	/// Saves to current configuration to file.
-	/// </summary>
-	/// <returns>The unique ID of the wallet.</returns>
-	public WalletId Save()
+	public void Save()
 	{
-		if (_isDirty)
-		{
-			if (IsNewWallet)
-			{
-				_services.AddWallet(_keyManager);
-				IsNewWallet = false;
-			}
-			else
-			{
-				_keyManager.ToFile();
-			}
-
-			_isDirty = false;
-		}
-
-		return _services.GetWallet().WalletId;
+		// Settings only update an already configured file.
+		if (_isDirty) { _keyManager.ToFile(); _isDirty = false; }
 	}
 
 	private void SetValues()
@@ -113,4 +93,6 @@ public partial class WalletSettingsModel : ReactiveObject
 	{
 		_keyManager.SetResyncParameters(startingHeight + Constants.ResyncHeightMargin, minGapLimit);
 	}
+	public void Dispose() { _lifetime.Dispose();  }
+
 }

@@ -1,3 +1,5 @@
+using MagicalCryptoWallet.Fluent.Helpers;
+using System.Reactive.Disposables;
 using MagicalCryptoWallet.Fluent.Models.Wallets;
 using MagicalCryptoWallet.Fluent.ViewModels.Navigation;
 
@@ -32,9 +34,19 @@ public partial class WalletInfoViewModel : RoutableViewModel
 
 		NextCommand = ReactiveCommand.Create(() => Navigate().Clear());
 
-		CancelCommand = ReactiveCommand.Create(() =>
+		CancelCommand = ReactiveCommand.CreateFromTask(async () =>
 		{
+			if (!ShowSensitiveData)
+			{
+				using var authorization = await AuthorizationHelpers.AuthorizeAsync(UiContext, wallet);
+				if (authorization is null) { return; }
+				_model.Reveal(authorization);
+			}
+			else { _model.Dispose(); }
 			ShowSensitiveData = !ShowSensitiveData;
+			this.RaisePropertyChanged(nameof(ExtendedMasterPrivateKey));
+			this.RaisePropertyChanged(nameof(ExtendedAccountPrivateKey));
+			this.RaisePropertyChanged(nameof(ExtendedMasterZprv));
 			ShowButtonText = ShowSensitiveData ? "Hide sensitive data" : "Show sensitive data";
 			LockIconString = ShowSensitiveData ? "eye_hide_regular" : "eye_show_regular";
 		});
@@ -61,4 +73,9 @@ public partial class WalletInfoViewModel : RoutableViewModel
 	public string? WpkhWalletPolicyFullDescriptor => _model.WpkhWalletPolicy?.FullDescriptor.ToString();
 
 	public bool IsHardwareWallet { get; }
+	protected override void OnNavigatedTo(bool isInHistory, CompositeDisposable disposables)
+	{
+		base.OnNavigatedTo(isInHistory, disposables);
+		disposables.Add(Disposable.Create(() => { _model.Dispose(); ShowSensitiveData = false; }));
+	}
 }

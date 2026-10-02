@@ -1,10 +1,5 @@
 namespace MagicalCryptoWallet.WabiSabi.Client.StatusChangedEvents;
 
-public enum StopReason
-{
-	WalletUnloaded
-}
-
 public enum CompletionStatus
 {
 	Success,
@@ -30,12 +25,4 @@ public enum CoinjoinError
 	NotEnoughConfirmedUnprivateBalance
 }
 
-public class StatusChangedEventArgs : EventArgs
-{
-	public StatusChangedEventArgs(Wallet wallet)
-	{
-		Wallet = wallet;
-	}
-
-	public Wallet Wallet { get; }
-}
+public class StatusChangedEventArgs : EventArgs;

@@ -1,3 +1,4 @@
+using System.Reactive.Disposables.Fluent;
 using System.Collections.Generic;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
@@ -23,11 +24,11 @@ namespace MagicalCryptoWallet.Fluent.ViewModels.Wallets.Settings;
     NavBarPosition = NavBarPosition.None,
     NavigationTarget = NavigationTarget.DialogScreen,
     Searchable = false)]
-public partial class WalletSettingsViewModel : RoutableViewModel
+public partial class WalletSettingsViewModel : RoutableViewModel, IDisposable
 {
+	private readonly CompositeDisposable _lifetime = new();
     private readonly IWalletModel _wallet;
     [AutoNotify] private bool _preferPsbtWorkflow;
-    [AutoNotify] private string _walletName;
     [AutoNotify] private int _selectedTab;
     [AutoNotify] private ScriptType _defaultReceiveScriptType;
     [AutoNotify] private bool _isSegWitDefaultReceiveScriptType;
@@ -36,58 +37,18 @@ public partial class WalletSettingsViewModel : RoutableViewModel
     public WalletSettingsViewModel(UiContext uiContext, IWalletModel walletModel) : base(uiContext)
     {
         _wallet = walletModel;
-        _walletName = walletModel.Name;
+        walletModel.Status.Subscribe(_ => this.RaisePropertyChanged(nameof(SeveralReceivingScriptTypes))).DisposeWith(_lifetime);
         _preferPsbtWorkflow = walletModel.Settings.PreferPsbtWorkflow;
         _selectedTab = 0;
         IsHardwareWallet = walletModel.IsHardwareWallet;
         IsWatchOnly = walletModel.IsWatchOnlyWallet;
 
-        this.ValidateProperty(
-            x => x.WalletName,
-            errors =>
-            {
-                if (_wallet.Name == WalletName)
-                {
-                    return;
-                }
-
-                if (UiContext.WalletRepository.ValidateWalletName(WalletName) is { } error)
-                {
-                    errors.Add(error.Severity, error.Message);
-                }
-            });
-
         SetupCancel(enableCancel: true, enableCancelOnEscape: true, enableCancelOnPressed: true);
-        var canSave = this.WhenAnyValue(x => x.WalletName, x => x.Validations,
-            (name, validations) => !string.IsNullOrWhiteSpace(name) && !validations.Any);
-
-        NextCommand = ReactiveCommand.Create(() =>
-        {
-            if (_wallet.Name != WalletName)
-            {
-                try
-                {
-                    _wallet.Rename(WalletName);
-                }
-                catch
-                {
-                    WalletName = _wallet.Name;
-                    UiContext.Navigate().To().ShowErrorDialog(
-                        $"The wallet cannot be renamed to {WalletName}",
-                        "Invalid name",
-                        "Cannot rename the wallet",
-                        NavigationTarget.CompactDialogScreen);
-                    return;
-                }
-            }
-
-            _wallet.Settings.Save();
-            Navigate().Back();
-        }, canSave);
+        NextCommand = ReactiveCommand.Create(() => { _wallet.Settings.Save(); Navigate().Back(); });
 
         _defaultReceiveScriptType = walletModel.Settings.DefaultReceiveScriptType;
         this.WhenAnyValue(x => x.DefaultReceiveScriptType)
-            .Subscribe(value => IsSegWitDefaultReceiveScriptType = value == ScriptType.SegWit);
+            .Subscribe(value => IsSegWitDefaultReceiveScriptType = value == ScriptType.SegWit).DisposeWith(_lifetime);
 
         _changeScriptPubKeyType = walletModel.Settings.ChangeScriptPubKeyType switch
         {
@@ -121,7 +82,7 @@ public partial class WalletSettingsViewModel : RoutableViewModel
             {
                 walletModel.Settings.DefaultReceiveScriptType = value;
                 walletModel.Settings.Save();
-            });
+            }).DisposeWith(_lifetime);
 
         this.WhenAnyValue(x => x.ChangeScriptPubKeyType)
             .Skip(1)
@@ -129,7 +90,7 @@ public partial class WalletSettingsViewModel : RoutableViewModel
             {
                 walletModel.Settings.ChangeScriptPubKeyType = value;
                 walletModel.Settings.Save();
-            });
+            }).DisposeWith(_lifetime);
 
         this.WhenAnyValue(x => x.PreferPsbtWorkflow)
             .Skip(1)
@@ -137,7 +98,7 @@ public partial class WalletSettingsViewModel : RoutableViewModel
             {
                 walletModel.Settings.PreferPsbtWorkflow = value;
                 walletModel.Settings.Save();
-            });
+            }).DisposeWith(_lifetime);
     }
 
     public bool IsHardwareWallet { get; }
@@ -161,7 +122,8 @@ public partial class WalletSettingsViewModel : RoutableViewModel
     {
         base.OnNavigatedTo(isInHistory, disposables);
 
-        WalletName = _wallet.Name;
 
     }
+	public void Dispose() { _lifetime.Dispose(); WalletCoinJoinSettings.Dispose(); }
+
 }

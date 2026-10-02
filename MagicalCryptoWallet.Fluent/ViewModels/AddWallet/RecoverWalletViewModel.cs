@@ -61,8 +61,6 @@ public partial class RecoverWalletViewModel : RoutableViewModel
 
 	private async Task OnNextAsync(WalletCreationOptions.RecoverWallet options)
 	{
-		var (walletName, _, _, _) = options;
-		ArgumentException.ThrowIfNullOrEmpty(walletName);
 
 		var password = await Navigate().To().CreatePasswordDialog("Add Passphrase", "If you used a passphrase when you created your wallet you must type it below, otherwise leave this empty.").GetResultAsync();
 		if (password is not { } || CurrentMnemonics is not { IsValidChecksum: true } currentMnemonics)
@@ -76,13 +74,13 @@ public partial class RecoverWalletViewModel : RoutableViewModel
 		{
 			var recoveryWordsBackup = new RecoveryWordsBackup(password, currentMnemonics);
 			options = options with { WalletBackup = recoveryWordsBackup, MinGapLimit = MinGapLimit, BirthHeight = BirthHeight };
-			var walletSettings = await UiContext.WalletRepository.NewWalletAsync(options);
+			var walletSettings = await UiContext.WalletSetupService.NewWalletAsync(options);
 
 			var filterMinHeight = UiContext.Services.GetMinimumBlockHeight();
 			if (filterMinHeight is { } minHeight && BirthHeight < minHeight)
 			{
 				// Save the wallet so its birth height is picked up by CalculateSafestHeight on restart.
-				UiContext.WalletRepository.SaveWallet(walletSettings);
+				UiContext.WalletSetupService.Commit(walletSettings);
 				UiContext.Services.UiConfig.ToFile();
 
 				await ShowErrorAsync(
@@ -144,7 +142,7 @@ public partial class RecoverWalletViewModel : RoutableViewModel
 	{
 		base.OnNavigatedTo(isInHistory, disposables);
 
-		var enableCancel = UiContext.WalletRepository.HasWallet;
+		var enableCancel = UiContext.WalletSetupService.HasWallet;
 		SetupCancel(enableCancel: enableCancel, enableCancelOnEscape: enableCancel, enableCancelOnPressed: false);
 	}
 }

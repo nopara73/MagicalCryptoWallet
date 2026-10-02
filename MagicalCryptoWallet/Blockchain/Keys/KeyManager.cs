@@ -196,9 +196,7 @@ public class KeyManager
 	private readonly HdPubKeyGenerator? _taprootInternalKeyGenerator;
 	private HdPubKeyGenerator? _silentPaymentScanKeyGenerator;
 	private HdPubKeyGenerator? _silentPaymentSpendKeyGenerator;
-	private List<(SilentPaymentAddress Address, ECPrivKey ScanSecret)> _silentPaymentScanData = new();
 
-	public string WalletName => string.IsNullOrWhiteSpace(FilePath) ? "" : Path.GetFileNameWithoutExtension(FilePath);
 
 	public static KeyManager CreateNew(out Mnemonic mnemonic, string password, Network network, string? filePath = null)
 	{
@@ -450,8 +448,6 @@ public class KeyManager
 		}
 	}
 
-	private (byte[] PasswordHash, ExtKey MasterKey)? MasterKeyAndPasswordHash { get; set; }
-
 	public ExtKey GetMasterExtKey(string password)
 	{
 		if (IsWatchOnly)
@@ -460,18 +456,6 @@ public class KeyManager
 		}
 
 		password ??= "";
-
-		var passwordHash = System.Security.Cryptography.SHA256.HashData(Encoding.UTF8.GetBytes(password));
-
-		if (MasterKeyAndPasswordHash is { MasterKey: var masterKey, PasswordHash: var storedPasswordHash })
-		{
-			if (!CryptographicOperations.FixedTimeEquals(passwordHash, storedPasswordHash))
-			{
-				throw new SecurityException("Invalid passphrase.");
-			}
-
-			return masterKey;
-		}
 
 		try
 		{
@@ -482,8 +466,6 @@ public class KeyManager
 			MasterFingerprint ??= secret.PubKey.GetHDFingerPrint();
 			DeriveTaprootExtPubKey(extKey);
 			DeriveSilentPaymentExtPubKeys(extKey);
-
-			MasterKeyAndPasswordHash = (passwordHash, extKey);
 
 			return extKey;
 		}
@@ -546,17 +528,7 @@ public class KeyManager
 		_silentPaymentScanKeyGenerator = new HdPubKeyGenerator(SilentPaymentScanExtPubKey, GetAccountKeyPath(_blockchainState.Network, KeyPurpose.Scan), MinGapLimit);
 		_silentPaymentSpendKeyGenerator = new HdPubKeyGenerator(SilentPaymentSpendExtPubKey, GetAccountKeyPath(_blockchainState.Network, KeyPurpose.Spend), MinGapLimit);
 
-		var defaultSilentPaymentAddress = new SilentPaymentAddress(0, GetNextReceiveKey(LabelsArray.Empty, KeyPurpose.Scan).PubKey, GetNextReceiveKey(LabelsArray.Empty, KeyPurpose.Spend).PubKey);
-		Logger.LogDebug($"Default Silent Payment Address: {defaultSilentPaymentAddress.ToWip(_blockchainState.Network)} ");
-		var scanKeys = GetKeys(x => x.FullKeyPath.GetAccountKeyPath() == GetAccountKeyPath(Network.Main, KeyPurpose.Scan));
-		var spendKeys = GetKeys(x => x.FullKeyPath.GetAccountKeyPath() == GetAccountKeyPath(Network.Main, KeyPurpose.Spend));
 
-		foreach (var (scanKey, spendKey) in Enumerable.Zip(scanKeys, spendKeys))
-		{
-			var address = new SilentPaymentAddress(0, scanKey.PubKey, spendKey.PubKey);
-			var scanSecret = extKey.Derive(scanKey.FullKeyPath);
-			_silentPaymentScanData.Add((address, ECPrivKey.Create(scanSecret.PrivateKey.ToBytes())));
-		}
 	}
 
 	private void AssertCleanKeysIndexedNoLock()
@@ -691,7 +663,7 @@ public class KeyManager
 			if (newHeight < prevHeight)
 			{
 				SetBestHeight(newHeight);
-				Logger.LogWarning($"Wallet ({WalletName}) height has been set back by {prevHeight - newHeight}. From {prevHeight} to {newHeight}.");
+				Logger.LogWarning($"Wallet height has been set back by {prevHeight - newHeight}. From {prevHeight} to {newHeight}.");
 			}
 		}
 	}

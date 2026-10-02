@@ -2,8 +2,7 @@ namespace MagicalCryptoWallet.WabiSabi.Client.StatusChangedEvents;
 
 public class StartedEventArgs : StatusChangedEventArgs
 {
-	public StartedEventArgs(Wallet wallet, TimeSpan registrationTimeout)
-		: base(wallet)
+	public StartedEventArgs(TimeSpan registrationTimeout)
 	{
 		RegistrationTimeout = registrationTimeout;
 	}

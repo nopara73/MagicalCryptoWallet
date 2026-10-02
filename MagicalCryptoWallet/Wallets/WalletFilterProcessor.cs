@@ -2,6 +2,8 @@ using Microsoft.Extensions.Hosting;
 using NBitcoin;
 using Nito.AsyncEx;
 using System.Collections.Generic;
+using System.IO;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using MagicalCryptoWallet.Backend.Models;
@@ -35,7 +37,7 @@ public class WalletFilterProcessor : BackgroundService
 		_blockProvider = blockProvider;
 		_eventBus = eventBus;
 		_blockFilterIterator = new(filterStore);
-		_initialSynchronizationFinished = new TaskCompletionSource();
+		_initialSynchronizationFinished = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 	}
 
 	private readonly KeyManager _keyManager;
@@ -47,6 +49,13 @@ public class WalletFilterProcessor : BackgroundService
 	private readonly BlockFilterIterator _blockFilterIterator;
 	private readonly TaskCompletionSource _initialSynchronizationFinished;
 
+	private bool _waitingForBlock;
+	private uint? _replayThroughHeight;
+	private long _rescanHeight = -1;
+	private bool _rescanPending;
+	private readonly Lock _rescanGate = new();
+	public bool RescanPending { get { lock (_rescanGate) { return _rescanPending; } } }
+	public bool WaitingForBlock => Volatile.Read(ref _waitingForBlock);
 	public Task InitialSynchronizationFinished => _initialSynchronizationFinished.Task;
 
 	/// <summary>Make sure we don't process any request while a reorg is happening.</summary>
@@ -60,16 +69,27 @@ public class WalletFilterProcessor : BackgroundService
 	{
 		try
 		{
-			await Task.WaitForAsync(() => _filterHeaderChain is {HashCount: > 0, HashesLeft: < 100}, cancellationToken).ConfigureAwait(false);
+			await Task.WaitForAsync(() => _filterHeaderChain is {Tip: not null, HashesLeft: < 100}, cancellationToken).ConfigureAwait(false);
+			var firstSupportedHeight = Blockchain.BlockFilters.FilterCheckpoints.GetCheckpointsByNetwork(_keyManager.GetNetwork())[0].Header.Height;
 
 			while (!cancellationToken.IsCancellationRequested)
 			{
 				using (await _reorgLock.LockAsync(cancellationToken).ConfigureAwait(false))
 				{
+					long rescanHeight;
+					lock (_rescanGate) { rescanHeight = _rescanHeight; _rescanHeight = -1; }
+					if (rescanHeight >= 0) { _replayThroughHeight = _filterHeaderChain.TipHeight; _keyManager.SetMaxBestHeight((uint)rescanHeight); }
 					var lastHeight = _keyManager.GetBestHeight();
+					if (firstSupportedHeight > 0 && lastHeight < firstSupportedHeight - 1)
+					{
+						_keyManager.SetBestHeight(firstSupportedHeight - 1);
+						lastHeight = _keyManager.GetBestHeight();
+					}
+					_replayThroughHeight ??= _filterHeaderChain.TipHeight;
 
 					if (lastHeight == _filterHeaderChain.TipHeight)
 					{
+						lock (_rescanGate) { if (_rescanHeight < 0) { _rescanPending = false; } }
 						_initialSynchronizationFinished.TrySetResult();
 						await Task.Delay(1_000, cancellationToken).ConfigureAwait(false);
 						continue;
@@ -86,7 +106,20 @@ public class WalletFilterProcessor : BackgroundService
 						await Task.Delay(2_000, cancellationToken).ConfigureAwait(false);
 						continue;
 					}
-					var matchFound = await ProcessFilterModelAsync(filter, cancellationToken).ConfigureAwait(false);
+					bool matchFound;
+					try
+					{
+						matchFound = await ProcessFilterModelAsync(filter, cancellationToken).ConfigureAwait(false);
+						Volatile.Write(ref _waitingForBlock, false);
+					}
+					catch (Exception ex) when (ex is IOException or HttpRequestException or TimeoutException || ex is OperationCanceledException && !cancellationToken.IsCancellationRequested)
+					{
+						// Keep the height unchanged so the next attempt retries the same filter.
+						Volatile.Write(ref _waitingForBlock, true);
+						Logger.LogDebug(ex);
+						await Task.Delay(2_000, cancellationToken).ConfigureAwait(false);
+						continue;
+					}
 					_eventBus.Publish(new FilterProcessed(filter));
 
 					var reachedBlockChainTip = currentHeight == _filterHeaderChain.TipHeight;
@@ -95,14 +128,15 @@ public class WalletFilterProcessor : BackgroundService
 				}
 			}
 		}
-		catch (OperationCanceledException)
+		catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
 		{
+			_initialSynchronizationFinished.TrySetCanceled(cancellationToken);
 			Logger.LogDebug("Filter processor's execution was stopped.");
 		}
 		catch (Exception ex)
 		{
+			_initialSynchronizationFinished.TrySetException(ex);
 			Logger.LogError(ex);
-			TerminateService.Instance?.SignalGracefulCrash(ex);
 			throw;
 		}
 	}
@@ -137,15 +171,20 @@ public class WalletFilterProcessor : BackgroundService
 						txsToProcess.Add(tx);
 					}
 
-					_transactionProcessor.Process(txsToProcess);
+					_transactionProcessor.Process(txsToProcess, isHistoricalReplay: !_initialSynchronizationFinished.Task.IsCompletedSuccessfully || filter.Header.Height <= _replayThroughHeight);
 				}
 				else
 				{
-					throw new InvalidOperationException($"Block {filter.Header.BlockHash} was not found.");
+					throw new IOException($"Block {filter.Header.BlockHash} is unavailable; synchronization will retry.");
 				}
 			}
 		}
 		return matchFound;
+	}
+
+	public void RequestRescan(uint height)
+	{
+		lock (_rescanGate) { _rescanPending = true; _rescanHeight = _rescanHeight < 0 ? height : Math.Min(_rescanHeight, height); }
 	}
 
 	private async void ReorgedAsync(uint256 invalidBlockHash, ChainHeight invalidBlockHeight)
@@ -173,6 +212,8 @@ public class WalletFilterProcessor : BackgroundService
 		_chainReorgSubscription = _eventBus.Subscribe<ChainReorganized>(e => ReorgedAsync(e.invalidBlockHash, e.invalidBlockHeight));
 		await base.StartAsync(cancellationToken).ConfigureAwait(false);
 	}
+
+	public override void Dispose() { _chainReorgSubscription?.Dispose(); base.Dispose(); }
 
 	public override async Task StopAsync(CancellationToken cancellationToken)
 	{

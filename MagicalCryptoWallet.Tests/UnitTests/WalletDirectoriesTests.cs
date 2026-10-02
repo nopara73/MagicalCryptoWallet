@@ -56,118 +56,15 @@ public class WalletDirectoriesTests
 	}
 
 	[Fact]
-	public async Task ServesWalletFilesAsync()
+	public async Task NewWalletUsesFixedFileInsideTheActiveNetworkAsync()
 	{
-		var baseDir = Common.GetWorkDir();
-		await CleanupWalletDirectoriesAsync(baseDir);
-
-		var walletDirectories = new WalletDirectories(Network.Main, baseDir);
-		string walletName = "FooWallet.json";
-
-		string walletPath = walletDirectories.GetWalletFilePaths(walletName);
-
-		Assert.Equal(Path.Combine(walletDirectories.WalletsDir, walletName), walletPath);
-	}
-
-	[Fact]
-	public async Task EnsuresJsonAsync()
-	{
-		var baseDir = Common.GetWorkDir();
-		await CleanupWalletDirectoriesAsync(baseDir);
-
-		var walletDirectories = new WalletDirectories(Network.Main, baseDir);
-		string walletName = "FooWallet";
-		string walletFileName = $"{walletName}.json";
-
-		string walletPath = walletDirectories.GetWalletFilePaths(walletName);
-
-		Assert.Equal(Path.Combine(walletDirectories.WalletsDir, walletFileName), walletPath);
-	}
-
-	[Fact]
-	public async Task EnumerateFilesAsync()
-	{
-		var baseDir = Common.GetWorkDir();
-		await CleanupWalletDirectoriesAsync(baseDir);
-
-		var walletDirectories = new WalletDirectories(Network.Main, baseDir);
-
-		var wallets = new List<string>();
-		const int NumberOfWallets = 4;
-		for (int i = 0; i < NumberOfWallets; i++)
-		{
-			var walletFile = Path.Combine(walletDirectories.WalletsDir, $"FooWallet{i}.json");
-			var dummyFile = Path.Combine(walletDirectories.WalletsDir, $"FooWallet{i}.dummy");
-
-			await File.Create(walletFile).DisposeAsync();
-			await File.Create(dummyFile).DisposeAsync();
-
-			wallets.Add(walletFile);
-		}
-
-		Assert.True(wallets.ToHashSet().SetEquals(walletDirectories.EnumerateWalletFiles().Select(x => x.FullName).ToHashSet()));
-	}
-
-	[Fact]
-	public async Task EnumerateOrdersByAccessAsync()
-	{
-		var baseDir = Common.GetWorkDir();
-		await CleanupWalletDirectoriesAsync(baseDir);
-
-		var walletDirectories = new WalletDirectories(Network.Main, baseDir);
-
-		var walletFile1 = Path.Combine(walletDirectories.WalletsDir, $"FooWallet1.json");
-		await File.Create(walletFile1).DisposeAsync();
-		File.SetLastAccessTimeUtc(walletFile1, new DateTime(2005, 1, 1, 1, 1, 1, DateTimeKind.Utc));
-
-		var walletFile2 = Path.Combine(walletDirectories.WalletsDir, $"FooWallet2.json");
-		await File.Create(walletFile2).DisposeAsync();
-		File.SetLastAccessTimeUtc(walletFile2, new DateTime(2000, 1, 1, 1, 1, 1, DateTimeKind.Utc));
-
-		var walletFile3 = Path.Combine(walletDirectories.WalletsDir, $"FooWallet3.json");
-		await File.Create(walletFile3).DisposeAsync();
-		File.SetLastAccessTimeUtc(walletFile3, new DateTime(2010, 1, 1, 1, 1, 1, DateTimeKind.Utc));
-
-		var orderedWallets = new[] { walletFile3, walletFile1, walletFile2 };
-
-		Assert.Equal(orderedWallets, walletDirectories.EnumerateWalletFiles().Select(x => x.FullName));
-	}
-
-	[Fact]
-	public async Task GetNextWalletTestAsync()
-	{
-		var baseDir = Common.GetWorkDir();
-		await CleanupWalletDirectoriesAsync(baseDir);
-		var walletDirectories = new WalletDirectories(Network.Main, baseDir);
-		CreateOrOverwriteFile(Path.Combine(walletDirectories.WalletsDir, "Random Wallet 3.json"));
-
-		Assert.Equal("Random Wallet", walletDirectories.GetNextWalletName());
-		CreateOrOverwriteFile(Path.Combine(walletDirectories.WalletsDir, "Random Wallet.json"));
-		Assert.Equal("Random Wallet 2", walletDirectories.GetNextWalletName());
-		CreateOrOverwriteFile(Path.Combine(walletDirectories.WalletsDir, "Random Wallet 2.json"));
-		Assert.Equal("Random Wallet 4", walletDirectories.GetNextWalletName());
-
-		CreateOrOverwriteFile(Path.Combine(walletDirectories.WalletsDir, "Random Wallet 4.dat"));
-		CreateOrOverwriteFile(Path.Combine(walletDirectories.WalletsDir, "Random Wallet 4"));
-		Assert.Equal("Random Wallet 4", walletDirectories.GetNextWalletName());
-
-		File.Delete(Path.Combine(walletDirectories.WalletsDir, "Random Wallet.json"));
-		File.Delete(Path.Combine(walletDirectories.WalletsDir, "Random Wallet 3.json"));
-		Assert.Equal("Random Wallet", walletDirectories.GetNextWalletName());
-		CreateOrOverwriteFile(Path.Combine(walletDirectories.WalletsDir, "Random Wallet.json"));
-		Assert.Equal("Random Wallet 3", walletDirectories.GetNextWalletName());
-		CreateOrOverwriteFile(Path.Combine(walletDirectories.WalletsDir, "Random Wallet 3.json"));
-		File.Delete(Path.Combine(walletDirectories.WalletsDir, "Random Wallet 3.json"));
-
-		Assert.Equal("Foo", walletDirectories.GetNextWalletName("Foo"));
-		CreateOrOverwriteFile(Path.Combine(walletDirectories.WalletsDir, "Foo.json"));
-		Assert.Equal("Foo 2", walletDirectories.GetNextWalletName("Foo"));
-		CreateOrOverwriteFile(Path.Combine(walletDirectories.WalletsDir, "Foo 2.json"));
-
-		static void CreateOrOverwriteFile(string path)
-		{
-			using var _ = File.Create(path);
-		}
+		var root = await Common.GetEmptyWorkDirAsync();
+		var main = new WalletDirectories(Network.Main, root);
+		var regtest = new WalletDirectories(Network.RegTest, root);
+		Assert.Equal(Path.Combine(root, "Wallets", "Wallet.json"), main.NewWalletFilePath);
+		Assert.Equal(Path.Combine(root, "Wallets", "RegTest", "Wallet.json"), regtest.NewWalletFilePath);
+		Assert.Null(main.ResolveConfiguredWalletFile());
+		Assert.Null(regtest.ResolveConfiguredWalletFile());
 	}
 
 	[Fact]

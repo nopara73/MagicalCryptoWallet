@@ -176,7 +176,7 @@ public partial class ConfirmMultiShareViewModel : RoutableViewModel
 
 		SetNextWord();
 
-		var enableCancel = UiContext.WalletRepository.HasWallet;
+		var enableCancel = UiContext.WalletSetupService.HasWallet;
 		SetupCancel(enableCancel: false, enableCancelOnEscape: enableCancel, enableCancelOnPressed: false);
 	}
 
@@ -306,7 +306,7 @@ public partial class ConfirmMultiShareViewModel : RoutableViewModel
 				}
 			};
 
-			var walletSettings = await UiContext.WalletRepository.NewWalletAsync(options);
+			var walletSettings = await UiContext.WalletSetupService.NewWalletAsync(options);
 			Navigate().To().AddedWalletPage(walletSettings, options);
 		}
 		else

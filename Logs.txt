@@ -1,0 +1,9 @@
+2026-10-02 11:39:26.876 [ 2] INF | ..yptoWalletApplication.cs:161 | Loading network file 'C:\Users\user\OneDrive\Documents\ChatGPT\MagicalCryptoWallet\.artifacts\single-wallet\process\synthetic b62b92b194f34f5b951bd27956e82c5c\MCW data with spaces\network'.
+2026-10-02 11:39:26.881 [ 2] INF | ..yptoWalletApplication.cs:176 | Loading config file 'C:\Users\user\OneDrive\Documents\ChatGPT\MagicalCryptoWallet\.artifacts\single-wallet\process\synthetic b62b92b194f34f5b951bd27956e82c5c\MCW data with spaces\Config.RegTest.json'.
+2026-10-02 11:39:26.935 [ 2] CRT | Program.cs:111                 | System.InvalidOperationException: Logger has already been initialized and cannot be reconfigured.
+   at MagicalCryptoWallet.Logging.Logger.Configure(String filePath, Nullable`1 logLevel, LogMode[] logModes) in MagicalCryptoWallet\Logging\Logger.cs:line 46
+   at MagicalCryptoWallet.Client.MagicalCryptoWalletApplication.SetupLogger() in MagicalCryptoWallet.Client\MagicalCryptoWalletApplication.cs:line 236
+   at MagicalCryptoWallet.Client.MagicalCryptoWalletApplication.ProcessAppArguments() in MagicalCryptoWallet.Client\MagicalCryptoWalletApplication.cs:line 123
+   at MagicalCryptoWallet.Client.MagicalCryptoWalletApplication.Run(Action afterStarting) in MagicalCryptoWallet.Client\MagicalCryptoWalletApplication.cs:line 58
+   at MagicalCryptoWallet.Fluent.Desktop.MagicalCryptoWalletAppExtensions.RunAsGui(MagicalCryptoWalletApplication app) in C:\Users\user\OneDrive\Documents\ChatGPT\MagicalCryptoWallet\MagicalCryptoWallet.Fluent.Desktop\Program.cs:line 214
+   at MagicalCryptoWallet.Fluent.Desktop.Program.Main(String[] args) in C:\Users\user\OneDrive\Documents\ChatGPT\MagicalCryptoWallet\MagicalCryptoWallet.Fluent.Desktop\Program.cs:line 88

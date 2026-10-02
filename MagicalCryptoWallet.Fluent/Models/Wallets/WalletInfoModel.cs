@@ -6,21 +6,16 @@ using static MagicalCryptoWallet.Blockchain.Keys.WpkhWalletPolicyHelper;
 
 namespace MagicalCryptoWallet.Fluent.Models.Wallets;
 
-public partial class WalletInfoModel
+public partial class WalletInfoModel : IDisposable
 {
+	private readonly Wallet _wallet;
 	public WalletInfoModel(Wallet wallet)
 	{
 		var network = wallet.Network;
-		if (!wallet.KeyManager.IsWatchOnly)
+		_wallet = wallet;
+		if (wallet.KeyManager.MasterFingerprint is { } fingerprint)
 		{
-			var secret = PasswordHelper.GetMasterExtKey(wallet.KeyManager, wallet.Password, out _);
-
-			ExtendedMasterPrivateKey = secret.GetWif(network).ToWif();
-			ExtendedAccountPrivateKey = secret.Derive(wallet.KeyManager.SegwitAccountKeyPath).GetWif(network).ToWif();
-			ExtendedMasterZprv = secret.ToZPrv(network);
-
-			// TODO: Should work for every type of wallet, temporarily disabling it.
-			WpkhWalletPolicy = wallet.KeyManager.GetWpkhWalletPolicy(wallet.Password, network);
+			WpkhWalletPolicy = WalletPolicy.Parse($"wpkh([{fingerprint}/{wallet.KeyManager.SegwitAccountKeyPath}]{wallet.KeyManager.SegwitExtPubKey.ToString(network)}/<0;1>/*)", network);
 		}
 
 		SegWitExtendedAccountPublicKey = wallet.KeyManager.SegwitExtPubKey.ToString(network);
@@ -41,11 +36,20 @@ public partial class WalletInfoModel
 
 	public string? MasterKeyFingerprint { get; }
 
-	public string? ExtendedMasterPrivateKey { get; }
+	public string? ExtendedMasterPrivateKey { get; private set; }
 
-	public string? ExtendedAccountPrivateKey { get; }
+	public string? ExtendedAccountPrivateKey { get; private set; }
 
-	public string? ExtendedMasterZprv { get; }
+	public string? ExtendedMasterZprv { get; private set; }
 
 	public WalletPolicy? WpkhWalletPolicy { get; }
+	public void Reveal(WalletAuthorization authorization)
+	{
+		if (!ReferenceEquals(_wallet.KeyManager, authorization.KeyManager)) { throw new InvalidOperationException("Authorization belongs to another wallet."); }
+		var secret = authorization.MasterKey;
+		ExtendedMasterPrivateKey = secret.GetWif(_wallet.Network).ToWif();
+		ExtendedAccountPrivateKey = secret.Derive(_wallet.KeyManager.SegwitAccountKeyPath).GetWif(_wallet.Network).ToWif();
+		ExtendedMasterZprv = secret.ToZPrv(_wallet.Network);
+	}
+	public void Dispose() { ExtendedMasterPrivateKey = ExtendedAccountPrivateKey = ExtendedMasterZprv = null; }
 }

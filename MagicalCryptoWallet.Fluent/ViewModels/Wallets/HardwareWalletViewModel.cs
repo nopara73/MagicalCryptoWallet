@@ -10,7 +10,7 @@ namespace MagicalCryptoWallet.Fluent.ViewModels.Wallets;
 
 public class HardwareWalletViewModel : WalletViewModel
 {
-	internal HardwareWalletViewModel(UiContext uiContext, IWalletModel walletModel, Wallet wallet) : base(uiContext, walletModel, wallet)
+	internal HardwareWalletViewModel(UiContext uiContext, IWalletModel walletModel) : base(uiContext, walletModel)
 	{
 		BroadcastPsbtCommand = ReactiveCommand.CreateFromTask(async () =>
 		{

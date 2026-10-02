@@ -41,11 +41,11 @@ public class RebrandIdentityTests
 		source.ToFile();
 		byte[] original = await File.ReadAllBytesAsync(otherWallet);
 		var directories = new WalletDirectories(Network.RegTest, Path.Combine(root, "MagicalCryptoWallet", "Client"));
-		var manager = new WalletManager(Network.RegTest, directories, _ => throw new InvalidOperationException("No wallet is started during this test."));
-		Assert.Empty(directories.EnumerateWalletFiles());
-		var imported = await ImportWalletHelper.ImportWalletAsync(manager, "ImportedSynthetic", otherWallet);
-		imported.ToFile();
-		Assert.Single(directories.EnumerateWalletFiles());
+		var manager = new WalletSession(Network.RegTest, directories, _ => throw new InvalidOperationException("No wallet is started during this test."));
+		Assert.Empty(Directory.GetFiles(directories.WalletsDir, "*.json"));
+		var imported = await ImportWalletHelper.ImportWalletAsync(manager, otherWallet);
+		directories.Commit(imported);
+		Assert.Single(Directory.GetFiles(directories.WalletsDir, "*.json"));
 		Assert.Equal(source.SegwitExtPubKey, imported.SegwitExtPubKey);
 		Assert.Equal(original, await File.ReadAllBytesAsync(otherWallet));
 		using var instance = new SingleInstanceChecker(directories.WalletsDir);
@@ -55,7 +55,7 @@ public class RebrandIdentityTests
 		Assert.False(duplicate.IsFirstInstance());
 		using var independent = new SingleInstanceChecker(Path.GetDirectoryName(otherWallet)!);
 		Assert.True(independent.IsFirstInstance());
-		await manager.RemoveAndStopAsync(CancellationToken.None);
+		await manager.StopAsync(CancellationToken.None);
 	}
 
 	[Fact]

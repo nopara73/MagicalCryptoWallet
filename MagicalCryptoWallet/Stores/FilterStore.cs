@@ -88,6 +88,12 @@ public class FilterStore : IFilterStore, IDisposable
 	{
 		using (await _indexLock.LockAsync(cancellationToken).ConfigureAwait(false))
 		{
+			if (IndexStorage.GetPragmaUserVersion() < 2)
+			{
+				IndexStorage.Dispose();
+				IndexStorage = CreateBlockFilterSqliteStorage();
+				while (_filterHeaderChain.RemoveTip()) { }
+			}
 			var checkpoint = FilterCheckpoints.GetCheckpointForBirthday(oldestKnownTransactionHeight, _network);
 
 			if (GetTip() is null)

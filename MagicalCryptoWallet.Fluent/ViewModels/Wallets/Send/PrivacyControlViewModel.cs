@@ -32,7 +32,7 @@ public partial class PrivacyControlViewModel : DialogViewModelBase<IEnumerable<S
 		_isSilent = isSilent;
 		_usedCoins = usedCoins;
 
-		LabelSelection = new LabelSelectionViewModel(uiContext, wallet.KeyManager, wallet.Password, _transactionInfo, isSilent);
+		LabelSelection = new LabelSelectionViewModel(uiContext, wallet.KeyManager, string.Empty, _transactionInfo, isSilent);
 
 		SetupCancel(enableCancel: false, enableCancelOnEscape: true, enableCancelOnPressed: false);
 		EnableBack = true;
@@ -56,7 +56,7 @@ public partial class PrivacyControlViewModel : DialogViewModelBase<IEnumerable<S
 		var privateThreshold = _wallet.AnonScoreTarget;
 
 		var cjManager = UiContext.Services.GetHostedService<CoinJoinManager>();
-		var coinsToExclude = cjManager?.CoinsInCriticalPhase[_wallet.WalletId].ToList() ?? [];
+		var coinsToExclude = cjManager?.CoinsInCriticalPhase.ToList() ?? [];
 
 		var pockets = _sendFlow.GetPockets();
 

@@ -32,7 +32,7 @@ public class TransactionsSearchSource : ReactiveObject, ISearchSource, IDisposab
 			.DisposeWith(_disposables);
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
-		var results = queries
+		var results = queries.CombineLatest(_navBarViewModel.UiContext.ApplicationSettings.WhenAnyValue(x => x.PrivacyMode), (query, _) => query)
 			.Select(query => query.Length >= MinQueryLength ? Search(query) : [])
 			.ObserveOn(RxApp.MainThreadScheduler);
 
@@ -77,7 +77,7 @@ public class TransactionsSearchSource : ReactiveObject, ISearchSource, IDisposab
 	{
 		return new ActionableItem(
 			item.Transaction.Id.ToString(),
-			@$"Found in ""{wallet.WalletModel.Name}""",
+			"Wallet transaction",
 			() => NavigateTo(wallet, item),
 			"Transactions",
 			new List<string>())
@@ -88,7 +88,7 @@ public class TransactionsSearchSource : ReactiveObject, ISearchSource, IDisposab
 
 	private IEnumerable<(WalletViewModel Wallet, HistoryItemViewModelBase Transaction)> GetTransactions()
 	{
-		if (_navBarViewModel.Wallet is { IsLoggedIn: true, Wallet.Loaded: true, WalletViewModel: { } wallet })
+		if (_navBarViewModel.Home is { WalletModel.SessionStatus.HasCachedData: true } wallet && !wallet.UiContext.ApplicationSettings.PrivacyMode)
 		{
 			foreach (var transaction in wallet.History.Transactions.Concat(wallet.History.Transactions.OfType<CoinJoinsHistoryItemViewModel>().SelectMany(x => x.Children)))
 			{

@@ -13,6 +13,9 @@ internal class TestableRpcService
 	[JsonRpcMethod("say")]
 	public string Echo(string text) => text;
 
+	[JsonRpcMethod("optional")]
+	public int Optional(int? fee = null, string? password = null) => (fee ?? 0) + (password?.Length ?? 0);
+
 	[JsonRpcMethod("substract")]
 	public int Substract(int minuend, int subtrahend) => minuend - subtrahend;
 

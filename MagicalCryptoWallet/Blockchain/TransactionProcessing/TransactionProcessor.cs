@@ -28,7 +28,7 @@ public class TransactionProcessor(
 	public CoinsRegistry Coins { get; } = new();
 	public Money DustThreshold { get; } = dustThreshold;
 
-	public IEnumerable<ProcessedResult> Process(IEnumerable<SmartTransaction> txs)
+	public IEnumerable<ProcessedResult> Process(IEnumerable<SmartTransaction> txs, bool isHistoricalReplay = false)
 	{
 		var results = new List<ProcessedResult>();
 
@@ -42,7 +42,7 @@ public class TransactionProcessor(
 
 		foreach (var result in results.Where(x => x.IsNews))
 		{
-			eventBus.Publish(new WalletRelevantTransactionProcessed(KeyManager.WalletName, result));
+			eventBus.Publish(new WalletRelevantTransactionProcessed(result, isHistoricalReplay));
 		}
 
 		return results;
@@ -62,7 +62,7 @@ public class TransactionProcessor(
 		}
 	}
 
-	public ProcessedResult Process(SmartTransaction tx)
+	public ProcessedResult Process(SmartTransaction tx, bool isHistoricalReplay = false)
 	{
 		ProcessedResult result;
 		lock (Lock)
@@ -73,7 +73,7 @@ public class TransactionProcessor(
 
 		if (result.IsNews)
 		{
-			eventBus.Publish(new WalletRelevantTransactionProcessed(KeyManager.WalletName, result));
+			eventBus.Publish(new WalletRelevantTransactionProcessed(result, isHistoricalReplay));
 		}
 
 		return result;

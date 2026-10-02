@@ -19,7 +19,7 @@ public interface IServices
 	string DataDir { get; }
 	string PersistentConfigFilePath { get; }
 	PersistentConfig PersistentConfig { get; }
-	WalletManager WalletManager { get; }
+	WalletSession WalletSession { get; }
 	UiConfig UiConfig { get; }
 	Config Config { get; }
 	EventBus EventBus { get; }
@@ -38,15 +38,11 @@ public interface IServices
 	bool TryGetTransaction(uint256 hash, [NotNullWhen(true)] out SmartTransaction? tx);
 
 	Network GetNetwork();
-	Wallet GetWallet();
-	bool HasWallet();
-	void RenameWallet(Wallet wallet, string newWalletName);
-	string GetWalletsDir();
-	string GetNextWalletName(string prefix);
-	string GetWalletFilePath(string walletName);
-	(ErrorSeverity Severity, string Message)? ValidateWalletName(string walletName);
-	Task StartWalletAsync(Wallet wallet);
-	void AddWallet(KeyManager keyManager);
+
+
+
+
+
 
 	string GetTorLogFilePath();
 	TorMode GetUseTor();

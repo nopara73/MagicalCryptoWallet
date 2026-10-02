@@ -15,6 +15,23 @@ public class FilterProvidersTests(ITestOutputHelper output)
 	private static readonly byte[] DummyFilterData = Convert.FromHexString("02832810ec08a0");
 
 	[Fact]
+	public async Task BitcoinRpcProvider_AwaitsDelayedBatchResponsesWithoutInventingAReorgAsync()
+	{
+		var genesis = Network.RegTest.GetGenesis().GetHash();
+		var rpc = new MockRpcClient
+		{
+			Network = Network.RegTest,
+			OnGetBlockCountAsync = () => Task.FromResult(1),
+			OnGetBlockHashAsync = async height => { await Task.Delay(50); return height == 0 ? genesis : uint256.One; },
+			OnGetBlockFilterAsync = hash => Task.FromResult(CreateBlockFilter(hash))
+		};
+		var provider = FilterProviders.CreateBitcoinRpcFilterProvider(rpc, new ConcurrentChain(Network.RegTest));
+		var result = await provider(0, genesis, TestContext.Current.CancellationToken);
+		Assert.True(result.IsOk);
+		Assert.Single(Assert.IsType<FiltersResponse.NewFiltersAvailable>(result.Value).Filters);
+	}
+
+	[Fact]
 	public async Task BitcoinRpcProvider_FetchesBoundedPageAndKeepsBestHeightAsync()
 	{
 		using CancellationTokenSource testCts = new(TimeSpan.FromMinutes(1));

@@ -62,7 +62,7 @@ public class BobClientTests
 		using var roundStateUpdater = RoundStateUpdaterForTesting.Create(arena);
 		var roundStateProvider = new RoundStateProvider(roundStateUpdater);
 
-		var keyChain = new KeyChain(km,"");
+		var keyChain = new SyntheticKeyChain(km, "");
 		var task = AliceClient.CreateRegisterAndConfirmInputAsync(RoundState.FromRound(round), aliceArenaClient, coin1, keyChain, roundStateProvider, token, token, token);
 
 		do

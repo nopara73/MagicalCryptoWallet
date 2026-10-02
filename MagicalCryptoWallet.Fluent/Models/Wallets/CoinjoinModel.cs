@@ -21,7 +21,7 @@ public partial class CoinjoinModel : ReactiveObject
 
 		if (cjManager is { })
 		{
-			return cjManager.HighestCoinJoinClientState switch
+			return cjManager.ClientState switch
 			{
 				CoinJoinClientState.InCriticalPhase => false,
 				CoinJoinClientState.Idle or CoinJoinClientState.InSchedule or CoinJoinClientState.InProgress => true,

@@ -51,7 +51,7 @@ public static class NotificationHelpers
 	{
 		if (TryGetNotificationInputs(result, wallet.AmountProvider.UsdExchangeRate, out var message))
 		{
-			Show(wallet.Name, message, onClick);
+			Show("Magical Crypto Wallet", message, onClick);
 		}
 	}
 

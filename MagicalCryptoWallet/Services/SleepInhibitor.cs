@@ -65,7 +65,7 @@ public class SleepInhibitor : PeriodicRunner
 
 	protected override async Task ActionAsync(CancellationToken cancellationToken)
 	{
-		var highestCoinJoinClientState = _coinJoinManager.HighestCoinJoinClientState;
+		var highestCoinJoinClientState = _coinJoinManager.ClientState;
 		switch (highestCoinJoinClientState)
 		{
 			case CoinJoinClientState.Idle:

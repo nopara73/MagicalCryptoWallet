@@ -1,3 +1,6 @@
+using System.Reactive.Disposables.Fluent;
+using System.Reactive.Disposables;
+using MagicalCryptoWallet.Fluent.Helpers;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -16,8 +19,9 @@ using MagicalCryptoWallet.Wallets;
 namespace MagicalCryptoWallet.Fluent.ViewModels.Wallets;
 
 [AppLifetime]
-public partial class CoinJoinStateViewModel : ViewModelBase
+public partial class CoinJoinStateViewModel : ViewModelBase, IDisposable
 {
+	private readonly CompositeDisposable _lifetime = new();
 	private const string CountDownMessage = "Awaiting auto-start of coinjoin";
 	private const string WaitingMessage = "Awaiting coinjoin";
 	private const string CoinjoinMiningFeeRateTooHighMessage = "Mining fee rate was too high";
@@ -49,7 +53,6 @@ public partial class CoinJoinStateViewModel : ViewModelBase
 	private readonly Wallet _walletInstance;
 	private readonly StateMachine<State, Trigger> _stateMachine;
 	private readonly DispatcherTimer _countdownTimer;
-	private readonly DispatcherTimer _autoCoinJoinStartTimer;
 
 	[AutoNotify] private bool _isAutoWaiting;
 	[AutoNotify] private bool _playVisible;
@@ -77,12 +80,8 @@ public partial class CoinJoinStateViewModel : ViewModelBase
 		_wallet = wallet;
 		_walletInstance = walletInstance;
 
-		walletCoinjoinModel.StatusUpdated
-					   .Do(ProcessStatusChange)
-					   .Subscribe();
-
 		wallet.Privacy.IsWalletPrivate
-					  .BindTo(this, x => x.AreAllCoinsPrivate);
+					  .BindTo(this, x => x.AreAllCoinsPrivate).DisposeWith(_lifetime);
 
 		var initialState =
 			wallet.Settings.AutoCoinjoin
@@ -94,34 +93,36 @@ public partial class CoinJoinStateViewModel : ViewModelBase
 			initialState = State.Disabled;
 		}
 
-		if (wallet.Settings.IsCoinJoinPaused)
-		{
-			initialState = State.StoppedOrPaused;
-		}
-
 		_stateMachine = new StateMachine<State, Trigger>(initialState);
 
 		ConfigureStateMachine();
 
 		wallet.Balances
 			  .Do(_ => _stateMachine.Fire(Trigger.BalanceChanged))
-			  .Subscribe();
+			  .Subscribe().DisposeWith(_lifetime);
 
 		this.WhenAnyValue(x => x.AreAllCoinsPrivate)
 			.Do(_ => _stateMachine.Fire(Trigger.AreAllCoinsPrivateChanged))
-			.Subscribe();
+			.Subscribe().DisposeWith(_lifetime);
 
 		// Refresh the paused music box when a pending payment is added or removed (when paying in coinjoin regardless of anon score)
 		UiContext.Services.EventBus.AsObservable<PaymentBatchChanged>()
 			.ObserveOn(RxApp.MainThreadScheduler)
 			.Do(_ => _stateMachine.Fire(Trigger.PendingPaymentsChanged))
-			.Subscribe();
+			.Subscribe().DisposeWith(_lifetime);
 
 		PlayCommand = ReactiveCommand.CreateFromTask(async () =>
 		{
+			if (UiContext.Services.WalletSession.Snapshot.CoinJoinRequiresAuthorization)
+			{
+				using var authorization = await AuthorizationHelpers.AuthorizeAsync(UiContext, wallet, "Authorize CoinJoin");
+				if (authorization is null) { return; }
+				UiContext.Services.WalletSession.AuthorizeCoinJoin(authorization);
+			}
 			var overridePlebStop = _stateMachine.IsInState(State.PlebStopActive);
+			if (!UiContext.Services.WalletSession.Snapshot.IsSynchronized) { return; }
 			await walletCoinjoinModel.StartAsync(stopWhenAllMixed: !IsAutoCoinJoinEnabled, overridePlebStop);
-		});
+		}, wallet.Status.Select(status => status.HasCachedData && !wallet.IsWatchOnlyWallet && (status.IsSynchronized || status.CoinJoinRequiresAuthorization)));
 
 		var stopPauseCommandCanExecute =
 			this.WhenAnyValue(
@@ -137,7 +138,7 @@ public partial class CoinJoinStateViewModel : ViewModelBase
 			.Skip(1) // The first one is triggered at the creation.
 			.Where(x => !x)
 			.Do(_ => _stateMachine.Fire(Trigger.AutoCoinJoinOff))
-			.Subscribe();
+			.Subscribe().DisposeWith(_lifetime);
 
 		wallet.Settings.WhenAnyValue(x => x.PlebStopThreshold)
 					   .SubscribeAsync(async _ =>
@@ -145,20 +146,20 @@ public partial class CoinJoinStateViewModel : ViewModelBase
 						   // Hack: we take the value from KeyManager but it is saved later.
 						   await Task.Delay(1500);
 						   _stateMachine.Fire(Trigger.PlebStopChanged);
-					   });
-
-		_autoCoinJoinStartTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(Random.Shared.Next(60, 180)) };
-		_autoCoinJoinStartTimer.Tick += async (_, _) =>
-		{
-			await walletCoinjoinModel.StartAsync(stopWhenAllMixed: false, false);
-
-			_autoCoinJoinStartTimer.Stop();
-		};
+					   }).DisposeWith(_lifetime);
 
 		_countdownTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
 		_countdownTimer.Tick += (_, _) => _stateMachine.Fire(Trigger.Tick);
 
 		_stateMachine.Start();
+		walletCoinjoinModel.StatusUpdated.Do(ProcessStatusChange).Subscribe().DisposeWith(_lifetime);
+		wallet.Status.Subscribe(status =>
+		{
+			if (status.CoinJoinRequiresAuthorization && !wallet.IsWatchOnlyWallet) { CurrentStatus = "Awaiting CoinJoin authorization"; }
+			else if (!status.IsSynchronized && !wallet.IsWatchOnlyWallet) { CurrentStatus = status.State.ToString(); }
+			else if (_stateMachine.IsInState(State.StoppedOrPaused)) { RefreshButtonAndTextInStateStoppedOrPaused(); }
+			else if (_stateMachine.IsInState(State.WaitingForAutoStart)) { CurrentStatus = CountDownMessage; }
+		}).DisposeWith(_lifetime);
 
 		var coinJoinSettingsCommand = ReactiveCommand.Create(
 			() =>
@@ -243,15 +244,15 @@ public partial class CoinJoinStateViewModel : ViewModelBase
 				IsAutoWaiting = true;
 
 				var now = DateTimeOffset.UtcNow;
-				var autoStartEnd = now + _autoCoinJoinStartTimer.Interval;
-				_autoCoinJoinStartTimer.Start();
+				var autoStartEnd = now;
 
-				StartCountDown(CountDownMessage, now, autoStartEnd);
+
+				CurrentStatus = UiContext.Services.WalletSession.Snapshot.CoinJoinRequiresAuthorization ? "Awaiting CoinJoin authorization" : CountDownMessage;
 			})
 			.OnExit(() =>
 			{
 				IsAutoWaiting = false;
-				_autoCoinJoinStartTimer.Stop();
+
 				StopCountDown();
 			})
 			.OnTrigger(Trigger.Tick, UpdateCountDown);
@@ -499,4 +500,6 @@ public partial class CoinJoinStateViewModel : ViewModelBase
 		RightText = "";
 		ProgressValue = 0;
 	}
+	public void Dispose() { _lifetime.Dispose(); _countdownTimer.Stop(); }
+
 }

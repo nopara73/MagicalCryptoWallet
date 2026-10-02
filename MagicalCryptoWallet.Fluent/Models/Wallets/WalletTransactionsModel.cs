@@ -38,13 +38,14 @@ public class WalletTransactionsModel : ReactiveObject, IDisposable
 		TransactionProcessed =
 			services.EventBus.AsObservable<WalletRelevantTransactionProcessed>().ToSignal()
 				.Merge(services.EventBus.AsObservable<FiltersReceived>().ToSignal())
+				.Merge(walletModel.Status.Where(x => x.HasCachedData).ToSignal())
 				.Sample(TimeSpan.FromSeconds(1))
 				.ObserveOn(RxApp.MainThreadScheduler)
 				.StartWith(Unit.Default);
 
 		NewTransactionArrived =
 			services.EventBus.AsObservable<WalletRelevantTransactionProcessed>()
-				.Where(x => x.WalletName == wallet.WalletName)
+				.Where(activity => !activity.IsHistoricalReplay && services.WalletSession.Snapshot.HasCachedData)
 				.Select(x => (walletModel, x.Result))
 				.ObserveOn(RxApp.MainThreadScheduler);
 
@@ -117,6 +118,7 @@ public class WalletTransactionsModel : ReactiveObject, IDisposable
 		{
 			targetTransaction = largestCpfp;
 		}
+		_services.WalletSession.EnsureReady();
 		var boostingTransaction = await _wallet.SpeedUpTransactionAsync(targetTransaction, null, cancellationToken);
 
 		var fee = _walletModel.AmountProvider.Create(GetFeeDifference(targetTransaction, boostingTransaction));
@@ -140,6 +142,7 @@ public class WalletTransactionsModel : ReactiveObject, IDisposable
 			throw new InvalidOperationException($"Transaction not found! ID: {transaction.Id}");
 		}
 
+		_services.WalletSession.EnsureReady();
 		var cancellingTransaction = _wallet.CancelTransaction(targetTransaction);
 
 		return new CancellingTransaction(transaction, cancellingTransaction, _walletModel.AmountProvider.Create(cancellingTransaction.Fee));
@@ -151,6 +154,8 @@ public class WalletTransactionsModel : ReactiveObject, IDisposable
 
 	public async Task SendAsync(BuildTransactionResult transaction)
 	{
+		_services.WalletSession.EnsureReady();
+		if (!transaction.Signed) { throw new InvalidOperationException("Authorize transaction signing before sending."); }
 		await _services.SendTransactionAsync(transaction.Transaction);
 		_wallet.UpdateUsedHdPubKeysLabels(transaction.HdPubKeysWithNewLabels);
 	}

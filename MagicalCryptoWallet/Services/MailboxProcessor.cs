@@ -58,6 +58,7 @@ public sealed class MailboxProcessor<TMsg>(
 	private Task? _processingTask;
 	private bool _isDisposed;
 	public CancellationToken CancellationToken => _cts.Token;
+	public Task Completion => _processingTask ?? Task.CompletedTask;
 
 	public string Name { get; } = name;
 

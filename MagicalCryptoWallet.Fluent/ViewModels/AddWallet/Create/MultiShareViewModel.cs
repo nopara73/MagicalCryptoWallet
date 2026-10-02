@@ -88,7 +88,7 @@ public partial class MultiShareViewModel : RoutableViewModel
 
 	protected override void OnNavigatedTo(bool isInHistory, CompositeDisposable disposables)
 	{
-		var enableCancel = UiContext.WalletRepository.HasWallet;
+		var enableCancel = UiContext.WalletSetupService.HasWallet;
 		SetupCancel(enableCancel: enableCancel, enableCancelOnEscape: enableCancel, enableCancelOnPressed: false);
 
 		base.OnNavigatedTo(isInHistory, disposables);

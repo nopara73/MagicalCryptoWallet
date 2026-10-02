@@ -12,6 +12,7 @@ using MagicalCryptoWallet.Exceptions;
 using MagicalCryptoWallet.Extensions;
 using MagicalCryptoWallet.Helpers;
 using MagicalCryptoWallet.Logging;
+using MagicalCryptoWallet.Wallets;
 using MagicalCryptoWallet.Wallets.SilentPayment;
 using MagicalCryptoWallet.WebClients.PayJoin;
 
@@ -19,19 +20,22 @@ namespace MagicalCryptoWallet.Blockchain.Transactions;
 
 public class TransactionFactory
 {
-	public TransactionFactory(Network network, KeyManager keyManager, ICoinsView coins, ITransactionStore transactionStore, string password = "")
+	public TransactionFactory(Network network, KeyManager keyManager, ICoinsView coins, ITransactionStore transactionStore, string password = "", WalletAuthorization? authorization = null)
 	{
 		Network = network;
 		KeyManager = keyManager;
 		Coins = coins;
 		_transactionStore = transactionStore;
 		_password = password;
+		_authorization = authorization;
+		if (authorization is not null && !ReferenceEquals(authorization.KeyManager, keyManager)) { throw new InvalidOperationException("Authorization belongs to a different wallet."); }
 	}
 
 	public Network Network { get; }
 	public KeyManager KeyManager { get; }
 	public ICoinsView Coins { get; }
 	private readonly string _password;
+	private readonly WalletAuthorization? _authorization;
 	private readonly ITransactionStore _transactionStore;
 
 	public BuildTransactionResult BuildTransaction(
@@ -159,7 +163,7 @@ public class TransactionFactory
 		var psbt = builder.BuildPSBT(false);
 
 		// For sub-1 sat/vB fee rates, NBitcoin's FeeRate truncates because _FeePerK is a long
-		// (e.g. 0.1 sat/vB × 141 vB = 14.1 -> 14 sats -> effective 0.099 sat/vB).
+		// (e.g. 0.1 sat/vB Ã— 141 vB = 14.1 -> 14 sats -> effective 0.099 sat/vB).
 		// Rebuild with a FeeRate whose _FeePerK is ceiled to guarantee the fee covers the target.
 		if (parameters.FeeRate.SatoshiPerByte < 1m && psbt.TryGetVirtualSize(out var estimatedVSize))
 		{
@@ -245,7 +249,7 @@ public class TransactionFactory
 		}
 		else
 		{
-			IEnumerable<Key> signingKeys = KeyManager.GetSecrets(_password, spentCoins.Select(x => x.ScriptPubKey).ToArray());
+			IEnumerable<Key> signingKeys = _authorization?.GetSecrets(spentCoins.Select(x => x.ScriptPubKey).ToArray()) ?? KeyManager.GetSecrets(_password, spentCoins.Select(x => x.ScriptPubKey).ToArray());
 			builder = builder.AddKeys(signingKeys.ToArray());
 
 			psbt = builder.SolveSilentPayment(psbt);
@@ -313,7 +317,7 @@ public class TransactionFactory
 			}
 		}
 
-		var sign = !KeyManager.IsWatchOnly;
+		var sign = !KeyManager.IsWatchOnly && parameters.TryToSign;
 
 		Logger.LogDebug($"Built tx: {totalOutgoingAmountNoFee.ToString(fplus: false, trimExcessZero: true)} BTC. Fee: {fee.Satoshi} sats. Vsize: {vSize} vBytes. Fee/Total ratio: {feePercentage:0.#}%. Tx hash: {tx.GetHash()}.");
 		return new BuildTransactionResult(smartTransaction, psbt, sign, fee, feePercentage, hdPubKeysWithNewLabels);

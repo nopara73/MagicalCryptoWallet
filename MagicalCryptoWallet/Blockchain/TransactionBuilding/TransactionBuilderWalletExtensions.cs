@@ -26,7 +26,8 @@ public static class TransactionBuilderWalletExtensions
 		IPayjoinClient? payjoinClient = null,
 		bool allowDoubleSpend = false,
 		bool tryToSign = true,
-		bool overrideFeeOverpaymentProtection = false)
+		bool overrideFeeOverpaymentProtection = false,
+		WalletAuthorization? authorization = null)
 	{
 		FeeRate? feeRate;
 
@@ -49,7 +50,7 @@ public static class TransactionBuilderWalletExtensions
 			TryToSign: tryToSign,
 			OverrideFeeOverpaymentProtection: overrideFeeOverpaymentProtection);
 
-		var factory = new TransactionFactory(wallet.Network, wallet.KeyManager, wallet.Coins, wallet.TransactionStore, password);
+		var factory = new TransactionFactory(wallet.Network, wallet.KeyManager, wallet.Coins, wallet.TransactionStore, password, authorization);
 		return factory.BuildTransaction(
 			parameters,
 			lockTimeSelector: () =>
@@ -67,8 +68,8 @@ public static class TransactionBuilderWalletExtensions
 		FeeRate feeRate,
 		IEnumerable<SmartCoin> allowedInputs,
 		bool allowDoubleSpend = false,
-		bool tryToSign = true)
-		=> wallet.BuildChangelessTransaction(destination, label, feeRate, allowedInputs.Select(coin => coin.Outpoint), allowDoubleSpend, tryToSign);
+		bool tryToSign = false, WalletAuthorization? authorization = null)
+		=> wallet.BuildChangelessTransaction(destination, label, feeRate, allowedInputs.Select(coin => coin.Outpoint), allowDoubleSpend, tryToSign, authorization);
 
 	public static BuildTransactionResult BuildChangelessTransaction(
 		this Wallet wallet,
@@ -77,7 +78,7 @@ public static class TransactionBuilderWalletExtensions
 		FeeRate feeRate,
 		IEnumerable<OutPoint> allowedInputs,
 		bool allowDoubleSpend = false,
-		bool tryToSign = true)
+		bool tryToSign = false, WalletAuthorization? authorization = null)
 	{
 		var intent = destination switch
 			{
@@ -93,13 +94,13 @@ public static class TransactionBuilderWalletExtensions
 			};
 
 		var txRes = wallet.BuildTransaction(
-			wallet.Password,
+			string.Empty,
 			intent,
 			FeeStrategy.CreateFromFeeRate(feeRate),
 			allowUnconfirmed: true,
 			allowedInputs: allowedInputs,
 			allowDoubleSpend: allowDoubleSpend,
-			tryToSign: tryToSign);
+			tryToSign: tryToSign, authorization: authorization);
 
 		return txRes;
 	}
@@ -113,7 +114,7 @@ public static class TransactionBuilderWalletExtensions
 		IEnumerable<SmartCoin> coins,
 		bool subtractFee,
 		IPayjoinClient? payJoinClient = null,
-		bool tryToSign = true)
+		bool tryToSign = false, WalletAuthorization? authorization = null)
 	{
 		if (payJoinClient is { } && subtractFee)
 		{
@@ -127,13 +128,13 @@ public static class TransactionBuilderWalletExtensions
 			label: label);
 
 		var txRes = wallet.BuildTransaction(
-			password: wallet.Password,
+			password: string.Empty,
 			payments: intent,
 			feeStrategy: FeeStrategy.CreateFromFeeRate(feeRate),
 			allowUnconfirmed: true,
 			allowedInputs: coins.Select(coin => coin.Outpoint),
 			payjoinClient: payJoinClient,
-			tryToSign: tryToSign);
+			tryToSign: tryToSign, authorization: authorization);
 
 		return txRes;
 	}
@@ -146,7 +147,7 @@ public static class TransactionBuilderWalletExtensions
 		bool allowUnconfirmed = false,
 		IEnumerable<OutPoint>? allowedInputs = null,
 		IPayjoinClient? payjoinClient = null,
-		bool allowDoubleSpend = false)
+		bool allowDoubleSpend = false, WalletAuthorization? authorization = null)
 		=> BuildTransaction(
 			wallet,
 			password,
@@ -157,5 +158,5 @@ public static class TransactionBuilderWalletExtensions
 			payjoinClient,
 			allowDoubleSpend,
 			tryToSign: true,
-			overrideFeeOverpaymentProtection: true);
+			overrideFeeOverpaymentProtection: true, authorization: authorization);
 }

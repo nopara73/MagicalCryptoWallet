@@ -22,11 +22,11 @@
           <!-- Coinjoin waves -->
           <Panel VerticalAlignment="Bottom" Height="100">
             <SpectrumControl Opacity="0.6" IsActive="{Binding IsCoinJoinActive}"
-                             Classes.fireEffect="{Binding CurrentWallet^.CoinJoinStateViewModel.IsInCriticalPhase, FallbackValue=False}">
+                             Classes.fireEffect="{Binding NavBar.Home.CoinJoinStateViewModel.IsInCriticalPhase, FallbackValue=False}">
               <SpectrumControl.IsDockEffectVisible>
                 <MultiBinding Converter="{x:Static BoolConverters.And}">
-                  <Binding Path="CurrentWallet^.IsMusicBoxVisible^" FallbackValue="False" />
-                  <Binding Path="CurrentWallet^.CoinJoinStateViewModel.AreAllCoinsPrivate" FallbackValue="False" Converter="{x:Static BoolConverters.Not}" />
+                  <Binding Path="NavBar.Home.IsMusicBoxVisible^" FallbackValue="False" />
+                  <Binding Path="NavBar.Home.CoinJoinStateViewModel.AreAllCoinsPrivate" FallbackValue="False" Converter="{x:Static BoolConverters.Not}" />
                 </MultiBinding>
               </SpectrumControl.IsDockEffectVisible>
               <SpectrumControl.Styles>
@@ -54,7 +54,7 @@
                 <Setter Property="Margin" Value="31 26 31 0" />
               </Style>
             </DockPanel.Styles>
-            <wallets:MusicControlsView DockPanel.Dock="Bottom" DataContext="{Binding CurrentWallet^}"
+            <wallets:MusicControlsView DockPanel.Dock="Bottom" DataContext="{Binding NavBar.Home}"
                                        HorizontalAlignment="Center" Height="66" />
 
             <!-- Main content -->

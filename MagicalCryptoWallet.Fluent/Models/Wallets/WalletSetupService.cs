@@ -12,25 +12,26 @@ using MagicalCryptoWallet.Wallets;
 
 namespace MagicalCryptoWallet.Fluent.Models.Wallets;
 
-public partial class WalletRepository : ReactiveObject
+public partial class WalletSetupService : ReactiveObject, IDisposable
 {
 	private readonly IServices _services;
 	private readonly AmountProvider _amountProvider;
 	private readonly CompositeDisposable _disposable = new();
 
-	public WalletRepository(IServices services, AmountProvider amountProvider)
+	public WalletSetupService(IServices services, AmountProvider amountProvider)
 	{
 		_services = services;
 		_amountProvider = amountProvider;
 
-		Observable.FromEventPattern<Wallet>(services.WalletManager, nameof(WalletManager.WalletAdded))
+		Observable.FromEventPattern<Wallet>(services.WalletSession, nameof(WalletSession.WalletConfigured))
 			.Select(x => x.EventArgs)
-			.Subscribe(wallet => Wallet = CreateWalletModel(wallet))
+			.ObserveOn(RxApp.MainThreadScheduler)
+			.Subscribe(PublishWallet)
 			.DisposeWith(_disposable);
 
-		if (services.WalletManager.GetWallet() is { } wallet)
+		if (services.WalletSession.GetWallet() is { } wallet)
 		{
-			Wallet = CreateWalletModel(wallet);
+			PublishWallet(wallet);
 		}
 	}
 
@@ -40,18 +41,13 @@ public partial class WalletRepository : ReactiveObject
 		private set => this.RaiseAndSetIfChanged(ref field, value);
 	}
 
-	public bool HasWallet => _services.HasWallet();
+	public bool HasWallet => _services.WalletSession.HasWallet();
 
 	private KeyPath AccountKeyPath => KeyManager.GetAccountKeyPath(_services.GetNetwork(), ScriptPubKeyType.Segwit);
 
-	public string GetNextWalletName()
+	public async Task<WalletSetupDraft> NewWalletAsync(WalletCreationOptions options, CancellationToken? cancelToken = null)
 	{
-		return _services.GetNextWalletName("Wallet");
-	}
-
-	public async Task<WalletSettingsModel> NewWalletAsync(WalletCreationOptions options, CancellationToken? cancelToken = null)
-	{
-		_services.WalletManager.EnsureCanAddWallet();
+		_services.WalletSession.EnsureCanConfigure();
 		return options switch
 		{
 			WalletCreationOptions.AddNewWallet add => await CreateNewWalletAsync(add),
@@ -62,27 +58,25 @@ public partial class WalletRepository : ReactiveObject
 		};
 	}
 
-	public IWalletModel SaveWallet(WalletSettingsModel walletSettings)
+	public IWalletModel Commit(WalletSetupDraft draft)
 	{
-		var id = walletSettings.Save();
-		var result = Wallet is { } wallet && wallet.Id == id ? wallet : throw new InvalidOperationException("The configured wallet was not found.");
-		result.Settings.IsCoinJoinPaused = walletSettings.IsCoinJoinPaused;
+		PublishWallet(_services.WalletSession.Configure(draft.Keys));
+		var result = Wallet ?? throw new InvalidOperationException("The configured wallet model is unavailable.");
 		return result;
 	}
 
-	public (ErrorSeverity Severity, string Message)? ValidateWalletName(string walletName)
+	private void PublishWallet(Wallet wallet)
 	{
-		return _services.ValidateWalletName(walletName);
+		if (Wallet is WalletModel model && ReferenceEquals(model.Wallet, wallet)) { return; }
+		var old = Wallet;
+		Wallet = CreateWalletModel(wallet);
+		(old as IDisposable)?.Dispose();
 	}
 
-	public IWalletModel? GetExistingWallet(HwiEnumerateEntry device) =>
-		_services.WalletManager.GetWallet() is { } wallet && device.Fingerprint is { } fingerprint && wallet.KeyManager.MasterFingerprint == fingerprint ? Wallet : null;
-
-	private async Task<WalletSettingsModel> CreateNewWalletAsync(WalletCreationOptions.AddNewWallet options)
+	private async Task<WalletSetupDraft> CreateNewWalletAsync(WalletCreationOptions.AddNewWallet options)
 	{
-		var (walletName, walletBackup, _) = options;
+		var (walletBackup, _) = options;
 
-		ArgumentException.ThrowIfNullOrEmpty(walletName);
 		ArgumentNullException.ThrowIfNull(walletBackup);
 		ArgumentNullException.ThrowIfNull(walletBackup.Password);
 
@@ -90,7 +84,7 @@ public partial class WalletRepository : ReactiveObject
 				() =>
 				{
 					var walletGenerator = new WalletGenerator(
-						_services.GetWalletsDir(),
+						_services.WalletSession.WalletDirectories.WalletsDir,
 						_services.GetNetwork())
 					{
 						TipHeight = _services.GetTipHeight()
@@ -99,60 +93,55 @@ public partial class WalletRepository : ReactiveObject
 					return walletBackup switch
 					{
 						RecoveryWordsBackup recoveryWordsBackup =>
-							walletGenerator.GenerateWallet(
-								walletName,
+							walletGenerator.GenerateDraft(
 								recoveryWordsBackup.Password,
-								recoveryWordsBackup.Mnemonic, toFile: false).KeyManager,
+								recoveryWordsBackup.Mnemonic).KeyManager,
 						MultiShareBackup multiShareBackup =>
-							walletGenerator.GenerateWallet(
-								walletName,
+							walletGenerator.GenerateDraft(
 								multiShareBackup.Password,
-								multiShareBackup.Shares.Take(multiShareBackup.Settings.Threshold).ToArray(), toFile: false).KeyManager,
+								multiShareBackup.Shares.Take(multiShareBackup.Settings.Threshold).ToArray()).KeyManager,
 						_ => throw new ArgumentOutOfRangeException(nameof(walletBackup))
 					};
 				});
 
-		return new WalletSettingsModel(_services, keyManager, true);
+		return new WalletSetupDraft(keyManager);
 	}
 
-	private async Task<WalletSettingsModel> ConnectToHardwareWalletAsync(WalletCreationOptions.ConnectToHardwareWallet options, CancellationToken? cancelToken)
+	private async Task<WalletSetupDraft> ConnectToHardwareWalletAsync(WalletCreationOptions.ConnectToHardwareWallet options, CancellationToken? cancelToken)
 	{
-		var (walletName, device) = options;
+		var device = options.Device;
 
-		ArgumentException.ThrowIfNullOrEmpty(walletName);
 		ArgumentNullException.ThrowIfNull(device);
 		ArgumentNullException.ThrowIfNull(cancelToken);
 
-		var walletFilePath = _services.GetWalletFilePath(walletName);
+		var walletFilePath = _services.WalletSession.WalletDirectories.NewWalletFilePath;
 		var keyManager = await HardwareWalletOperationHelpers.GenerateWalletAsync(device, walletFilePath, _services.GetNetwork(), cancelToken.Value, toFile: false);
 		keyManager.SetIcon(device.WalletType, toFile: false);
 
-		var result = new WalletSettingsModel(_services, keyManager, true);
+		var result = new WalletSetupDraft(keyManager);
 		return result;
 	}
 
-	private async Task<WalletSettingsModel> ImportWalletAsync(WalletCreationOptions.ImportWallet options)
+	private async Task<WalletSetupDraft> ImportWalletAsync(WalletCreationOptions.ImportWallet options)
 	{
-		var (walletName, filePath) = options;
+		var filePath = options.FilePath;
 
-		ArgumentException.ThrowIfNullOrEmpty(walletName);
 		ArgumentException.ThrowIfNullOrEmpty(filePath);
 
-		var keyManager = await ImportWalletHelper.ImportWalletAsync(_services.WalletManager, walletName, filePath);
-		return new WalletSettingsModel(_services, keyManager, true);
+		var keyManager = await ImportWalletHelper.ImportWalletAsync(_services.WalletSession, filePath);
+		return new WalletSetupDraft(keyManager);
 	}
 
-	private async Task<WalletSettingsModel> RecoverWalletAsync(WalletCreationOptions.RecoverWallet options)
+	private async Task<WalletSetupDraft> RecoverWalletAsync(WalletCreationOptions.RecoverWallet options)
 	{
-		var (walletName, walletBackup, minGapLimit, birthHeight) = options;
+		var (walletBackup, minGapLimit, birthHeight) = options;
 
-		ArgumentException.ThrowIfNullOrEmpty(walletName);
 		ArgumentNullException.ThrowIfNull(minGapLimit);
 		ArgumentNullException.ThrowIfNull(walletBackup);
 
 		var keyManager = await Task.Run(() =>
 		{
-			var walletFilePath = _services.GetWalletFilePath(walletName);
+			var walletFilePath = _services.WalletSession.WalletDirectories.NewWalletFilePath;
 
 			var result = walletBackup switch
 			{
@@ -185,11 +174,13 @@ public partial class WalletRepository : ReactiveObject
 			return result;
 		});
 
-		return new WalletSettingsModel(_services, keyManager, true, true);
+		return new WalletSetupDraft(keyManager);
 	}
 
 	private WalletModel CreateWalletModel(Wallet wallet) =>
 		wallet.KeyManager.IsHardwareWallet
 		? new HardwareWalletModel(_services, wallet, _amountProvider)
 		: new WalletModel(_services, wallet, _amountProvider);
+	public void Dispose() { _disposable.Dispose(); (Wallet as IDisposable)?.Dispose(); }
+
 }

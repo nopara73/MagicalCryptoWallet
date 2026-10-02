@@ -3,6 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:wallets="clr-namespace:MagicalCryptoWallet.Fluent.ViewModels.Wallets"
+             xmlns:walletViews="using:MagicalCryptoWallet.Fluent.Views.Wallets"
              xmlns:home="using:MagicalCryptoWallet.Fluent.Views.Wallets.Home"
              xmlns:history="using:MagicalCryptoWallet.Fluent.Views.Wallets.Home.History"
              xmlns:shell="clr-namespace:MagicalCryptoWallet.Fluent.Views.Shell"
@@ -16,7 +17,7 @@
   </Interaction.Behaviors>
   <ContentArea ScrollViewer.VerticalScrollBarVisibility="Disabled" ClipToBounds="False" Classes="StretchTopContent">
     <ContentArea.Title>
-      <TextBlock TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding $self.Text}" Text="{Binding Title, FallbackValue=My Wallet with a very long name}" />
+      <TextBlock TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding $self.Text}" Text="{Binding Title, FallbackValue=Magical Crypto Wallet}" />
     </ContentArea.Title>
     <ContentArea.TopContent>
       <StackPanel>
@@ -121,11 +122,19 @@
     </ContentArea.TopContent>
     <DockPanel Name="Panel" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
 
+      <walletViews:WalletSyncStatusView DataContext="{Binding SyncStatus}" DockPanel.Dock="Top" />
+
+      <UniformGrid Columns="3" IsVisible="{Binding !HasCachedData}" DockPanel.Dock="Top" Margin="0 0 0 15">
+        <Border CornerRadius="8" Padding="25" Margin="5" Background="{DynamicResource RegionColor}"><TextBlock Text="—" FontSize="32" HorizontalAlignment="Center" Opacity="0.3" AutomationProperties.Name="Balance unavailable" /></Border>
+        <Border CornerRadius="8" Padding="25" Margin="5" Background="{DynamicResource RegionColor}"><TextBlock Text="—" FontSize="32" HorizontalAlignment="Center" Opacity="0.3" AutomationProperties.Name="Privacy unavailable" /></Border>
+        <Border CornerRadius="8" Padding="25" Margin="5" Background="{DynamicResource RegionColor}"><TextBlock Text="—" FontSize="32" HorizontalAlignment="Center" Opacity="0.3" /></Border>
+      </UniformGrid>
+
       <!-- Balance, privacy progress, exchange rate -->
-      <home:WalletTiles DataContext="{Binding Tiles}" DockPanel.Dock="Top" Margin="-6 -6 0 0" />
+      <home:WalletTiles IsVisible="{Binding $parent[UserControl].((wallets:WalletViewModel)DataContext).HasCachedData}" DataContext="{Binding Tiles}" DockPanel.Dock="Top" Margin="-6 -6 0 0" />
 
       <!-- Transaction history -->
-      <history:HistoryTable Name="HistoryTable"
+      <history:HistoryTable IsVisible="{Binding $parent[UserControl].((wallets:WalletViewModel)DataContext).HasCachedData}" Name="HistoryTable"
                             DataContext="{Binding History}"
                             HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
     </DockPanel>

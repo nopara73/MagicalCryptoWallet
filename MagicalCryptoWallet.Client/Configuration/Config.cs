@@ -158,6 +158,10 @@ public class Config
 		"datadir",
 		EnvironmentHelpers.GetDataDir(Path.Combine("MagicalCryptoWallet", "Client")),
 		Environment.GetCommandLineArgs()).EffectiveValue;
+	public static string ResolveDataDirectory(string[] arguments) => Path.GetFullPath(GetStringValue(
+		"datadir", EnvironmentHelpers.GetDataDir(Path.Combine("MagicalCryptoWallet", "Client")), arguments).EffectiveValue);
+	public static Network ResolveNetwork(string[] arguments, string fallback) => Network.GetNetwork(GetStringValue("network", fallback, arguments).EffectiveValue)
+		?? throw new ArgumentException("Invalid network.");
 
 	public static string LogLevel { get; } = GetStringValue("loglevel", "", Environment.GetCommandLineArgs()).EffectiveValue;
 	public static LogMode[] LogModes { get; } = GetLogModeArrayValue("LogModes", arrayValues: DefaultLogModes, Environment.GetCommandLineArgs()).EffectiveValue;

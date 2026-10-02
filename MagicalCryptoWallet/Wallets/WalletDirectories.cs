@@ -1,139 +1,96 @@
-using NBitcoin;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
+using System.Security.Cryptography;
+using System.Text.Json;
+using MagicalCryptoWallet.Blockchain.Keys;
 
 namespace MagicalCryptoWallet.Wallets;
 
-public class WalletDirectories
+public sealed class WalletDirectories
 {
 	private readonly string _workDir;
 	public const string WalletsDirName = "Wallets";
 	public const string WalletFileExtension = "json";
-
 	public WalletDirectories(Network network, string workDir)
 	{
 		_workDir = workDir;
 		Network = network;
-		WalletsDir = network == Network.Main
-			? Path.Combine(workDir, WalletsDirName)
-			: Path.Combine(workDir, WalletsDirName, network.ToString());
-
+		WalletsDir = network == Network.Main ? Path.Combine(workDir, WalletsDirName) : Path.Combine(workDir, WalletsDirName, network.ToString());
 		Directory.CreateDirectory(WalletsDir);
 	}
-
-	public string WalletsDir { get; }
-
 	public Network Network { get; }
-
+	public string WalletsDir { get; }
 	public string ConfiguredWalletFilePath => Path.Combine(WalletsDir, ".wallet");
+	public string NewWalletFilePath => Path.Combine(WalletsDir, "Wallet.json");
+	internal string SetupJournalPath => Path.Combine(WalletsDir, ".wallet-setup");
 
-	public string? GetConfiguredWalletName()
+	public string? ResolveConfiguredWalletFile()
 	{
+		RecoverSetup();
+		return LegacyWalletDiscovery.Resolve(WalletsDir, _workDir, ConfiguredWalletFilePath);
+	}
+	internal void PersistConfiguredFile(string filePath)
+	{
+		var stem = Path.GetFileNameWithoutExtension(filePath);
+		LegacyWalletDiscovery.ValidateFileStem(stem);
 		if (File.Exists(ConfiguredWalletFilePath))
 		{
-			var name = File.ReadAllText(ConfiguredWalletFilePath);
-			ValidateConfiguredWalletName(name);
-			if (!File.Exists(GetWalletFilePaths(name + ".json")))
-			{
-				throw new FileNotFoundException("The configured wallet file is missing. Restore it from your backup before starting the application.", GetWalletFilePaths(name + ".json"));
-			}
-			return name;
+			if (File.ReadAllText(ConfiguredWalletFilePath) == stem) { return; }
+			throw new InvalidOperationException("A different wallet file is already configured.");
 		}
-
-		var names = EnumerateWalletFiles().Select(file => Path.GetFileNameWithoutExtension(file.Name)).Order(StringComparer.Ordinal).ToArray();
-		var previousWalletName = names.Length > 1 ? ReadPreviousWalletName() : null;
-		return names.Contains(previousWalletName, StringComparer.Ordinal) ? previousWalletName : names.FirstOrDefault();
+		var temporary = ConfiguredWalletFilePath + "." + Guid.NewGuid().ToString("N") + ".tmp";
+		try { File.WriteAllText(temporary, stem); File.Move(temporary, ConfiguredWalletFilePath, overwrite: false); }
+		finally { File.Delete(temporary); }
 	}
-
-	public void SetConfiguredWalletName(string walletName)
+	public void Commit(KeyManager draft)
 	{
-		ValidateConfiguredWalletName(walletName);
-		if (File.Exists(ConfiguredWalletFilePath) && File.ReadAllText(ConfiguredWalletFilePath) == walletName)
+		if (ResolveConfiguredWalletFile() is not null || File.Exists(NewWalletFilePath))
 		{
-			return;
+			throw new InvalidOperationException("A wallet file already exists. Setup cannot overwrite it.");
 		}
-		var temporaryPath = ConfiguredWalletFilePath + "." + Guid.NewGuid().ToString("N") + ".tmp";
+		var temporary = Path.Combine(WalletsDir, ".Wallet." + Guid.NewGuid().ToString("N") + ".tmp");
+		bool claimed = false;
+		bool journalOwned = false;
+		draft.SetFilePath(temporary);
 		try
 		{
-			File.WriteAllText(temporaryPath, walletName);
-			File.Move(temporaryPath, ConfiguredWalletFilePath, overwrite: true);
+			draft.ToFile();
+			var journal = new SetupJournal(Path.GetFileName(temporary), Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(temporary))));
+			using (var stream = new FileStream(SetupJournalPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+			{
+				journalOwned = true;
+				JsonSerializer.Serialize(stream, journal);
+				stream.Flush(flushToDisk: true);
+			}
+			File.Move(temporary, NewWalletFilePath, overwrite: false);
+			claimed = true;
+			PersistConfiguredFile(NewWalletFilePath);
+			File.Delete(SetupJournalPath);
 		}
 		finally
 		{
-			File.Delete(temporaryPath);
+			draft.SetFilePath(NewWalletFilePath);
+			File.Delete(temporary);
+			if (!claimed && journalOwned) { File.Delete(SetupJournalPath); }
 		}
 	}
-
-	private string? ReadPreviousWalletName()
+	private void RecoverSetup()
 	{
-		var path = Path.Combine(_workDir, "UiConfig.json");
-		if (!File.Exists(path))
+		if (!File.Exists(SetupJournalPath)) { return; }
+		var journal = JsonSerializer.Deserialize<SetupJournal>(File.ReadAllText(SetupJournalPath)) ?? throw new InvalidDataException("The wallet setup journal is invalid.");
+		if (journal.TemporaryFile is not { Length: 44 } name || !name.StartsWith(".Wallet.", StringComparison.Ordinal) || !name.EndsWith(".tmp", StringComparison.Ordinal) || !Guid.TryParseExact(name.AsSpan(8, 32), "N", out _) || journal.Sha256 is not { Length: 64 } hash || !hash.All(Uri.IsHexDigit))
 		{
-			return null;
+			throw new InvalidDataException("The wallet setup journal has an invalid path.");
 		}
-		try
+		var temporary = Path.Combine(WalletsDir, journal.TemporaryFile);
+		var candidate = File.Exists(NewWalletFilePath) ? NewWalletFilePath : temporary;
+		if (!File.Exists(candidate) || Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(candidate))) != journal.Sha256)
 		{
-			using var document = System.Text.Json.JsonDocument.Parse(File.ReadAllText(path));
-			return document.RootElement.ValueKind == System.Text.Json.JsonValueKind.Object && document.RootElement.TryGetProperty("LastSelectedWallet", out var name) && name.ValueKind == System.Text.Json.JsonValueKind.String ? name.GetString() : null;
+			throw new InvalidDataException("Interrupted wallet setup needs recovery. The committed file does not match its journal.");
 		}
-		catch (Exception ex) when (ex is IOException or System.Text.Json.JsonException)
-		{
-			Logging.Logger.LogWarning(ex);
-			return null;
-		}
+		if (candidate == temporary) { File.Move(temporary, NewWalletFilePath, overwrite: false); }
+		PersistConfiguredFile(NewWalletFilePath);
+		File.Delete(SetupJournalPath);
+		File.Delete(temporary);
 	}
-
-	private static void ValidateConfiguredWalletName(string walletName)
-	{
-		if (!Blockchain.Keys.WalletGenerator.ValidateWalletName(walletName) || walletName.Contains('/') || walletName.Contains('\\'))
-		{
-			throw new InvalidDataException("The configured wallet name is invalid.");
-		}
-	}
-
-	public string GetWalletFilePaths(string walletName)
-	{
-		if (!walletName.EndsWith($".{WalletFileExtension}", StringComparison.OrdinalIgnoreCase))
-		{
-			walletName = $"{walletName}.{WalletFileExtension}";
-		}
-		return Path.Combine(WalletsDir, walletName);
-	}
-
-	public IEnumerable<FileInfo> EnumerateWalletFiles()
-	{
-		var walletsDirInfo = new DirectoryInfo(WalletsDir);
-		var walletsDirExists = walletsDirInfo.Exists;
-		var searchPattern = $"*.{WalletFileExtension}";
-		var searchOption = SearchOption.TopDirectoryOnly;
-		IEnumerable<FileInfo> result;
-
-		
-		if (!walletsDirExists)
-		{
-			return Enumerable.Empty<FileInfo>();
-		}
-
-		result = walletsDirInfo.EnumerateFiles(searchPattern, searchOption);
-		
-		return result.OrderByDescending(t => t.LastAccessTimeUtc);
-	}
-
-	public string GetNextWalletName(string prefix = "Random Wallet")
-	{
-		int i = 1;
-		var walletNames = EnumerateWalletFiles().Select(x => Path.GetFileNameWithoutExtension(x.Name));
-		while (true)
-		{
-			var walletName = i == 1 ? prefix : $"{prefix} {i}";
-
-			if (!walletNames.Contains(walletName))
-			{
-				return walletName;
-			}
-
-			i++;
-		}
-	}
+	private record SetupJournal(string TemporaryFile, string Sha256);
 }

@@ -15,12 +15,10 @@ public partial class DetectedHardwareWalletViewModel : RoutableViewModel
 {
 	public DetectedHardwareWalletViewModel(UiContext uiContext, WalletCreationOptions.ConnectToHardwareWallet options) : base(uiContext)
 	{
-		var (walletName, device) = options;
+		var device = options.Device;
 
-		ArgumentException.ThrowIfNullOrEmpty(walletName);
 		ArgumentNullException.ThrowIfNull(device);
 
-		WalletName = walletName;
 
 		Type = device.WalletType;
 
@@ -39,7 +37,6 @@ public partial class DetectedHardwareWalletViewModel : RoutableViewModel
 
 	public CancellationTokenSource? CancelCts { get; private set; }
 
-	public string WalletName { get; }
 
 	public WalletType Type { get; }
 
@@ -52,7 +49,7 @@ public partial class DetectedHardwareWalletViewModel : RoutableViewModel
 		try
 		{
 			CancelCts ??= new CancellationTokenSource();
-			var walletSettings = await UiContext.WalletRepository.NewWalletAsync(options, CancelCts.Token);
+			var walletSettings = await UiContext.WalletSetupService.NewWalletAsync(options, CancelCts.Token);
 			Navigate().To().AddedWalletPage(walletSettings, options);
 		}
 		catch (Exception ex)
@@ -72,7 +69,7 @@ public partial class DetectedHardwareWalletViewModel : RoutableViewModel
 	{
 		base.OnNavigatedTo(isInHistory, disposables);
 
-		var enableCancel = UiContext.WalletRepository.HasWallet;
+		var enableCancel = UiContext.WalletSetupService.HasWallet;
 		SetupCancel(enableCancel: false, enableCancelOnEscape: enableCancel, enableCancelOnPressed: false);
 
 		disposables.Add(Disposable.Create(() =>

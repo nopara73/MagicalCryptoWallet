@@ -79,15 +79,16 @@ public class AutomaticCoinSelectionTests
 	{
 		await using var app = new SingleWalletTests.SyntheticApplication(await Common.GetEmptyWorkDirAsync());
 		var keys = KeyManager.CreateNew(new Mnemonic(SyntheticMnemonic), "", Network.RegTest);
-		keys.SetFilePath(app.Manager.WalletDirectories.GetWalletFilePaths("Synthetic"));
-		var wallet = app.Manager.AddWallet(keys);
+		keys.SetFilePath(app.Session.WalletDirectories.NewWalletFilePath);
+		var wallet = app.Session.Configure(keys);
 		var coins = ServiceFactory.CreateCoins(keys, [("synthetic-funds", 0, 0.02m, true, 1)]);
 		foreach (var coin in coins)
 		{
 			wallet.TransactionProcessor.Process(coin.Transaction);
 			wallet.TransactionStore.AddOrUpdate(coin.Transaction);
 		}
-		typeof(WalletType).GetProperty(nameof(WalletType.Loaded), BindingFlags.Public | BindingFlags.Instance)!.SetValue(wallet, true);
+		await app.InitializeAsync();
+		await SingleWalletTests.WaitForAsync(() => app.Session.Snapshot.IsSynchronized);
 		using var recipient = new Key();
 		var address = recipient.PubKey.GetAddress(ScriptPubKeyType.Segwit, Network.RegTest).ToString();
 		var service = new MagicalCryptoWalletJsonRpcService(app.Global);

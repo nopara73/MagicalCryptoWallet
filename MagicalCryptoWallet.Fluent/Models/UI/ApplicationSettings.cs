@@ -227,7 +227,8 @@ public partial class ApplicationSettings : ReactiveObject
 
 		// Apply RunOnSystemStartup
 		this.WhenAnyValue(x => x.RunOnSystemStartup)
-			.DoAsync(async _ => await StartupHelper.ModifyStartupSettingAsync(RunOnSystemStartup))
+			.Skip(1)
+			.DoAsync(async _ => await StartupHelper.ModifyStartupSettingAsync(RunOnSystemStartup, new MagicalCryptoWallet.Client.StartupLaunch(EnvironmentHelpers.GetExecutablePath(), _services.DataDir, _services.GetNetwork())))
 			.Subscribe();
 
 		// Apply DoUpdateOnClose

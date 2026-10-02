@@ -40,7 +40,8 @@ public class CoinJoinTracker : IDisposable
 
 	public bool IsCompleted => CoinJoinTask.IsCompleted;
 	public bool InCriticalCoinJoinState { get; private set; }
-	public bool IsStopped { get; set; }
+	public bool IsStopped { get; private set; }
+	public bool InputRegistrationStarted { get; private set; }
 	public List<CoinBanned> BannedCoins { get; private set; } = new();
 
 	public void Stop()
@@ -56,12 +57,16 @@ public class CoinJoinTracker : IDisposable
 	{
 		switch (coinJoinProgressEventArgs)
 		{
+			case EnteringInputRegistrationPhase:
+				InputRegistrationStarted = true;
+				break;
 			case EnteringCriticalPhase:
 				InCriticalCoinJoinState = true;
 				break;
 
 			case LeavingCriticalPhase:
 				InCriticalCoinJoinState = false;
+				if (IsStopped) { _cancellationTokenSource.Cancel(); }
 				break;
 
 			case TransactionSigned transactionSigned:
@@ -91,7 +96,7 @@ public class CoinJoinTracker : IDisposable
 				break;
 		}
 
-		WalletCoinJoinProgressChanged?.Invoke(Wallet, coinJoinProgressEventArgs);
+		WalletCoinJoinProgressChanged?.Invoke(this, coinJoinProgressEventArgs);
 	}
 
 	protected virtual void Dispose(bool disposing)

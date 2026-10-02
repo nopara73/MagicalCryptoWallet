@@ -1,3 +1,5 @@
+using MagicalCryptoWallet.Fluent.Helpers;
+using MagicalCryptoWallet.Fluent.Models;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
@@ -53,10 +55,11 @@ public partial class SpeedUpTransactionDialogViewModel : RoutableViewModel
 
 		try
 		{
-			var isAuthorized = await AuthorizeForPasswordAsync();
+			using var authorized = new TransactionAuthorizationInfo(speedupTransaction.BoostingTransaction);
+			var isAuthorized = await AuthorizationHelpers.AuthorizeTransactionAsync(UiContext, _wallet, authorized);
 			if (isAuthorized)
 			{
-				await _wallet.Transactions.SendAsync(speedupTransaction);
+				await UiContext.Services.SendTransactionAsync(authorized.Transaction);
 				var (title, caption) = ("Success", "Your transaction has been successfully accelerated.");
 
 				UiContext.Navigate().To().SendSuccess(speedupTransaction.BoostingTransaction.Transaction, title, caption, NavigationTarget.CompactDialogScreen);
@@ -72,13 +75,4 @@ public partial class SpeedUpTransactionDialogViewModel : RoutableViewModel
 		IsBusy = false;
 	}
 
-	private async Task<bool> AuthorizeForPasswordAsync()
-	{
-		if (_wallet.Auth.HasPassword)
-		{
-			return await Navigate().To().PasswordAuthDialog(_wallet, "Send").GetResultAsync();
-		}
-
-		return true;
-	}
 }

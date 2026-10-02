@@ -5,10 +5,10 @@ using MagicalCryptoWallet.Wallets.Slip39;
 
 namespace MagicalCryptoWallet.Fluent.Models;
 
-public abstract record WalletCreationOptions(string? WalletName = null)
+public abstract record WalletCreationOptions
 {
-	public record AddNewWallet(string? WalletName = null, WalletBackup? SelectedWalletBackup = null, WalletBackup[]? WalletBackups = null)
-		: WalletCreationOptions(WalletName)
+	public record AddNewWallet(WalletBackup? SelectedWalletBackup = null, WalletBackup[]? WalletBackups = null)
+		: WalletCreationOptions
 	{
 		public AddNewWallet WithNewWalletBackups()
 		{
@@ -35,16 +35,13 @@ public abstract record WalletCreationOptions(string? WalletName = null)
 	}
 
 	public record ConnectToHardwareWallet(
-		string? WalletName = null,
-		HwiEnumerateEntry? Device = null) : WalletCreationOptions(WalletName);
+		HwiEnumerateEntry? Device = null) : WalletCreationOptions;
 
 	public record ImportWallet(
-		string? WalletName = null,
-		string? FilePath = null) : WalletCreationOptions(WalletName);
+		string? FilePath = null) : WalletCreationOptions;
 
 	public record RecoverWallet(
-		string? WalletName = null,
 		WalletBackup? WalletBackup = null,
 		int? MinGapLimit = null,
-		uint? BirthHeight = null) : WalletCreationOptions(WalletName);
+		uint? BirthHeight = null) : WalletCreationOptions;
 }

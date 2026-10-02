@@ -19,11 +19,11 @@ namespace MagicalCryptoWallet.Fluent.Helpers;
 
 public static class TransactionHelpers
 {
-	public static BuildTransactionResult BuildTransaction(Wallet wallet, TransactionInfo transactionInfo, bool isPayJoin = false, bool tryToSign = true)
+	public static BuildTransactionResult BuildTransaction(Wallet wallet, TransactionInfo transactionInfo, bool isPayJoin = false, bool tryToSign = false, WalletAuthorization? authorization = null)
 	{
 		if (transactionInfo.IsPayToMany)
 		{
-			return BuildPayToManyTransaction(wallet, transactionInfo, tryToSign);
+			return BuildPayToManyTransaction(wallet, transactionInfo, tryToSign, authorization);
 		}
 
 		if (transactionInfo.IsOptimized)
@@ -33,7 +33,7 @@ public static class TransactionHelpers
 				transactionInfo.Recipient,
 				transactionInfo.FeeRate,
 				transactionInfo.ChangelessCoins,
-				tryToSign: tryToSign);
+				tryToSign: tryToSign, authorization: authorization);
 		}
 
 		if (isPayJoin && transactionInfo.SubtractFee)
@@ -49,20 +49,20 @@ public static class TransactionHelpers
 			transactionInfo.Coins,
 			transactionInfo.SubtractFee,
 			isPayJoin ? transactionInfo.PayJoinClient : null,
-			tryToSign: tryToSign);
+			tryToSign: tryToSign, authorization: authorization);
 	}
 
-	private static BuildTransactionResult BuildPayToManyTransaction(Wallet wallet, TransactionInfo transactionInfo, bool tryToSign)
+	private static BuildTransactionResult BuildPayToManyTransaction(Wallet wallet, TransactionInfo transactionInfo, bool tryToSign, WalletAuthorization? authorization)
 	{
 		var intent = BuildPayToManyIntent(transactionInfo);
 
 		return wallet.BuildTransaction(
-			password: wallet.Password,
+			password: string.Empty,
 			payments: intent,
 			feeStrategy: FeeStrategy.CreateFromFeeRate(transactionInfo.FeeRate),
 			allowUnconfirmed: true,
 			allowedInputs: transactionInfo.Coins.Select(c => c.Outpoint),
-			tryToSign: tryToSign);
+			tryToSign: tryToSign, authorization: authorization);
 	}
 
 	public static bool TryBuildTransactionWithoutPrevTx(

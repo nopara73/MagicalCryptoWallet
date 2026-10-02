@@ -13,16 +13,6 @@
 
   <StackPanel Classes="settingsLayout">
   <DockPanel>
-    <TextBlock Text="Wallet Name" />
-    <TextBox MaxLength="{StaticResource WalletNameMaxLength}"
-             Text="{Binding WalletName}"
-             VerticalAlignment="Top"
-             Watermark="Wallet name">
-    </TextBox>
-  </DockPanel>
-
-    <DockPanel IsVisible="{Binding IsHardwareWallet}">
-      <TextBlock Text="PSBT workflow" />
       <ToggleSwitch IsChecked="{Binding PreferPsbtWorkflow}" />
     </DockPanel>
 

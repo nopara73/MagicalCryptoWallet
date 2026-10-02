@@ -72,11 +72,11 @@
       </Setter>
     </Style>
 
-    <Style Selector="Ellipse:not(.isLoading).isLoggedIn">
+    <Style Selector="Ellipse:not(.isLoading).hasCachedData">
       <Setter Property="Opacity" Value="1" />
     </Style>
 
-    <Style Selector="Ellipse.isLoading.isLoggedIn">
+    <Style Selector="Ellipse.isLoading.hasCachedData">
       <Style.Animations>
         <Animation IterationCount="Infinite" Duration="0:0:1">
           <KeyFrame Cue="50%">
@@ -86,7 +86,7 @@
       </Style.Animations>
     </Style>
 
-    <Style Selector="Ellipse.isLoggedIn.isCoinjoining">
+    <Style Selector="Ellipse.hasCachedData.isCoinjoining">
       <Setter Property="Fill" Value="{DynamicResource CoinjoinActiveColor}" />
     </Style>
 
@@ -135,22 +135,22 @@
     <Separator DockPanel.Dock="Bottom" />
 
     <!-- The application has one wallet, with a home button instead of a selector. -->
-    <ContentControl Content="{Binding Wallet}" HorizontalContentAlignment="Center"
+    <ContentControl Content="{Binding Home}" HorizontalContentAlignment="Center"
                     VerticalContentAlignment="Top">
       <ContentControl.DataTemplates>
-        <DataTemplate DataType="vmw:WalletPageViewModel" x:DataType="vmw:WalletPageViewModel">
+        <DataTemplate DataType="vmw:WalletViewModel" x:DataType="vmw:WalletViewModel">
           <NavBarItem Command="{Binding OpenCommand}"
                       Focusable="True"
-                      Classes.selected="{Binding IsSelected}"
+                      Classes.selected="{Binding IsActive}"
                       ToolTip.Tip="{Binding Title}"
                       AutomationProperties.Name="{Binding Title}">
             <Panel>
               <Ellipse Classes="loadingindicator"
                        Classes.isLoading="{Binding IsLoading}"
-                       Classes.isLoggedIn="{Binding IsLoggedIn}"
-                       Classes.isCoinjoining="{Binding WalletViewModel.IsCoinJoining}" />
+                       Classes.hasCachedData="{Binding HasCachedData}"
+                       Classes.isCoinjoining="{Binding IsCoinJoining}" />
               <StackPanel VerticalAlignment="Center" Spacing="2">
-                <PathIcon Classes="new size24 wallet" Classes.isfocused="{Binding IsSelected}" />
+                <PathIcon Classes="new size24 wallet" Classes.isfocused="{Binding IsActive}" />
                 <LayoutTransformControl>
                   <FadeOutTextControl Text="{Binding Title}" HorizontalAlignment="Center"
                                       FontSize="{StaticResource FontSizeH9}" />

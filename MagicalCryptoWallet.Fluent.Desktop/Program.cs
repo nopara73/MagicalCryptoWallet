@@ -22,6 +22,7 @@ using MagicalCryptoWallet.Services;
 using ReactiveUI.Avalonia;
 using MagicalCryptoWallet.Client;
 using MagicalCryptoWallet.Client.Configuration;
+using MagicalCryptoWallet.Helpers;
 
 namespace MagicalCryptoWallet.Fluent.Desktop;
 
@@ -78,6 +79,7 @@ public class Program
 			var app = MagicalCryptoWalletAppBuilder
 				.Create("Magical Crypto Wallet GUI", args)
 				.EnsureSingleInstance()
+				.WithDesktopActivation()
 				.OnUnhandledExceptions(LogUnhandledException)
 				.OnUnobservedTaskExceptions(LogUnobservedTaskException)
 				.OnTermination(TerminateApplication)
@@ -90,11 +92,17 @@ public class Program
 				throw app.TerminateService.GracefulCrashException;
 			}
 
-			if (exitCode == ExitCode.Ok && app.Global is {Status: {InstallOnClose: true, InstallerFilePath: var installerFilePath}})
+			if (exitCode == ExitCode.Ok && app.HasStarted && app.Global is {Status: {InstallOnClose: true, InstallerFilePath: var installerFilePath}})
 			{
 				Installer.StartInstallingNewVersion(installerFilePath);
 			}
 
+			if (app.HasStarted && AppLifetimeHelper.RestartRequested)
+			{
+				var launch = new StartupLaunch(EnvironmentHelpers.GetExecutablePath(), app.DataDirectory, app.Config.Network);
+				var preserved = app.AppConfig.Arguments.Where(argument => argument != StartupHelper.SilentArgument && !argument.StartsWith("--datadir=", StringComparison.OrdinalIgnoreCase) && !argument.StartsWith("--network=", StringComparison.OrdinalIgnoreCase));
+				using var restarted = System.Diagnostics.Process.Start(MagicalCryptoWallet.BundledApps.ProcessStartInfoFactory.Make(launch.Executable, preserved.Concat(launch.Arguments(silent: false)).ToArray()));
+			}
 			return (int)exitCode;
 		}
 		catch (Exception ex)
@@ -123,7 +131,7 @@ public class Program
 				DetachTrayIconMenus();
 			}
 
-			(Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow?.Close();
+			(Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.Shutdown();
 		}, DispatcherPriority.Send);
 	}
 
@@ -218,8 +226,8 @@ public static class MagicalCryptoWalletAppExtensions
 				});
 
 				Logger.LogInfo("Magical Crypto Wallet GUI started.");
-				bool runGuiInBackground = app.AppConfig.Arguments.Any(arg => arg.Contains(StartupHelper.SilentArgument));
-				UiConfig uiConfig = LoadOrCreateUiConfig(Config.DataDir);
+				bool runGuiInBackground = app.AppConfig.Arguments.Contains(StartupHelper.SilentArgument, StringComparer.Ordinal);
+				UiConfig uiConfig = LoadOrCreateUiConfig(app.DataDirectory);
 				var services = Services.Create(app.Global, uiConfig, app.TerminateService);
 
 				using CancellationTokenSource stopLoadingCts = new();
@@ -231,8 +239,11 @@ public static class MagicalCryptoWalletAppExtensions
 						await app.Global.InitializeAsync(initializeSleepInhibitor: true, app.TerminateService, stopLoadingCts.Token).ConfigureAwait(false);
 
 						// Make sure that wallet startup set correctly regarding RunOnSystemStartup
-						await StartupHelper.ModifyStartupSettingAsync(uiConfig.RunOnSystemStartup).ConfigureAwait(false);
-					}, startInBg: runGuiInBackground))
+						if (uiConfig.RunOnSystemStartup)
+						{
+							await StartupHelper.ModifyStartupSettingAsync(true, new StartupLaunch(EnvironmentHelpers.GetExecutablePath(), app.DataDirectory, app.Config.Network)).ConfigureAwait(false);
+						}
+					}, startInBg: runGuiInBackground, activation: app.Activation))
 					.UseReactiveUI()
 					.SetupAppBuilder(services.Config.EnableGpu)
 					.AfterSetup(_ =>

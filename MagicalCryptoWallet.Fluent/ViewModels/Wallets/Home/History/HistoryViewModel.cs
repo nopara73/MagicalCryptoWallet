@@ -19,8 +19,9 @@ using MagicalCryptoWallet.Fluent.Views.Wallets.Home.History.Columns;
 namespace MagicalCryptoWallet.Fluent.ViewModels.Wallets.Home.History;
 
 [AppLifetime]
-public partial class HistoryViewModel : ActivatableViewModel
+public partial class HistoryViewModel : ActivatableViewModel, IDisposable
 {
+	private readonly CompositeDisposable _lifetime = new();
 	private readonly IWalletModel _wallet;
 
 	[AutoNotify(SetterModifier = AccessModifier.Private)]
@@ -41,10 +42,10 @@ public partial class HistoryViewModel : ActivatableViewModel
 					.Ascending(x => x.Transaction.IsConfirmed)
 					.ThenByDescending(x => x.Transaction.OrderIndex)
 			)
-		.Subscribe();
+		.Subscribe().DisposeWith(_lifetime);
 
 		_wallet.Transactions.IsEmpty
-			.BindTo(this, x => x.IsTransactionHistoryEmpty);
+			.BindTo(this, x => x.IsTransactionHistoryEmpty).DisposeWith(_lifetime);
 	}
 
 	public IObservableCollection<HistoryItemViewModelBase> Transactions { get; } = new ObservableCollectionExtended<HistoryItemViewModelBase>();
@@ -237,4 +238,6 @@ public partial class HistoryViewModel : ActivatableViewModel
 
 		return viewModel;
 	}
+	public void Dispose() { _lifetime.Dispose(); Source?.Dispose(); }
+
 }

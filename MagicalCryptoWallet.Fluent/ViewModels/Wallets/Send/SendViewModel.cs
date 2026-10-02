@@ -371,7 +371,7 @@ public partial class SendViewModel : RoutableViewModel
 
 		if (_coinJoinManager is { } coinJoinManager)
 		{
-			await coinJoinManager.WalletEnteredSendingAsync(_wallet);
+			await coinJoinManager.WalletEnteredSendingAsync();
 		}
 
 		var sendParameters = _parameters with { TransactionInfo = transactionInfo };
@@ -628,7 +628,7 @@ public partial class SendViewModel : RoutableViewModel
 
 			if (_coinJoinManager is { } coinJoinManager)
 			{
-				coinJoinManager.WalletEnteredSendWorkflow(_walletModel.Id);
+				coinJoinManager.WalletEnteredSendWorkflow();
 			}
 		}
 
@@ -646,7 +646,7 @@ public partial class SendViewModel : RoutableViewModel
 
 		if (!isInHistory && _coinJoinManager is { } coinJoinManager)
 		{
-			coinJoinManager.WalletLeftSendWorkflow(_wallet);
+			coinJoinManager.WalletLeftSendWorkflow();
 		}
 	}
 }

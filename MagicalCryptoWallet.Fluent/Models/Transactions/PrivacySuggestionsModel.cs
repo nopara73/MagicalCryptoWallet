@@ -160,7 +160,7 @@ public partial class PrivacySuggestionsModel
 
 		var availableCoins = _sendFlow.AvailableCoins;
 
-		ImmutableList<SmartCoin> coinsToExclude = _cjManager?.CoinsInCriticalPhase[_wallet.WalletId] ?? [];
+		ImmutableList<SmartCoin> coinsToExclude = _cjManager?.CoinsInCriticalPhase ?? [];
 		bool wasCoinjoiningCoinUsed = parameters.Transaction.SpentCoins.Any(coinsToExclude.Contains);
 
 		// Only exclude coins if the original transaction doesn't use them either.
@@ -296,7 +296,7 @@ public partial class PrivacySuggestionsModel
 		ImmutableArray<SmartCoin> coinsToUse = usedPockets.SelectMany(x => x.Coins).ToImmutableArray();
 
 		// If the original transaction couldn't avoid the CJing coins, BnB can use them too. Otherwise exclude them.
-		var coinsInCoinJoin = _cjManager?.CoinsInCriticalPhase[_wallet.WalletId] ?? [];
+		var coinsInCoinJoin = _cjManager?.CoinsInCriticalPhase ?? [];
 		coinsToUse = spentCoins.Any(coinsInCoinJoin.Contains) ? coinsToUse : coinsToUse.Except(coinsInCoinJoin).ToImmutableArray();
 
 		// If the original transaction is using only confirmed coins, BnB can use only them too. Otherwise let unconfirmed coins stay in the list.

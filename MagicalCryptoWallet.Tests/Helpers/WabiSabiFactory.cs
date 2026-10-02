@@ -1,3 +1,4 @@
+using MagicalCryptoWallet.Tests.Helpers;
 using NBitcoin;
 using NBitcoin.Crypto;
 using NBitcoin.RPC;
@@ -306,7 +307,7 @@ public static class WabiSabiFactory
 	public static (IKeyChain, SmartCoin, SmartCoin) CreateCoinKeyPairs(KeyManager? keyManager = null)
 	{
 		var km = keyManager ?? ServiceFactory.CreateKeyManager("");
-		var keyChain = new KeyChain(km, "");
+		var keyChain = new SyntheticKeyChain(km, "");
 
 		var smartCoin1 = BitcoinFactory.CreateSmartCoin(BitcoinFactory.CreateHdPubKey(km), Money.Coins(1m));
 		var smartCoin2 = BitcoinFactory.CreateSmartCoin(BitcoinFactory.CreateHdPubKey(km), Money.Coins(2m));
@@ -320,7 +321,7 @@ public static class WabiSabiFactory
 	{
 		return CreateTestCoinJoinClient(
 			apiClientFactory,
-			new KeyChain(keyManager, ""),
+			new SyntheticKeyChain(keyManager, ""),
 			new OutputProvider(new InternalDestinationProvider(keyManager), RandomnessProviders.Insecure),
 			roundStateProvider,
 			keyManager.NonPrivateCoinIsolation);

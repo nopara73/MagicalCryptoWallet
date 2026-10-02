@@ -47,12 +47,12 @@ public partial class AddWalletPageViewModel : DialogViewModelBase<Unit>
 	private void OnCreateWallet()
 	{
 		var options = new WalletCreationOptions.AddNewWallet().WithNewWalletBackups();
-		Navigate().To().WalletNamePage(options);
+		Navigate().To().WalletBackupType(options);
 	}
 
 	private void OnConnectHardwareWallet()
 	{
-		Navigate().To().WalletNamePage(new WalletCreationOptions.ConnectToHardwareWallet());
+		Navigate().To().ConnectHardwareWallet(new WalletCreationOptions.ConnectToHardwareWallet());
 	}
 
 	private async Task OnImportWalletAsync()
@@ -67,18 +67,9 @@ public partial class AddWalletPageViewModel : DialogViewModelBase<Unit>
 			}
 
 			var filePath = file.Path.LocalPath;
-			var walletName = Path.GetFileNameWithoutExtension(filePath);
+			var options = new WalletCreationOptions.ImportWallet(filePath);
 
-			var options = new WalletCreationOptions.ImportWallet(walletName, filePath);
-
-			var validationError = UiContext.WalletRepository.ValidateWalletName(walletName);
-			if (validationError is { })
-			{
-				Navigate().To().WalletNamePage(options);
-				return;
-			}
-
-			var walletSettings = await UiContext.WalletRepository.NewWalletAsync(options);
+			var walletSettings = await UiContext.WalletSetupService.NewWalletAsync(options);
 
 			Navigate().To().AddedWalletPage(walletSettings, options);
 		}
@@ -91,14 +82,14 @@ public partial class AddWalletPageViewModel : DialogViewModelBase<Unit>
 
 	private void OnRecoverWallet()
 	{
-		Navigate().To().WalletNamePage(new WalletCreationOptions.RecoverWallet());
+		Navigate().To().WalletBackupType(new WalletCreationOptions.RecoverWallet());
 	}
 
 	protected override void OnNavigatedTo(bool isInHistory, CompositeDisposable disposables)
 	{
 		base.OnNavigatedTo(isInHistory, disposables);
 
-		UiContext.Services.WalletManager.EnsureCanAddWallet();
+		UiContext.Services.WalletSession.EnsureCanConfigure();
 		SetupCancel(enableCancel: false, enableCancelOnEscape: false, enableCancelOnPressed: false);
 	}
 

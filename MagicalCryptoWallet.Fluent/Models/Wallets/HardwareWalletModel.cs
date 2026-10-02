@@ -14,7 +14,7 @@ internal class HardwareWalletModel : WalletModel, IHardwareWalletModel
 	{
 		if (!wallet.KeyManager.IsHardwareWallet)
 		{
-			throw new InvalidOperationException($"Wallet '{wallet.WalletName}' is not a hardware wallet. Cannot initialize instance of type HardwareWalletModel.");
+			throw new InvalidOperationException($"The configured wallet is not a hardware wallet. Cannot initialize instance of type HardwareWalletModel.");
 		}
 	}
 

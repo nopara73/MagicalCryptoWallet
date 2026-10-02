@@ -111,7 +111,7 @@ public class Global
 			cpfpProvider);
 
 		var walletDirectories = new WalletDirectories(Config.Network, DataDir);
-		WalletManager = new WalletManager(Config.Network, walletDirectories, walletFactory);
+		WalletSession = new WalletSession(Config.Network, walletDirectories, walletFactory, () => GetPeerCount() > 0 || Volatile.Read(ref _rpcConnected), RecoverStorageAsync);
 
 		var broadcasters = CreateBroadcasters(p2PNodeListProvider: () => _p2pConnectionManager.Nodes, _mempoolService);
 		TransactionBroadcaster = new TransactionBroadcaster(broadcasters.ToArray(), _mempoolService);
@@ -122,9 +122,14 @@ public class Global
 		_ticker.DisposeUsing(_disposables);
 
 		_stoppingCts.DisposeUsing(_disposables);
+		if (Config.TryGetCoordinatorUri(out var coordinatorUri)) { RegisterCoinJoinComponents(coordinatorUri); }
 	}
 
 	private readonly AsyncLock _initializationAsyncLock = new();
+	private readonly AsyncLock _networkInitializationLock = new();
+	private readonly Lock _initializationGate = new();
+	private Task? _initializationTask;
+	private bool _synchronizerStarted;
 	private readonly CancellationTokenSource _stoppingCts = new();
 
 	private readonly P2pConnectionManager _p2pConnectionManager;
@@ -146,7 +151,7 @@ public class Global
 	public AllTransactionStore TransactionStore { get; }
 	public IHttpClientFactory ExternalSourcesHttpClientFactory { get; }
 	public Config Config { get; }
-	public WalletManager WalletManager { get; }
+	public WalletSession WalletSession { get; }
 	public TransactionBroadcaster TransactionBroadcaster { get; }
 	public HostedServices HostedServices { get; }
 	public Network Network => Config.Network;
@@ -301,6 +306,7 @@ public class Global
 		return manager;
 	}
 
+	private bool _rpcConnected;
 	private RpcClientBase? ConfigureBitcoinRpcClient()
 	{
 		var credentialString = Config.BitcoinRpcCredentialString;
@@ -384,6 +390,16 @@ public class Global
 		{
 			return;
 		}
+		EventBus.Subscribe<RpcStatusChanged>(e =>
+		{
+			Volatile.Write(ref _rpcConnected, e.Status.IsOk);
+			if (e.Status.IsOk)
+			{
+				var serverTip = (uint)e.Status.Value.Headers;
+				FilterHeaders.SetServerTipHeight(new ChainHeight(serverTip));
+				EventBus.Publish(new NetworkTipHeightChanged(serverTip));
+			}
+		}).DisposeUsing(_disposables);
 		var rpcMonitor = Spawn(RpcMonitor.ServiceName,
 			Service("Bitcoin Rpc Interface Monitoring",
 				Periodically(
@@ -402,7 +418,11 @@ public class Global
 				: Task.FromResult(Result<bool>.Fail(false)))
 			.ConfigureAwait(false);
 
-		var filtersProvider = supportsBlockFiltersResult
+		// A configured node can be temporarily offline during silent startup. Keep its RPC synchronizer so reconnection does not require restarting MCW.
+		var useRpcFilters = _bitcoinRpcClient is not null && (supportsBlockFiltersResult.IsOk || (!supportsBlockFiltersResult.Error && !string.IsNullOrWhiteSpace(Config.BitcoinRpcCredentialString)));
+		var filtersProvider = useRpcFilters
+			? FilterProviders.CreateBitcoinRpcFilterProvider(_bitcoinRpcClient!, _blockHeaders)
+			: supportsBlockFiltersResult
 			.Map(_ => FilterProviders.CreateBitcoinRpcFilterProvider(_bitcoinRpcClient!, _blockHeaders))
 			.Match(
 				rpcProvider => rpcProvider,
@@ -419,7 +439,7 @@ public class Global
 		var (pause, resume, serviceLoop) =
 			Continuously(Synchronizer.CreateFilterGenerator(filtersProvider, FilterStore, FilterHeaders, EventBus));
 
-		if (supportsBlockFiltersResult.IsOk)
+		if (useRpcFilters)
 		{
 			EventBus.Subscribe<RpcStatusChanged>(e =>
 			{
@@ -463,15 +483,6 @@ public class Global
 		Spawn("Synchronizer", Service("Magical Crypto Wallet Index-Based Synchronizer", serviceLoop), cancellationToken)
 			.DisposeUsing(_disposables);
 
-		EventBus.Subscribe<RpcStatusChanged>(e =>
-		{
-			if (e.Status.IsOk)
-			{
-				var serverTip = (uint)e.Status.Value.Headers;
-				FilterHeaders.SetServerTipHeight(new ChainHeight(serverTip));
-				EventBus.Publish(new NetworkTipHeightChanged(serverTip));
-			}
-		}).DisposeUsing(_disposables);
 	}
 
 	private void ConfigureExchangeRateUpdater(CancellationToken cancellationToken)
@@ -546,58 +557,83 @@ public class Global
 		return new CpfpInfoProvider(cpfpUpdater);
 	}
 
-	private async Task InitializeBitcoinStoreAsync(CancellationToken cancellationToken)
+	private async Task<bool> InitializeBitcoinStoreAsync(CancellationToken cancellationToken)
 	{
 		try
 		{
-			await TransactionStore.InitializeAsync(cancellationToken).ConfigureAwait(false);
-			await FilterStore.InitializeAsync(CalculateSafestHeight(), cancellationToken).ConfigureAwait(false);
+			await PrepareStoresAsync(cancellationToken).ConfigureAwait(false);
+			await WalletSession.InitializeAsync(cancellationToken).ConfigureAwait(false);
+			return true;
 		}
 		catch (Exception ex) when (ex is not OperationCanceledException)
 		{
-			Logger.LogError($"Bitcoin storage got corrupted. Resetting the wallet to the first block to rescan. Exception: {ex}");
-			WalletManager.SetMaxBestHeight(CalculateSafestHeight());
-			throw;
+			Logger.LogError(ex);
+			WalletSession.SetMaxBestHeight(CalculateSafestHeight());
+			WalletSession.ReportInitializationFailure(ex);
+			return false;
+		}
+	}
+	private async Task PrepareStoresAsync(CancellationToken cancellationToken)
+	{
+		await TransactionStore.InitializeAsync(cancellationToken).ConfigureAwait(false);
+		await FilterStore.InitializeAsync(CalculateSafestHeight(), cancellationToken).ConfigureAwait(false);
+	}
+	private async Task RecoverStorageAsync(CancellationToken cancellationToken)
+	{
+		await PrepareStoresAsync(cancellationToken).ConfigureAwait(false);
+		await StartSynchronizationAsync(cancellationToken).ConfigureAwait(false);
+	}
+	private async Task StartSynchronizationAsync(CancellationToken cancellationToken)
+	{
+		using (await _networkInitializationLock.LockAsync(cancellationToken).ConfigureAwait(false))
+		{
+			if (_synchronizerStarted) { return; }
+			_p2pConnectionManager.Start(_stoppingCts.Token);
+			await ConfigureSynchronizerAsync(_stoppingCts.Token).ConfigureAwait(false);
+			_synchronizerStarted = true;
 		}
 	}
 
 	private ChainHeight CalculateSafestHeight()
 	{
+		// Until setup chooses an account (or a legacy account's birthday is known), recovery must remain possible from the earliest supported block.
+		if (!WalletSession.HasWallet() || (WalletSession.Snapshot.PublicMetadataRequiresAuthorization && WalletSession.GetBirthHeight() is null)) { return ChainHeight.Genesis; }
 		var checkpointHeight = FilterCheckpoints.GetMostRecentCheckpoint(Network).Header.Height;
 		var transactionHeight = TransactionStore.TryGetOldestKnownTransactionHeight(out var h)
 			? h > Constants.ResyncHeightMargin
 				? h - Constants.ResyncHeightMargin
 				: h
 			: checkpointHeight;
-		var birthHeight = WalletManager.GetBirthHeight();
-		var worstBestHeight = WalletManager.GetBestHeight();
+		var birthHeight = WalletSession.GetBirthHeight();
+		var worstBestHeight = WalletSession.GetBestHeight();
 		return (ChainHeight) Height.Min(checkpointHeight, ((ChainHeight?[]) [transactionHeight, birthHeight, worstBestHeight]).DropNulls());
 	}
 
-	public async Task InitializeAsync(bool initializeSleepInhibitor, TerminateService terminateService, CancellationToken cancellationToken)
+	public Task InitializeAsync(bool initializeSleepInhibitor, TerminateService terminateService, CancellationToken cancellationToken)
+	{
+		cancellationToken.ThrowIfCancellationRequested();
+		lock (_initializationGate) { return _initializationTask ??= InitializeCoreAsync(initializeSleepInhibitor, terminateService, cancellationToken); }
+	}
+	private async Task InitializeCoreAsync(bool initializeSleepInhibitor, TerminateService terminateService, CancellationToken cancellationToken)
 	{
 		using CancellationTokenSource linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _stoppingCts.Token);
 		CancellationToken linkedCtsToken = linkedCts.Token;
 
-		ConfigureMagicalCryptoWalletUpdater(linkedCtsToken);
-		ConfigureExchangeRateUpdater(linkedCtsToken);
-		ConfigureRpcMonitor(linkedCtsToken);
-		ConfigureFeeRateUpdater(linkedCtsToken);
+		ConfigureMagicalCryptoWalletUpdater(_stoppingCts.Token);
+		ConfigureExchangeRateUpdater(_stoppingCts.Token);
+		ConfigureRpcMonitor(_stoppingCts.Token);
+		ConfigureFeeRateUpdater(_stoppingCts.Token);
 
 		// _stoppingCts may be disposed at this point, so do not forward the cancellation token here.
 		using (await _initializationAsyncLock.LockAsync(linkedCtsToken))
 		{
 			Logger.LogTrace("Initialization started.");
 
-			await Task.WhenAll(
-				StartTorProcessManagerAsync(linkedCtsToken),
-				InitializeBitcoinStoreAsync(linkedCtsToken))
-				.ConfigureAwait(false);
-
-			// Bitcoin P2P network can be started after filters are initialized.
-			_p2pConnectionManager.Start(linkedCtsToken);
-
-			await ConfigureSynchronizerAsync(linkedCtsToken).ConfigureAwait(false);
+			await StartRpcServerAsync(terminateService, linkedCtsToken).ConfigureAwait(false);
+			var storage = InitializeBitcoinStoreAsync(linkedCtsToken);
+			try { await StartTorProcessManagerAsync(linkedCtsToken).ConfigureAwait(false); }
+			catch (Exception ex) when (ex is not OperationCanceledException) { Logger.LogWarning(ex); }
+			if (await storage.ConfigureAwait(false)) { await StartSynchronizationAsync(linkedCtsToken).ConfigureAwait(false); }
 
 			if (_disposeRequested)
 			{
@@ -608,7 +644,6 @@ public class Global
 			{
 				if (Config.TryGetCoordinatorUri(out var coordinatorUri))
 				{
-					RegisterCoinJoinComponents(coordinatorUri);
 
 					if (initializeSleepInhibitor)
 					{
@@ -618,7 +653,6 @@ public class Global
 
 				await HostedServices.StartAllAsync(linkedCtsToken).ConfigureAwait(false);
 
-				await StartRpcServerAsync(terminateService, linkedCtsToken).ConfigureAwait(false);
 			}
 			finally
 			{
@@ -646,7 +680,7 @@ public class Global
 	{
 		// HttpListener doesn't support onion services as prefix and for that reason we have no alternative
 		// other than using
-		var prefixes = OnionServiceUri is { }
+		var prefixes = Config is { RpcOnionEnabled: true, JsonRpcServerEnabled: true } && Config.UseTor != TorMode.Disabled && !string.IsNullOrEmpty(Config.JsonRpcUser) && !string.IsNullOrEmpty(Config.JsonRpcPassword)
 			? Config.JsonRpcServerPrefixes.Append($"http://+:38129/").ToArray()
 			: Config.JsonRpcServerPrefixes;
 
@@ -714,9 +748,11 @@ public class Global
 		_coinPrison = CoinPrison.CreateOrLoadFromFile(prisonForCoordinator);
 		_coinPrison.DisposeUsing(_disposables);
 
-		EventBus
-			.Subscribe<WalletLoaded>(e => _coinPrison.UpdateWallet(e.Wallet))
-			.DisposeUsing(_disposables);
+		EventBus.Subscribe<WalletRelevantTransactionProcessed>(_ =>
+		{
+			if (WalletSession.GetWallet() is { } wallet) { _coinPrison.UpdateWallet(wallet); }
+		}).DisposeUsing(_disposables);
+		if (WalletSession.GetWallet() is { } configured) { _coinPrison.UpdateWallet(configured); }
 
 		// Aggressively retry
 		var coordinatorHttpClientConfig = new HttpClientHandlerConfiguration
@@ -741,7 +777,7 @@ public class Global
 
 		Func<string, WabiSabiHttpApiClient> wabiSabiHttpClientFactory = (identity) => new WabiSabiHttpApiClient(identity, coordinatorHttpClientFactory);
 		var coinJoinConfiguration = new CoinJoinConfiguration(Config.CoordinatorIdentifier, Config.MaxCoinjoinMiningFeeRate, Config.AbsoluteMinInputCount, AllowSoloCoinjoining: false);
-		HostedServices.Register<CoinJoinManager>(() => new CoinJoinManager(WalletManager.GetWallet, new RoundStateProvider(roundUpdater), wabiSabiHttpClientFactory, coinJoinConfiguration, _coinPrison, CreateInputVerifier(), EventBus), "CoinJoin Manager");
+		HostedServices.Register<CoinJoinManager>(() => new CoinJoinManager(WalletSession, new RoundStateProvider(roundUpdater), wabiSabiHttpClientFactory, coinJoinConfiguration, _coinPrison, CreateInputVerifier(), EventBus), "CoinJoin Manager");
 	}
 
 	private List<IBroadcaster> CreateBroadcasters(P2pNodeListProvider p2PNodeListProvider, MempoolService mempoolService)
@@ -787,6 +823,12 @@ public class Global
 		if (!_disposeRequested)
 		{
 			_disposeRequested = true;
+			if (HostedServices.GetOrDefault<CoinJoinManager>() is { IsStarted: true } manager)
+			{
+				using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(6));
+				try { await manager.StopAsync(timeout.Token).ConfigureAwait(false); }
+				catch (Exception ex) { Logger.LogWarning(ex); }
+			}
 			await _stoppingCts.CancelAsync().ConfigureAwait(false);
 		}
 		else
@@ -800,16 +842,7 @@ public class Global
 
 			try
 			{
-				try
-				{
-					using var dequeueCts = new CancellationTokenSource(TimeSpan.FromMinutes(6));
-					await WalletManager.RemoveAndStopAsync(dequeueCts.Token).ConfigureAwait(false);
-					Logger.LogInfo($"{nameof(WalletManager)} is stopped.");
-				}
-				catch (Exception ex)
-				{
-					Logger.LogError($"Error during {nameof(WalletManager.RemoveAndStopAsync)}: {ex}");
-				}
+
 
 				if (Network != Network.RegTest && _blockHeaders.Tip is not null)
 				{
@@ -822,15 +855,28 @@ public class Global
 				if (RpcServer is { } rpcServer)
 				{
 					using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(21));
-					await rpcServer.StopAsync(cts.Token).ConfigureAwait(false);
+					try { await rpcServer.StopAsync(cts.Token).ConfigureAwait(false); }
+					catch (Exception ex) { Logger.LogWarning(ex); }
 					Logger.LogInfo($"{nameof(RpcServer)} is stopped.");
 				}
 
 				if (HostedServices is { } backgroundServices)
 				{
 					using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(21));
-					await backgroundServices.StopAllAsync(cts.Token).ConfigureAwait(false);
+					try { await backgroundServices.StopAllAsync(cts.Token).ConfigureAwait(false); }
+					catch (Exception ex) { Logger.LogWarning(ex); }
 					Logger.LogInfo("Stopped background services.");
+				}
+
+				try
+				{
+					using var dequeueCts = new CancellationTokenSource(TimeSpan.FromMinutes(6));
+					await WalletSession.StopAsync(dequeueCts.Token).ConfigureAwait(false);
+					Logger.LogInfo($"{nameof(WalletSession)} is stopped.");
+				}
+				catch (Exception ex)
+				{
+					Logger.LogError($"Error during {nameof(WalletSession.StopAsync)}: {ex}");
 				}
 
 				if (_torManager is not null)

@@ -1,4 +1,4 @@
-﻿namespace MagicalCryptoWallet.Fluent.TreeDataGrid;
+namespace MagicalCryptoWallet.Fluent.TreeDataGrid;
 
 public interface ITreeDataGridExpanderItem
 {

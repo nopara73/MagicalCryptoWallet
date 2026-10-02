@@ -1,3 +1,6 @@
+using MagicalCryptoWallet.Client;
+using MagicalCryptoWallet.Fluent.Providers;
+using Avalonia.Threading;
 using System.Linq;
 using System.Reactive.Concurrency;
 using System.Threading.Tasks;
@@ -18,6 +21,7 @@ namespace MagicalCryptoWallet.Fluent;
 public class App : Application
 {
 	private readonly bool _startInBg;
+	private readonly DesktopActivation? _activation;
 	private readonly Func<Task>? _backendInitializeAsync;
 	private ApplicationStateManager? _applicationStateManager;
 
@@ -26,9 +30,10 @@ public class App : Application
 		Name = "Magical Crypto Wallet";
 	}
 
-	public App(Func<Task> backendInitializeAsync, bool startInBg) : this()
+	public App(Func<Task> backendInitializeAsync, bool startInBg, DesktopActivation? activation = null) : this()
 	{
 		_startInBg = startInBg;
+		_activation = activation;
 		_backendInitializeAsync = backendInitializeAsync;
 	}
 
@@ -47,6 +52,7 @@ public class App : Application
 				var mainViewModel = new MainViewModel(uiContext);
 				_applicationStateManager = new ApplicationStateManager(desktop, uiContext, mainViewModel, _startInBg);
 				var applicationViewModel = _applicationStateManager.ApplicationViewModel;
+				_activation?.Bind(() => Dispatcher.UIThread.Post(() => ((IMainWindowService)_applicationStateManager).Show()));
 				DataContext = applicationViewModel;
 
 				desktop.ShutdownMode = ShutdownMode.OnExplicitShutdown;
@@ -54,12 +60,15 @@ public class App : Application
 				{
 					mainViewModel.ClearStacks();
 					uiContext.HealthMonitor.Dispose();
+					mainViewModel.Notifications.Dispose();
+					mainViewModel.NavBar.Dispose();
+					uiContext.WalletSetupService.Dispose();
 				};
 
 				RxApp.MainThreadScheduler.Schedule(
 					async () =>
 					{
-						await _backendInitializeAsync!(); // Guaranteed not to be null when not in designer.
+						await Task.Run(_backendInitializeAsync!); // Local disk initialization must not block the first dashboard frame.
 
 						mainViewModel.Initialize();
 					});
@@ -87,9 +96,9 @@ public class App : Application
 		}
 	}
 
-	private static WalletRepository CreateWalletRepository(IServices services, AmountProvider amountProvider)
+	private static WalletSetupService CreateWalletSetupService(IServices services, AmountProvider amountProvider)
 	{
-		return new WalletRepository(services, amountProvider);
+		return new WalletSetupService(services, amountProvider);
 	}
 
 	private static HardwareWalletInterface CreateHardwareWalletInterface(IServices services)
@@ -137,7 +146,7 @@ public class App : Application
 			new QrCodeGenerator(),
 			new QrCodeReader(),
 			new UiClipboard(),
-			CreateWalletRepository(services, amountProvider),
+			CreateWalletSetupService(services, amountProvider),
 			new CoinjoinModel(services),
 			CreateHardwareWalletInterface(services),
 			CreateFileSystem(),

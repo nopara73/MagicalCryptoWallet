@@ -2,8 +2,7 @@ namespace MagicalCryptoWallet.WabiSabi.Client.StatusChangedEvents;
 
 public class StartErrorEventArgs : StatusChangedEventArgs
 {
-	public StartErrorEventArgs(Wallet wallet, CoinjoinError error)
-		: base(wallet)
+	public StartErrorEventArgs(CoinjoinError error)
 	{
 		Error = error;
 	}

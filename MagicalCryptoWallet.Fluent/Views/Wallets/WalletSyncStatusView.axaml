@@ -1,0 +1,25 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:MagicalCryptoWallet.Fluent.ViewModels.Wallets"
+             x:Class="MagicalCryptoWallet.Fluent.Views.Wallets.WalletSyncStatusView"
+             x:DataType="vm:WalletSyncStatusViewModel" x:CompileBindings="True">
+  <Expander IsExpanded="{Binding IsExpanded}" HorizontalAlignment="Stretch" Margin="0 0 0 10">
+    <Expander.Header>
+      <StackPanel Orientation="Horizontal" Spacing="8">
+        <PathIcon Data="{StaticResource normal_transaction}" Width="16" Height="16" />
+        <TextBlock Text="{Binding StatusText}" FontSize="12" Opacity="0.7" />
+      </StackPanel>
+    </Expander.Header>
+    <StackPanel Spacing="8" Margin="8">
+      <UniformGrid Columns="5">
+        <StackPanel Margin="5"><TextBlock Text="Peers"/><TextBlock Text="{Binding Peers.Current}"/><ProgressBar Value="{Binding Peers.Percent}" /></StackPanel>
+        <StackPanel Margin="5"><TextBlock Text="Headers"/><TextBlock Text="{Binding BlockHeaders.Current}"/><ProgressBar Value="{Binding BlockHeaders.Percent}" /></StackPanel>
+        <StackPanel Margin="5"><TextBlock Text="Filter headers"/><TextBlock Text="{Binding FilterHeaders.Current}"/><ProgressBar Value="{Binding FilterHeaders.Percent}" /></StackPanel>
+        <StackPanel Margin="5"><TextBlock Text="Filters"/><TextBlock Text="{Binding CompactFilters.Current}"/><ProgressBar Value="{Binding CompactFilters.Percent}" /></StackPanel>
+        <StackPanel Margin="5"><TextBlock Text="Wallet"/><TextBlock Text="{Binding Blocks.Current}"/><ProgressBar Value="{Binding Blocks.Percent}" /></StackPanel>
+      </UniformGrid>
+      <TextBlock Text="{Binding Error}" TextWrapping="Wrap" IsVisible="{Binding IsFaulted}" />
+      <Button Content="Authorize accounts" Command="{Binding AuthorizeAccountsCommand}" IsVisible="{Binding NeedsAccountAuthorization}" HorizontalAlignment="Left" />
+      <Button Content="Retry" Command="{Binding RetryCommand}" IsVisible="{Binding IsFaulted}" HorizontalAlignment="Left" />
+    </StackPanel>
+  </Expander>
+</UserControl>

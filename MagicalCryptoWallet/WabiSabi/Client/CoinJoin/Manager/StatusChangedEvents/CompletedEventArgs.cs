@@ -2,8 +2,7 @@ namespace MagicalCryptoWallet.WabiSabi.Client.StatusChangedEvents;
 
 public class CompletedEventArgs : StatusChangedEventArgs
 {
-	public CompletedEventArgs(Wallet wallet, CompletionStatus completionStatus)
-		: base(wallet)
+	public CompletedEventArgs(CompletionStatus completionStatus)
 	{
 		CompletionStatus = completionStatus;
 	}

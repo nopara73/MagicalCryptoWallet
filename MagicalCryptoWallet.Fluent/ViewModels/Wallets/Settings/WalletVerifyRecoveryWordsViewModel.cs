@@ -1,3 +1,4 @@
+using MagicalCryptoWallet.Fluent.Helpers;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -64,7 +65,9 @@ public partial class WalletVerifyRecoveryWordsViewModel : RoutableViewModel
 				return;
 			}
 
-			var verificationResult = wallet.Auth.VerifyRecoveryWords(currentMnemonics);
+			using var authorization = await AuthorizationHelpers.AuthorizeAsync(UiContext, wallet);
+			if (authorization is null) { return; }
+			var verificationResult = await Task.Run(() => authorization.VerifyRecoveryWords(currentMnemonics));
 			if (verificationResult)
 			{
 				Navigate().To().Success(navigationMode: NavigationMode.Clear);

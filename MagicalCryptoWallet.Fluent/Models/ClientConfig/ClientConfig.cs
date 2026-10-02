@@ -13,7 +13,7 @@ public class ClientConfigModel
 
 	public string DataDir => _services.DataDir;
 
-	public string WalletsDir => _services.GetWalletsDir();
+	public string WalletsDir => _services.WalletSession.WalletDirectories.WalletsDir;
 
 	public string ConfigFilePath => _services.PersistentConfigFilePath;
 

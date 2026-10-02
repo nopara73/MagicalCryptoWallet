@@ -5,7 +5,7 @@ namespace MagicalCryptoWallet.WabiSabi.Client.StatusChangedEvents;
 
 public class CoinJoinStatusEventArgs : StatusChangedEventArgs
 {
-	public CoinJoinStatusEventArgs(Wallet wallet, CoinJoinProgressEventArgs coinJoinProgressEventArgs) : base(wallet)
+	public CoinJoinStatusEventArgs(CoinJoinProgressEventArgs coinJoinProgressEventArgs)
 	{
 		CoinJoinProgressEventArgs = coinJoinProgressEventArgs;
 	}

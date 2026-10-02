@@ -24,15 +24,15 @@ using ScriptType = MagicalCryptoWallet.Fluent.Models.Wallets.ScriptType;
 namespace MagicalCryptoWallet.Fluent.ViewModels.Wallets;
 
 [AppLifetime]
-public partial class WalletViewModel : RoutableViewModel, IWalletViewModel
+public partial class WalletViewModel : RoutableViewModel, IWalletViewModel, IDisposable
 {
+	private readonly CompositeDisposable _lifetime = new();
 	public static string FindCoordinatorLink { get; } = "https://github.com/nopara73/MagicalCryptoWallet/blob/master/MagicalCryptoWallet.Documentation/README.md";
 
 	[AutoNotify(SetterModifier = AccessModifier.Protected)] private bool _isCoinJoining;
 
 	[AutoNotify(SetterModifier = AccessModifier.Protected)] private bool _isLoading;
 	[AutoNotify] private bool _isPointerOver;
-	[AutoNotify] private bool _isSelected;
 	[AutoNotify(SetterModifier = AccessModifier.Private)] private bool _isSendButtonVisible;
 
 	[AutoNotify(SetterModifier = AccessModifier.Private)] private bool _isWalletBalanceZero;
@@ -50,50 +50,51 @@ public partial class WalletViewModel : RoutableViewModel, IWalletViewModel
 	}
 
 	private string _title = "";
-	[AutoNotify(SetterModifier = AccessModifier.Protected)] private bool _loaded;
+	[AutoNotify(SetterModifier = AccessModifier.Protected)] private bool _hasCachedData;
+	[AutoNotify] private bool _canSpend;
 
-	public WalletViewModel(UiContext uiContext, IWalletModel walletModel, Wallet wallet) : base(uiContext)
+	public WalletViewModel(UiContext uiContext, IWalletModel walletModel) : base(uiContext)
 	{
 		WalletModel = walletModel;
-		Wallet = wallet;
+		var wallet = uiContext.Services.WalletSession.GetWallet() ?? throw new InvalidOperationException("No wallet is configured.");
 
 		Settings = new WalletSettingsViewModel(UiContext, WalletModel);
 		History = new HistoryViewModel(UiContext, WalletModel);
 
 		var searchItems = CreateSearchItems();
-		this.WhenAnyValue(x => x.IsSelected)
+		this.WhenAnyValue(x => x.IsActive)
 			.Do(shouldDisplay => UiContext.EditableSearchSource.Toggle(searchItems, shouldDisplay))
-			.Subscribe();
+			.Subscribe().DisposeWith(_lifetime);
 
 		var sendSearchItem = CreateSendItem();
-		this.WhenAnyValue(x => x.IsSendButtonVisible, x => x.IsSelected, (x, y) => x && y)
+		this.WhenAnyValue(x => x.IsSendButtonVisible, x => x.IsActive, (x, y) => x && y)
 			.Do(shouldAdd => UiContext.EditableSearchSource.Toggle(sendSearchItem, shouldAdd))
-			.Subscribe();
+			.Subscribe().DisposeWith(_lifetime);
 
 
 		walletModel.HasBalance
 			.Select(x => !x)
-			.BindTo(this, x => x.IsWalletBalanceZero);
+			.BindTo(this, x => x.IsWalletBalanceZero).DisposeWith(_lifetime);
 
 		walletModel.IsCoinjoinRunning
-			.BindTo(this, x => x.IsCoinJoining);
+			.BindTo(this, x => x.IsCoinJoining).DisposeWith(_lifetime);
 
 		 // Keep the send button visible while Lurking Wife Mode is on. Otherwise its absence reveals an empty wallet.
 		 this.WhenAnyValue(x => x.IsWalletBalanceZero, x => x.UiContext.ApplicationSettings.PrivacyMode)
-		 	.Subscribe(_ => IsSendButtonVisible = (!IsWalletBalanceZero || UiContext.ApplicationSettings.PrivacyMode) && (!WalletModel.IsWatchOnlyWallet || WalletModel.IsHardwareWallet));
+			.Subscribe(_ => IsSendButtonVisible = (!IsWalletBalanceZero || UiContext.ApplicationSettings.PrivacyMode) && (!WalletModel.IsWatchOnlyWallet || WalletModel.IsHardwareWallet)).DisposeWith(_lifetime);
 
 
 		 WalletModel.Privacy.IsWalletPrivate
-			 .BindTo(this, x => x.AreAllCoinsPrivate);
+			 .BindTo(this, x => x.AreAllCoinsPrivate).DisposeWith(_lifetime);
 
 		 IsMusicBoxVisible = this.WhenAnyValue(
 			 x => x.HasMusicBoxBeenDisplayed,
-			 x => x.IsSelected,
+			 x => x.IsActive,
 			 x => x.IsWalletBalanceZero,
 			 x => x.AreAllCoinsPrivate,
 			 x => x.IsPointerOver,
 			 x => x.IsMusicBoxFlyoutDisplayed,
-			 (hasBeenDisplayed, isSelected, hasNoBalance, areAllCoinsPrivate, isPointerOver, isMusicBoxFlyoutDisplayed) =>
+			 (hasBeenDisplayed, isActive, hasNoBalance, areAllCoinsPrivate, isPointerOver, isMusicBoxFlyoutDisplayed) =>
 			 {
 				 if (!hasBeenDisplayed)
 				 {
@@ -101,7 +102,7 @@ public partial class WalletViewModel : RoutableViewModel, IWalletViewModel
 					 {
 						 // If there is no coordinator configured and it's the first time, display MusicBox even without pointer over
 						 Task.Run(() => DelaySwitchHasMusicBoxBeenDisplayedAsync(CancellationToken.None));
-						 return isSelected && !WalletModel.IsCoinJoinEnabled;
+						 return isActive && !WalletModel.IsCoinJoinEnabled;
 					 }
 
 					 HasMusicBoxBeenDisplayed = true;
@@ -109,34 +110,29 @@ public partial class WalletViewModel : RoutableViewModel, IWalletViewModel
 
 				 if (!WalletModel.IsCoinJoinEnabled)
 				 {
-					 return isSelected && !WalletModel.IsCoinJoinEnabled && (isPointerOver || isMusicBoxFlyoutDisplayed);
+					 return isActive && !WalletModel.IsCoinJoinEnabled && (isPointerOver || isMusicBoxFlyoutDisplayed);
 				 }
 
-				 return isSelected && !hasNoBalance && !WalletModel.IsWatchOnlyWallet;
+				 return isActive && !hasNoBalance && !WalletModel.IsWatchOnlyWallet;
 			 });
 
 
-		SendCommand = ReactiveCommand.Create(() => Navigate().To().Send(walletModel, new SendFlowModel(wallet)));
+		SendCommand = ReactiveCommand.Create(() => Navigate().To().Send(walletModel, new SendFlowModel(wallet)), walletModel.Status.Select(x => x.IsSynchronized));
 
-		SegwitReceiveCommand = ReactiveCommand.Create(() => Navigate().To().Receive(WalletModel, ScriptType.SegWit));
-		TaprootReceiveCommand = SeveralReceivingScriptTypes ?
-			ReactiveCommand.Create(() => Navigate().To().Receive(WalletModel, ScriptType.Taproot)) :
-			null;
+		SegwitReceiveCommand = ReactiveCommand.Create(() => Navigate().To().Receive(WalletModel, ScriptType.SegWit), walletModel.Status.Select(x => x.HasCachedData));
+		TaprootReceiveCommand = ReactiveCommand.Create(() => Navigate().To().Receive(WalletModel, ScriptType.Taproot),
+			walletModel.Status.Select(x => x.HasCachedData && WalletModel.SeveralReceivingScriptTypes));
+		_lifetime.Add((IDisposable)TaprootReceiveCommand);
 		_defaultReceiveCommand = SegwitReceiveCommand;
 
 		this.WhenAnyValue(x => x.Settings.DefaultReceiveScriptType)
+			.Merge(walletModel.Status.Select(_ => Settings.DefaultReceiveScriptType))
 			.Subscribe(value =>
-				DefaultReceiveCommand = value == ScriptType.SegWit || TaprootReceiveCommand is null
+				DefaultReceiveCommand = value == ScriptType.SegWit || !SeveralReceivingScriptTypes
 					? SegwitReceiveCommand
-					: TaprootReceiveCommand);
+					: TaprootReceiveCommand).DisposeWith(_lifetime);
 
-		WalletInfoCommand = ReactiveCommand.CreateFromTask(async () =>
-		{
-			if (await AuthorizeForPasswordAsync())
-			{
-				Navigate().To().WalletInfo(WalletModel);
-			}
-		});
+		WalletInfoCommand = ReactiveCommand.Create(() => Navigate().To().WalletInfo(WalletModel));
 
 		WalletStatsCommand = ReactiveCommand.Create(() => Navigate().To().WalletStats(WalletModel));
 
@@ -157,17 +153,17 @@ public partial class WalletViewModel : RoutableViewModel, IWalletViewModel
 		WalletCoinsCommand = ReactiveCommand.Create(() => Navigate(NavigationTarget.DialogScreen).To().WalletCoins(WalletModel));
 
 		CoinJoinStateViewModel = WalletModel.IsCoinJoinEnabled
-			? new CoinJoinStateViewModel(uiContext, WalletModel, Wallet, WalletModel.Coinjoin!, Settings)
+			? new CoinJoinStateViewModel(uiContext, WalletModel, wallet, WalletModel.Coinjoin!, Settings)
 			: null;
 
-		CoinJoinPaymentsCommand = ReactiveCommand.Create(() => Navigate(NavigationTarget.DialogScreen).To().CoinJoinPayments(WalletModel, Wallet));
+		CoinJoinPaymentsCommand = ReactiveCommand.Create(() => Navigate(NavigationTarget.DialogScreen).To().CoinJoinPayments(WalletModel, wallet));
 
 		if (WalletModel.IsCoinJoinEnabled)
 		{
 			var coinjoinPaymentsSearchItem = CreateCoinJoinPaymentsItem();
-			this.WhenAnyValue(x => x.IsSelected)
+			this.WhenAnyValue(x => x.IsActive)
 				.Do(shouldDisplay => UiContext.EditableSearchSource.Toggle(coinjoinPaymentsSearchItem, shouldDisplay))
-				.Subscribe();
+				.Subscribe().DisposeWith(_lifetime);
 		}
 
 		NavigateToCoordinatorSettingsCommand = ReactiveCommand.CreateFromTask(async () =>
@@ -184,17 +180,27 @@ public partial class WalletViewModel : RoutableViewModel, IWalletViewModel
 
 		this.WhenAnyValue(x => x.Settings.PreferPsbtWorkflow)
 			.Do(x => this.RaisePropertyChanged(nameof(PreferPsbtWorkflow)))
-			.Subscribe();
+			.Subscribe().DisposeWith(_lifetime);
 
-		this.WhenAnyValue(x => x.WalletModel.Name).BindTo(this, x => x.Title);
+		Title = "Magical Crypto Wallet";
+		SyncStatus = new WalletSyncStatusViewModel(uiContext, walletModel);
+		walletModel.Status.Subscribe(status =>
+		{
+			HasCachedData = status.HasCachedData;
+			CanSpend = status.IsSynchronized;
+			IsLoading = status.State is WalletSessionState.Loading or WalletSessionState.Syncing;
+			this.RaisePropertyChanged(nameof(SeveralReceivingScriptTypes));
+		}).DisposeWith(_lifetime);
+		OpenCommand = ReactiveCommand.Create(() => UiContext.Navigate().OpenWalletHome());
 	}
 
-	// TODO: Remove this
-	public Wallet Wallet { get; }
 
 	public IWalletModel WalletModel { get; }
 
-	public bool IsLoggedIn => WalletModel.Auth.IsLoggedIn;
+	public WalletSyncStatusViewModel SyncStatus { get; }
+	public ICommand OpenCommand { get; }
+	public string IconName => "nav_wallet_24_regular";
+	public string IconNameFocused => "nav_wallet_24_filled";
 
 	public bool PreferPsbtWorkflow => WalletModel.Settings.PreferPsbtWorkflow;
 
@@ -265,8 +271,8 @@ public partial class WalletViewModel : RoutableViewModel, IWalletViewModel
 			tile.Activate(disposables);
 		}
 
-		WalletModel.Loaded
-			.BindTo(this, x => x.Loaded)
+		WalletModel.Status.Select(x => x.HasCachedData)
+			.BindTo(this, x => x.HasCachedData)
 			.DisposeWith(disposables);
 	}
 
@@ -306,19 +312,11 @@ public partial class WalletViewModel : RoutableViewModel, IWalletViewModel
 		yield return new BtcPriceTileViewModel(UiContext, UiContext.AmountProvider);
 	}
 
-	private async Task<bool> AuthorizeForPasswordAsync()
-	{
-		if (WalletModel.Auth.HasPassword)
-		{
-			return await Navigate().To().PasswordAuthDialog(WalletModel).GetResultAsync();
-		}
-
-		return true;
-	}
-
 	private async Task DelaySwitchHasMusicBoxBeenDisplayedAsync(CancellationToken cancellationToken)
 	{
 		await Task.Delay(10000, cancellationToken);
 		HasMusicBoxBeenDisplayed = true;
 	}
+	public void Dispose() { _lifetime.Dispose(); IsActive = false; SyncStatus.Dispose(); CoinJoinStateViewModel?.Dispose(); History.Dispose(); Settings.Dispose(); }
+
 }

@@ -107,8 +107,11 @@ public class JsonRpcRequestHandler<TService>
 				for (int i = 0; i < count; i++)
 				{
 					var parameter = methodParameters[i];
-					var item = jArray[i].ToObject(parameter.type, _defaultSerializer)
-						?? throw new InvalidOperationException($"Parameter `{parameter.name}` is null.");
+					var item = jArray[i].ToObject(parameter.type, _defaultSerializer);
+					if (item is null && !(Nullable.GetUnderlyingType(parameter.type) is not null || parameter.isOptional && parameter.defaultValue is null))
+					{
+						return Error(JsonRpcErrorCodes.InvalidParams, $"Parameter '{parameter.name}' cannot be null.", jsonRpcRequest.Id);
+					}
 					parameters.Add(item);
 				}
 			}
@@ -135,7 +138,8 @@ public class JsonRpcRequestHandler<TService>
 					}
 
 					var parameterValue = jObj[parameter.name]!;
-					if (parameterValue.ToObject(parameter.type, _defaultSerializer) is not { } parameterTypedValue)
+					var parameterTypedValue = parameterValue.ToObject(parameter.type, _defaultSerializer);
+					if (parameterTypedValue is null && !(Nullable.GetUnderlyingType(parameter.type) is not null || parameter.isOptional && parameter.defaultValue is null))
 					{
 						return Error(
 							JsonRpcErrorCodes.InvalidParams,

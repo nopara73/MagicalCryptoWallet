@@ -30,19 +30,14 @@ public class CoinJoinTrackerFactory
 	private readonly CancellationToken _cancellationToken;
 	private readonly LiquidityClueProvider _liquidityClueProvider;
 
-	public CoinJoinTracker CreateAndStart(Wallet wallet, Func<IEnumerable<SmartCoin>> coinCandidatesFunc, bool stopWhenAllMixed, bool overridePlebStop)
+	public CoinJoinTracker CreateAndStart(Wallet wallet, IKeyChain keyChain, Func<IEnumerable<SmartCoin>> coinCandidatesFunc, bool stopWhenAllMixed, bool overridePlebStop)
 	{
 		_liquidityClueProvider.InitLiquidityClue(wallet);
-
-		if (wallet.KeyChain is null)
-		{
-			throw new NotSupportedException("Wallet has no key chain.");
-		}
 
 		var coinSelector = CoinJoinCoinSelector.FromWallet(wallet);
 		var coinJoinClient = new CoinJoinClient(
 			ArenaRequestHandlerFactory,
-			wallet.KeyChain,
+			keyChain,
 			wallet.OutputProvider,
 			_roundStatusProvider,
 			coinSelector,

@@ -20,6 +20,7 @@ public class SingleInstanceChecker : IDisposable
 	/// <returns><c>true</c> if this is the first instance, <c>false</c> if another instance is running.</returns>
 	public bool IsFirstInstance()
 	{
+		if (_lockFileStream is not null) { return true; }
 		try
 		{
 			// FileShare.None is the key detail.

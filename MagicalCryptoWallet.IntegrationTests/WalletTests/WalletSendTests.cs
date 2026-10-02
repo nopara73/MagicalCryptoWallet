@@ -38,7 +38,6 @@ public class WalletSendTests
 
 		var keyManager = env.CreateKeyManager();
 		var wallet = env.CreateWallet(keyManager);
-		wallet.Password = RegTestEnvironment.DefaultPassword;
 
 		var receiveKey = keyManager.GetNextReceiveKey("Funding");
 		var receiveAddress = receiveKey.GetP2wpkhAddress(env.Network);
@@ -120,7 +119,6 @@ public class WalletSendTests
 		await using var env = await RegTestEnvironment.CreateAsync(_fixture);
 		var keyManager = env.CreateKeyManager();
 		var wallet = env.CreateWallet(keyManager);
-		wallet.Password = RegTestEnvironment.DefaultPassword;
 
 		var receiveAddress = keyManager.GetNextReceiveKey("Funding").GetP2wpkhAddress(env.Network);
 		await env.FundAddressAsync(receiveAddress, Money.Coins(1m), confirmations: 1);
@@ -165,7 +163,6 @@ public class WalletSendTests
 
 		var keyManager = env.CreateKeyManager();
 		var wallet = env.CreateWallet(keyManager);
-		wallet.Password = RegTestEnvironment.DefaultPassword;
 
 		var receiveKey = keyManager.GetNextReceiveKey("Funding");
 		var receiveAddress = receiveKey.GetP2wpkhAddress(env.Network);
@@ -227,7 +224,6 @@ public class WalletSendTests
 
 		var keyManager = env.CreateKeyManager();
 		var wallet = env.CreateWallet(keyManager);
-		wallet.Password = RegTestEnvironment.DefaultPassword;
 
 		var receiveKey = keyManager.GetNextReceiveKey("Funding");
 		var receiveAddress = receiveKey.GetP2wpkhAddress(env.Network);
@@ -285,7 +281,6 @@ public class WalletSendTests
 
 		var keyManager = env.CreateKeyManager();
 		var wallet = env.CreateWallet(keyManager);
-		wallet.Password = RegTestEnvironment.DefaultPassword;
 
 		// Fund with multiple small UTXOs
 		var key1 = keyManager.GetNextReceiveKey("UTXO 1");
