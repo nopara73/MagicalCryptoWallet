@@ -88,11 +88,6 @@ public partial class CoinJoinStateViewModel : ViewModelBase, IDisposable
 			? State.WaitingForAutoStart
 			: State.StoppedOrPaused;
 
-		if (wallet.IsHardwareWallet || wallet.IsWatchOnlyWallet)
-		{
-			initialState = State.Disabled;
-		}
-
 		_stateMachine = new StateMachine<State, Trigger>(initialState);
 
 		ConfigureStateMachine();
@@ -122,7 +117,7 @@ public partial class CoinJoinStateViewModel : ViewModelBase, IDisposable
 			var overridePlebStop = _stateMachine.IsInState(State.PlebStopActive);
 			if (!UiContext.Services.WalletSession.Snapshot.IsSynchronized) { return; }
 			await walletCoinjoinModel.StartAsync(stopWhenAllMixed: !IsAutoCoinJoinEnabled, overridePlebStop);
-		}, wallet.Status.Select(status => status.HasCachedData && !wallet.IsWatchOnlyWallet && (status.IsSynchronized || status.CoinJoinRequiresAuthorization)));
+		}, wallet.Status.Select(status => status.HasCachedData && (status.IsSynchronized || status.CoinJoinRequiresAuthorization)));
 
 		var stopPauseCommandCanExecute =
 			this.WhenAnyValue(
@@ -155,8 +150,8 @@ public partial class CoinJoinStateViewModel : ViewModelBase, IDisposable
 		walletCoinjoinModel.StatusUpdated.Do(ProcessStatusChange).Subscribe().DisposeWith(_lifetime);
 		wallet.Status.Subscribe(status =>
 		{
-			if (status.CoinJoinRequiresAuthorization && !wallet.IsWatchOnlyWallet) { CurrentStatus = "Awaiting CoinJoin authorization"; }
-			else if (!status.IsSynchronized && !wallet.IsWatchOnlyWallet) { CurrentStatus = status.State.ToString(); }
+			if (status.CoinJoinRequiresAuthorization) { CurrentStatus = "Awaiting CoinJoin authorization"; }
+			else if (!status.IsSynchronized) { CurrentStatus = status.State.ToString(); }
 			else if (_stateMachine.IsInState(State.StoppedOrPaused)) { RefreshButtonAndTextInStateStoppedOrPaused(); }
 			else if (_stateMachine.IsInState(State.WaitingForAutoStart)) { CurrentStatus = CountDownMessage; }
 		}).DisposeWith(_lifetime);
@@ -166,8 +161,7 @@ public partial class CoinJoinStateViewModel : ViewModelBase, IDisposable
 			{
 				settings.SelectedTab = 1;
 				UiContext.Navigate(NavigationTarget.DialogScreen).To(settings);
-			},
-			Observable.Return(!_wallet.IsWatchOnlyWallet));
+			});
 
 		NavigateToSettingsCommand = coinJoinSettingsCommand;
 		CanNavigateToCoinjoinSettings = coinJoinSettingsCommand.CanExecute;

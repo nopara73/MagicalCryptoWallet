@@ -17,7 +17,6 @@ public partial class AddedWalletPageViewModel : RoutableViewModel
 	{
 		_draft = walletDraft;
 
-		WalletType = walletDraft.WalletType;
 
 		SetupCancel(enableCancel: false, enableCancelOnEscape: false, enableCancelOnPressed: false);
 		EnableBack = false;
@@ -25,7 +24,6 @@ public partial class AddedWalletPageViewModel : RoutableViewModel
 		NextCommand = ReactiveCommand.CreateFromTask(() => OnNextAsync(options));
 	}
 
-	public WalletType WalletType { get; }
 
 
 	private async Task OnNextAsync(WalletCreationOptions options)

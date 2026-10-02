@@ -66,19 +66,8 @@ public partial class TransactionPreviewViewModel : RoutableViewModel
 		SetupCancel(enableCancel: true, enableCancelOnEscape: true, enableCancelOnPressed: false);
 		EnableBack = true;
 
-		if (PreferPsbtWorkflow)
-		{
-			SkipCommand = ReactiveCommand.CreateFromTask(OnConfirmAsync);
-			NextCommand = ReactiveCommand.CreateFromTask(OnExportPsbtAsync);
-
-			_nextButtonText = "Save PSBT file";
-		}
-		else
-		{
-			NextCommand = ReactiveCommand.CreateFromTask(OnConfirmAsync);
-
-			_nextButtonText = "Confirm";
-		}
+		NextCommand = ReactiveCommand.CreateFromTask(OnConfirmAsync);
+		_nextButtonText = "Confirm";
 
 		UndoCommand = ReactiveCommand.Create(
 				() =>
@@ -101,31 +90,8 @@ public partial class TransactionPreviewViewModel : RoutableViewModel
 
 	public PrivacySuggestionsFlyoutViewModel PrivacySuggestions { get; }
 
-	public bool PreferPsbtWorkflow => _walletModel.Settings.PreferPsbtWorkflow;
 
 	public ICommand UndoCommand { get; }
-
-	private async Task OnExportPsbtAsync()
-	{
-		if (Transaction is { })
-		{
-			bool saved = false;
-			try
-			{
-				saved = await TransactionHelpers.ExportTransactionToBinaryAsync(Transaction);
-			}
-			catch (Exception ex)
-			{
-				Logger.LogError(ex);
-				await ShowErrorAsync("Transaction Export", ex.ToUserFriendlyString(), "Magical Crypto Wallet was unable to export the PSBT.");
-			}
-
-			if (saved)
-			{
-				Navigate().To().Success();
-			}
-		}
-	}
 
 	private void UpdateTransaction(TransactionSummaryViewModel summary, BuildTransactionResult transaction, bool addToUndoHistory = true)
 	{

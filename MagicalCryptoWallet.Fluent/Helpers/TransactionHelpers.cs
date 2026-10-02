@@ -124,37 +124,8 @@ public static class TransactionHelpers
 
 	public static async Task<SmartTransaction> ParseTransactionAsync(string path, Network network)
 	{
-		var psbtBytes = await File.ReadAllBytesAsync(path);
-		PSBT psbt;
-
-		try
-		{
-			psbt = PSBT.Load(psbtBytes, network);
-		}
-		catch (Exception ex)
-		{
-			// Couldn't parse to PSBT with bytes, try parsing with string.
-			Logger.LogWarning($"Failed to load PSBT by bytes. Trying with string. {ex}");
-			var text = await File.ReadAllTextAsync(path);
-			text = text.Trim();
-			try
-			{
-				psbt = PSBT.Parse(text, network);
-			}
-			catch (Exception exc)
-			{
-				// Couldn't parse to PSBT with string. All else failed, try to build SmartTransaction and broadcast that.
-				Logger.LogWarning($"Failed to parse PSBT by string. Fall back to building SmartTransaction from the string. {exc}");
-				return new SmartTransaction(Transaction.Parse(text, network), Height.Unknown);
-			}
-		}
-
-		if (!psbt.IsAllFinalized())
-		{
-			psbt.Finalize();
-		}
-
-		return psbt.ExtractSmartTransaction();
+		var text = (await File.ReadAllTextAsync(path)).Trim();
+		return new SmartTransaction(Transaction.Parse(text, network), Height.Unknown);
 	}
 
 	internal static PaymentIntent BuildPayToManyIntent(TransactionInfo transactionInfo)
@@ -170,30 +141,5 @@ public static class TransactionHelpers
 		return new PaymentIntent(requests);
 	}
 
-	public static async Task<bool> ExportTransactionToBinaryAsync(BuildTransactionResult transaction)
-	{
-		var psbtExtension = "psbt";
-		string initialFileName = transaction.Transaction.GetHash().ToString();
-		var file = await FileDialogHelper.SaveFileAsync("Export transaction", new[] { psbtExtension }, initialFileName);
-		if (file is null)
-		{
-			return false;
-		}
 
-		var filePath = file.Path.LocalPath;
-
-		if (!string.IsNullOrWhiteSpace(filePath))
-		{
-			var ext = Path.GetExtension(filePath);
-			if (string.IsNullOrWhiteSpace(ext))
-			{
-				filePath = $"{filePath}.{psbtExtension}";
-			}
-			await File.WriteAllBytesAsync(filePath, transaction.Psbt.ToBytes());
-
-			return true;
-		}
-
-		return false;
-	}
 }

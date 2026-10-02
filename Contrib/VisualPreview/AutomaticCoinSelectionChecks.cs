@@ -194,8 +194,7 @@ internal static class AutomaticCoinSelectionChecks
 	}
 	private static SmartCoin[] NewCoins()
 	{
-		var key = ExtKey.CreateFromSeed(new byte[32]).Neuter();
-		var keys = KeyManager.CreateNewHardwareWalletWatchOnly(key.PubKey.GetHDFingerPrint(), key, null, null, null, Network.RegTest);
+		var keys = KeyManager.CreateNew(new Mnemonic("abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about"), "", Network.RegTest);
 		var transaction = Transaction.Create(Network.RegTest);
 		transaction.Inputs.Add(new OutPoint(uint256.One, 0));
 		var first = keys.GetKeys()[0];
@@ -270,7 +269,6 @@ public class AutomaticPreviewWallet : DispatchProxy
 		"get_Network" => Network.RegTest,
 		"get_Settings" => _settings,
 		"get_SeveralReceivingScriptTypes" => SeveralTypes,
-		"get_IsWatchOnlyWallet" => false,
 		_ => throw new InvalidOperationException("Wallet services are unavailable in this preview.")
 	};
 }

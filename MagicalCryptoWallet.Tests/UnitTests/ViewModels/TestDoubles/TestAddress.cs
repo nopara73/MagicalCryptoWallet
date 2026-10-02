@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using ReactiveUI;
 using MagicalCryptoWallet.Blockchain.Analysis.Clustering;
 using MagicalCryptoWallet.Fluent.Models.Wallets;
@@ -35,8 +34,5 @@ public class TestAddress : ReactiveObject, IAddress
 		Labels = labels;
 	}
 
-	public Task ShowOnHwWalletAsync()
-	{
-		return Task.CompletedTask;
-	}
+
 }

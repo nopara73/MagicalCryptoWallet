@@ -518,16 +518,6 @@ public partial class SendViewModel : RoutableViewModel
 			errors.Add(ErrorSeverity.Error, parseResult.Error);
 			return;
 		}
-		if (parseResult is {Value: Address.SilentPayment} && _walletModel.IsHardwareWallet)
-		{
-			errors.Add(ErrorSeverity.Error, "Silent payments are not possible with hardware wallets.");
-			return;
-		}
-
-		if (IsPayJoin && _walletModel.IsHardwareWallet)
-		{
-			errors.Add(ErrorSeverity.Error, "Payjoin is not possible with hardware wallets.");
-		}
 	}
 
 	private void HandleAddressChange(string? text)

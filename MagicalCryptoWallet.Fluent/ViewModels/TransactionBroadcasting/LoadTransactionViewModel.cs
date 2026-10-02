@@ -39,7 +39,7 @@ public partial class LoadTransactionViewModel : DialogViewModelBase<SmartTransac
 	{
 		try
 		{
-			var file = await FileDialogHelper.OpenFileAsync("Import Transaction", new[] { "psbt", "txn", "*" });
+			var file = await FileDialogHelper.OpenFileAsync("Import Transaction", new[] { "txn", "txt" });
 			if (file is { })
 			{
 				var filePath = file.Path.LocalPath;

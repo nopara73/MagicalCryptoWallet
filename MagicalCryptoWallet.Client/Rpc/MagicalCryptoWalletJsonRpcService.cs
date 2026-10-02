@@ -137,8 +137,6 @@ public class MagicalCryptoWalletJsonRpcService : IJsonRpcService
 		info["walletFile"] = km.FilePath;
 		info["masterKeyFingerprint"] = km.MasterFingerprint?.ToString();
 		info["anonScoreTarget"] = activeWallet.AnonScoreTarget;
-		info["isWatchOnly"] = km.IsWatchOnly;
-		info["isHardwareWallet"] = km.IsHardwareWallet;
 		info["isAutoCoinjoin"] = km.AutoCoinJoin;
 		info["isNonPrivateCoinIsolation"] = km.NonPrivateCoinIsolation;
 		info["onlyUsePrivateFundsForPayments"] = km.OnlyUsePrivateFundsForPayments;

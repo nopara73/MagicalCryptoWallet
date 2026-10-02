@@ -13,7 +13,7 @@
                  EnableBack="{Binding EnableBack}"
                  IsBusy="{Binding IsBusy}"
                  EnableNext="False">
-    <Grid Width="530" MaxHeight="350" ColumnDefinitions="*,*,*" RowDefinitions="*,Auto,*">
+    <Grid Width="530" MaxHeight="350" ColumnDefinitions="*,*" RowDefinitions="*,Auto,*">
       <Grid.Styles>
         <Style Selector="TileButton">
           <Setter Property="Cursor" Value="Hand" />
@@ -57,25 +57,23 @@
       </Grid.Styles>
 
       <TileButton Text="Create a new wallet"
-                    Grid.ColumnSpan="3"
+                    AutomationProperties.Name="Create a new wallet"
+                    Grid.ColumnSpan="2"
                     Classes="action bottomtext"
                     Icon="{StaticResource add_regular}"
                     IsDefault="True"
                     Command="{Binding CreateWalletCommand}" />
 
-      <TextBlock Grid.ColumnSpan="3" Grid.Column="0" Grid.Row="1" TextAlignment="Center" Text="or" />
+      <TextBlock Grid.ColumnSpan="2" Grid.Column="0" Grid.Row="1" TextAlignment="Center" Text="or" />
 
-      <TileButton Grid.Row="2" Grid.Column="0" Text="Connect to hardware wallet"
-                    Icon="{StaticResource calculator_regular}"
-                    Classes="bottomtext"
-                    Command="{Binding ConnectHardwareWalletCommand}" />
-
-      <TileButton Grid.Row="2" Grid.Column="1" Text="Import a wallet"
+      <TileButton Grid.Row="2" Grid.Column="0" Text="Import a wallet"
+                    AutomationProperties.Name="Import a wallet"
                     Icon="{StaticResource import_regular}"
                     Classes="bottomtext"
                     Command="{Binding ImportWalletCommand}" />
 
-      <TileButton Grid.Row="2" Grid.Column="2" Text="Recover a wallet"
+      <TileButton Grid.Row="2" Grid.Column="1" Text="Recover a wallet"
+                    AutomationProperties.Name="Recover a wallet"
                     Icon="{StaticResource recover_arrow_right_regular}"
                     Classes="bottomtext"
                     Command="{Binding RecoverWalletCommand}" />

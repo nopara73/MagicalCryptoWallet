@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using ReactiveUI;
 using MagicalCryptoWallet.Blockchain.Analysis.Clustering;
 
@@ -21,5 +20,4 @@ public interface IAddress : IReactiveObject
 
 	void SetLabels(LabelsArray labels);
 
-	Task ShowOnHwWalletAsync();
 }

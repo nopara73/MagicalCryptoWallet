@@ -11,11 +11,10 @@ namespace MagicalCryptoWallet.Tests.Helpers;
 public static class ServiceFactory
 {
 	public static TransactionFactory CreateTransactionFactory(
-		(string Label, int KeyIndex, decimal Amount, bool Confirmed, int AnonymitySet)[] coins,
-		bool watchOnly = false)
+		(string Label, int KeyIndex, decimal Amount, bool Confirmed, int AnonymitySet)[] coins)
 	{
 		string password = "foo";
-		KeyManager keyManager = watchOnly ? CreateWatchOnlyKeyManager() : CreateKeyManager(password);
+		KeyManager keyManager = CreateKeyManager(password);
 		SmartCoin[] sCoins = CreateCoins(keyManager, coins);
 		var coinsView = new CoinsView(sCoins);
 #pragma warning disable CA2000 // Dispose objects before losing scope - test helper, ownership transferred to TransactionFactory
@@ -87,33 +86,5 @@ public static class ServiceFactory
 		return new KeyManager(encryptedSecret, extKey.ChainCode, masterFingerprint, segwitExtPubKey, taprootExtPubKey, null, null, 21, blockchainState, null, segwitAccountKeyPath, null);
 	}
 
-	public static KeyManager CreateWatchOnlyKeyManager()
-	{
-		Mnemonic mnemonic = new(Wordlist.English, WordCount.Twelve);
-		ExtKey extKey = mnemonic.DeriveExtKey();
 
-		return CreateNewWatchOnly(
-			Derive(extKey, KeyPurpose.Loud(ScriptPubKeyType.Segwit)),
-			Derive(extKey, KeyPurpose.Loud(ScriptPubKeyType.TaprootBIP86)),
-			Derive(extKey, KeyPurpose.Scan),
-			Derive(extKey, KeyPurpose.Spend));
-
-		static ExtPubKey Derive(ExtKey extKey, KeyPurpose purpose) =>
-			extKey.Derive(KeyManager.GetAccountKeyPath(Network.Main, purpose)).Neuter();
-	}
-
-	public static KeyManager CreateNewWatchOnly(
-		ExtPubKey segwitExtPubKey,
-		ExtPubKey taprootExtPubKey,
-		ExtPubKey silentPaymentScanExtPubKey,
-		ExtPubKey silentPaymentSpendExtPubKey,
-		string? filePath = null,
-		int? minGapLimit = null)
-	{
-		var network = Network.Main;
-		var birthHeight = FilterCheckpoints.GetMostRecentCheckpoint(network).Header.Height;
-		var blockchainState = new BlockchainState(network, birthHeight: birthHeight);
-		int gapLimit = minGapLimit ?? KeyManager.AbsoluteMinGapLimit;
-		return new KeyManager(null, null, null, segwitExtPubKey, taprootExtPubKey, silentPaymentScanExtPubKey, silentPaymentSpendExtPubKey, gapLimit, blockchainState, filePath);
-	}
 }

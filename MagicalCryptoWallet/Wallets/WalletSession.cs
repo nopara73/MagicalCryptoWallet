@@ -84,7 +84,7 @@ public sealed class WalletSession
 			}
 			_wallet = _createWallet(KeyManager.FromFile(filename));
 			WalletDirectories.PersistConfiguredFile(filename);
-			_missingPublicMetadata = !_wallet.KeyManager.IsWatchOnly && _wallet.KeyManager.TaprootExtPubKey is null;
+			_missingPublicMetadata = _wallet.KeyManager.TaprootExtPubKey is null;
 			_snapshot = new(WalletSessionState.Loading, false, null, null, RequiresCoinJoinAuthorization(), _missingPublicMetadata);
 		}
 		catch (Exception ex)
@@ -123,7 +123,7 @@ public sealed class WalletSession
 			{
 				WalletDirectories.Commit(keyManager);
 				_wallet = wallet;
-				_missingPublicMetadata = !keyManager.IsWatchOnly && keyManager.TaprootExtPubKey is null;
+				_missingPublicMetadata = keyManager.TaprootExtPubKey is null;
 				configured = new(WalletSessionState.Loading, false, null, null, RequiresCoinJoinAuthorization(), _missingPublicMetadata);
 			}
 			catch (Exception ex)
@@ -169,11 +169,8 @@ public sealed class WalletSession
 			{
 				wallet.InitializeLocalState();
 				lock (_gate) { _hasCachedData = true; }
-				if (!wallet.KeyManager.IsWatchOnly)
-				{
-					try { AuthorizeCoinJoin(""); }
-					catch (System.Security.SecurityException) { /* A protected wallet synchronizes using its public accounts. */ }
-				}
+				try { AuthorizeCoinJoin(""); }
+				catch (System.Security.SecurityException) { /* A protected wallet synchronizes using its public accounts. */ }
 				UpdateStatus();
 				await wallet.StartAsync(cancel).ConfigureAwait(false);
 				UpdateStatus();
@@ -271,7 +268,7 @@ public sealed class WalletSession
 		if (!Snapshot.IsSynchronized) { throw new InvalidOperationException("The wallet must finish synchronizing before this operation."); }
 	}
 	public void ReportInitializationFailure(Exception error) => Publish(Snapshot with { State = WalletSessionState.Faulted, Error = error.Message });
-	private bool RequiresCoinJoinAuthorization() => _wallet is { KeyManager.IsWatchOnly: false } && _coinJoinAuthorization is null;
+	private bool RequiresCoinJoinAuthorization() => _wallet is not null && _coinJoinAuthorization is null;
 	private async Task MonitorAsync(CancellationToken cancel)
 	{
 		try
