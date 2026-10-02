@@ -13,7 +13,7 @@
 		<NeutralLanguage>en-US</NeutralLanguage>
 		<AssemblyTitle>Magical Crypto Wallet Daemon</AssemblyTitle>
 		<Description>
-			Open-source, non-custodial, privacy focused Bitcoin wallet for Windows, Linux, and Mac. Built-in Tor, coinjoin and payjoin features.
+			Open-source, non-custodial, privacy focused Bitcoin wallet for Windows, Linux, and Mac. Built-in Tor, coinjoin features.
 		</Description>
 		<Copyright>MIT</Copyright>
 		<PackageId>MagicalCryptoWallet.Daemon</PackageId>

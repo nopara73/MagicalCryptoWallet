@@ -4,7 +4,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using MagicalCryptoWallet.Blockchain.Analysis.Clustering;
 using MagicalCryptoWallet.Helpers;
-using MagicalCryptoWallet.Wallets.SilentPayment;
 
 namespace MagicalCryptoWallet.Blockchain.TransactionBuilding;
 
@@ -32,16 +31,6 @@ public class PaymentIntent
 
 	public PaymentIntent(IDestination destination, MoneyRequest amount, LabelsArray? label = null)
 		: this(new DestinationRequest(destination.ScriptPubKey, amount, label))
-	{
-	}
-
-	public PaymentIntent(SilentPaymentAddress address, Money amount, bool subtractFee = false, LabelsArray? label = null)
-		: this(new DestinationRequest(address, MoneyRequest.Create(amount, subtractFee), label))
-	{
-	}
-
-	public PaymentIntent(SilentPaymentAddress address, MoneyRequest amount, LabelsArray? label = null)
-		: this(new DestinationRequest(address, amount, label))
 	{
 	}
 

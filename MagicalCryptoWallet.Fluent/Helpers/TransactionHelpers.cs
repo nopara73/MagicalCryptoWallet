@@ -19,7 +19,7 @@ namespace MagicalCryptoWallet.Fluent.Helpers;
 
 public static class TransactionHelpers
 {
-	public static BuildTransactionResult BuildTransaction(Wallet wallet, TransactionInfo transactionInfo, bool isPayJoin = false, bool tryToSign = false, WalletAuthorization? authorization = null)
+	public static BuildTransactionResult BuildTransaction(Wallet wallet, TransactionInfo transactionInfo, bool tryToSign = false, WalletAuthorization? authorization = null)
 	{
 		if (transactionInfo.IsPayToMany)
 		{
@@ -36,11 +36,6 @@ public static class TransactionHelpers
 				tryToSign: tryToSign, authorization: authorization);
 		}
 
-		if (isPayJoin && transactionInfo.SubtractFee)
-		{
-			throw new InvalidOperationException("Not possible to subtract the fee.");
-		}
-
 		return wallet.BuildTransaction(
 			transactionInfo.Destination,
 			transactionInfo.Amount,
@@ -48,7 +43,6 @@ public static class TransactionHelpers
 			transactionInfo.FeeRate,
 			transactionInfo.Coins,
 			transactionInfo.SubtractFee,
-			isPayJoin ? transactionInfo.PayJoinClient : null,
 			tryToSign: tryToSign, authorization: authorization);
 	}
 
@@ -105,8 +99,7 @@ public static class TransactionHelpers
 
 			builder.BuildTransaction(
 				parameters,
-				lockTimeSelector: () => LockTime.Zero, // Doesn't matter.
-				transactionInfo.PayJoinClient);
+				lockTimeSelector: () => LockTime.Zero);
 
 			return true;
 		}
@@ -140,6 +133,5 @@ public static class TransactionHelpers
 
 		return new PaymentIntent(requests);
 	}
-
 
 }

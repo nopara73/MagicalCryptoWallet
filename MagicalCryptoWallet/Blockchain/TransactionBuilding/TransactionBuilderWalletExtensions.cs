@@ -5,7 +5,6 @@ using MagicalCryptoWallet.Blockchain.Analysis.Clustering;
 using MagicalCryptoWallet.Blockchain.TransactionOutputs;
 using MagicalCryptoWallet.Blockchain.Transactions;
 using MagicalCryptoWallet.Wallets;
-using MagicalCryptoWallet.WebClients.PayJoin;
 
 namespace MagicalCryptoWallet.Blockchain.TransactionBuilding;
 
@@ -23,7 +22,6 @@ public static class TransactionBuilderWalletExtensions
 		FeeStrategy feeStrategy,
 		bool allowUnconfirmed = false,
 		IEnumerable<OutPoint>? allowedInputs = null,
-		IPayjoinClient? payjoinClient = null,
 		bool allowDoubleSpend = false,
 		bool tryToSign = true,
 		bool overrideFeeOverpaymentProtection = false,
@@ -57,8 +55,7 @@ public static class TransactionBuilderWalletExtensions
 			{
 				var currentTipHeight = wallet.FilterHeaderChain.TipHeight;
 				return LockTimeSelector.Instance.GetLockTimeBasedOnDistribution(currentTipHeight);
-			},
-			payjoinClient);
+			});
 	}
 
 	public static BuildTransactionResult BuildChangelessTransaction(
@@ -80,18 +77,7 @@ public static class TransactionBuilderWalletExtensions
 		bool allowDoubleSpend = false,
 		bool tryToSign = false, WalletAuthorization? authorization = null)
 	{
-		var intent = destination switch
-			{
-				Destination.Loudly loudly => new PaymentIntent(
-					scriptPubKey: loudly.ScriptPubKey,
-					amount: MoneyRequest.CreateAllRemaining(subtractFee: true),
-					label: label),
-				Destination.Silent silent => new PaymentIntent(
-					address: silent.Address,
-					amount: MoneyRequest.CreateAllRemaining(subtractFee: true),
-					label: label),
-				_ => throw new InvalidOperationException("Unknown destination type")
-			};
+		var intent = new PaymentIntent(destination.ScriptPubKey, MoneyRequest.CreateAllRemaining(subtractFee: true), label);
 
 		var txRes = wallet.BuildTransaction(
 			string.Empty,
@@ -113,14 +99,8 @@ public static class TransactionBuilderWalletExtensions
 		FeeRate feeRate,
 		IEnumerable<SmartCoin> coins,
 		bool subtractFee,
-		IPayjoinClient? payJoinClient = null,
 		bool tryToSign = false, WalletAuthorization? authorization = null)
 	{
-		if (payJoinClient is { } && subtractFee)
-		{
-			throw new InvalidOperationException("Not possible to subtract the fee.");
-		}
-
 		var intent = new PaymentIntent(
 			destination: destination,
 			amount: amount,
@@ -133,7 +113,6 @@ public static class TransactionBuilderWalletExtensions
 			feeStrategy: FeeStrategy.CreateFromFeeRate(feeRate),
 			allowUnconfirmed: true,
 			allowedInputs: coins.Select(coin => coin.Outpoint),
-			payjoinClient: payJoinClient,
 			tryToSign: tryToSign, authorization: authorization);
 
 		return txRes;
@@ -146,7 +125,6 @@ public static class TransactionBuilderWalletExtensions
 		FeeStrategy feeStrategy,
 		bool allowUnconfirmed = false,
 		IEnumerable<OutPoint>? allowedInputs = null,
-		IPayjoinClient? payjoinClient = null,
 		bool allowDoubleSpend = false, WalletAuthorization? authorization = null)
 		=> BuildTransaction(
 			wallet,
@@ -155,7 +133,6 @@ public static class TransactionBuilderWalletExtensions
 			feeStrategy,
 			allowUnconfirmed,
 			allowedInputs,
-			payjoinClient,
 			allowDoubleSpend,
 			tryToSign: true,
 			overrideFeeOverpaymentProtection: true, authorization: authorization);

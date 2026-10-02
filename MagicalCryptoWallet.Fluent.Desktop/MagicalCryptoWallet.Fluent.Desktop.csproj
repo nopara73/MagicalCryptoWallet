@@ -20,7 +20,7 @@
 		<NeutralLanguage>en-US</NeutralLanguage>
 		<AssemblyTitle>Magical Crypto Wallet</AssemblyTitle>
 		<Description>
-			Open-source, non-custodial, privacy focused Bitcoin wallet for Windows, Linux, and Mac. Built-in Tor, coinjoin and payjoin features.
+			Open-source, non-custodial, privacy focused Bitcoin wallet for Windows, Linux, and Mac. Built-in Tor, coinjoin features.
 		</Description>
 		<Copyright>MIT</Copyright>
 		<PackageTags>bitcoin-wallet;privacy;bitcoin;dotnet;nbitcoin;cross-platform;zerolink;wallet;wabisabi;coinjoin;tor</PackageTags>

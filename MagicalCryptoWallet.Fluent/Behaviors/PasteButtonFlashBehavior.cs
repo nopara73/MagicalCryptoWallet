@@ -96,7 +96,7 @@ public class PasteButtonFlashBehavior : AttachedToVisualTreeBehavior<AnimatedBut
 		clipboardValue = clipboardValue.Trim();
 		var addressParsingResult = AddressParser.Parse(clipboardValue, Services.Instance.GetNetwork());
 
-		// ClipboardValue might not match CurrentAddress, but it might be a PayJoin address pointing to the CurrentAddress
+		// ClipboardValue might not match CurrentAddress, but it might be a Bitcoin payment URI pointing to the CurrentAddress
 		// Hence we need to compare both string value and parse result
 		if (clipboardValue != CurrentAddress && addressParsingResult.IsOk && CurrentAddress != addressParsingResult.Value.ToWif(Services.Instance.GetNetwork()))
 		{

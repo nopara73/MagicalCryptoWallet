@@ -30,32 +30,24 @@ public class KeyManagerTests
 		Assert.NotNull(manager.EncryptedSecret);
 		Assert.NotNull(manager.SegwitExtPubKey);
 		Assert.NotNull(manager.TaprootExtPubKey);
-		Assert.NotNull(manager.SilentPaymentScanExtPubKey);
-		Assert.NotNull(manager.SilentPaymentSpendExtPubKey);
 
 		Assert.NotNull(manager2.ChainCode);
 		Assert.NotNull(manager2.EncryptedSecret);
 		Assert.NotNull(manager2.SegwitExtPubKey);
 		Assert.NotNull(manager2.TaprootExtPubKey);
-		Assert.NotNull(manager2.SilentPaymentScanExtPubKey);
-		Assert.NotNull(manager2.SilentPaymentSpendExtPubKey);
 
 		Assert.NotNull(manager3.ChainCode);
 		Assert.NotNull(manager3.EncryptedSecret);
 		Assert.NotNull(manager3.SegwitExtPubKey);
 		Assert.NotNull(manager3.TaprootExtPubKey);
-		Assert.NotNull(manager3.SilentPaymentScanExtPubKey);
-		Assert.NotNull(manager3.SilentPaymentSpendExtPubKey);
 
 		var sameManager = new KeyManager(manager.EncryptedSecret, manager.ChainCode, manager.MasterFingerprint, manager.SegwitExtPubKey, manager.TaprootExtPubKey,
-			manager.SilentPaymentScanExtPubKey, manager.SilentPaymentSpendExtPubKey, null, new BlockchainState(Network.Main));
+			null, new BlockchainState(Network.Main));
 
 		Assert.Equal(manager.ChainCode, sameManager.ChainCode);
 		Assert.Equal(manager.EncryptedSecret, sameManager.EncryptedSecret);
 		Assert.Equal(manager.SegwitExtPubKey, sameManager.SegwitExtPubKey);
 		Assert.Equal(manager.TaprootExtPubKey, sameManager.TaprootExtPubKey);
-		Assert.Equal(manager.SilentPaymentScanExtPubKey, sameManager.SilentPaymentScanExtPubKey);
-		Assert.Equal(manager.SilentPaymentSpendExtPubKey, sameManager.SilentPaymentSpendExtPubKey);
 	}
 
 	[Fact]
@@ -69,16 +61,12 @@ public class KeyManagerTests
 		Assert.Equal(manager.EncryptedSecret, sameManager.EncryptedSecret);
 		Assert.Equal(manager.SegwitExtPubKey, sameManager.SegwitExtPubKey);
 		Assert.Equal(manager.TaprootExtPubKey, sameManager.TaprootExtPubKey);
-		Assert.Equal(manager.SilentPaymentScanExtPubKey, sameManager.SilentPaymentScanExtPubKey);
-		Assert.Equal(manager.SilentPaymentSpendExtPubKey, sameManager.SilentPaymentSpendExtPubKey);
 
 		var differentManager = KeyManager.Recover(mnemonic, "differentPassword", Network.Main, KeyPath.Parse("m/999'/999'/999'"), null, null, 55);
 		Assert.NotEqual(manager.ChainCode, differentManager.ChainCode);
 		Assert.NotEqual(manager.EncryptedSecret, differentManager.EncryptedSecret);
 		Assert.NotEqual(manager.SegwitExtPubKey, differentManager.SegwitExtPubKey);
 		Assert.NotEqual(manager.TaprootExtPubKey, differentManager.TaprootExtPubKey);
-		Assert.NotEqual(manager.SilentPaymentScanExtPubKey, differentManager.SilentPaymentScanExtPubKey);
-		Assert.NotEqual(manager.SilentPaymentSpendExtPubKey, differentManager.SilentPaymentSpendExtPubKey);
 
 		var newKey = differentManager.GenerateNewKey("some-label", KeyState.Clean, true);
 		Assert.Equal(newKey.Index, differentManager.MinGapLimit);
@@ -146,8 +134,6 @@ public class KeyManagerTests
 		Assert.Equal(manager.EncryptedSecret, sameManager.EncryptedSecret);
 		Assert.Equal(manager.SegwitExtPubKey, sameManager.SegwitExtPubKey);
 		Assert.Equal(manager.TaprootExtPubKey, sameManager.TaprootExtPubKey);
-		Assert.Equal(manager.SilentPaymentScanExtPubKey, sameManager.SilentPaymentScanExtPubKey);
-		Assert.Equal(manager.SilentPaymentSpendExtPubKey, sameManager.SilentPaymentSpendExtPubKey);
 
 		DeleteFileAndDirectoryIfExists(filePath);
 	}
@@ -280,12 +266,8 @@ public class KeyManagerTests
 		var labels = new LabelsArray("who-knows");
 		var segwitKey = manager.GetNextReceiveKey(labels, ScriptPubKeyType.Segwit);
 		var taprootKey = manager.GetNextReceiveKey(labels, ScriptPubKeyType.TaprootBIP86);
-		var silentPaymentScanKey = manager.GetNextReceiveKey(labels, KeyPurpose.Scan);
-		var silentPaymentSpendKey = manager.GetNextReceiveKey(labels, KeyPurpose.Spend);
 		Assert.Equal("84'/0'/0'/0/0", segwitKey.FullKeyPath.ToString());
 		Assert.Equal("86'/0'/0'/0/0", taprootKey.FullKeyPath.ToString());
-		Assert.Equal("352'/0'/0'/1'/0", silentPaymentScanKey.FullKeyPath.ToString());
-		Assert.Equal("352'/0'/0'/0'/0", silentPaymentSpendKey.FullKeyPath.ToString());
 	}
 
 	[Fact]
