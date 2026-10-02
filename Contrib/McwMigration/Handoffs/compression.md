@@ -1,11 +1,13 @@
 # HTTP content-decoding workstream
 
-Status: **active workstream; verified DEFLATE/zlib/gzip checkpoint available for
-integration**, 2026-10-02, Asia/Singapore. The expanded assignment includes
-first-party Brotli and the application's decoded HTTP response path. This
-checkpoint does not remove System.Net.Http, Microsoft.Extensions.Http, or any
-managed runtime dependency. Production response decoding remains managed until
-the HTTP and application-host owners integrate and verify the service/adapters.
+Status: **verified DEFLATE/zlib/gzip checkpoint; bounded caller integration
+pending**, 2026-10-02, Asia/Singapore. The human's 2026-10-02 scope correction
+revokes the whole-subsystem expansion. Preserve the tested Brotli/content-codec
+draft and its evidence; do not use it to authorize a complete network service,
+native UI, or application runtime rewrite. The coordinator will assign a small,
+concrete caller replacement. This checkpoint does not remove System.Net.Http,
+Microsoft.Extensions.Http, or the managed runtime. Actual HTTP response
+decompression still executes managed code.
 
 Worker: `compression`, thread `01a0fc45-d443-7f93-aab1-3ba11b889a0e`.
 Coordinator: `01a0fc1e-7c20-76d3-bf81-cb1f68c9adb7`.
@@ -36,13 +38,14 @@ staged only assigned paths. No shared checkout, active QR checkout, wallet,
 key, live process, shared Git configuration, global runtime, or peer edit was
 modified. Remote advances were fast-forwarded into this isolated checkout.
 
-Expanded ownership declared to QR and HTTP owner before adapter/caller edits:
+Codec/adapter ownership declared to QR and HTTP owner before any caller edits:
 `mcw/src/content_service/**` and `MagicalCryptoWallet/Mcw/Content/**`, in
 addition to the paths above. HTTP/network owner retains transport caller edits
 under WebClients. QR retains Cargo manifests, lib/main/CLI/bridge dispatcher,
 native/platform bindings, lifecycle, packaging and shared ledger. No second
 Cargo package or shipping executable is added. Shared integration requests are
-sent by coordinator only when QR is idle.
+sent by coordinator only when QR is idle. The broader standalone content-session
+adapter proposal is deferred by the scope correction; none was written.
 
 ## Codec API and behavior
 
@@ -181,9 +184,69 @@ third-party fixture source was copied. Primary specifications read directly:
 [RFC1950](https://www.rfc-editor.org/rfc/rfc1950),
 [RFC1951](https://www.rfc-editor.org/rfc/rfc1951),
 [RFC1952](https://www.rfc-editor.org/rfc/rfc1952).
-Expanded Brotli work uses [RFC7932](https://www.rfc-editor.org/rfc/rfc7932);
-its normative static dictionary/tables will retain their separate provenance,
-license and independently checked format CRCs.
+The preserved Brotli draft uses [RFC7932](https://www.rfc-editor.org/rfc/rfc7932);
+its normative static dictionary/tables retain separate provenance, license and
+independently checked format CRCs.
+
+## Preserved bounded Brotli/content-codec draft
+
+These files currently exist only in the isolated checkout, not as a published
+production migration: `mcw/src/content_service/**`,
+`mcw/tests/compression_brotli_tables.py`,
+`mcw/tests/compression_content_conformance.rs`,
+`mcw/tests/compression_content_reference.py`, and
+`mcw/tests/compression_content_verify.ps1`. No Cargo manifest, lib/main, bridge,
+HTTP transport caller, project/package file, or managed Content adapter changed.
+
+`content_service::decode(encoded_body, ordered_content_encoding_values,
+limits, checkpoint)` decodes all declared gzip/zlib/Brotli layers in reverse
+order and returns body bytes plus exact per-layer consumption/work proof only
+after every layer validates. HTTP `deflate` means RFC1950 zlib; there is no raw
+DEFLATE retry. Unsupported/invalid coding tokens fail visibly. Identity has a
+bounded copy path. Allocation accounts for intermediate buffer capacities,
+codec storage, metadata and an 8 KiB DEFLATE copy workspace; it remains logical
+allocation accounting rather than an OS RSS limit. Checkpoints connect
+cancellation/deadlines to bounded inner work slices. Independent total output,
+expansion and work budgets cannot reset between coding layers.
+
+The independently implemented buffered Brotli decoder supports standard
+WBITS 10 through 24, stored/compressed/metadata meta-blocks, simple/complex
+canonical prefix codes, block switching, distance caches/direct/postfix codes,
+all four literal context modes, context-map RLE/MTF, and the normative static
+dictionary with all 121 transforms. Invalid window extensions, padding,
+codes/maps/distances, dictionary references, lengths, trailing data and bounds
+fail without returning a body. Brotli meta-block count has its own typed limit.
+
+The exact RFC dictionary is 122784 bytes, SHA256
+`20e42eb1b511c21806d4d227d07e5dd06877d8ce7b3a817f378f313653f35c70`,
+CRC32 `5136cb04`. Context LUT CRCs are `8e91efb7`, `d01a32f4`, `0dd7a0d6`;
+the serialized 121-transform table CRC is `3d965f81`.
+`content_service/data/{manifest.json,PROVENANCE.md,RFC-DATA-LICENSE}` records
+primary RFC provenance and retains its required data license. These are
+protocol-defined assets, not a copied decoder or shipping native library.
+
+Verified with Rust 1.99.0/edition2024 on Windows x64:
+
+- **20 actual-source tests pass in debug and optimized builds**, warnings denied,
+  overflow checks enabled, one build job and one test thread.
+- **6647 differential cases pass** against installed .NET 10's Brotli
+  encoder/decoder, used only as an independent test oracle. Includes all
+  **2541** dictionary length/transform combinations, **32** hand-assembled
+  context/RLE/MTF/block-switch vectors, and **540** vectors covering every
+  encoder quality 0..11 and standard window 10..24.
+- Actual published HTTP/1 parser plus this codec decode Content-Length and
+  chunked response fixtures at byte/field/body splits, and four synthetic TCP
+  server exchanges. Encoded length is checked before decoding; corrupt final
+  checksums, truncation, layered expansion, work/allocation/input/output limits,
+  cancellation/deadlines and 3000 bounded random Brotli inputs are covered.
+- Evidence under `.artifacts/compression-content/`: `verification.json`, debug
+  and optimized logs, `differential.json`, and `reference-fixtures.jsonl`.
+  Fixture SHA256: `ba3f37cee62ce6bcfef67944749703a3329ca5e693fe920d984ea34dc651b48e`.
+  Source hashes are checked before/after verification. All data is synthetic.
+
+This proves codec behavior within the tested bounds. It does not prove a
+production managed response adapter, dependency removal, native execution on
+other targets, or application release readiness.
 
 ## Concrete remaining managed callers and dependencies
 
@@ -209,31 +272,30 @@ at this snapshot. HTTP packages also own transport/TLS, retries, response
 framing and other responsibilities; a compression module alone removes none
 of them. Skia/PNG is separate and is neither edited nor claimed removed here.
 
-## Concrete integration boundary and remaining acceptance
+## Bounded integration options and remaining acceptance
 
-Reserved operation proposal **0x0900-0x09FF**; allocation of exact operations
-and payloads belongs to QR's existing bounded/correlated frame contract. Domain
-codec/service API remains independent of bridge frames and network state.
-The current 1 MiB frame ceiling requires chunked service requests/results for
-larger bodies, with session/aggregate limits and cancellation. A single whole
-response in one frame is not sufficient production integration.
+The PNG input-decoder owner has confirmed reuse of the published
+`compression::decode(input, DecodeOptions::new(Format::Zlib))` API. It derives
+the exact inflated scanline size from IHDR/Adam7, sets a matching output limit,
+keeps strict trailing/dictionary rejection, and validates the complete zlib
+stream before exposing rows. The compression worker changes no PNG/scanner file
+and does not claim that worker's caller integration is complete.
 
-For the expanded workstream to finish, Brotli's required prefix codes,
-contexts, static dictionary/transforms and window behavior must be contained
-first-party Rust; the concrete Content adapter and HTTP response path must
-call it and this engine; old managed decompression must be disabled on migrated
-flows. Test actual HTTP fixtures and synthetic servers through the production
-response adapter, negotiated encodings, corruption/truncation, bounds,
-cancellation, encoded Content-Length and visible errors. There is no silent
-managed fallback for an unsupported codec. Networking/Tor/TLS state ownership
-stays with HTTP/native service owners.
+A separate small HTTP integration, if assigned, should retain the current
+transport and replace decoding only for a specifically bounded response caller.
+The shared default factory also serves installer streams; do not silently impose
+a small JSON limit or codec cutover on every download. Network owner retains
+WebClients edits; QR retains shared dispatcher/host edits. The prior
+**0x0900-0x09FF** operation reservation is a deferred proposal, not registered
+functionality. No new bridge protocol or full Rust networking service is needed
+to declare this codec checkpoint verified.
 
-Required host acceptance remains module registration, service dispatcher,
-managed adapter/caller wiring, capability checks, error/cancellation/lifecycle
-coverage, packaged dependency audits and builds/native runtime tests for all
-five desktop targets: Windows x64, Linux x64/ARM64, macOS x64/ARM64. Only the
-Windows x64 standalone codec harness is verified here. Once those flows are
-migrated, every remaining upstream caller and packaged reference must be
-audited before final package/runtime removal. This document does not claim
-native five-target execution, application HTTP decoding migration, Brotli
-completion, or a production wallet release.
+Before reporting a bounded production replacement complete, verify its actual
+Rust caller path, compatible bytes/metadata, cancellation/lifecycle behavior,
+visible malformed/limit errors and removal of the old decoder on that named
+flow. Test the production adapter with synthetic responses, not just this
+standalone harness. List other managed codec/HTTP callers and packaged
+dependencies separately. Shared native builds/runtime evidence for Windows
+x64, Linux x64/ARM64 and macOS x64/ARM64 remain with the host owner; only Windows
+x64 codec-harness execution is verified here. Preserve broader draft work until
+a concrete later assignment authorizes it.
