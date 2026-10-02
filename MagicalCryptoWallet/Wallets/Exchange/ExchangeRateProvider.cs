@@ -1,5 +1,6 @@
 using System.Net.Http;
 using Newtonsoft.Json.Linq;
+using MagicalCryptoWallet.Mcw.Network;
 using MagicalCryptoWallet.WebClients;
 
 namespace MagicalCryptoWallet.Wallets.Exchange;
@@ -20,19 +21,19 @@ public static class ExchangeRateProviders
 
 	private static UserAgentPicker PickRandomUserAgent = UserAgent.GenerateUserAgentPicker();
 
-	public static ExchangeRateProvider BlockchainInfoAsync(IHttpClientFactory httpClientFactory) =>
+	public static ExchangeRateProvider BlockchainInfoAsync(IMcwHttpClientFactory httpClientFactory) =>
 		cancellationToken => GetExchangeRateAsync("BlockchainInfo", "https://blockchain.info/ticker", JsonPath(".USD.buy"),
 			httpClientFactory, PickRandomUserAgent(), cancellationToken);
 
-	public static ExchangeRateProvider MempoolSpaceAsync(IHttpClientFactory httpClientFactory) =>
+	public static ExchangeRateProvider MempoolSpaceAsync(IMcwHttpClientFactory httpClientFactory) =>
 		cancellationToken => GetExchangeRateAsync("MempoolSpace", "https://mempool.space/api/v1/prices", JsonPath(".USD"),
 			httpClientFactory, PickRandomUserAgent(), cancellationToken);
 
-	public static ExchangeRateProvider CoinGeckoAsync(IHttpClientFactory httpClientFactory) =>
+	public static ExchangeRateProvider CoinGeckoAsync(IMcwHttpClientFactory httpClientFactory) =>
 		cancellationToken => GetExchangeRateAsync("CoinGecko", "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=bitcoin", JsonPath(".[0].current_price"),
 			httpClientFactory, PickRandomUserAgent(), cancellationToken);
 
-	public static ExchangeRateProvider GeminiAsync(IHttpClientFactory httpClientFactory) =>
+	public static ExchangeRateProvider GeminiAsync(IMcwHttpClientFactory httpClientFactory) =>
 		cancellationToken => GetExchangeRateAsync("Gemini", "https://api.gemini.com/v1/pubticker/btcusd", JsonPath(".bid"),
 			httpClientFactory, PickRandomUserAgent(), cancellationToken);
 
@@ -58,7 +59,7 @@ public static class ExchangeRateProviders
 			throw new InvalidOperationException("All exchange rate providers failed to give us an exchange rate.");
 		};
 
-	private static async Task<ExchangeRate> GetExchangeRateAsync(string providerName, string apiUrl, ExchangeRateExtractor extractor, IHttpClientFactory httpClientFactory, string userAgent, CancellationToken cancellationToken)
+	private static async Task<ExchangeRate> GetExchangeRateAsync(string providerName, string apiUrl, ExchangeRateExtractor extractor, IMcwHttpClientFactory httpClientFactory, string userAgent, CancellationToken cancellationToken)
 	{
 		var url = new Uri(apiUrl);
 

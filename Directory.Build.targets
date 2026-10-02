@@ -1,0 +1,10 @@
+<Project>
+  <PropertyGroup>
+    <BuildMcwHost Condition="'$(BuildMcwHost)' == '' and ('$(MSBuildProjectName)' == 'MagicalCryptoWallet.Fluent.Desktop' or '$(MSBuildProjectName)' == 'MagicalCryptoWallet.Daemon')">true</BuildMcwHost>
+    <McwRuntimeIdentifier Condition="'$(RuntimeIdentifier)' != ''">$(RuntimeIdentifier)</McwRuntimeIdentifier>
+    <McwRuntimeIdentifier Condition="'$(McwRuntimeIdentifier)' == ''">$(NETCoreSdkRuntimeIdentifier)</McwRuntimeIdentifier>
+  </PropertyGroup>
+  <Target Name="BuildApplicationHost" AfterTargets="Build" Condition="'$(BuildMcwHost)' == 'true' and '$(DesignTimeBuild)' != 'true'">
+    <Exec Command="python &quot;$(MSBuildThisFileDirectory)Contrib/Mcw/build.py&quot; --rid &quot;$(McwRuntimeIdentifier)&quot; --version &quot;$(ClientVersion)&quot; --copy-to &quot;$(TargetDir).&quot;" />
+  </Target>
+</Project>

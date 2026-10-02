@@ -1,8 +1,10 @@
-# Wallet cryptography: hash checkpoint
+# Wallet hashes: bounded checkpoint
 
-The hash implementation is verified and ready for module incorporation. The expanded
-wallet cryptography/key/recovery workstream remains in progress. No production
-caller or upstream package has been replaced by this checkpoint.
+The hash implementation is verified and ready for module incorporation. No
+production caller or upstream package has been replaced by this checkpoint.
+The human's 2026-10-02 scope correction stopped the full wallet cryptography,
+key and recovery migration. Work is limited to independently replaceable hash
+responsibilities and concrete caller integration after ownership is assigned.
 
 Implementation commit: `6343f04fc8da3cb80773683905fab1411d87023e`
 
@@ -16,11 +18,13 @@ additional package or shipping executable is created, and no wallet/key data is
 read or changed. Original code is repository MIT; vector provenance and the Trezor
 vector MIT license are preserved in `wallet_hashes_fixtures/SOURCES.md` and manifest.
 
-Following the human's expanded scope, this worker also owns new
-`mcw/src/wallet_crypto/**` and `MagicalCryptoWallet/Mcw/Crypto/**` leaves. Curve,
-ECDSA/Schnorr, BIP32/BIP39, retained recovery/encryption services and production
-caller preparation continue after this intermediate publication. Current caller
-ownership was declared to QR and must be resolved before those files are edited.
+The unpublished curve, SHA1 and HKDF drafts and their test evidence are preserved
+in `.artifacts/mcw-wallet-hashes`. They are unregistered and outside this bounded
+checkpoint. The latest curve compatibility run failed one deterministic ECDSA
+edge case; it must not be counted as a production capability. No complete key,
+signing, mnemonic, recovery, encryption or wallet-state rewrite is authorized by
+this checkpoint. The clean `.artifacts/mcw-wallet-hash-callers` checkout separates
+any bounded follow-up from those preserved drafts.
 
 ## Portable API
 
@@ -117,8 +121,10 @@ shipping executables or shipping-runtime-removal evidence.
 
 ## Retained caller/package mapping and acceptance work
 
-`wallet_hashes_callers.json` records exact audited master revision, source hashes,
-lines and six NBitcoin/Secp package references. Retained callers include:
+`wallet_hashes_callers.json` records audited master revision
+`875e929193d11106766603767a939d1985a431cf`, source hashes, eight retained caller
+files, nine direct hash call sites and six NBitcoin/Secp package references.
+Retained callers include:
 
 - OwnershipIdentifier HMAC-SHA256 over key/script bytes; existing SequenceEqual
   comparison requires deliberate full-MAC verification migration.
@@ -126,8 +132,10 @@ lines and six NBitcoin/Secp package references. Retained callers include:
   secret ownership still exist.
 - SLIP39 share HMAC-SHA256 (explicit four-byte truncation) and Feistel
   PBKDF2-HMAC-SHA256 with step/passphrase/extension-aware salt bytes. Remaining
-  interpolation, mnemonic/wordlists, checked exponent and recovery services are
-  part of the expanded workstream, not removed by these primitives.
+  interpolation, mnemonic/wordlists, checked exponent and recovery services remain
+  unchanged and outside the bounded hash replacement. Migrating the Feistel call
+  would require preserving all supported exponents; the published PBKDF2 admission
+  limit must not silently narrow recovery compatibility.
 - Tor SAFECOOKIE System.HMACSHA256 remains managed; transport/handshake/logging
   ownership remains separate.
 - ProofBody SHA256 can use the existing first-party sibling, but serialization and
@@ -139,12 +147,19 @@ NBitcoin 10.0.13, NBitcoin.Secp256k1 3.1.6, managed platform crypto callers and
 transitive managed packages remain transitional. No package is removed. The Rust
 hash module has zero external Cargo/runtime/library/companion dependencies.
 
-Remaining work: implement and independently review complete key/signing/recovery
-services; coordinate transaction/script APIs; secure platform entropy interface
-with no fallback; register in the one mcw host through QR's idle incorporation;
-wire and verify actual production callers; remove their prior implementations;
-validate policy/secret lifetimes and failure behavior; run synthetic end-to-end
-compatibility across all five desktop targets; audit actual package/runtime graphs.
-Only after every relevant upstream caller and packaged reference disappears may
-NBitcoin or Secp be declared removed. QR/coordinator own incorporation dispatch;
-this worker has not requested incorporation while QR is active.
+The smallest candidate integrations are the HMAC-SHA256 computation in
+`OwnershipIdentifier.cs` and the seed/child HMAC-SHA512 computations in
+`Slip21Node.cs`. They preserve existing Key/Script/data ownership and need no curve
+implementation. These are proposed leaves, not a completed production cutover.
+SLIP39 share HMAC is another possible leaf; Feistel PBKDF2 remains separate because
+of the exponent compatibility issue above.
+
+Remaining bounded acceptance work: agree precise caller ownership; register the
+actual handler and typed adapter through QR's host incorporation; verify
+secret-bearing request/response lifetimes, disconnect/error behavior and exact
+SLIP19/SLIP21 caller outputs with synthetic inputs; retire only the replaced hash
+calls; and record actual target/runtime evidence. QR's host/service boundary is
+currently unpublished, so an adapter or primitive harness alone does not prove
+production caller replacement. The broader key/recovery engine stays retained.
+NBitcoin and Secp remain dependencies until every relevant caller and packaged
+reference disappears. QR/coordinator control incorporation dispatch.

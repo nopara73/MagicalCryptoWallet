@@ -5,6 +5,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using MagicalCryptoWallet.Mcw.Network;
 using MagicalCryptoWallet.WebClients.MagicalCryptoWallet;
 using Xunit;
 
@@ -46,7 +47,7 @@ public class TorRoutingTests
 		listener.Start();
 		var endpoint = (IPEndPoint)listener.LocalEndpoint;
 		var server = RespondAsync(listener, cancellation.Token);
-		var factory = new OnionHttpClientFactory(new Uri("socks5://127.0.0.1:1"),
+		IMcwHttpClientFactory factory = new OnionHttpClientFactory(new Uri("socks5://127.0.0.1:1"),
 			new HttpClientHandlerConfiguration { MaxAttempts = 1 });
 		using var client = factory.CreateClient("local-service");
 		using var response = await client.GetAsync($"http://127.0.0.1:{endpoint.Port}/", cancellation.Token);
@@ -62,7 +63,7 @@ public class TorRoutingTests
 		listener.Start();
 		var endpoint = (IPEndPoint)listener.LocalEndpoint;
 		var server = ServeSocksAsync(listener, cancellation.Token);
-		var factory = new OnionHttpClientFactory(new Uri($"socks5://127.0.0.1:{endpoint.Port}"),
+		IMcwHttpClientFactory factory = new OnionHttpClientFactory(new Uri($"socks5://127.0.0.1:{endpoint.Port}"),
 			new HttpClientHandlerConfiguration { MaxAttempts = 1 });
 		using var client = factory.CreateClient("alice-synthetic");
 		using var response = await client.GetAsync("http://protected.invalid/tx/synthetic", cancellation.Token);

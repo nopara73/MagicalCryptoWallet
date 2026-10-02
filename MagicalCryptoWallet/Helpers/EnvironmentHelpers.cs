@@ -191,6 +191,11 @@ public static class EnvironmentHelpers
 	public static string GetExecutablePath()
 	{
 		var fullBaseDir = GetFullBaseDirectory();
+		var applicationHost = Path.Combine(fullBaseDir, RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "mcw.exe" : "mcw");
+		if (File.Exists(applicationHost))
+		{
+			return applicationHost;
+		}
 		var magicalcryptowalletFileName = Path.Combine(fullBaseDir, Constants.ExecutableName);
 		magicalcryptowalletFileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? $"{magicalcryptowalletFileName}.exe" : $"{magicalcryptowalletFileName}";
 		if (File.Exists(magicalcryptowalletFileName))

@@ -26,11 +26,64 @@
           installPhase = "install -Dm755 libwabisabi.so $out/lib/libwabisabi.so";
         };
         gitRev = if (builtins.hasAttr "rev" self) then self.rev else "dirty";
+        # Official, checksum-pinned compiler/std distribution. Compiler runtimes
+        # are build tools; only the separately audited mcw application ships.
+        rustToolchain = pkgs.stdenv.mkDerivation {
+          pname = "mcw-rust-toolchain";
+          version = "1.99.0";
+          srcs = [
+            (pkgs.fetchurl { url = "https://static.rust-lang.org/dist/2026-10-01/rustc-1.99.0-x86_64-unknown-linux-gnu.tar.xz"; sha256 = "77171ba2a0345fdf2abc4fedda55d6de078dae7a68527c28be8c77dcc9604bd5"; })
+            (pkgs.fetchurl { url = "https://static.rust-lang.org/dist/2026-10-01/cargo-1.99.0-x86_64-unknown-linux-gnu.tar.xz"; sha256 = "d7674918d28093097614cd9728b6ca60db9ea3038f640f0bd1e9a4188c7568ce"; })
+            (pkgs.fetchurl { url = "https://static.rust-lang.org/dist/2026-10-01/rust-std-1.99.0-x86_64-unknown-linux-gnu.tar.xz"; sha256 = "3e58dff2d0b72196b5ea4e90536e174d400de88564a52694686b81e091169933"; })
+            (pkgs.fetchurl { url = "https://static.rust-lang.org/dist/2026-10-01/rust-src-1.99.0.tar.xz"; sha256 = "3f1f9b7ed48f4596fc87889b7b3c61747336a55c9c22db1ab0c697e0aadb77aa"; })
+          ];
+          sourceRoot = ".";
+          nativeBuildInputs = [ pkgs.autoPatchelfHook ];
+          buildInputs = [ pkgs.stdenv.cc.cc.lib pkgs.zlib pkgs.openssl ];
+          dontConfigure = true;
+          dontBuild = true;
+          dontStrip = true;
+          installPhase = ''
+            patchShebangs --build ./*/install.sh
+            for component in rustc cargo rust-std; do
+              ./$component-1.99.0-x86_64-unknown-linux-gnu/install.sh --prefix=$out --disable-ldconfig
+            done
+            ./rust-src-1.99.0/install.sh --prefix=$out --disable-ldconfig
+          '';
+        };
+        rustStdVendor = import ./Contrib/Mcw/rust-std-vendor.nix { inherit pkgs; };
+        mcwHost = pkgs.stdenv.mkDerivation {
+          pname = "mcw";
+          version = "99.99.99";
+          src = ./mcw;
+          nativeBuildInputs = [ rustToolchain ];
+          buildPhase = ''
+            export CARGO_HOME=$TMPDIR/mcw-cargo
+            export MCW_VERSION=99.99.99
+            export RUSTC_BOOTSTRAP=1
+            export RUSTFLAGS="-C panic=abort -C default-linker-libraries=no"
+            mkdir -p .cargo
+            cat > .cargo/config.toml <<EOF
+            [source.crates-io]
+            replace-with = "compiler-std"
+            [source.compiler-std]
+            directory = "${rustStdVendor}"
+            EOF
+            cargo -Z build-std=std,panic_abort -Z build-std-features= build --target x86_64-unknown-linux-gnu --release --locked --offline
+          '';
+          doCheck = true;
+          checkPhase = ''
+            unset RUSTFLAGS RUSTC_BOOTSTRAP
+            cargo test --locked --offline
+            if readelf -d target/x86_64-unknown-linux-gnu/release/mcw | grep -E 'NEEDED.*(libgcc|libstdc|libssl|libcrypto)'; then exit 1; fi
+          '';
+          installPhase = "install -Dm755 target/x86_64-unknown-linux-gnu/release/mcw $out/bin/mcw";
+        };
         buildMagicalCryptoWalletModule = pkgs.buildDotnetModule ({
           pname = "magicalcryptowallet";
           version = "2.0.0-${builtins.substring 0 8 (self.lastModifiedDate or self.lastModified or "19700101")}-${gitRev}";
           nugetDeps = ./deps.json; # nix build .#packages.x86_64-linux.all.passthru.fetch-deps
-          dotnetFlags = [ "-p:CommitHash=${gitRev}" "-p:NativeLibraryPath=${nativeCredentials}/lib/libwabisabi.so" ];
+          dotnetFlags = [ "-p:CommitHash=${gitRev}" "-p:NativeLibraryPath=${nativeCredentials}/lib/libwabisabi.so" "-p:BuildMcwHost=false" ];
           dotnetRestoreFlags = [ "-p:Configuration=Release" ];
           dotnet-sdk = pkgs.dotnetCorePackages.sdk_10_0;
           dotnet-runtime = pkgs.dotnetCorePackages.aspnetcore_10_0;
@@ -66,15 +119,22 @@
           dontDotnetFixup = true;
 
           preFixup = ''
+            cp ${mcwHost}/bin/mcw $out/lib/${pname}/mcw
+            ln -s $out/lib/${pname}/mcw $out/bin/mcw
             wrapDotnetProgram $out/lib/${pname}/MagicalCryptoWallet.Fluent.Desktop $out/bin/magicalcryptowallet
             wrapDotnetProgram $out/lib/${pname}/MagicalCryptoWallet.Coordinator $out/bin/magicalcryptowallet-coordinator
             wrapDotnetProgram $out/lib/${pname}/MagicalCryptoWallet.Daemon $out/bin/magicalcryptowalletd
+            cp $out/bin/magicalcryptowallet $out/lib/${pname}/magicalcryptowallet
+            cp $out/bin/magicalcryptowalletd $out/lib/${pname}/magicalcryptowalletd
           '';
 
           binaries = "BundledApps/Binaries/linux-x64";
           bundledApps = "./MagicalCryptoWallet/${binaries}";
           bundledAppsIntegrationTest = "./MagicalCryptoWallet.IntegrationTests/${binaries}";
           preBuild = ''
+            mkdir -p MagicalCryptoWallet.Fluent.Desktop/bin/Release/net10.0/linux-x64 MagicalCryptoWallet.Daemon/bin/Release/net10.0/linux-x64
+            cp ${mcwHost}/bin/mcw MagicalCryptoWallet.Fluent.Desktop/bin/Release/net10.0/linux-x64/
+            cp ${mcwHost}/bin/mcw MagicalCryptoWallet.Daemon/bin/Release/net10.0/linux-x64/
             mkdir -p ${bundledApps}/Tor ${bundledAppsIntegrationTest}
             cp -r ${pkgs.tor}/bin/tor ${bundledApps}/Tor/tor
             cp ${pkgs.bitcoind}/bin/bitcoind ${bundledAppsIntegrationTest}/bitcoind

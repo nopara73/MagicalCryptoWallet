@@ -1,5 +1,6 @@
 using System.Net.Http;
 using System.Text.Json;
+using MagicalCryptoWallet.Mcw.Network;
 using MagicalCryptoWallet.BitcoinRpc;
 using MagicalCryptoWallet.WebClients.MagicalCryptoWallet;
 using MagicalCryptoWallet.WebClients;
@@ -25,19 +26,19 @@ public static class FeeRateProviders
 	/*
 	 * https://engineering.block.xyz/blog/augur-an-open-source-bitcoin-fee-estimation-library
 	 */
-	public static FeeRateProvider BlockAsync(IHttpClientFactory httpClientFactory) =>
+	public static FeeRateProvider BlockAsync(IMcwHttpClientFactory httpClientFactory) =>
 		cancellationToken => GetFeeRateEstimationsAsync("Block.xyz",
 			("https://pricing.bitcoin.block.xyz", "https://pricing.bitcoin.block.xyz"),
 			"/fees",
 			httpClientFactory, PickRandomUserAgent(), BlockHandler(), cancellationToken);
 
-	public static FeeRateProvider BlockstreamAsync(IHttpClientFactory httpClientFactory) =>
+	public static FeeRateProvider BlockstreamAsync(IMcwHttpClientFactory httpClientFactory) =>
 		cancellationToken => GetFeeRateEstimationsAsync("Blockstream",
 			("https://blockstream.info", "http://explorerzydxu5ecjrkwceayqybizmpjjznk5izmitf2modhcusuqlid.onion"),
 			"/api/fee-estimates",
 			httpClientFactory, PickRandomUserAgent(), BlockstreamHandler(), cancellationToken);
 
-	public static FeeRateProvider MempoolSpaceAsync(IHttpClientFactory httpClientFactory) =>
+	public static FeeRateProvider MempoolSpaceAsync(IMcwHttpClientFactory httpClientFactory) =>
 		cancellationToken => GetFeeRateEstimationsAsync("MempoolSpace",
 			("https://mempool.space", "http://mempoolhqx4isw62xs7abwphsq7ldayuidyx2v2oethdhhj6mlo2r6ad.onion"),
 			"/api/v1/fees/precise",
@@ -77,7 +78,7 @@ public static class FeeRateProviders
 			return FeeRateEstimations.Empty;
 		};
 
-	private static async Task<FeeRateEstimations> GetFeeRateEstimationsAsync(string providerName, ApiDomains domains, string apiEndPoint, IHttpClientFactory httpClientFactory, string userAgent, FeeRateExtractor extractor, CancellationToken cancellationToken)
+	private static async Task<FeeRateEstimations> GetFeeRateEstimationsAsync(string providerName, ApiDomains domains, string apiEndPoint, IMcwHttpClientFactory httpClientFactory, string userAgent, FeeRateExtractor extractor, CancellationToken cancellationToken)
 	{
 		var url = new Uri(httpClientFactory is OnionHttpClientFactory ? domains.Onion : domains.ClearNet);
 

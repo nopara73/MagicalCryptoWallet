@@ -9,6 +9,37 @@ NAME='Magical Crypto Wallet'
 def run(*args,**kwargs): return subprocess.run([str(x) for x in args],check=True,**kwargs)
 def sha(path):return hashlib.sha256(path.read_bytes()).hexdigest()
 
+def msi_shortcut_targets(path):
+    # WiX dark can emit Advertise=yes and omit formatted Target strings even for
+    # non-advertised shortcuts. Read the installer table itself for launch proof.
+    import ctypes
+    api=ctypes.WinDLL('msi');handle=ctypes.c_uint;pointer=ctypes.POINTER(handle)
+    api.MsiOpenDatabaseW.argtypes=[ctypes.c_wchar_p,ctypes.c_wchar_p,pointer]
+    api.MsiDatabaseOpenViewW.argtypes=[handle,ctypes.c_wchar_p,pointer]
+    api.MsiViewExecute.argtypes=[handle,handle];api.MsiViewFetch.argtypes=[handle,pointer]
+    api.MsiRecordGetStringW.argtypes=[handle,handle,ctypes.c_wchar_p,pointer]
+    api.MsiCloseHandle.argtypes=[handle];api.MsiViewClose.argtypes=[handle]
+    def check(code):
+        if code:raise OSError(code,'MSI inspection failed')
+    database=handle();view=handle();targets=[]
+    check(api.MsiOpenDatabaseW(str(path),None,ctypes.byref(database)))
+    try:
+        check(api.MsiDatabaseOpenViewW(database,'SELECT Target FROM Shortcut',ctypes.byref(view)))
+        check(api.MsiViewExecute(view,0))
+        while True:
+            record=handle();code=api.MsiViewFetch(view,ctypes.byref(record))
+            if code==259:break
+            check(code)
+            try:
+                size=handle(1024);value=ctypes.create_unicode_buffer(size.value)
+                check(api.MsiRecordGetStringW(record,1,value,ctypes.byref(size)))
+                targets.append(value.value)
+            finally:api.MsiCloseHandle(record)
+    finally:
+        if view.value:api.MsiViewClose(view);api.MsiCloseHandle(view)
+        api.MsiCloseHandle(database)
+    return targets
+
 def detach_dmg(mount):
     # Spotlight can briefly hold the read-only inspection image after copying its payload.
     for attempt in range(5):
@@ -50,6 +81,8 @@ if args.rid.startswith('win'):
     assert product.attrib['UpgradeCode'].strip('{}').upper()==ids['upgrade_code']
     properties=document.findall('.//w:ShortcutProperty',ns)
     assert len(properties)==2 and all(p.attrib['Key']=='System.AppUserModel.ID' and p.attrib['Value']==APP_ID for p in properties)
+    targets=msi_shortcut_targets(msi)
+    assert targets==['[INSTALLFOLDER]mcw.exe']*2
     expected={p.name+':'+sha(p):p for p in dist.rglob('*') if p.is_file()}
     canonical=destination/'payload';canonical.mkdir(exist_ok=True);files=0
     for file in document.findall('.//w:File',ns):
@@ -69,6 +102,7 @@ elif args.rid.startswith('linux'):
     assert package=='magicalcryptowallet' and architecture==('arm64' if arm else 'amd64')
     desktop=destination/'usr/share/applications'/f'{APP_ID}.desktop'
     assert f'Name={NAME}' in desktop.read_text() and f'Icon={APP_ID}' in desktop.read_text()
+    assert 'Exec=mcw\n' in desktop.read_text()
     payloads.append(destination);identities={'package':package,'architecture':architecture,'desktop_id':APP_ID}
     appimage=next((p for p in packages.glob('*.AppImage') if ('-arm64' in p.name)==arm),None)
     if appimage:
@@ -82,15 +116,23 @@ else:
     run('hdiutil','attach','-readonly','-nobrowse','-mountpoint',mount,dmg,stdout=subprocess.DEVNULL)
     try:
         app=mount/(NAME+'.app');plist=plistlib.loads((app/'Contents/Info.plist').read_bytes())
-        assert plist['CFBundleIdentifier']==APP_ID and plist['CFBundleDisplayName']==NAME and plist['CFBundleExecutable']=='magicalcryptowallet'
+        assert plist['CFBundleIdentifier']==APP_ID and plist['CFBundleDisplayName']==NAME and plist['CFBundleExecutable']=='mcw'
         assert sha(app/'Contents/Resources/MagicalCryptoWalletLogo.icns')==sha(ROOT/'Contrib/Assets/MagicalCryptoWalletLogo.icns')
         extracted=work/'app';shutil.copytree(app,extracted,symlinks=True,dirs_exist_ok=True);payloads.append(extracted)
         identities={k:plist[k] for k in ('CFBundleIdentifier','CFBundleDisplayName','CFBundleExecutable','CFBundleVersion')}
     finally:detach_dmg(mount)
-for executable in ('magicalcryptowallet','magicalcryptowalletd','magicalcryptowallet-coordinator'):
+for executable in ('mcw','magicalcryptowallet','magicalcryptowalletd','magicalcryptowallet-coordinator'):
     assert (dist/(executable+('.exe' if args.rid.startswith('win') else ''))).is_file()
 run(sys_executable:=__import__('sys').executable,ROOT/'Contrib/Rebrand/audit.py','--artifacts',*payloads)
 run(sys_executable,ROOT/'Contrib/SingleWallet/audit.py','--artifacts',*payloads)
+run('dotnet','run','--project',ROOT/'Contrib/Rebrand/AssemblyAudit','-c','Release','--',ROOT/'Contrib/Mcw/removed-encoder-policy.json',*payloads)
+for payload in payloads:
+    for host in payload.rglob('mcw.exe' if args.rid.startswith('win') else 'mcw'):
+        if not host.is_file() or host.is_symlink():continue
+        run(sys_executable,ROOT/'Contrib/Mcw/audit.py','--binary',host)
+        encoded=subprocess.check_output([str(host),'qr','encode'],input=b'EXTRACTED PACKAGE QR')
+        rows=encoded.decode().splitlines();width=int(rows[0])
+        assert len(rows)==width+1 and all(len(row)==width and set(row)<={'0','1'} for row in rows[1:])
 report={'rid':args.rid,'identities':identities,'extracted_payloads':[str(p.relative_to(ROOT)) for p in payloads],
         'packages':{p.name:sha(p) for p in packages.iterdir() if p.is_file() and p.suffix!='.wixpdb'}}
 (ROOT/'.artifacts/package-inspection'/f'{args.rid}.json').write_text(json.dumps(report,indent=2)+'\n')

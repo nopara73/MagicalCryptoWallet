@@ -7,7 +7,7 @@ This tool creates artifacts only; it never publishes a release or announcement.
 from __future__ import annotations
 import argparse, hashlib, importlib.util, json, os, platform, plistlib
 from pathlib import Path
-import re, shutil, subprocess, sys, tarfile, zipfile
+import re, shutil, subprocess, sys, tarfile, time, zipfile
 
 ROOT = Path(__file__).resolve().parents[2]
 APP_ID = "io.github.nopara73.magicalcryptowallet"
@@ -78,10 +78,10 @@ def linux_packages(dist: Path, work: Path, output: Path, version: str, rid: str,
     deb = work / "deb"; clean(deb)
     shutil.copytree(dist, deb / "opt/magicalcryptowallet", dirs_exist_ok=True)
     (deb / "usr/bin").mkdir(parents=True)
-    for executable in ("magicalcryptowallet", "magicalcryptowalletd", "magicalcryptowallet-coordinator"):
+    for executable in ("mcw", "magicalcryptowallet", "magicalcryptowalletd", "magicalcryptowallet-coordinator"):
         (deb / "usr/bin" / executable).symlink_to("/opt/magicalcryptowallet/" + executable)
     applications = deb / "usr/share/applications"; applications.mkdir(parents=True)
-    (applications / f"{APP_ID}.desktop").write_text(desktop_file("magicalcryptowallet"))
+    (applications / f"{APP_ID}.desktop").write_text(desktop_file("mcw"))
     for size in (16, 24, 32, 48, 64, 128, 256, 512):
         icons = deb / f"usr/share/icons/hicolor/{size}x{size}/apps"; icons.mkdir(parents=True)
         shutil.copyfile(ROOT / f"Contrib/Assets/MagicalCryptoWalletLogo{size}.png", icons / f"{APP_ID}.png")
@@ -92,13 +92,28 @@ def linux_packages(dist: Path, work: Path, output: Path, version: str, rid: str,
     if appimage:
         appdir = work / "AppDir"; clean(appdir)
         shutil.copytree(dist, appdir / "usr/lib/magicalcryptowallet")
-        (appdir / "AppRun").write_text('#!/bin/sh\nHERE=$(dirname "$(readlink -f "$0")")\nexec "$HERE/usr/lib/magicalcryptowallet/magicalcryptowallet" "$@"\n')
+        (appdir / "AppRun").write_text('#!/bin/sh\nHERE=$(dirname "$(readlink -f "$0")")\nexec "$HERE/usr/lib/magicalcryptowallet/mcw" "$@"\n')
         (appdir / "AppRun").chmod(0o755)
-        (appdir / f"{APP_ID}.desktop").write_text(desktop_file("magicalcryptowallet"))
+        (appdir / f"{APP_ID}.desktop").write_text(desktop_file("mcw"))
         shutil.copyfile(ROOT / "Contrib/Assets/MagicalCryptoWalletLogo256.png", appdir / f"{APP_ID}.png")
         tool = os.environ.get("APPIMAGETOOL", "appimagetool")
         environment = os.environ.copy(); environment["ARCH"] = "aarch64" if architecture == "arm64" else "x86_64"
         run(tool, "--no-appstream", appdir, output / f"MagicalCryptoWallet-{version}{suffix}.AppImage", env=environment)
+
+def create_disk_image(staging: Path, destination: Path):
+    command = ["hdiutil", "create", "-volname", NAME, "-srcfolder", str(staging), "-format", "UDZO", "-ov", str(destination)]
+    for attempt in range(3):
+        result = subprocess.run(command, capture_output=True, text=True)
+        print(result.stdout, end="")
+        print(result.stderr, end="", file=sys.stderr)
+        if result.returncode == 0:
+            run("hdiutil", "verify", destination)
+            return
+        # Hosted macOS runners can briefly hold the disk-image service busy.
+        # Do not retry other failures or accept an unverified partial image.
+        if "resource busy" not in result.stderr.casefold() or attempt == 2:
+            result.check_returncode()
+        time.sleep(2 * (attempt + 1))
 
 def macos_packages(dist: Path, work: Path, output: Path, version: str, rid: str, production: bool):
     staging = work / "dmg"; clean(staging)
@@ -108,7 +123,7 @@ def macos_packages(dist: Path, work: Path, output: Path, version: str, rid: str,
     shutil.copyfile(ROOT / "Contrib/Assets/MagicalCryptoWalletLogo.icns", resources / "MagicalCryptoWalletLogo.icns")
     with (contents / "Info.plist").open("wb") as stream:
         plistlib.dump({"CFBundleIdentifier": APP_ID, "CFBundleName": NAME, "CFBundleDisplayName": NAME,
-          "CFBundleExecutable": "magicalcryptowallet", "CFBundleIconFile": "MagicalCryptoWalletLogo.icns",
+          "CFBundleExecutable": "mcw", "CFBundleIconFile": "MagicalCryptoWalletLogo.icns",
           "CFBundleVersion": version, "CFBundleShortVersionString": version,
           "CFBundlePackageType": "APPL", "NSHighResolutionCapable": True,
           "LSMinimumSystemVersion": "12.0"}, stream)
@@ -125,7 +140,7 @@ def macos_packages(dist: Path, work: Path, output: Path, version: str, rid: str,
         run("ditto", "-c", "-k", "--sequesterRsrc", "--keepParent", app, zipped)
     (staging / "Applications").symlink_to("/Applications")
     dmg = output / f"MagicalCryptoWallet-{version}{suffix}.dmg"
-    run("hdiutil", "create", "-volname", NAME, "-srcfolder", staging, "-format", "UDZO", "-ov", dmg)
+    create_disk_image(staging, dmg)
     if production:
         run("python3", ROOT / "Contrib/Signing/sign-macos.py", "--notarize", dmg, dmg)
 
@@ -148,13 +163,17 @@ def main():
         if not library.is_file(): raise RuntimeError("Source-built native library is missing")
     work = ROOT / ".artifacts/packages" / args.rid; clean(work)
     dist = work / "MagicalCryptoWallet"; dist.mkdir()
+    spec = importlib.util.spec_from_file_location("mcw_build", ROOT / "Contrib/Mcw/build.py")
+    mcw_build = importlib.util.module_from_spec(spec); spec.loader.exec_module(mcw_build)
+    mcw_binary = mcw_build.build(args.rid, args.version, test=True)
+    shutil.copy2(mcw_binary, dist / mcw_binary.name)
     output = ROOT / "packages"; output.mkdir(exist_ok=True)
     for project, executable in (("MagicalCryptoWallet.Fluent.Desktop", "magicalcryptowallet"),
                                 ("MagicalCryptoWallet.Daemon", "magicalcryptowalletd"),
                                 ("MagicalCryptoWallet.Coordinator", "magicalcryptowallet-coordinator")):
         publish = work / project
         run("dotnet", "publish", ROOT / project / (project + ".csproj"), "-c", "Release", "-r", args.rid,
-            "--self-contained", "true", "-p:ClientVersion=" + args.version,
+            "--self-contained", "true", "-p:ClientVersion=" + args.version, "-p:BuildMcwHost=false",
             "-p:NativeLibraryPath=" + str(library), "-p:DebugType=embedded", "-o", publish)
         extension = ".exe" if args.rid.startswith("win") else ""
         (publish / (project + extension)).rename(publish / (executable + extension))
@@ -163,7 +182,7 @@ def main():
         shutil.copyfile(ROOT / source, dist / source)
     if not args.rid.startswith("win"):
         for path in dist.rglob("*"):
-            if path.is_file() and (path.name in ("magicalcryptowallet", "magicalcryptowalletd", "magicalcryptowallet-coordinator", "tor") or path.suffix in (".so", ".dylib")): path.chmod(0o755)
+            if path.is_file() and (path.name in ("mcw", "magicalcryptowallet", "magicalcryptowalletd", "magicalcryptowallet-coordinator", "tor") or path.suffix in (".so", ".dylib")): path.chmod(0o755)
     if args.production and args.rid.startswith("win"):
         run("pwsh", "-NoProfile", "-File", ROOT / "Contrib/Signing/sign-windows.ps1", dist)
     if args.rid.startswith("osx"):

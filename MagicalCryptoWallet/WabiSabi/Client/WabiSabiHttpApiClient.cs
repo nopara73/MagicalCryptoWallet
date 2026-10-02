@@ -1,6 +1,7 @@
 using System.Net.Http;
 using System.Net.Mime;
 using System.Text;
+using MagicalCryptoWallet.Mcw.Network;
 using MagicalCryptoWallet.Serialization;
 using MagicalCryptoWallet.WabiSabi.Coordinator.PostRequests;
 using MagicalCryptoWallet.WabiSabi.Models;
@@ -10,9 +11,9 @@ namespace MagicalCryptoWallet.WabiSabi.Client;
 public class WabiSabiHttpApiClient : IWabiSabiApiRequestHandler
 {
 	private readonly string _identity;
-	private readonly IHttpClientFactory _httpClientFactory;
+	private readonly IMcwHttpClientFactory _httpClientFactory;
 
-	public WabiSabiHttpApiClient(string identity, IHttpClientFactory httpClientFactory)
+	public WabiSabiHttpApiClient(string identity, IMcwHttpClientFactory httpClientFactory)
 	{
 		_identity = identity;
 		_httpClientFactory = httpClientFactory;

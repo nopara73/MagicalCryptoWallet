@@ -37,6 +37,9 @@ fn fixture(
                 Err(e) => panic!("synthetic fixture accept failed: {e}"),
             }
         };
+        // Accepted sockets inherit nonblocking mode on Darwin. The listener is
+        // polled for bounded acceptance; this stream uses blocking I/O timeouts.
+        stream.set_nonblocking(false).unwrap();
         stream
             .set_read_timeout(Some(Duration::from_secs(3)))
             .unwrap();

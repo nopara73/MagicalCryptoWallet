@@ -1,6 +1,6 @@
 # SOCKS5 migration handoff
 
-State: **ready for host integration; production callers remain managed**.
+State: **ready for bounded host integration; the readiness caller patch is supplied separately**.
 Worker: `01a0fc2a-cae8-77f2-8971-024ca40ccb64`, slug `socks5`.
 Source and tests commit: **`0c36c9f8aa8689e697a2dbe46d55206b6f75a8c3`**, pushed normally to `origin/master` and verified as its ancestor.
 Initial caller snapshot: `82127991068522210cdcf77080dc9b819502e486`.
@@ -12,12 +12,14 @@ The unpublished initial commit `666ee0f5ed9d58678ddce8840af40804f10fe8b9` was re
 This track owns only:
 
 - `mcw/src/socks5.rs`
+- `mcw/src/socks5/probe_service.rs`
 - `mcw/tests/socks5_wire.rs`
 - `mcw/tests/socks5_transport.rs`
 - `mcw/tests/socks5_verify.ps1`
+- `mcw/tests/socks5_probe_*` (service tests, adapter fixture, actual-caller harness, verifier, patch generator, and integration patch)
 - `Contrib/McwMigration/Handoffs/socks5.md`
 
-The host owner in thread `01a0fbf5-89e2-7e90-9b98-50e3ff9bb5bc` owns `lib.rs`, Cargo manifests, command/bridge dispatch, platform bindings, managed adapters, production callers, packaging, release checks, and the common migration ledger. Add `pub mod socks5;` in that owner's integration. No extra Cargo package or shipping executable was created. Temporary test executables and a metadata-only module harness stay under this worker's ignored `.artifacts/socks5-verification` directory. The coordinator owns the integration request; the worker does not interrupt active host work.
+The host owner in thread `01a0fbf5-89e2-7e90-9b98-50e3ff9bb5bc` owns `lib.rs`, Cargo manifests, command/bridge dispatch, platform bindings, managed adapters, production callers, packaging, release checks, and the common migration ledger. The published QR foundation already declares `pub mod socks5;`. No extra Cargo package or shipping executable was created. Test executables and harnesses stay in ignored worker artifacts. The coordinator owns incorporation of the exact bounded patch; the worker does not interrupt active host work or publish shared integration files.
 
 ## Implemented behavior
 
@@ -81,7 +83,7 @@ Established I/O cooperatively checks cancellation at each polling timeout. `Abor
 
 ## Reserved host/bridge operation proposal
 
-Reserve **`0x0800`–`0x08ff`**; no dispatch implementation was changed by this worker. Production Rust callers should call the module directly. A transitional managed adapter may need this host-owned design:
+Reserve **`0x0800`–`0x08ff`**. Only the bounded `0x0805` service and a separate host/caller patch are implemented in this handoff. The other operations below remain proposals. Production Rust callers should call the module directly. A broader transitional adapter would need this host-owned design:
 
 | Operation | Proposed host action |
 | --- | --- |
@@ -90,7 +92,7 @@ Reserve **`0x0800`–`0x08ff`**; no dispatch implementation was changed by this 
 | `0x0802` | Bounded write with one absolute request deadline |
 | `0x0803` | Half-close or full-close |
 | `0x0804` | Abort an active connection or cancel an in-flight connect |
-| `0x0805` | SOCKS negotiation probe |
+| `0x0805` | Implemented loopback no-auth readiness probe; exact incorporation patch supplied below |
 | `0x0806` | Remote Tor RESOLVE |
 | `0x0807` | Remote Tor IPv4 RESOLVE_PTR |
 
@@ -154,8 +156,51 @@ The temporary Windows test executable uses the installed default MSVC standard l
 
 ## Integration acceptance checks
 
-1. Declare the module in the one `mcw` application; run these tests within its Cargo graph and re-audit an empty external dependency graph.
-2. Route the actual retained peer, DNS, HTTP/WebSocket and readiness callers through owned Rust networking. Preserve explicit stream-isolation groups and rotation, typed destination octets, Tor capability/privacy checks, and cancellation ownership. User-visible privacy failures must identify safe categories and never trigger a direct connection or weaker auth.
-3. Exercise synthetic production adapter flows against fake proxies, including downgrade, no local DNS, refused proxy, malformed/fragmented replies, cancellation, partial-data ambiguity, session cleanup, concurrent traffic and half-close. Never use live wallet identities/keys for this verification.
-4. Re-run all five target builds and native network tests, then inspect final binaries/installers for non-OS runtime imports, companion helpers and external Cargo/NuGet dependencies. Keep Tor and the managed app explicitly labeled transitional while still retained.
-5. Remove NBitcoin SOCKS behavior/resolver use only after all their live paths and the compact-filter transport test are replaced. Retain the NBitcoin package until its other callers are independently migrated. No Tor-rewritten or full-application-ready claim follows from this handoff.
+1. Incorporate only `mcw/tests/socks5_probe_caller.patch` in the host owner's isolated checkout, preserving other caller patches. Reconcile the three narrow integration hunks if its dispatch or Tor constructor has moved.
+2. Run the owned verifier against that incorporated source and prove `TorProcessManager.IsTorRunningAsync` invokes `0x0805` in the actual host. Preserve result events and cancellation propagation; reject malformed payloads/replies and emit safe failure categories.
+3. Re-audit the one-package empty external Cargo graph and final Windows imports, then verify the same bounded leaf on Linux x64/ARM64 and macOS x64/ARM64. Keep the managed application and Tor explicitly transitional.
+4. Keep NBitcoin, the Tor daemon/control/bootstrap, peer/crawler SOCKS behavior, remote DNS, HTTP/TLS, and WebSocket dependencies retained. Their larger migration is outside this existing bounded assignment. No Tor-rewritten or full-application-ready claim follows from this handoff.
+
+## Bounded readiness caller follow-up
+
+Bounded follow-up source commit: **`00f0cab93a4f37a69a82174f9539a9459f483fa4`**, pushed normally to `origin/master` and verified as its ancestor.
+
+The accepted leaf is **`TorProcessManager.IsTorRunningAsync` only**. Its managed no-auth socket handshake is replaced by `McwSocksProbe.CheckAsync`, which sends a typed request to the published `IMcwApplicationServices` boundary. The Rust service owns the TCP socket and all SOCKS bytes. This removes the caller's one-shot read assumption, handles fragmented method replies correctly, closes every probe socket, and bounds a stalled proxy. The result means SOCKS method negotiation succeeded; it proves neither Tor bootstrap nor an external connection.
+
+The exact integration patch is `mcw/tests/socks5_probe_caller.patch`, prepared and tested in the private `.artifacts/mcw-socks5-host-check` worktree from **`7ae424b5f5f3734ca1870962a2d913769c59b26d`**. That base contains the published QR host foundation `989cf2a2df22d23837c1aa328e29abfd33c9b9c8`. The patch changes only:
+
+- `mcw/src/app.rs`: one dispatch arm for `0x0805`.
+- `MagicalCryptoWallet/Mcw/Network/McwSocksProbe.cs`: the typed transitional adapter.
+- `MagicalCryptoWallet/Tor/TorProcessManager.cs`: the old handshake field/import and only the readiness method.
+
+The dispatch and actual caller files were modified **only in that private verification checkout**. They are not staged as this worker's production integration. The committed service lives under this worker's `mcw/src/socks5/` ownership. The privacy/control worker owns a separate Tor constructor/control-reader patch; incorporation must preserve it. The coordinator dispatches incorporation when the QR owner is idle.
+
+### Exact operation contract
+
+`0x0805` request v1 is `[1, ATYP, literal proxy octets, port big-endian]`: ATYP `1` has four IPv4 octets and an 8-byte payload; ATYP `4` has sixteen IPv6 octets and a 20-byte payload. Only loopback addresses and nonzero ports are accepted. Domains, non-loopback addresses, IPv4-mapped IPv6, scoped IPv6, truncation, and trailing bytes are rejected. The managed adapter also rejects `DnsEndPoint`, mapped/scoped IPv6, and zero ports before sending a request. Neither layer resolves DNS.
+
+The operation sends only `[5, 1, 0]`, accepts only `[5, 0]`, and closes the socket. There is no credential, destination, CONNECT, application payload, direct fallback, retry, or persistent connection ID. A 125-ms TCP-connect cap and **one 250-ms total native deadline** bound the operation; 10-ms I/O polling never resets that deadline. OS timing and scheduling can add latency.
+
+The response is exactly `[1, ready:0/1, failure category]`. Success requires `[1,1,0]`; failure requires `ready=0` and a nonzero category. Categories are `None=0`, `Io=1`, `TimedOut=2`, `InvalidVersion=3`, `MethodRejected=4`, `UnexpectedEof=5`, `Closed=6`, `Cancelled=7`, `Protocol=8`. Invalid requests use the host error frame with code `1` and a static message; unknown service operations use code `3`. No endpoint or raw OS error enters replies or diagnostics.
+
+The production caller publishes exactly one `TorConnectionStateChanged` event for a successful or failed probe and logs only a safe category/static service-unavailable message. Cancellation propagates without a readiness event. The typed adapter requires the application-host service binding; a missing binding is visible and never falls back to a managed socket.
+
+### Cancellation boundary
+
+The published host dispatch is synchronous. Its narrow arm supplies a fresh `Cancellation` token, so bridge cancellation does **not** immediately abort the native socket. The existing managed bridge stops the caller waiting promptly and drains the late reply; the native probe completes within its 250-ms deadline plus OS scheduling. The actual-host harness covers mid-call managed cancellation, native socket closure, absence of a readiness event, and a subsequent healthy request. This handoff does not add asynchronous networking, a connection table, or a general bridge cancellation rewrite.
+
+### Reproduction and evidence
+
+In a fresh isolated checkout containing the owned service files, apply the committed patch or generate it from the pinned base with `python mcw/tests/socks5_probe_prepare.py --apply-private`. The generator refuses a normal shared checkout and must run before any of its three integration files are patched. Use `git apply --check mcw/tests/socks5_probe_caller.patch` under the shared publication lock before incorporation. Then run:
+
+```powershell
+& .\mcw\tests\socks5_probe_verify.ps1
+```
+
+The verifier acquires one shared build slot, checks 2 GiB free memory, uses one Cargo/MSBuild job, and installs nothing. It builds the actual native host through `Contrib/Mcw/build-windows.ps1`, checks the empty external Cargo graph and PE imports, runs strict module lint/format checks and 16 wire + 29 transport + 4 probe-service tests, compiles the real core caller and actual `ManagedApplicationHost`, and launches a test-only managed fixture under that native host. All listeners and data are synthetic loopback fixtures; no Tor process, wallet, keys, payment, or live destination is used. Temporary executable copies remain ignored test artifacts and are not shipping helpers.
+
+The complete verifier passed at **2026-10-02T12:30:02.0948964Z**, using Rust 1.99.0 on Windows x64. All **49 Rust tests** passed (16 wire, 29 transport, 4 service; none ignored), strict formatting/warning/Clippy checks passed, and the real managed core/caller build finished with zero warnings and errors. The actual native host and production caller passed **31 synthetic checks**: strict adapter reply validation, invalid proxy rejection, fragmented greeting success, method rejection, malformed/truncated/EOF responses, the 250-ms deadline, refused proxy, pre/mid-call managed cancellation without readiness events, socket cleanup, late-reply draining, invalid native requests, and a healthy subsequent request. No Tor process or wallet data was used. Diagnostic scans found no test endpoint, destination, or isolation payload.
+
+The tested actual native host SHA256 is **`c3fe441f3ade9cfe7f6a658e53ea1e760cee5f2d2536d62781a49f9c29290416`**. The builder's full PE import audit and `dumpbin /dependents` showed only native Windows system imports (`kernel32`, `shell32`, `kernelbase`, `api-ms-win-core-synch-l1-2-0`, `ntdll`, and `WS2_32`), with no VCRUNTIME/MSVCP/MSVCR/libgcc/libstdc++/libc++ import. This is evidence for the patched Windows host fixture, not the final managed/Tor installer or four other targets. Cargo metadata contained one `mcw` package with no external normal/build/dev dependency. No manifest, toolchain, NuGet reference, or shipping executable was added by this follow-up.
+
+Exact LF fingerprints: patch **`6c67298405f6dffd586f49b3b0a98a68be1fc3ece89ca2112efae3470e6c149b`**; probe service **`6a89e2ed0ca9a75dbaefb4f3a4a773c6ce92537b20b122a6eab51d45fb544e13`**; module with service declaration **`8e7e1acc44f6ad52bef8a1a8510f27003e336d35471287b647011895171d2683`**. Evidence is saved under `.artifacts/mcw-socks5-host-check/.artifacts/socks5-probe/`: `native-build.txt`, `wire-tests.txt`, `transport-tests.txt`, `probe_service-tests.txt`, `managed-build.txt`, `caller-stdout.txt`, `caller-stderr.txt`, `runtime-imports.txt`, `runtime/results.json`, `verification.json`, and `source-fingerprints.json` (including all applied integration files). Four non-Windows target executions and production incorporation remain unverified by this worker.

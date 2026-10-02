@@ -1,0 +1,9 @@
+diff --git a/MagicalCryptoWallet/WebClients/MagicalCryptoWalletNostrClient.cs b/MagicalCryptoWallet/WebClients/MagicalCryptoWalletNostrClient.cs
+index 844cf770aa..54763bf4bd 100644
+--- a/MagicalCryptoWallet/WebClients/MagicalCryptoWalletNostrClient.cs
++++ b/MagicalCryptoWallet/WebClients/MagicalCryptoWalletNostrClient.cs
+@@ -11,0 +12 @@ using MagicalCryptoWallet.Logging;
++using MagicalCryptoWallet.Mcw.Nostr;
+@@ -72 +73 @@ public class MagicalCryptoWalletNostrClient : IDisposable
+-				if (nostrEvent.Id != nostrEvent.ComputeId() || !nostrEvent.Verify())
++				if (!McwNostrEventId.IsAuthentic(nostrEvent))

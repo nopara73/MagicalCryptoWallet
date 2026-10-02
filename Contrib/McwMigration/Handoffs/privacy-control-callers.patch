@@ -1,0 +1,883 @@
+--- a/MagicalCryptoWallet/Tor/Control/TorControlReplyReader.cs
++++ b/MagicalCryptoWallet/Tor/Control/TorControlReplyReader.cs
+@@ -1,113 +1,14 @@
+-using System.Collections.Generic;
+-using System.IO;
+ using System.IO.Pipelines;
+ using System.Threading;
+ using System.Threading.Tasks;
+-using MagicalCryptoWallet.Tor.Control.Exceptions;
++using MagicalCryptoWallet.Mcw.Privacy;
+ using MagicalCryptoWallet.Tor.Control.Messages;
+ 
+ namespace MagicalCryptoWallet.Tor.Control;
+ 
++/// <summary>Wallet reply parsing is owned by the mcw application service.</summary>
+ public class TorControlReplyReader
+ {
+-	/// <remarks>
+-	/// <see href="https://gitweb.torproject.org/torspec.git/tree/control-spec.txt">Notes on an escaping bug</see> mentions that
+-	/// it is possible to implement a workaround so that a controller is compatible with buggy Tor implementations. This
+-	/// implementation DOES NOT do that.
+-	/// <para>However, such implementation is available <see href="https://github.com/zcash/zcash/pull/2251">here</see>.</para>
+-	/// </remarks>
+-	/// <exception cref="OperationCanceledException">When operation is canceled.</exception>
+-	/// <exception cref="IOException">When reading fails because the internal stream is forcibly closed, etc.</exception>
+-	/// <exception cref="TorControlReplyParseException">When received message does not follow Tor Control reply grammar.</exception>
+-	/// <seealso href="https://gitweb.torproject.org/torspec.git/tree/control-spec.txt">See section "4. Replies".</seealso>
+-	/// <seealso href="https://github.com/lontivero/Torino/blob/d891616777ed596ef54dbf1d86c9b4771e45e8f3/src/Reply.cs#L72"/>
+-	/// <seealso href="https://github.com/torproject/stem/blob/master/stem/response/__init__.py"/>
+-	public static async Task<TorControlReply> ReadReplyAsync(PipeReader reader, CancellationToken cancellationToken)
+-	{
+-		string line;
+-
+-		try
+-		{
+-			line = await reader.ReadLineAsync(cancellationToken).ConfigureAwait(false);
+-		}
+-		catch (OperationCanceledException)
+-		{
+-			throw;
+-		}
+-		catch (InvalidDataException e)
+-		{
+-			throw new TorControlReplyParseException("No reply line was received.", e);
+-		}
+-
+-		if (line.Length < 3)
+-		{
+-			throw new TorControlReplyParseException("Status code requires at least 3 characters.");
+-		}
+-
+-		if (!int.TryParse(line.AsSpan(0, 3), out int code))
+-		{
+-			throw new TorControlReplyParseException($"Unknown status code: '{line[..3]}'.");
+-		}
+-
+-		line = line[3..];
+-
+-		if (line.Length == 0)
+-		{
+-			return new TorControlReply((StatusCode)code, responseLines: new List<string>() { string.Empty });
+-		}
+-
+-		char id = line[0];
+-
+-		if (id != '+' && id != '-')
+-		{
+-			if (id == ' ')
+-			{
+-				line = line[1..];
+-			}
+-
+-			return new TorControlReply((StatusCode)code, responseLines: new List<string>() { line });
+-		}
+-
+-		List<string> responses = new()
+-		{
+-			line[1..]
+-		};
+-
+-		while (true)
+-		{
+-			line = await reader.ReadLineAsync(cancellationToken).ConfigureAwait(false);
+-
+-			if (line is null)
+-			{
+-				break;
+-			}
+-
+-			if (line.Length == 0)
+-			{
+-				continue;
+-			}
+-
+-			if (id == '-' && line.Length > 3 && line[3] == ' ')
+-			{
+-				responses.Add(line);
+-				break;
+-			}
+-
+-			if (line.Length > 3 && id != '+')
+-			{
+-				line = line[4..];
+-			}
+-
+-			responses.Add(line);
+-
+-			if (id == '+' && ".".Equals(line, StringComparison.Ordinal))
+-			{
+-				line = await reader.ReadLineAsync(cancellationToken).ConfigureAwait(false);
+-				responses.Add(line);
+-				break;
+-			}
+-		}
+-
+-		return new TorControlReply((StatusCode)code, responseLines: responses);
+-	}
++	public static Task<TorControlReply> ReadReplyAsync(PipeReader reader, CancellationToken cancellationToken)
++		=> McwTorControlCodec.ReadReplyAsync(reader, cancellationToken);
+ }
+--- a/MagicalCryptoWallet/Tor/Control/PipeReaderLineReaderExtension.cs
++++ b/MagicalCryptoWallet/Tor/Control/PipeReaderLineReaderExtension.cs
+@@ -1,183 +1,13 @@
+-using System.Buffers;
+-using System.IO;
+ using System.IO.Pipelines;
+-using System.Text;
+ using System.Threading;
+ using System.Threading.Tasks;
+-using MagicalCryptoWallet.Logging;
++using MagicalCryptoWallet.Mcw.Privacy;
+ 
+ namespace MagicalCryptoWallet.Tor.Control;
+ 
+-/// <summary>
+-/// This class employs <c>System.IO.Pipelines</c> to correctly read incoming streamed data.
+-/// </summary>
+-/// <remarks>Please read the link below to understand common gotchas of that task.</remarks>
+-/// <seealso href="https://docs.microsoft.com/en-us/dotnet/standard/io/pipelines#what-problem-does-systemiopipelines-solve"/>
++/// <summary>Wallet CRLF parsing is owned by the mcw application service.</summary>
+ public static class PipeReaderLineReaderExtension
+ {
+-	/// <summary>
+-	/// Reads a single line ending with <c>\r\n</c> and returns the line without <c>\r\n</c> suffix.
+-	/// </summary>
+-	/// <remarks>
+-	/// <para>
+-	/// Parses a single message and updates the consumed SequencePosition and examined <see cref="SequencePosition"/> to point
+-	/// to the start of the trimmed input buffer.
+-	/// </para>
+-	/// <para>
+-	/// The two SequencePosition arguments are updated because <see cref="TryParseLine"/> removes the parsed message
+-	/// from the input buffer. Generally, when parsing a single message from the buffer, the examined position should be
+-	/// one of the following:
+-	/// <list item="bullet">
+-	/// <item>The end of the message.</item>
+-	/// <item>The end of the received buffer if no message was found.</item>
+-	/// </list>
+-	/// </para>
+-	/// <para>
+-	/// The single message case has the most potential for errors. Passing the wrong values to examined can result
+-	/// in an out of memory exception or an infinite loop. For more information, see the
+-	/// <see href="https://docs.microsoft.com/en-us/dotnet/standard/io/pipelines#gotchas">gotchas article</see>
+-	/// </para>
+-	/// </remarks>
+-	/// <seealso href="https://docs.microsoft.com/en-us/dotnet/standard/io/pipelines#read-a-single-message"/>
+-	/// <exception cref="InvalidDataException">The message is incomplete and there's no more data to process.</exception>
+-	/// <exception cref="OperationCanceledException"/>
+-	public static async ValueTask<string> ReadLineAsync(this PipeReader reader, CancellationToken cancellationToken = default)
+-	{
+-		while (true)
+-		{
+-			ReadResult result = await reader.ReadAsync(cancellationToken).ConfigureAwait(false);
+-			ReadOnlySequence<byte> buffer = result.Buffer;
+-
+-			// In the event that no message is parsed successfully, mark consumed
+-			// as nothing and examined as the entire buffer.
+-			SequencePosition consumed = buffer.Start;
+-			SequencePosition examined = buffer.End;
+-
+-			try
+-			{
+-				if (TryParseLine(ref buffer, out ReadOnlySequence<byte> messageBytes))
+-				{
+-					string message = messageBytes.GetString(Encoding.ASCII);
+-					Logger.LogTrace($"Read message: '{message}'");
+-
+-					// A single message was successfully parsed so mark the start as the
+-					// parsed buffer as consumed. TryParseMessage trims the buffer to
+-					// point to the data after the message was parsed.
+-					consumed = buffer.Start;
+-
+-					// Examined is marked the same as consumed here, so the next call
+-					// to ReadSingleMessageAsync will process the next message if there's
+-					// one.
+-					examined = consumed;
+-
+-					return message;
+-				}
+-
+-				// There's no more data to be processed.
+-				if (result.IsCompleted)
+-				{
+-					if (buffer.Length > 0)
+-					{
+-						// The message is incomplete and there's no more data to process.
+-						throw new InvalidDataException("Incomplete message.");
+-					}
+-
+-					Logger.LogTrace("No more data to be processed.");
+-					break;
+-				}
+-			}
+-			finally
+-			{
+-				reader.AdvanceTo(consumed, examined);
+-			}
+-		}
+-
+-		throw new InvalidDataException("No more data.");
+-	}
+-
+-	/// <summary>Finds the first newline (<c>\r\n</c>) in the buffer.</summary>
+-	/// <param name="line">Trims that line, excluding the <c>\r\n</c> from the input buffer.</param>
+-	/// <seealso href="https://docs.microsoft.com/en-us/dotnet/standard/io/buffers#process-text-data"/>
+-	private static bool TryParseLine(ref ReadOnlySequence<byte> buffer, out ReadOnlySequence<byte> line)
+-	{
+-		SequencePosition position = buffer.Start;
+-		SequencePosition previous = position;
+-		int index = -1;
+-		line = default;
+-
+-		while (buffer.TryGet(ref position, out ReadOnlyMemory<byte> segment))
+-		{
+-			ReadOnlySpan<byte> span = segment.Span;
+-
+-			// Look for \r in the current segment.
+-			index = span.IndexOf((byte)'\r');
+-
+-			if (index != -1)
+-			{
+-				// Check next segment for \n.
+-				if (index + 1 >= span.Length)
+-				{
+-					SequencePosition next = position;
+-					if (!buffer.TryGet(ref next, out ReadOnlyMemory<byte> nextSegment))
+-					{
+-						// You're at the end of the sequence.
+-						return false;
+-					}
+-					else if (nextSegment.Span[0] == (byte)'\n')
+-					{
+-						//  A match was found.
+-						break;
+-					}
+-				}
+-				// Check the current segment of \n.
+-				else if (span[index + 1] == (byte)'\n')
+-				{
+-					// It was found.
+-					break;
+-				}
+-			}
+-
+-			previous = position;
+-		}
+-
+-		if (index != -1)
+-		{
+-			// Get the position just before the \r\n.
+-			SequencePosition delimeter = buffer.GetPosition(index, previous);
+-
+-			// Slice the line (excluding \r\n).
+-			line = buffer.Slice(buffer.Start, delimeter);
+-
+-			// Slice the buffer to get the remaining data after the line.
+-			buffer = buffer.Slice(buffer.GetPosition(2, delimeter));
+-			return true;
+-		}
+-
+-		return false;
+-	}
+-
+-	private static string GetString(in this ReadOnlySequence<byte> payload, Encoding? encoding = null)
+-	{
+-		encoding ??= Encoding.UTF8;
+-
+-		return payload.IsSingleSegment
+-			? encoding.GetString(payload.FirstSpan)
+-			: GetStringSlow(payload, encoding);
+-
+-		static string GetStringSlow(in ReadOnlySequence<byte> payload, Encoding encoding)
+-		{
+-			// linearize
+-			int length = checked((int)payload.Length);
+-			byte[] oversized = ArrayPool<byte>.Shared.Rent(length);
+-			try
+-			{
+-				payload.CopyTo(oversized);
+-				return encoding.GetString(oversized, 0, length);
+-			}
+-			finally
+-			{
+-				ArrayPool<byte>.Shared.Return(oversized);
+-			}
+-		}
+-	}
++	public static ValueTask<string> ReadLineAsync(this PipeReader reader, CancellationToken cancellationToken = default)
++		=> McwTorControlCodec.ReadLineAsync(reader, cancellationToken);
+ }
+--- /dev/null
++++ b/MagicalCryptoWallet.Coordinator/Tor/CoordinatorTorControlReplyReader.cs
+@@ -0,0 +1,116 @@
++using System;
++using MagicalCryptoWallet.Tor.Control;
++using System.Collections.Generic;
++using System.IO;
++using System.IO.Pipelines;
++using System.Threading;
++using System.Threading.Tasks;
++using MagicalCryptoWallet.Tor.Control.Exceptions;
++using MagicalCryptoWallet.Tor.Control.Messages;
++
++namespace MagicalCryptoWallet.Coordinator.Tor;
++
++/// <summary>Retained external-coordinator parser; the wallet uses Rust exclusively.</summary>
++public class CoordinatorTorControlReplyReader
++{
++	/// <remarks>
++	/// <see href="https://gitweb.torproject.org/torspec.git/tree/control-spec.txt">Notes on an escaping bug</see> mentions that
++	/// it is possible to implement a workaround so that a controller is compatible with buggy Tor implementations. This
++	/// implementation DOES NOT do that.
++	/// <para>However, such implementation is available <see href="https://github.com/zcash/zcash/pull/2251">here</see>.</para>
++	/// </remarks>
++	/// <exception cref="OperationCanceledException">When operation is canceled.</exception>
++	/// <exception cref="IOException">When reading fails because the internal stream is forcibly closed, etc.</exception>
++	/// <exception cref="TorControlReplyParseException">When received message does not follow Tor Control reply grammar.</exception>
++	/// <seealso href="https://gitweb.torproject.org/torspec.git/tree/control-spec.txt">See section "4. Replies".</seealso>
++	/// <seealso href="https://github.com/lontivero/Torino/blob/d891616777ed596ef54dbf1d86c9b4771e45e8f3/src/Reply.cs#L72"/>
++	/// <seealso href="https://github.com/torproject/stem/blob/master/stem/response/__init__.py"/>
++	public static async Task<TorControlReply> ReadReplyAsync(PipeReader reader, CancellationToken cancellationToken)
++	{
++		string line;
++
++		try
++		{
++			line = await CoordinatorTorControlLineReader.ReadLineAsync(reader, cancellationToken).ConfigureAwait(false);
++		}
++		catch (OperationCanceledException)
++		{
++			throw;
++		}
++		catch (InvalidDataException e)
++		{
++			throw new TorControlReplyParseException("No reply line was received.", e);
++		}
++
++		if (line.Length < 3)
++		{
++			throw new TorControlReplyParseException("Status code requires at least 3 characters.");
++		}
++
++		if (!int.TryParse(line.AsSpan(0, 3), out int code))
++		{
++			throw new TorControlReplyParseException($"Unknown status code: '{line[..3]}'.");
++		}
++
++		line = line[3..];
++
++		if (line.Length == 0)
++		{
++			return new TorControlReply((StatusCode)code, responseLines: new List<string>() { string.Empty });
++		}
++
++		char id = line[0];
++
++		if (id != '+' && id != '-')
++		{
++			if (id == ' ')
++			{
++				line = line[1..];
++			}
++
++			return new TorControlReply((StatusCode)code, responseLines: new List<string>() { line });
++		}
++
++		List<string> responses = new()
++		{
++			line[1..]
++		};
++
++		while (true)
++		{
++			line = await CoordinatorTorControlLineReader.ReadLineAsync(reader, cancellationToken).ConfigureAwait(false);
++
++			if (line is null)
++			{
++				break;
++			}
++
++			if (line.Length == 0)
++			{
++				continue;
++			}
++
++			if (id == '-' && line.Length > 3 && line[3] == ' ')
++			{
++				responses.Add(line);
++				break;
++			}
++
++			if (line.Length > 3 && id != '+')
++			{
++				line = line[4..];
++			}
++
++			responses.Add(line);
++
++			if (id == '+' && ".".Equals(line, StringComparison.Ordinal))
++			{
++				line = await CoordinatorTorControlLineReader.ReadLineAsync(reader, cancellationToken).ConfigureAwait(false);
++				responses.Add(line);
++				break;
++			}
++		}
++
++		return new TorControlReply((StatusCode)code, responseLines: responses);
++	}
++}
+--- /dev/null
++++ b/MagicalCryptoWallet.Coordinator/Tor/CoordinatorTorControlLineReader.cs
+@@ -0,0 +1,184 @@
++using System;
++using System.Buffers;
++using System.IO;
++using System.IO.Pipelines;
++using System.Text;
++using System.Threading;
++using System.Threading.Tasks;
++using MagicalCryptoWallet.Logging;
++
++namespace MagicalCryptoWallet.Coordinator.Tor;
++
++/// <summary>
++/// This class employs <c>System.IO.Pipelines</c> to correctly read incoming streamed data.
++/// </summary>
++/// <remarks>Please read the link below to understand common gotchas of that task.</remarks>
++/// <seealso href="https://docs.microsoft.com/en-us/dotnet/standard/io/pipelines#what-problem-does-systemiopipelines-solve"/>
++public static class CoordinatorTorControlLineReader
++{
++	/// <summary>
++	/// Reads a single line ending with <c>\r\n</c> and returns the line without <c>\r\n</c> suffix.
++	/// </summary>
++	/// <remarks>
++	/// <para>
++	/// Parses a single message and updates the consumed SequencePosition and examined <see cref="SequencePosition"/> to point
++	/// to the start of the trimmed input buffer.
++	/// </para>
++	/// <para>
++	/// The two SequencePosition arguments are updated because <see cref="TryParseLine"/> removes the parsed message
++	/// from the input buffer. Generally, when parsing a single message from the buffer, the examined position should be
++	/// one of the following:
++	/// <list item="bullet">
++	/// <item>The end of the message.</item>
++	/// <item>The end of the received buffer if no message was found.</item>
++	/// </list>
++	/// </para>
++	/// <para>
++	/// The single message case has the most potential for errors. Passing the wrong values to examined can result
++	/// in an out of memory exception or an infinite loop. For more information, see the
++	/// <see href="https://docs.microsoft.com/en-us/dotnet/standard/io/pipelines#gotchas">gotchas article</see>
++	/// </para>
++	/// </remarks>
++	/// <seealso href="https://docs.microsoft.com/en-us/dotnet/standard/io/pipelines#read-a-single-message"/>
++	/// <exception cref="InvalidDataException">The message is incomplete and there's no more data to process.</exception>
++	/// <exception cref="OperationCanceledException"/>
++	public static async ValueTask<string> ReadLineAsync(PipeReader reader, CancellationToken cancellationToken = default)
++	{
++		while (true)
++		{
++			ReadResult result = await reader.ReadAsync(cancellationToken).ConfigureAwait(false);
++			ReadOnlySequence<byte> buffer = result.Buffer;
++
++			// In the event that no message is parsed successfully, mark consumed
++			// as nothing and examined as the entire buffer.
++			SequencePosition consumed = buffer.Start;
++			SequencePosition examined = buffer.End;
++
++			try
++			{
++				if (TryParseLine(ref buffer, out ReadOnlySequence<byte> messageBytes))
++				{
++					string message = messageBytes.GetString(Encoding.ASCII);
++					Logger.LogTrace($"Read message: '{message}'");
++
++					// A single message was successfully parsed so mark the start as the
++					// parsed buffer as consumed. TryParseMessage trims the buffer to
++					// point to the data after the message was parsed.
++					consumed = buffer.Start;
++
++					// Examined is marked the same as consumed here, so the next call
++					// to ReadSingleMessageAsync will process the next message if there's
++					// one.
++					examined = consumed;
++
++					return message;
++				}
++
++				// There's no more data to be processed.
++				if (result.IsCompleted)
++				{
++					if (buffer.Length > 0)
++					{
++						// The message is incomplete and there's no more data to process.
++						throw new InvalidDataException("Incomplete message.");
++					}
++
++					Logger.LogTrace("No more data to be processed.");
++					break;
++				}
++			}
++			finally
++			{
++				reader.AdvanceTo(consumed, examined);
++			}
++		}
++
++		throw new InvalidDataException("No more data.");
++	}
++
++	/// <summary>Finds the first newline (<c>\r\n</c>) in the buffer.</summary>
++	/// <param name="line">Trims that line, excluding the <c>\r\n</c> from the input buffer.</param>
++	/// <seealso href="https://docs.microsoft.com/en-us/dotnet/standard/io/buffers#process-text-data"/>
++	private static bool TryParseLine(ref ReadOnlySequence<byte> buffer, out ReadOnlySequence<byte> line)
++	{
++		SequencePosition position = buffer.Start;
++		SequencePosition previous = position;
++		int index = -1;
++		line = default;
++
++		while (buffer.TryGet(ref position, out ReadOnlyMemory<byte> segment))
++		{
++			ReadOnlySpan<byte> span = segment.Span;
++
++			// Look for \r in the current segment.
++			index = span.IndexOf((byte)'\r');
++
++			if (index != -1)
++			{
++				// Check next segment for \n.
++				if (index + 1 >= span.Length)
++				{
++					SequencePosition next = position;
++					if (!buffer.TryGet(ref next, out ReadOnlyMemory<byte> nextSegment))
++					{
++						// You're at the end of the sequence.
++						return false;
++					}
++					else if (nextSegment.Span[0] == (byte)'\n')
++					{
++						//  A match was found.
++						break;
++					}
++				}
++				// Check the current segment of \n.
++				else if (span[index + 1] == (byte)'\n')
++				{
++					// It was found.
++					break;
++				}
++			}
++
++			previous = position;
++		}
++
++		if (index != -1)
++		{
++			// Get the position just before the \r\n.
++			SequencePosition delimeter = buffer.GetPosition(index, previous);
++
++			// Slice the line (excluding \r\n).
++			line = buffer.Slice(buffer.Start, delimeter);
++
++			// Slice the buffer to get the remaining data after the line.
++			buffer = buffer.Slice(buffer.GetPosition(2, delimeter));
++			return true;
++		}
++
++		return false;
++	}
++
++	private static string GetString(in this ReadOnlySequence<byte> payload, Encoding? encoding = null)
++	{
++		encoding ??= Encoding.UTF8;
++
++		return payload.IsSingleSegment
++			? encoding.GetString(payload.FirstSpan)
++			: GetStringSlow(payload, encoding);
++
++		static string GetStringSlow(in ReadOnlySequence<byte> payload, Encoding encoding)
++		{
++			// linearize
++			int length = checked((int)payload.Length);
++			byte[] oversized = ArrayPool<byte>.Shared.Rent(length);
++			try
++			{
++				payload.CopyTo(oversized);
++				return encoding.GetString(oversized, 0, length);
++			}
++			finally
++			{
++				ArrayPool<byte>.Shared.Return(oversized);
++			}
++		}
++	}
++}
+--- a/MagicalCryptoWallet/Tor/Control/TorControlClient.cs
++++ b/MagicalCryptoWallet/Tor/Control/TorControlClient.cs
+@@ -27,17 +27,18 @@
+ 	/// <remarks>This helps with graceful stopping of the reader loop.</remarks>
+ 	private volatile bool _readLastSyncReply;
+ 
+-	public TorControlClient(TcpClient tcpClient) :
+-		this(PipeReader.Create(tcpClient.GetStream()), PipeWriter.Create(tcpClient.GetStream()))
++	public TorControlClient(TcpClient tcpClient, Func<PipeReader, CancellationToken, Task<TorControlReply>>? readReply = null) :
++		this(PipeReader.Create(tcpClient.GetStream()), PipeWriter.Create(tcpClient.GetStream()), readReply)
+ 	{
+ 		_tcpClient = tcpClient;
+ 	}
+ 
+-	internal TorControlClient(PipeReader pipeReader, PipeWriter pipeWriter)
++	internal TorControlClient(PipeReader pipeReader, PipeWriter pipeWriter, Func<PipeReader, CancellationToken, Task<TorControlReply>>? readReply = null)
+ 	{
+ 		_tcpClient = null;
+ 		_pipeReader = pipeReader;
+ 		_pipeWriter = pipeWriter;
++		_readReply = readReply ?? TorControlReplyReader.ReadReplyAsync;
+ 
+ 		_syncChannel = Channel.CreateUnbounded<TorControlReply>(Options);
+ 		AsyncChannels = new List<Channel<TorControlReply>>();
+@@ -47,6 +48,7 @@
+ 	private readonly TcpClient? _tcpClient;
+ 	private readonly PipeReader _pipeReader;
+ 	private readonly PipeWriter _pipeWriter;
++	private readonly Func<PipeReader, CancellationToken, Task<TorControlReply>> _readReply;
+ 	private readonly CancellationTokenSource _readerCts = new();
+ 	private readonly Task _readerLoopTask;
+ 
+@@ -462,7 +464,7 @@
+ 		{
+ 			while (!_readerCts.IsCancellationRequested)
+ 			{
+-				TorControlReply reply = await TorControlReplyReader.ReadReplyAsync(_pipeReader, _readerCts.Token).ConfigureAwait(false);
++				TorControlReply reply = await _readReply(_pipeReader, _readerCts.Token).ConfigureAwait(false);
+ 
+ 				if (reply.StatusCode == StatusCode.AsynchronousEventNotify)
+ 				{
+--- a/MagicalCryptoWallet/Tor/Control/TorControlClientFactory.cs
++++ b/MagicalCryptoWallet/Tor/Control/TorControlClientFactory.cs
+@@ -1,3 +1,4 @@
++using System.IO.Pipelines;
+ using System.Net;
+ using System.Net.Sockets;
+ using System.Security.Cryptography;
+@@ -15,7 +16,7 @@
+ /// <summary>
+ /// Class to authenticate to Tor Control.
+ /// </summary>
+-public partial class TorControlClientFactory(RandomnessProvider random)
++public partial class TorControlClientFactory(RandomnessProvider random, Func<PipeReader, CancellationToken, Task<TorControlReply>>? readReply = null)
+ {
+ 	/// <summary>Client HMAC-SHA256 key for AUTHCHALLENGE.</summary>
+ 	/// <remarks>Server's HMAC key is <c>Tor safe cookie authentication server-to-controller hash</c></remarks>
+@@ -24,6 +25,7 @@
+ 
+ 	/// <summary>Helps generate nonces for AUTH challenges.</summary>
+ 	private readonly RandomnessProvider _random = random;
++	private readonly Func<PipeReader, CancellationToken, Task<TorControlReply>> _readReply = readReply ?? TorControlReplyReader.ReadReplyAsync;
+ 
+ 	/// <summary>Connects to Tor Control endpoint and authenticates using safe-cookie mechanism.</summary>
+ 	/// <seealso href="https://gitweb.torproject.org/torspec.git/tree/control-spec.txt">See section 3.5</seealso>
+@@ -44,7 +46,7 @@
+ 
+ 		try
+ 		{
+-			TorControlClient controlClient = clientToDispose = new(tcpClient);
++			TorControlClient controlClient = clientToDispose = new(tcpClient, _readReply);
+ 
+ 			await AuthSafeCookieOrThrowAsync(controlClient, cookieString, cancellationToken).ConfigureAwait(false);
+ 
+--- a/MagicalCryptoWallet/Tor/TorProcessManager.cs
++++ b/MagicalCryptoWallet/Tor/TorProcessManager.cs
+@@ -1,3 +1,4 @@
++using System.IO.Pipelines;
+ using System.Diagnostics;
+ using System.IO;
+ using System.Net.Sockets;
+@@ -19,14 +20,16 @@
+ 		0x00, // No authentication
+ 	];
+ 
+-	public TorProcessManager(TorSettings settings, EventBus eventBus)
++	public TorProcessManager(TorSettings settings, EventBus eventBus, Func<PipeReader, CancellationToken, Task<TorControlReply>>? readReply = null)
+ 	{
+ 		_settings = settings;
+ 		_eventBus = eventBus;
++		_readReply = readReply ?? TorControlReplyReader.ReadReplyAsync;
+ 	}
+ 
+ 	private readonly TorSettings _settings;
+ 	private readonly EventBus _eventBus;
++	private readonly Func<PipeReader, CancellationToken, Task<TorControlReply>> _readReply;
+ 
+ 	/// <param name="arguments">Command line arguments to start Tor OS process with.</param>
+ 	public virtual Process StartProcess(string arguments)
+@@ -179,7 +182,7 @@
+ 		string cookieString = Convert.ToHexString(File.ReadAllBytes(_settings.CookieAuthFilePath));
+ 
+ 		// Authenticate.
+-		TorControlClientFactory factory = new(RandomnessProviders.Secure);
++		TorControlClientFactory factory = new(RandomnessProviders.Secure, _readReply);
+ 		TorControlClient client = await factory.ConnectAndAuthenticateAsync(_settings.ControlEndpoint, cookieString, token).ConfigureAwait(false);
+ 
+ 		if (_settings.TerminateOnExit)
+--- a/MagicalCryptoWallet.Coordinator/TorManagerService.cs
++++ b/MagicalCryptoWallet.Coordinator/TorManagerService.cs
+@@ -1,3 +1,4 @@
++using MagicalCryptoWallet.Coordinator.Tor;
+ using System.Linq;
+ using System.Threading;
+ using System.Threading.Tasks;
+@@ -12,7 +13,7 @@
+ 
+ public class TorManagerService(TorSettings torSettings, WabiSabiConfig config, IConfiguration configuration) : IHostedService
+ {
+-	private readonly TorManager _torManager = new(torSettings, new TorProcessManager(torSettings, new EventBus()));
++	private readonly TorManager _torManager = new(torSettings, new TorProcessManager(torSettings, new EventBus(), CoordinatorTorControlReplyReader.ReadReplyAsync));
+ 
+ 	public async Task StartAsync(CancellationToken cancellationToken)
+ 	{
+--- a/MagicalCryptoWallet.Tests/UnitTests/Tor/Control/TorControlReplyReaderTests.cs
++++ b/MagicalCryptoWallet.Tests/UnitTests/Tor/Control/TorControlReplyReaderTests.cs
+@@ -1,3 +1,4 @@
++using MagicalCryptoWallet.Coordinator.Tor;
+ using System.IO.Pipelines;
+ using System.Threading;
+ using System.Threading.Tasks;
+@@ -70,6 +71,8 @@
+ 		Pipe pipe = new();
+ 		await pipe.Writer.WriteAsciiAndFlushAsync(data, timeoutCts.Token);
+ 		await pipe.Writer.CompleteAsync();
+-		return await TorControlReplyReader.ReadReplyAsync(pipe.Reader, timeoutCts.Token);
++		// External coordinator intentionally retains this parser. Hosted wallet
++		// compatibility is verified by PrivacyControlProbe through actual Rust.
++		return await CoordinatorTorControlReplyReader.ReadReplyAsync(pipe.Reader, timeoutCts.Token);
+ 	}
+ }
+--- a/MagicalCryptoWallet.Tests/UnitTests/Tor/Control/TorControlClientTests.cs
++++ b/MagicalCryptoWallet.Tests/UnitTests/Tor/Control/TorControlClientTests.cs
+@@ -1,3 +1,4 @@
++using MagicalCryptoWallet.Coordinator.Tor;
+ using System.Collections.Generic;
+ using System.IO.Pipelines;
+ using System.Threading;
+@@ -25,7 +26,7 @@
+ 		Pipe toClient = new();
+ 
+ 		// Set up Tor control client.
+-		await using TorControlClient client = new(pipeReader: toClient.Reader, pipeWriter: toServer.Writer);
++		await using TorControlClient client = new(pipeReader: toClient.Reader, pipeWriter: toServer.Writer, readReply: CoordinatorTorControlReplyReader.ReadReplyAsync);
+ 
+ 		// Subscribe to Tor events.
+ 		IAsyncEnumerable<TorControlReply> events = client.ReadEventsAsync(timeoutCts.Token);
+@@ -91,7 +92,7 @@
+ 		Pipe toClient = new();
+ 
+ 		// Set up Tor control client.
+-		await using TorControlClient client = new(pipeReader: toClient.Reader, pipeWriter: toServer.Writer);
++		await using TorControlClient client = new(pipeReader: toClient.Reader, pipeWriter: toServer.Writer, readReply: CoordinatorTorControlReplyReader.ReadReplyAsync);
+ 
+ 		// Subscribe to Tor events.
+ 		IAsyncEnumerable<TorControlReply> events = client.ReadEventsAsync(timeoutCts.Token);
+@@ -107,7 +108,7 @@
+ 			await toClient.Writer.WriteAsciiAndFlushAsync($"650 {AsyncEventContent}\r\n", timeoutCts.Token).ConfigureAwait(false);
+ 
+ 			Logger.LogTrace("Server: Wait for TAKEOWNERSHIP command.");
+-			string command = await toServer.Reader.ReadLineAsync(timeoutCts.Token).ConfigureAwait(false);
++			string command = await CoordinatorTorControlLineReader.ReadLineAsync(toServer.Reader, timeoutCts.Token).ConfigureAwait(false);
+ 			Assert.Equal("TAKEOWNERSHIP", command);
+ 
+ 			Logger.LogTrace("Server: Send msg #3 (sync) to client in response to TAKEOWNERSHIP command.");
+@@ -165,14 +166,14 @@
+ 		Pipe toClient = new();
+ 
+ 		// Set up Tor control client.
+-		await using TorControlClient client = new(pipeReader: toClient.Reader, pipeWriter: toServer.Writer);
++		await using TorControlClient client = new(pipeReader: toClient.Reader, pipeWriter: toServer.Writer, readReply: CoordinatorTorControlReplyReader.ReadReplyAsync);
+ 
+ 		Logger.LogTrace("Client: Subscribe 'CIRC' events.");
+ 		{
+ 			Task task = client.SubscribeEventsAsync(new string[] { "CIRC" }, timeoutCts.Token);
+ 
+ 			Logger.LogTrace("Server: Wait for 'SETEVENTS CIRC' command.");
+-			string command = await toServer.Reader.ReadLineAsync(timeoutCts.Token);
++			string command = await CoordinatorTorControlLineReader.ReadLineAsync(toServer.Reader, timeoutCts.Token);
+ 			Assert.Equal("SETEVENTS CIRC", command);
+ 
+ 			Logger.LogTrace("Server: Reply with OK code.");
+@@ -187,7 +188,7 @@
+ 
+ 			// CIRC is already subscribed.
+ 			Logger.LogTrace("Server: Wait for 'SETEVENTS CIRC STATUS_CLIENT' command.");
+-			string command = await toServer.Reader.ReadLineAsync(timeoutCts.Token);
++			string command = await CoordinatorTorControlLineReader.ReadLineAsync(toServer.Reader, timeoutCts.Token);
+ 
+ 			// This means that BOTH 'CIRC' and 'STATUS_CLIENT' must be subscribed now.
+ 			// Note: Given we count logical event subscriptions, 'CIRC' is now (logically) subscribed twice!
+@@ -205,7 +206,7 @@
+ 
+ 			// CIRC is already subscribed.
+ 			Logger.LogTrace("Server: Wait for 'SETEVENTS CIRC' command.");
+-			string command = await toServer.Reader.ReadLineAsync(timeoutCts.Token);
++			string command = await CoordinatorTorControlLineReader.ReadLineAsync(toServer.Reader, timeoutCts.Token);
+ 
+ 			// This means that CIRC is still subscribed (!). The reason for that is that we count logical subscriptions,
+ 			// so when two distinct components can work the subscription API and they don't affect each other.
+@@ -223,7 +224,7 @@
+ 
+ 			// CIRC is already subscribed.
+ 			Logger.LogTrace("Server: Wait for 'SETEVENTS' command.");
+-			string command = await toServer.Reader.ReadLineAsync(timeoutCts.Token);
++			string command = await CoordinatorTorControlLineReader.ReadLineAsync(toServer.Reader, timeoutCts.Token);
+ 
+ 			// This means that no events are subscribed.
+ 			Assert.Equal("SETEVENTS", command);
+--- a/MagicalCryptoWallet.Tests/UnitTests/Tor/Control/TorControlFactoryTests.cs
++++ b/MagicalCryptoWallet.Tests/UnitTests/Tor/Control/TorControlFactoryTests.cs
+@@ -1,3 +1,4 @@
++using MagicalCryptoWallet.Coordinator.Tor;
+ using System.IO.Pipelines;
+ using System.Threading;
+ using System.Threading.Tasks;
+@@ -30,13 +31,13 @@
+ 		Pipe toServer = new();
+ 		Pipe toClient = new();
+ 
+-		await using TorControlClient testClient = new(pipeReader: toClient.Reader, pipeWriter: toServer.Writer);
++		await using TorControlClient testClient = new(pipeReader: toClient.Reader, pipeWriter: toServer.Writer, readReply: CoordinatorTorControlReplyReader.ReadReplyAsync);
+ 
+ 		Logger.LogTrace("Client: Start authentication task.");
+ 		Task<TorControlClient> authenticationTask = clientFactory.AuthSafeCookieOrThrowAsync(testClient, cookieString, timeoutCts.Token);
+ 
+ 		Logger.LogTrace("Server: Read 'AUTHCHALLENGE SAFECOOKIE' command from the client.");
+-		string authChallengeCommand = await toServer.Reader.ReadLineAsync(timeoutCts.Token);
++		string authChallengeCommand = await CoordinatorTorControlLineReader.ReadLineAsync(toServer.Reader, timeoutCts.Token);
+ 
+ 		Logger.LogTrace($"Server: Received AUTHCHALLENGE line: '{authChallengeCommand}'.");
+ 		Assert.Equal("AUTHCHALLENGE SAFECOOKIE 6F14C18D5B00BF54E16E4728A4BFC81B1FF469F0B012CD71D9724BFBE14DB5E6", authChallengeCommand);
+@@ -46,7 +47,7 @@
+ 		await toClient.Writer.WriteAsciiAndFlushAsync(challengeResponse, timeoutCts.Token);
+ 
+ 		Logger.LogTrace("Server: Read 'AUTHENTICATE' command from the client.");
+-		string authCommand = await toServer.Reader.ReadLineAsync(timeoutCts.Token);
++		string authCommand = await CoordinatorTorControlLineReader.ReadLineAsync(toServer.Reader, timeoutCts.Token);
+ 
+ 		Logger.LogTrace($"Server: Received auth line: '{authCommand}'.");
+ 		Assert.Equal("AUTHENTICATE 6013EA09D4E36B6CF01C18A707D350C1B5AFF8C1A21527266B9FC40C89BDCB4A", authCommand);
+--- a/MagicalCryptoWallet.Tests/UnitTests/Tor/TorManagerTests.cs
++++ b/MagicalCryptoWallet.Tests/UnitTests/Tor/TorManagerTests.cs
+@@ -1,3 +1,4 @@
++using MagicalCryptoWallet.Coordinator.Tor;
+ using System.Diagnostics;
+ using System.IO;
+ using System.IO.Pipelines;
+@@ -34,7 +35,7 @@
+ 			WaitForTorProcessDelay = TimeSpan.FromSeconds(2),
+ 			IsTorRunningAsyncResult = false,
+ 			EnsureRunningAsyncResult = true,
+-			InitTorControlAsyncResult = new TorControlClient(pipeReader: new Pipe().Reader, pipeWriter: new Pipe().Writer)  // (1)
++			InitTorControlAsyncResult = new TorControlClient(pipeReader: new Pipe().Reader, pipeWriter: new Pipe().Writer, readReply: CoordinatorTorControlReplyReader.ReadReplyAsync)  // (1)
+ 		};
+ 
+ 		await using (TorManager manager = new(settings, processManager))

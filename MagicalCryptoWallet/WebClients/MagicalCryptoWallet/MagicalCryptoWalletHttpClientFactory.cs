@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using MagicalCryptoWallet.Mcw.Network;
 using MagicalCryptoWallet.Logging;
 
 namespace MagicalCryptoWallet.WebClients.MagicalCryptoWallet;
@@ -20,7 +21,7 @@ public record HttpClientHandlerConfiguration
 	public TimeSpan TimeBeforeRetryingAfterServerError { get; init; } = TimeSpan.FromSeconds(2);
 }
 
-public class HttpClientFactory : IHttpClientFactory
+public class HttpClientFactory : IMcwHttpClientFactory
 {
 	private readonly HttpClientHandlerConfiguration _httpHandlerConfig;
 	private readonly ConcurrentDictionary<string, DateTime> _expirationDatetimes = new();
@@ -116,7 +117,7 @@ public sealed class LoopbackBypassProxy(Uri proxyUri, ICredentials credentials) 
 			IPAddress.IsLoopback(address.IsIPv4MappedToIPv6 ? address.MapToIPv4() : address));
 }
 
-public class CoordinatorHttpClientFactory : IHttpClientFactory
+public class CoordinatorHttpClientFactory : IMcwHttpClientFactory
 {
 	private readonly Uri _baseAddress;
 	private readonly HttpClientFactory _internalHttpClientFactory;

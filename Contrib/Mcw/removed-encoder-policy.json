@@ -1,0 +1,4 @@
+{
+  "forbidden_pattern": "Gma[./\\\\]QrCodeNet|^QrEncoder$|^QRCodeEncode$",
+  "removed_coin_control_pattern": "(?!)"
+}

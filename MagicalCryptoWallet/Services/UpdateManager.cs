@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using NBitcoin.Crypto;
 using NNostr.Client;
+using MagicalCryptoWallet.Mcw.Network;
 using MagicalCryptoWallet.BundledApps;
 using MagicalCryptoWallet.WebClients;
 using static MagicalCryptoWallet.Services.UpdateManager;
@@ -96,11 +97,11 @@ public static class ReleaseDownloader
 {
 	private static readonly UserAgentPicker UserAgentGetter = UserAgent.GenerateUserAgentPicker();
 
-	public static AsyncReleaseDownloader ForOfficiallySupportedOSes(IHttpClientFactory httpClientFactory, EventBus eventBus) =>
+	public static AsyncReleaseDownloader ForOfficiallySupportedOSes(IMcwHttpClientFactory httpClientFactory, EventBus eventBus) =>
 		ForOfficiallySupportedOSes(httpClientFactory, eventBus, GetInstallerName);
 
 	internal static AsyncReleaseDownloader ForOfficiallySupportedOSes(
-		IHttpClientFactory httpClientFactory,
+		IMcwHttpClientFactory httpClientFactory,
 		EventBus eventBus,
 		Func<Version, string> getInstallerName,
 		string publicKey = Constants.UpdateSignaturePublicKey) =>
@@ -128,7 +129,7 @@ public static class ReleaseDownloader
 
 	// Downloads and verifies a new MagicalCryptoWallet release version
 	private static async Task DownloadNewMagicalCryptoWalletReleaseVersionAsync(
-		IHttpClientFactory httpClientFactory,
+		IMcwHttpClientFactory httpClientFactory,
 		EventBus eventBus,
 		ReleaseInfo releaseInfo,
 		string installerFileName,
@@ -217,7 +218,7 @@ public static class ReleaseDownloader
 		return installDirectory;
 	}
 
-	private static async Task<string> DownloadAsync(IHttpClientFactory httpClientFactory, Uri uri, string filePath, CancellationToken cancellationToken)
+	private static async Task<string> DownloadAsync(IMcwHttpClientFactory httpClientFactory, Uri uri, string filePath, CancellationToken cancellationToken)
 	{
 		File.Delete(filePath);
 		var httpClient = httpClientFactory.CreateClient($"{uri.Host}-installers");

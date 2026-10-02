@@ -1,0 +1,15 @@
+diff --git a/mcw/src/lib.rs b/mcw/src/lib.rs
+--- a/mcw/src/lib.rs
++++ b/mcw/src/lib.rs
+@@ -12,1 +12,2 @@
+ pub mod json;
++pub mod nostr_event_id;
+diff --git a/mcw/src/app.rs b/mcw/src/app.rs
+--- a/mcw/src/app.rs
++++ b/mcw/src/app.rs
+@@ -265,1 +265,5 @@
+         bridge::QR => bridge::encode_qr(frame).write(output),
++        crate::nostr_event_id::OPERATION => match crate::nostr_event_id::digest(&frame.payload) {
++            Ok(digest) => frame.reply(digest.to_vec()).write(output),
++            Err(_) => frame.error(1, "invalid Nostr event ID request").write(output),
++        },

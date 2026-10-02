@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "scope": "wallet Tor control reply/CRLF codec only",
+  "verification_base": "f965ae7b16fbc936582611070cb4e77813dce52b",
+  "verified_utc": "2026-10-02T12:30:27.7406260Z",
+  "target": "x86_64-pc-windows-msvc",
+  "rust": "1.99.0",
+  "edition": 2024,
+  "dotnet": "10.0",
+  "codec_tests": 8,
+  "independent_reply_fixtures": 24,
+  "independent_status_cases": 8000,
+  "gui_assertions": 102,
+  "daemon_assertions": 102,
+  "coordinator_tests": 34,
+  "source_identity_verified": true,
+  "production_host_execution_in_isolated_checkout": true,
+  "master_cutover_verified": false,
+  "production_integrated": false,
+  "old_implementation_retired": false,
+  "dependency_removed": false,
+  "host_sha256": "7068105d008d997cc853bfdace8b2835f665d108d86a953f6f09bdae9edee87e",
+  "runtime_imports": [
+    "KERNEL32.dll",
+    "api-ms-win-core-synch-l1-2-0.dll",
+    "kernel32.dll",
+    "kernelbase.dll",
+    "ntdll.dll",
+    "shell32.dll"
+  ],
+  "cargo_external_dependencies": 0,
+  "tests": [
+    "rustfmt check",
+    "codec Clippy warnings/all denied",
+    "native Windows shipping-runtime host build/import audit",
+    "production core/client/probe build zero warnings/errors",
+    "actual hosted wallet positive tests",
+    "coordinator tests exit 0"
+  ],
+  "unverified": [
+    "remote master caller/dispatch activation",
+    "incorporated exact-commit CI",
+    "packaged real-Tor smoke",
+    "Linux x64/ARM64 runtime",
+    "macOS x64/ARM64 runtime"
+  ],
+  "sources": [
+    {
+      "path": "mcw/src/privacy_service/control_codec/mod.rs",
+      "sha256": "9b3159f8e58cbfd02d7f8f2c7dc13b0b11dc9aea92c07297cb0304aa017b0d61"
+    },
+    {
+      "path": "mcw/src/privacy_service/control_codec/service.rs",
+      "sha256": "1a048f92c0ed50cfed8f471e3fce924cacd3bcfa193cd516d91e540710811135"
+    },
+    {
+      "path": "MagicalCryptoWallet/Mcw/Privacy/McwTorControlCodec.cs",
+      "sha256": "7eb4e3b76561816575d2288a40da8f88195e50e79c677cc15cc1c4ea7436503c"
+    },
+    {
+      "path": "Contrib/McwMigration/PrivacyControlProbe/Program.cs",
+      "sha256": "dbf5bf7f8ad907825086f87d7022ce8ee357cf0b80f4cd0af00057708dc66102"
+    },
+    {
+      "path": "Contrib/McwMigration/PrivacyControlProbe/PrivacyControlProbe.csproj",
+      "sha256": "8aa439e5ac06856493f99ce281620b07b362a1eae3580fc9b5a43afd2a596efb"
+    },
+    {
+      "path": "mcw/tests/privacy_control_fixtures/replies.tsv",
+      "sha256": "5cd7b1a01487cf6e3b4825038d0cb6e93f6ebd9a6379d6e076d51201462cf691"
+    },
+    {
+      "path": "mcw/tests/privacy_control_fixtures/status.tsv",
+      "sha256": "db6c12504b240b6e3d100c0a71d958f66f732a5e136b95f25d1e9f70bc667878"
+    }
+  ],
+  "caller_patch_sha256": "7116a4fa06c30b13f39e3d467383b72ed4d396ce1d00823d77906a8fc93bcdb2",
+  "host_patch_sha256": "22321eb00649298dbe2f152cedb0f658a31b4342cf43e519d2db7ba091502de7",
+  "evidence_root": ".artifacts/mcw-privacy-control-verify-20261002/.artifacts/privacy-control-verification",
+  "source_hash_basis": "UTF-8 text with LF normalized line endings"
+}

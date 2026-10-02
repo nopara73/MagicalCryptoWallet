@@ -12,6 +12,8 @@ def fetch(url, destination, expected):
 
 parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--rid',required=True);args=parser.parse_args()
 tools=ROOT/'.artifacts/tools';tools.mkdir(parents=True,exist_ok=True)
+import subprocess
+subprocess.run([sys.executable, str(ROOT/'Contrib/Mcw/setup-rust.py'), '--rid', args.rid], check=True)
 if args.rid.startswith('win'):
     downloads=[
       ('https://github.com/brechtsanders/winlibs_mingw/releases/download/16.2.0posix-14.0.0-ucrt-r2/winlibs-x86_64-posix-seh-gcc-16.2.0-mingw-w64ucrt-14.0.0-r2.zip','mingw.zip','d5dbafc4a170e762ca6143151ec918fb9e2c72736fb14cd704abebc6bdd5276a','.'),
