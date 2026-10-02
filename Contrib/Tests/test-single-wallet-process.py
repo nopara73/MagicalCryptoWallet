@@ -295,6 +295,8 @@ def main():
         require_regtest_p2p_port()
         node = launch(args.bitcoind.resolve(), ["-regtest", f"-datadir={bitcoin}", "-server=1", "-blockfilterindex=1",
             f"-rpcport={node_rpc}", f"-port={node_p2p}", "-rpcuser=synthetic", "-rpcpassword=synthetic", "-fallbackfee=0.0001", "-listen=1", "-bind=127.0.0.1", "-peerblockfilters=1", "-discover=0"], "bitcoin-restart")
+        wait_for(lambda: rpc(node_url, "getblockchaininfo"))
+        rpc(node_url, "loadwallet", ["synthetic-miner"])
         info = wait_for(ready, timeout=360)
         assert info["balance"] == 5_000_000
         assert info["syncHeight"] == info["targetHeight"] == rpc(node_url, "getblockcount")
