@@ -87,11 +87,33 @@ public class OnionHttpClientFactory(Uri proxyUri, HttpClientHandlerConfiguration
 	protected override HttpClientHandler CreateHttpClientHandler(string name)
 	{
 		var credentials = new NetworkCredential(name, name);
-		var webProxy = new WebProxy(proxyUri, BypassOnLocal: false, [], Credentials: credentials);
+		var webProxy = new LoopbackBypassProxy(proxyUri, credentials);
 		var handler = base.CreateHttpClientHandler(name);
 		handler.Proxy = webProxy;
 		return handler;
 	}
+}
+
+/// <summary>Public requests connect directly, independently of the wallet's Tor circuits.</summary>
+public class DirectHttpClientFactory(HttpClientHandlerConfiguration? configurator = null) : HttpClientFactory(configurator)
+{
+	protected override HttpClientHandler CreateHttpClientHandler(string name)
+	{
+		var handler = base.CreateHttpClientHandler(name);
+		handler.UseProxy = false;
+		return handler;
+	}
+}
+
+/// <summary>Only literal loopback addresses and localhost bypass the Tor proxy.</summary>
+public sealed class LoopbackBypassProxy(Uri proxyUri, ICredentials credentials) : IWebProxy
+{
+	public ICredentials? Credentials { get; set; } = credentials;
+	public Uri GetProxy(Uri destination) => IsBypassed(destination) ? destination : proxyUri;
+	public bool IsBypassed(Uri destination) =>
+		destination.IdnHost.Equals("localhost", StringComparison.OrdinalIgnoreCase) ||
+		(IPAddress.TryParse(destination.IdnHost.Trim('[', ']'), out var address) &&
+			IPAddress.IsLoopback(address.IsIPv4MappedToIPv6 ? address.MapToIPv4() : address));
 }
 
 public class CoordinatorHttpClientFactory : IHttpClientFactory

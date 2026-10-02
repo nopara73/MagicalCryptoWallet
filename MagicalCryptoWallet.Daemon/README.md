@@ -20,9 +20,12 @@ A few examples:
 | Network: "TestNet"         | --network=testnet           | MAGICALCRYPTOWALLET_NETWORK=testnet           |
 | JsonRpcServerEnabled: true | --jsonrpcserverenabled=true | MAGICALCRYPTOWALLET_JSONRPCSERVERENABLED=true |
 | UseTor: true               | --usetor=true               | MAGICALCRYPTOWALLET_USETOR=true               |
+| UseTorForPublicData: true  | --usetorforpublicdata=true   | MAGICALCRYPTOWALLET_USETORFORPUBLICDATA=true   |
 | DustThreshold: "0.00005"   | --dustthreshold=0.00005     | MAGICALCRYPTOWALLET_DUSTTHRESHOLD=0.00005     |
 
 ### Values precedence
+
+With Tor enabled, wallet-sensitive traffic uses Tor while public data connects directly by default. Set UseTorForPublicData to true to protect public requests as well. See [network routing](../MagicalCryptoWallet.Documentation/NetworkRouting.md) for peer pools, local bypasses, and coordinator settings.
 
 * **Values passed by command line arguments** have the highest precedence and override values in environment variables and those specified in config files.
 * **Values stored in environment variables** have higher precedence than those in config file and lower precedence than the ones pass by command line.

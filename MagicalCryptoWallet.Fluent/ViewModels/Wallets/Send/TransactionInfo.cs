@@ -7,7 +7,6 @@ using MagicalCryptoWallet.Blockchain.Analysis.Clustering;
 using MagicalCryptoWallet.Blockchain.TransactionBuilding;
 using MagicalCryptoWallet.Blockchain.TransactionOutputs;
 using MagicalCryptoWallet.Fluent.Models.Transactions;
-using MagicalCryptoWallet.WebClients.PayJoin;
 
 namespace MagicalCryptoWallet.Fluent.ViewModels.Wallets.Send;
 
@@ -38,16 +37,11 @@ public partial class TransactionInfo
 
 	public IEnumerable<SmartCoin> ChangelessCoins { get; set; } = Enumerable.Empty<SmartCoin>();
 
-	public IPayjoinClient? PayJoinClient { get; set; }
-
-	public bool IsPayJoin => PayJoinClient is { };
-
 	public bool IsOptimized => ChangelessCoins.Any();
 
 	public bool SubtractFee { get; init; }
 
 	public bool IsOtherPocketSelectionPossible { get; set; }
-
 
 	public bool IsFixedAmount { get; init; }
 
@@ -89,7 +83,6 @@ public partial class TransactionInfo
 			Destination = Destination,
 			Recipient = Recipient,
 			ChangelessCoins = ChangelessCoins,
-			PayJoinClient = PayJoinClient,
 			SubtractFee = SubtractFee,
 			IsOtherPocketSelectionPossible = IsOtherPocketSelectionPossible,
 			IsFixedAmount = IsFixedAmount,

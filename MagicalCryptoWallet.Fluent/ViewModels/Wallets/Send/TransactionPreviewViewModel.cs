@@ -28,7 +28,6 @@ namespace MagicalCryptoWallet.Fluent.ViewModels.Wallets.Send;
 public partial class TransactionPreviewViewModel : RoutableViewModel
 {
 	private readonly Stack<(BuildTransactionResult, TransactionInfo)> _undoHistory;
-	private WalletAuthorization? _constructionAuthorization;
 	private readonly Wallet _wallet;
 	private readonly IWalletModel _walletModel;
 	private readonly SendFlowModel _sendFlow;
@@ -89,7 +88,6 @@ public partial class TransactionPreviewViewModel : RoutableViewModel
 	public List<TransactionSummaryViewModel> TransactionSummaries { get; }
 
 	public PrivacySuggestionsFlyoutViewModel PrivacySuggestions { get; }
-
 
 	public ICommand UndoCommand { get; }
 
@@ -159,14 +157,8 @@ public partial class TransactionPreviewViewModel : RoutableViewModel
 		try
 		{
 			UiContext.Services.WalletSession.EnsureReady();
-			var needsSecrets = _info.AllRecipients.Any(recipient => recipient.Destination is Destination.Silent);
-			if (needsSecrets && _constructionAuthorization is null)
-			{
-				_constructionAuthorization = await AuthorizationHelpers.AuthorizeAsync(UiContext, _walletModel);
-				if (_constructionAuthorization is null) { return null; }
-			}
 			IsBusy = true;
-			return await Task.Run(() => TransactionHelpers.BuildTransaction(_wallet, _info, tryToSign: needsSecrets, authorization: _constructionAuthorization));
+			return await Task.Run(() => TransactionHelpers.BuildTransaction(_wallet, _info));
 		}
 		catch (Exception ex) when (ex is NotEnoughFundsException or TransactionFeeOverpaymentException || (ex is InvalidTxException itx && itx.Errors.OfType<FeeTooHighPolicyError>().Any()))
 		{
@@ -294,8 +286,6 @@ public partial class TransactionPreviewViewModel : RoutableViewModel
 		{
 			_cancellationTokenSource.Cancel();
 			_cancellationTokenSource.Dispose();
-			_constructionAuthorization?.Dispose();
-			_constructionAuthorization = null;
 		}
 
 		base.OnNavigatedFrom(isInHistory);
@@ -310,15 +300,11 @@ public partial class TransactionPreviewViewModel : RoutableViewModel
 			UiContext.Services.WalletSession.EnsureReady();
 			var transaction = Transaction ?? throw new InvalidOperationException("Review a transaction before sending it.");
 			using var transactionAuthorizationInfo = new TransactionAuthorizationInfo(transaction);
-			var authResult = _constructionAuthorization is not null && transaction.Signed;
-			if (authResult) { transactionAuthorizationInfo.Authorization = _constructionAuthorization!.Retain(); }
-			else { authResult = await AuthorizeAsync(transactionAuthorizationInfo); }
-			if (authResult)
+			if (await AuthorizeAsync(transactionAuthorizationInfo))
 			{
 				IsBusy = true;
 
-				var finalTransaction =
-					await GetFinalTransactionAsync(transactionAuthorizationInfo.Transaction, _info, transactionAuthorizationInfo.Authorization);
+				var finalTransaction = transactionAuthorizationInfo.Transaction;
 				await SendTransactionAsync(finalTransaction);
 				_wallet.UpdateUsedHdPubKeysLabels(transaction.HdPubKeysWithNewLabels);
 				_cancellationTokenSource.Cancel();
@@ -345,25 +331,6 @@ public partial class TransactionPreviewViewModel : RoutableViewModel
 	private async Task SendTransactionAsync(SmartTransaction transaction)
 	{
 		await UiContext.Services.SendTransactionAsync(transaction);
-	}
-
-	private async Task<SmartTransaction> GetFinalTransactionAsync(SmartTransaction transaction, TransactionInfo transactionInfo, WalletAuthorization? authorization)
-	{
-		if (transactionInfo.PayJoinClient is { } && authorization is not null)
-		{
-			try
-			{
-				var payJoinTransaction = await Task.Run(() =>
-					TransactionHelpers.BuildTransaction(_wallet, transactionInfo, isPayJoin: true, tryToSign: true, authorization: authorization));
-				return payJoinTransaction.Transaction;
-			}
-			catch (Exception ex)
-			{
-				Logger.LogError(ex);
-			}
-		}
-
-		return transaction;
 	}
 
 	private void AddToUndoHistory()
@@ -440,12 +407,7 @@ public partial class TransactionPreviewViewModel : RoutableViewModel
 
 		if (suggestion.Transaction is { } transaction)
 		{
-			if (_info.AllRecipients.Any(recipient => recipient.Destination is Destination.Silent))
-			{
-				// Silent-payment suggestions must be resolved with this operation's credentials before review.
-				await BuildAndUpdateAsync();
-			}
-			else { UpdateTransaction(CurrentTransactionSummary, transaction); }
+			UpdateTransaction(CurrentTransactionSummary, transaction);
 		}
 	}
 }

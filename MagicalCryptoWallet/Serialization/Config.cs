@@ -74,6 +74,7 @@ public static partial class Encode
 			("TrimCoordinatorOutput", Bool(cfg.TrimCoordinatorOutput)),
 			("AnnouncerConfig", AnnouncerConfig(cfg.AnnouncerConfig)),
 			("PublishAsOnionService", Bool(cfg.PublishAsOnionService)),
+			("UseTorForPublicData", Bool(cfg.UseTorForPublicData)),
 			("OnionServicePrivateKey", Optional(cfg.OnionServicePrivateKey, String))
 		]);
 }
@@ -155,6 +156,7 @@ public static partial class Decode
 			TrimCoordinatorOutput = get.Optional("TrimCoordinatorOutput", Bool, false),
 			AnnouncerConfig = get.Required("AnnouncerConfig", AnnouncerConfig),
 			PublishAsOnionService = get.Optional("PublishAsOnionService", Bool, true),
+			UseTorForPublicData = get.Optional("UseTorForPublicData", Bool, get.Optional("PublishAsOnionService", Bool, true)),
 			OnionServicePrivateKey = get.Optional("OnionServicePrivateKey", String)
 		});
 }

@@ -10,6 +10,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using MagicalCryptoWallet.Crypto.Randomness;
+using MagicalCryptoWallet.BitcoinP2p;
 using MagicalCryptoWallet.Extensions;
 using MagicalCryptoWallet.Helpers;
 using MagicalCryptoWallet.Logging;
@@ -74,10 +75,8 @@ public delegate ImmutableArray<Node> P2pNodeListProvider();
 
 public class P2pConnectionManager : IDisposable
 {
-	private const int TargetConnections = 12;
-	private const int MinCompactFilterNodes = 5;
 	private const double RotationScoreThreshold = 1.1;
-	private const int DefaultCrawlerCount = 10;
+	private const int DefaultCrawlerCount = 4;
 	private const int MaxPeersPerNetgroup = 3;
 
 	private static readonly TimeSpan ReconnectCooldown = TimeSpan.FromMinutes(5);
@@ -94,6 +93,16 @@ public class P2pConnectionManager : IDisposable
 	private readonly TimeSpan _connectionTimeout;
 	private readonly int _crawlerCount;
 	private readonly EndPoint? _torSocks5;
+	private P2pConnectionOptions _options;
+	private readonly PeerConnectionRegistry _reservations;
+	private readonly string _owner = Guid.NewGuid().ToString("N");
+	private readonly PeerDiscoveryQueue _discoveryQueue = new();
+	private readonly ConcurrentDictionary<EndPoint, PeerInfo> _cachedPeers = new();
+	private volatile bool _discoveryNeeded = true;
+	private DateTimeOffset _lastDnsSeed;
+	private int _dnsSeedRunning;
+	private DateTimeOffset _lastCacheSave;
+	private int _started;
 
 	private readonly ConcurrentDictionary<EndPoint, (Node Node, PeerInfo PeerInfo, DateTimeOffset ConnectedAt)> _connectedNodes = new();
 	private readonly ConcurrentDictionary<EndPoint, DateTimeOffset> _connectionAttempts = new();
@@ -105,7 +114,6 @@ public class P2pConnectionManager : IDisposable
 	private int _isReevaluating;
 	private DateTimeOffset _lastMaintainTime;
 	private DateTimeOffset _lastRotateTime;
-	private DateTimeOffset _lastSeedTime;
 
 	private int _timeoutsCounter;
 	private int _currentTimeoutSeconds = 16;
@@ -118,7 +126,9 @@ public class P2pConnectionManager : IDisposable
 		IDnsResolver dnsResolver,
 		TimeSpan connectionTimeout,
 		int crawlerCount = DefaultCrawlerCount,
-		EndPoint? torSocks5 = null)
+		EndPoint? torSocks5 = null,
+		P2pConnectionOptions? options = null,
+		PeerConnectionRegistry? reservations = null)
 	{
 		_network = network;
 		_eventBus = eventBus;
@@ -126,12 +136,28 @@ public class P2pConnectionManager : IDisposable
 		_connectionTimeout = connectionTimeout;
 		_crawlerCount = crawlerCount;
 		_torSocks5 = torSocks5;
+		_options = options ?? new P2pConnectionOptions();
+		_reservations = reservations ?? new PeerConnectionRegistry();
+		ArgumentOutOfRangeException.ThrowIfLessThan(crawlerCount, 1);
+		ConfigurePeerTargets(_options.TargetConnections, _options.MinimumCompactFilterNodes);
+	}
+
+	public void ConfigurePeerTargets(int targetConnections, int minimumCompactFilterNodes)
+	{
+		ArgumentOutOfRangeException.ThrowIfLessThan(targetConnections, 1);
+		ArgumentOutOfRangeException.ThrowIfNegative(minimumCompactFilterNodes);
+		ArgumentOutOfRangeException.ThrowIfGreaterThan(minimumCompactFilterNodes, targetConnections);
+		_options = _options with { TargetConnections = targetConnections, MinimumCompactFilterNodes = minimumCompactFilterNodes };
 	}
 
 	public ImmutableArray<Node> Nodes => _connectedNodes.Values.Select(x => x.Node).Where(x => x.IsConnected).ToImmutableArray();
 
 	public void AddBehavior(NodeBehavior behavior)
 	{
+		if (!_options.AllowBlockDownloads && behavior is P2pBehavior)
+		{
+			throw new InvalidOperationException("Public synchronization peers cannot handle wallet transactions.");
+		}
 		_templateBehaviors.Add(behavior);
 		foreach (var (_, node) in _connectedNodes)
 		{
@@ -141,13 +167,18 @@ public class P2pConnectionManager : IDisposable
 
 	public void Start(CancellationToken cancellationToken)
 	{
+		if (Interlocked.Exchange(ref _started, 1) != 0) { return; }
+		if (_options.PeerCacheFile is { } cacheFile)
+		{
+			foreach (var peer in PeerAddressCache.Load(cacheFile, DateTimeOffset.UtcNow).Where(p => CanConnectToEndpoint(p.Endpoint))) { _cachedPeers[peer.Endpoint] = peer; }
+		}
 		_crawlers = Enumerable
 			.Range(0, _crawlerCount)
 			.Select(n =>
-				Spawn($"crawler-{n}",
+				Spawn($"{_options.Name}-{_owner}-crawler-{n}",
 					EventDriven(
-						new CrawlerState(DelayBeforeVisitingNode: TimeSpan.Zero),
-						CreateCrawler()),
+						Unit.Instance,
+						CreateCrawler(n)),
 					capacity: 1_000,
 					cancellationToken: cancellationToken))
 			.ToArray();
@@ -155,20 +186,28 @@ public class P2pConnectionManager : IDisposable
 		_disposables.AddRange(_crawlers);
 
 		_discoveryCoordinator = Spawn(
-			"BitcoinP2pNodeDiscoveryServiceCoordinator",
+			$"{_options.Name}-{_owner}-discovery",
 			Service("Bitcoin Node Discovery Service",
 				EventDriven(
-					new CrawlingCoordinationState(SlowedDown: false, Peers: ImmutableDictionary<EndPoint, PeerInfo>.Empty, LastCrawlerIndex: 0),
+					new CrawlingCoordinationState(Peers: _cachedPeers.ToImmutableDictionary(), BusyCrawlers: ImmutableHashSet<int>.Empty),
 					CreateDiscovery(_crawlers))),
 			cancellationToken: cancellationToken);
 		_discoveryCoordinator.DisposeUsing(_disposables);
 
-		_lastSeedTime = DateTimeOffset.UtcNow;
-		_ = Task.Run(() => SeedFromDnsAsync(cancellationToken), cancellationToken);
+		_ = Task.Run(async () =>
+		{
+			try
+			{
+				await ReevaluateConnectionsAsync(DateTimeOffset.UtcNow, cancellationToken).ConfigureAwait(false);
+				await SeedFromDnsAsync(cancellationToken).ConfigureAwait(false);
+			}
+			catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { }
+		}, cancellationToken);
 
 		_eventBus.Subscribe<Tick>(async void (_) =>
 		{
 			await ReevaluateConnectionsAsync(DateTimeOffset.UtcNow, cancellationToken).ConfigureAwait(false);
+			_discoveryCoordinator?.Post(new DiscoveryTickMessage());
 		}).DisposeUsing(_disposables);
 
 		_eventBus.Subscribe<NodeDisconnectedQuickly>(e =>
@@ -193,23 +232,14 @@ public class P2pConnectionManager : IDisposable
 			PurgeDisconnectedNodes();
 
 			var count = _connectedNodes.Count;
-			if ((now - _lastMaintainTime >= MaintainInterval && count < TargetConnections) || count == 0)
+			if ((now - _lastMaintainTime >= MaintainInterval && count < _options.TargetConnections) || count == 0)
 			{
 				_lastMaintainTime = now;
 				await ConnectToBestPeersAsync(cancellationToken).ConfigureAwait(false);
 			}
 
-			// Offline startup can exhaust every seed before discovering a peer.
-			// Retry discovery after the same cooldown used for peer connections.
-			if (count == 0 && now - _lastSeedTime >= ReconnectCooldown &&
-			    await GetDiscoveredPeersAsync(cancellationToken).ConfigureAwait(false) is [])
-			{
-				_lastSeedTime = now;
-				await SeedFromDnsAsync(cancellationToken).ConfigureAwait(false);
-			}
-
-			if ((now - _lastRotateTime >= RotateInterval && count > TargetConnections - 3) ||
-			    (now - _lastRotateTime >= TimeSpan.FromSeconds(4) && _connectedNodes.Count(x => x.Value.PeerInfo.SupportsCompactFilters) < MinCompactFilterNodes))
+			if ((now - _lastRotateTime >= RotateInterval && count >= _options.TargetConnections) ||
+			    (now - _lastRotateTime >= TimeSpan.FromSeconds(4) && _connectedNodes.Count(x => x.Value.PeerInfo.SupportsCompactFilters) < _options.MinimumCompactFilterNodes))
 			{
 				_lastRotateTime = now;
 				await RotateToBetterPeersAsync(cancellationToken).ConfigureAwait(false);
@@ -227,6 +257,7 @@ public class P2pConnectionManager : IDisposable
 
 	public async Task<P2pNodeClient> GetSingleUseNodeAsync(CancellationToken cancellationToken)
 	{
+		if (!_options.AllowBlockDownloads) { throw new InvalidOperationException("Wallet-selected blocks must use protected peers."); }
 		while (!cancellationToken.IsCancellationRequested)
 		{
 			var nodes = Nodes.Where(n => n.CanServeBlocks).ToArray();
@@ -262,12 +293,13 @@ public class P2pConnectionManager : IDisposable
 
 	public void DisconnectNode(Node node, MisbehaviorType misbehaviorType)
 	{
+		var minimumPeers = Math.Max(1, _options.MinimumCompactFilterNodes);
 		var shouldDisconnect = (misbehaviorType, Nodes.Length) switch
 		{
 			(MisbehaviorType.ProvidedInvalidData, _) => true,
 			(MisbehaviorType.Unknown, _) => true,
-			(MisbehaviorType.TimedOutDownloadingBlock, > 5) => true,
-			(_, < 5) => false,
+			(MisbehaviorType.TimedOutDownloadingBlock, var count) when count > minimumPeers => true,
+			(_, var count) when count <= minimumPeers => false,
 			(_, _) => node.SupportsCompactFilters,
 		};
 
@@ -348,8 +380,8 @@ public class P2pConnectionManager : IDisposable
 		var filterNodeCount = _connectedNodes.Values
 			.Count(n => n.Node.IsConnected && n.PeerInfo.SupportsCompactFilters);
 
-		var filterNodesNeeded = Math.Max(0, MinCompactFilterNodes - filterNodeCount);
-		var totalNeeded = TargetConnections - _connectedNodes.Count;
+		var filterNodesNeeded = Math.Max(0, _options.MinimumCompactFilterNodes - filterNodeCount);
+		var totalNeeded = _options.TargetConnections - _connectedNodes.Count;
 		var availablePeers = await GetAvailablePeersAsync(cancellationToken).ConfigureAwait(false);
 
 		var filterPeers = availablePeers
@@ -404,7 +436,7 @@ public class P2pConnectionManager : IDisposable
 
 		bool IsAvailable(EndPoint endpoint) =>
 			!connectedKeys.Contains(endpoint) &&
-			!cooldownEndpoints.Contains(endpoint);
+			!cooldownEndpoints.Contains(endpoint) && !_reservations.IsReserved(endpoint);
 	}
 
 	private static string GetNetgroup(EndPoint endpoint)
@@ -449,6 +481,7 @@ public class P2pConnectionManager : IDisposable
 			return;
 		}
 
+		Node? node = null;
 		try
 		{
 			using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
@@ -457,7 +490,7 @@ public class P2pConnectionManager : IDisposable
 			var connParams = new NodeConnectionParameters
 			{
 				ConnectCancellation = timeoutCts.Token,
-				IsRelay = true,
+				IsRelay = _options.RelayTransactions,
 				UserAgent = Constants.UserAgents[Random.Shared.Next(Constants.UserAgents.Length)]
 			};
 
@@ -472,7 +505,7 @@ public class P2pConnectionManager : IDisposable
 					networkCredential: null, streamIsolation: true));
 			}
 
-			var node = await Node.ConnectAsync(_network, peerInfo.Endpoint, connParams)
+			node = await Node.ConnectAsync(_network, peerInfo.Endpoint, connParams)
 				.ConfigureAwait(false);
 			await node.VersionHandshakeAsync(timeoutCts.Token).ConfigureAwait(false);
 
@@ -484,7 +517,9 @@ public class P2pConnectionManager : IDisposable
 
 			node.Disconnected += OnNodeDisconnected;
 
-			if (_connectedNodes.TryAdd(peerInfo.Endpoint, (node, peerInfo, DateTimeOffset.UtcNow)))
+			var actualPeer = CreatePeerInfo(node, peerInfo.Endpoint, peerInfo.ConnectionTime);
+			_discoveryCoordinator?.Post(new PeerDiscoveredMessage(actualPeer));
+			if (_connectedNodes.TryAdd(peerInfo.Endpoint, (node, actualPeer, DateTimeOffset.UtcNow)))
 			{
 				Logger.LogDebug($"Connected to peer {peerInfo.Endpoint} (score: {peerInfo.Score:F1}, services: {peerInfo.Services.AsCsv()}). Total connected peers: {_connectedNodes.Count}.");
 				_eventBus.Publish(new P2pNodeAdded(peerInfo.Endpoint, node));
@@ -500,6 +535,15 @@ public class P2pConnectionManager : IDisposable
 		catch (Exception ex)
 		{
 			Logger.LogDebug($"Failed to connect to {peerInfo.Endpoint}: {ex.Message}");
+			ReportMisbehavior(peerInfo.Endpoint, MisbehaviorType.FailedToConnect);
+		}
+		finally
+		{
+			if (!_connectedNodes.ContainsKey(peerInfo.Endpoint))
+			{
+				node?.DisconnectAsync();
+				_reservations.Release(peerInfo.Endpoint, _owner);
+			}
 		}
 	}
 
@@ -518,14 +562,16 @@ public class P2pConnectionManager : IDisposable
 			return false;
 		}
 
+		if (!CanConnectToEndpoint(endpoint) || !_reservations.TryReserve(endpoint, _owner)) { return false; }
 		_connectionAttempts[endpoint] = DateTimeOffset.UtcNow;
 		return true;
 	}
 
 	private void OnNodeDisconnected(Node node)
 	{
-		if (_connectedNodes.TryRemove(node.Peer.Endpoint, out var removed))
+		if (_connectedNodes.TryRemove(PeerConnectionRegistry.Normalize(node.Peer.Endpoint), out var removed))
 		{
+			_reservations.Release(removed.PeerInfo.Endpoint, _owner);
 			node.Disconnected -= OnNodeDisconnected;
 			var connectionDuration = DateTimeOffset.UtcNow - removed.ConnectedAt;
 			Logger.LogDebug($"Peer {node.Peer.Endpoint} (score: {removed.PeerInfo.Score:F1}) disconnected after {connectionDuration.TotalSeconds:F1}s. Total connected peers: {_connectedNodes.Count}.");
@@ -591,6 +637,7 @@ public class P2pConnectionManager : IDisposable
 		{
 			if (_connectedNodes.TryRemove(key, out _))
 			{
+				_reservations.Release(key, _owner);
 				node.Disconnected -= OnNodeDisconnected;
 				_eventBus.Publish(new P2pNodeRemoved(key, node));
 			}
@@ -601,6 +648,7 @@ public class P2pConnectionManager : IDisposable
 	{
 		node.Disconnected -= OnNodeDisconnected;
 		node.DisconnectAsync();
+		_reservations.Release(node.Peer.Endpoint, _owner);
 	}
 
 	private void DisconnectAll()
@@ -620,12 +668,13 @@ public class P2pConnectionManager : IDisposable
 		}
 
 		_isDisposed = true;
+		SavePeerCache();
 		DisconnectAll();
 		_disposables.Dispose();
 	}
 
 	private void ReportMisbehavior(EndPoint endpoint, MisbehaviorType misbehavior) =>
-		_discoveryCoordinator?.Post(new NodeMisbehaveMessage(endpoint, misbehavior));
+		_discoveryCoordinator?.Post(new NodeMisbehaveMessage(PeerConnectionRegistry.Normalize(endpoint), misbehavior));
 
 	#region Discovery
 
@@ -642,58 +691,54 @@ public class P2pConnectionManager : IDisposable
 	private record HarvestedEndpointsMessage(EndPoint[] Endpoints) : CoordinatorMessage;
 	private record PeerDiscoveredMessage(PeerInfo PeerInfo) : CoordinatorMessage;
 	private record NodeMisbehaveMessage(EndPoint Endpoint, MisbehaviorType Behavior) : CoordinatorMessage;
+	private record DiscoveryTickMessage : CoordinatorMessage;
+	private record CrawlFinishedMessage(int CrawlerIndex, EndPoint Endpoint, bool Succeeded) : CoordinatorMessage;
 	private record GetPeersMessage(IReplyChannel<PeerInfo[]> ReplyChannel) : CoordinatorMessage;
 
 	private abstract record CrawlerMessage;
 	private record CrawlMessage(EndPoint EndPoint) : CrawlerMessage;
-	private record SlowDownMessage : CrawlerMessage;
 
 	private record CrawlingCoordinationState(
 		ImmutableDictionary<EndPoint, PeerInfo> Peers,
-		bool SlowedDown,
-		int LastCrawlerIndex);
-
-	private record CrawlerState(
-		TimeSpan DelayBeforeVisitingNode);
+		ImmutableHashSet<int> BusyCrawlers);
 
 	private MessageHandler<CoordinatorMessage, CrawlingCoordinationState> CreateDiscovery(
 		MailboxProcessor<CrawlerMessage>[] crawlers) =>
-		(msg, state, token) => HandleCoordinatorMessageAsync(crawlers, msg, state);
+		(msg, state, token) => HandleCoordinatorMessageAsync(crawlers, msg, state, token);
 
 	private Task<CrawlingCoordinationState> HandleCoordinatorMessageAsync(
 		MailboxProcessor<CrawlerMessage>[] crawlers,
 		CoordinatorMessage msg,
-		CrawlingCoordinationState state)
+		CrawlingCoordinationState state,
+		CancellationToken cancellationToken)
 	{
 		switch (msg)
 		{
 			case HarvestedEndpointsMessage(Endpoints: var endpoints):
-				var n = state.LastCrawlerIndex;
-				foreach (var endPoint in endpoints)
-				{
-					var wi = n % crawlers.Length;
-					crawlers[wi].Post(new CrawlMessage(endPoint));
-					n++;
-				}
-				state = state with { LastCrawlerIndex = n };
+				_discoveryQueue.Enqueue(endpoints.Where(CanConnectToEndpoint), DateTimeOffset.UtcNow);
 				break;
 
 			case PeerDiscoveredMessage(PeerInfo: var peer):
 				var updatedPeer = state.Peers.TryGetValue(peer.Endpoint, out var existingPeer)
-					? existingPeer with { LastSeen = DateTimeOffset.UtcNow, Score = double.Min(70, existingPeer.Score + 2) }
+					? peer with { DiscoveredAt = existingPeer.DiscoveredAt, Score = double.Min(70, peer.Score + 2) }
 					: peer;
 
 				state = state with { Peers = state.Peers.SetItem(peer.Endpoint, updatedPeer) };
 
-				if (state is { SlowedDown: false, Peers.Count: > 300 })
+				_cachedPeers[peer.Endpoint] = updatedPeer;
+				if (state.Peers.Count > 256)
 				{
-					var slowDownMessage = new SlowDownMessage();
-					foreach (var crawler in crawlers)
+					foreach (var obsolete in state.Peers.Values.Where(p => !_connectedNodes.ContainsKey(p.Endpoint)).OrderBy(p => p.LastSeen).Take(state.Peers.Count - 256))
 					{
-						crawler.Post(slowDownMessage);
+						state = state with { Peers = state.Peers.Remove(obsolete.Endpoint) };
+						_cachedPeers.TryRemove(obsolete.Endpoint, out _);
 					}
-					state = state with { SlowedDown = true };
 				}
+				if (state.Peers.Count % 8 == 0 || DateTimeOffset.UtcNow - _lastCacheSave >= TimeSpan.FromMinutes(5)) { SavePeerCache(); }
+				break;
+			case CrawlFinishedMessage finished:
+				_discoveryQueue.Complete(finished.Endpoint, DateTimeOffset.UtcNow, finished.Succeeded);
+				state = state with { BusyCrawlers = state.BusyCrawlers.Remove(finished.CrawlerIndex) };
 				break;
 
 			case NodeMisbehaveMessage(Endpoint: var offendingEndpoint, Behavior: var behavior):
@@ -716,13 +761,34 @@ public class P2pConnectionManager : IDisposable
 			case GetPeersMessage(ReplyChannel: var replyChannel):
 				replyChannel.Reply(state.Peers.Values.ToArray());
 				break;
+			case DiscoveryTickMessage:
+				if (_discoveryNeeded && _discoveryQueue.Count == 0 && state.BusyCrawlers.Count == 0 && DateTimeOffset.UtcNow - _lastDnsSeed > ReconnectCooldown)
+				{
+					_ = Task.Run(() => SeedFromDnsAsync(cancellationToken), cancellationToken);
+				}
+				break;
 		}
 
+		_discoveryNeeded = NeedsDiscovery(state);
+		if (_discoveryNeeded)
+		{
+			for (var index = 0; index < crawlers.Length; index++)
+			{
+				if (state.BusyCrawlers.Contains(index)) { continue; }
+				if (!_discoveryQueue.TryDequeue(out var endpoint)) { break; }
+				if (crawlers[index].Post(new CrawlMessage(endpoint)))
+				{
+					state = state with { BusyCrawlers = state.BusyCrawlers.Add(index) };
+				}
+				else { _discoveryQueue.Complete(endpoint, DateTimeOffset.UtcNow, succeeded: false); }
+			}
+		}
 		return Task.FromResult(state);
 
 		CrawlingCoordinationState Punish(EndPoint offendingEndpoint, PeerInfo offendingNode, MisbehaviorType misbehaviorType)
 		{
 			var newPeerInfo = offendingNode with { Score = offendingNode.Score - 10 };
+			_cachedPeers[offendingEndpoint] = newPeerInfo;
 			Logger.LogDebug($"Peer {offendingNode.Endpoint} was punished for {misbehaviorType}. Score {offendingNode.Score:F1} -> {newPeerInfo.Score:F1}.");
 			return state with
 			{
@@ -730,26 +796,60 @@ public class P2pConnectionManager : IDisposable
 			};
 		}
 
-		CrawlingCoordinationState Remove(EndPoint offendingEndpoint) =>
-			state with { Peers = state.Peers.Remove(offendingEndpoint) };
+		CrawlingCoordinationState Remove(EndPoint offendingEndpoint)
+		{
+			_cachedPeers.TryRemove(offendingEndpoint, out _);
+			return state with { Peers = state.Peers.Remove(offendingEndpoint) };
+		}
 	}
 
-	private MessageHandler<CrawlerMessage, CrawlerState> CreateCrawler() =>
-		async (msg, state, token) => await HandleCrawlerMessageAsync(msg, state, token).ConfigureAwait(false);
+	private bool NeedsDiscovery(CrawlingCoordinationState state)
+	{
+		var now = DateTimeOffset.UtcNow;
+		var available = state.Peers.Values.Where(p => !_reservations.IsReserved(p.Endpoint) &&
+			(!_connectionAttempts.TryGetValue(p.Endpoint, out var attempt) || now - attempt >= ReconnectCooldown)).ToArray();
+		return Nodes.Length < _options.TargetConnections ||
+			_connectedNodes.Values.Count(p => p.Node.IsConnected && p.PeerInfo.SupportsCompactFilters) < _options.MinimumCompactFilterNodes ||
+			available.Length < Math.Max(8, _options.TargetConnections * 2) ||
+			available.Count(p => p.SupportsCompactFilters) < _options.MinimumCompactFilterNodes;
+	}
 
-	private async Task<CrawlerState> HandleCrawlerMessageAsync(
+	private void SavePeerCache()
+	{
+		if (_options.PeerCacheFile is { } cacheFile)
+		{
+			PeerAddressCache.Save(cacheFile, _cachedPeers.Values, DateTimeOffset.UtcNow);
+			_lastCacheSave = DateTimeOffset.UtcNow;
+		}
+	}
+
+	private bool CanConnectToEndpoint(EndPoint endpoint) => endpoint.IsValid() && !endpoint.IsI2P() &&
+		!(endpoint is IPEndPoint { Address: var ip } && ip.IsCjdns()) && (_torSocks5 is not null || !endpoint.IsTor());
+
+	private static PeerInfo CreatePeerInfo(Node node, EndPoint endpoint, TimeSpan connectionTime)
+	{
+		var now = DateTimeOffset.UtcNow;
+		var version = node.PeerVersion;
+		return new PeerInfo(endpoint, version.UserAgent ?? "Unknown", version.Version, version.Services, version.StartHeight, connectionTime, now, now);
+	}
+
+	private MessageHandler<CrawlerMessage, Unit> CreateCrawler(int crawlerIndex) =>
+		async (msg, state, token) => await HandleCrawlerMessageAsync(msg, state, crawlerIndex, token).ConfigureAwait(false);
+
+	private async Task<Unit> HandleCrawlerMessageAsync(
 		CrawlerMessage msg,
-		CrawlerState state,
+		Unit state,
+		int crawlerIndex,
 		CancellationToken cancellationToken)
 	{
 		switch (msg)
 		{
 			case CrawlMessage(var endpoint):
-				await Task.Delay(state.DelayBeforeVisitingNode, cancellationToken).ConfigureAwait(false);
 				Node? node = null;
+				var probeOwner = $"{_owner}-probe-{crawlerIndex}";
 				try
 				{
-					node = await VisitEndpointAsync(endpoint, cancellationToken).ConfigureAwait(false);
+					node = await VisitEndpointAsync(endpoint, probeOwner, cancellationToken).ConfigureAwait(false);
 					if (node is not null)
 					{
 						await HarvestAddressesAsync(node, cancellationToken).ConfigureAwait(false);
@@ -758,23 +858,18 @@ public class P2pConnectionManager : IDisposable
 				finally
 				{
 					node?.DisconnectAsync();
+					_reservations.Release(endpoint, probeOwner);
+					_discoveryCoordinator?.Post(new CrawlFinishedMessage(crawlerIndex, endpoint, node is not null));
 				}
 				break;
-			case SlowDownMessage:
-				return new CrawlerState(DelayBeforeVisitingNode: state.DelayBeforeVisitingNode + TimeSpan.FromSeconds(1));
 		}
 
 		return state;
 	}
 
-	private async Task<Node?> VisitEndpointAsync(EndPoint endpoint, CancellationToken cancellationToken)
+	private async Task<Node?> VisitEndpointAsync(EndPoint endpoint, string probeOwner, CancellationToken cancellationToken)
 	{
-		if (!endpoint.IsValid() || endpoint.IsI2P())
-		{
-			return null;
-		}
-
-		if (endpoint is IPEndPoint {Address: var ip} && ip.IsCjdns())
+		if (!CanConnectToEndpoint(endpoint) || !_reservations.TryReserve(endpoint, probeOwner))
 		{
 			return null;
 		}
@@ -818,17 +913,7 @@ public class P2pConnectionManager : IDisposable
 				return null;
 			}
 
-			var now = DateTimeOffset.UtcNow;
-			var pv = node.PeerVersion;
-			var peer = new PeerInfo(
-				endpoint: endpoint,
-				userAgent: pv.UserAgent ?? "Unknown",
-				protocolVersion: pv.Version,
-				services: pv.Services,
-				startHeight: pv.StartHeight,
-				connectionTime: sw.Elapsed,
-				discoveredAt: now,
-				lastSeen: now);
+			var peer = CreatePeerInfo(node, endpoint, sw.Elapsed);
 
 			Logger.LogDebug($"Connected to endpoint '{endpoint}'");
 			_discoveryCoordinator?.Post(new PeerDiscoveredMessage(peer));
@@ -892,46 +977,38 @@ public class P2pConnectionManager : IDisposable
 
 	private async Task SeedFromDnsAsync(CancellationToken cancellationToken)
 	{
+		if (!_discoveryNeeded || Interlocked.CompareExchange(ref _dnsSeedRunning, 1, 0) != 0) { return; }
+		_lastDnsSeed = DateTimeOffset.UtcNow;
 		Logger.LogInfo("Seeding from DNS...");
-
-		async Task<Result<IPAddress[], Exception>> GetAddressesFromDnsAsync(string dnsServerHost)
+		try
 		{
-			try
+			_discoveryCoordinator?.Post(new HarvestedEndpointsMessage(_network.SeedNodes.Select(x => x.Endpoint).ToArray()));
+			var hosts = _network.DNSSeeds.Select(x => x.Host).Distinct().ToArray();
+			var maximumRounds = _dnsResolver is DnsSocksResolver ? 16 : 1;
+			for (var round = 0; round < maximumRounds && _discoveryNeeded; round++)
 			{
-				return await _dnsResolver.GetHostAddressesAsync(dnsServerHost, cancellationToken).ConfigureAwait(false);
-			}
-			catch (Exception e)
-			{
-				return e;
-			}
-		}
-
-		var dnsHosts = _network.DNSSeeds.Select(x => x.Host);
-		if (_dnsResolver is DnsSocksResolver)
-		{
-			dnsHosts = Enumerable.Repeat(dnsHosts, 16).SelectMany(x => x).Shuffle();
-		}
-		var tasks = dnsHosts.Select(GetAddressesFromDnsAsync);
-
-		await foreach (var task in Task.WhenEach(tasks).WithCancellation(cancellationToken))
-		{
-			var dnsQueryResult = await task.ConfigureAwait(false);
-
-			if (dnsQueryResult.IsOk)
-			{
-				var endpoints = dnsQueryResult.Value
-					.Select(x => new IPEndPoint(x.MapToIPv6(), _network.DefaultPort))
-					.Cast<EndPoint>()
-					.ToArray();
-				_discoveryCoordinator?.Post(new HarvestedEndpointsMessage(endpoints));
+				var tasks = hosts.Shuffle().Select(GetAddressesFromDnsAsync);
+				await foreach (var task in Task.WhenEach(tasks).WithCancellation(cancellationToken))
+				{
+					var result = await task.ConfigureAwait(false);
+					if (result.IsOk)
+					{
+						var endpoints = result.Value.Select(x => (EndPoint)new IPEndPoint(x, _network.DefaultPort)).ToArray();
+						_discoveryCoordinator?.Post(new HarvestedEndpointsMessage(endpoints));
+					}
+				}
+				if (_discoveryNeeded && round + 1 < maximumRounds) { await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken).ConfigureAwait(false); }
 			}
 		}
+		catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { }
+		catch (Exception ex) { Logger.LogDebug("Peer seeding failed.", ex); }
+		finally { Interlocked.Exchange(ref _dnsSeedRunning, 0); }
 
-		var endpointsFromSeedNodes = _network.SeedNodes
-			.Select(x => x.Endpoint)
-			.ToArray();
-
-		_discoveryCoordinator?.Post(new HarvestedEndpointsMessage(endpointsFromSeedNodes));
+		async Task<Result<IPAddress[], Exception>> GetAddressesFromDnsAsync(string host)
+		{
+			try { return await _dnsResolver.GetHostAddressesAsync(host, cancellationToken).ConfigureAwait(false); }
+			catch (Exception ex) { return ex; }
+		}
 	}
 
 	#endregion

@@ -31,7 +31,7 @@ public class WalletOperationAuthorizationTests
 		await SingleWalletTests.WaitForAsync(() => app.Session.Snapshot.IsSynchronized);
 		using var recipient = new Key();
 		var destination = recipient.PubKey.GetAddress(ScriptPubKeyType.Segwit, Network.RegTest);
-		var preview = wallet.BuildTransaction(new Destination.Loudly(destination.ScriptPubKey), Money.Coins(0.005m), "reviewed", new FeeRate(2m), wallet.Coins, subtractFee: false);
+		var preview = wallet.BuildTransaction(new Destination(destination.ScriptPubKey), Money.Coins(0.005m), "reviewed", new FeeRate(2m), wallet.Coins, subtractFee: false);
 		Assert.False(preview.Signed);
 		var reviewed = preview.Psbt.GetGlobalTransaction().ToHex();
 		app.Session.AuthorizeCoinJoin(password);
@@ -45,7 +45,7 @@ public class WalletOperationAuthorizationTests
 		authorization.Dispose();
 		Assert.Throws<ObjectDisposedException>(() => authorization.Sign(preview));
 		var rpc = new MagicalCryptoWalletJsonRpcService(app.Global);
-		var payments = new[] { new PaymentInfo { Sendto = new Destination.Loudly(destination.ScriptPubKey), Amount = Money.Coins(0.005m), Label = "test" } };
+		var payments = new[] { new PaymentInfo { Sendto = new Destination(destination.ScriptPubKey), Amount = Money.Coins(0.005m), Label = "test" } };
 		Assert.Throws<SecurityException>(() => rpc.BuildTransaction(payments, feeRate: 2m, password: "wrong"));
 		app.Connected = false;
 		await SingleWalletTests.WaitForAsync(() => app.Session.Snapshot.State == WalletSessionState.Offline);

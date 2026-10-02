@@ -83,8 +83,7 @@ public static class ServiceFactory
 			taprootExtPubKey = extKey.Derive(taprootAccountKeyPath).Neuter();
 		}
 
-		return new KeyManager(encryptedSecret, extKey.ChainCode, masterFingerprint, segwitExtPubKey, taprootExtPubKey, null, null, 21, blockchainState, null, segwitAccountKeyPath, null);
+		return new KeyManager(encryptedSecret, extKey.ChainCode, masterFingerprint, segwitExtPubKey, taprootExtPubKey, 21, blockchainState, null, segwitAccountKeyPath, null);
 	}
-
 
 }

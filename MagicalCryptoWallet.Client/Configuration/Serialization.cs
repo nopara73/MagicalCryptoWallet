@@ -20,6 +20,7 @@ public static class PersistentConfigEncode
 		Object([
 			("CoordinatorUri", String(cfg.CoordinatorUri)),
 			("UseTor", UseTor(cfg.UseTor)),
+			("UseTorForPublicData", Bool(cfg.UseTorForPublicData)),
 			("TerminateTorOnExit", Bool(cfg.TerminateTorOnExit)),
 			("TorBridges", Array(cfg.TorBridges.Select(String))),
 			("DownloadNewVersion", Bool(cfg.DownloadNewVersion)),
@@ -68,6 +69,7 @@ public static class PersistentConfigDecode
 					Network: Network.Main, // Network is not part of the config
 					CoordinatorUri: get.Required("CoordinatorUri", Decode.String),
 					UseTor: get.Required("UseTor", UseTor),
+					UseTorForPublicData: get.Optional("UseTorForPublicData", Decode.Bool, false),
 					TerminateTorOnExit: get.Required("TerminateTorOnExit", Decode.Bool),
 					TorBridges: get.Required("TorBridges", ValueList(Decode.String)),
 					DownloadNewVersion: get.Required("DownloadNewVersion", Decode.Bool),

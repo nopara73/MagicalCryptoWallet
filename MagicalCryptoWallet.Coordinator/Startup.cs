@@ -119,9 +119,9 @@ public class Startup(IConfiguration configuration)
 		}
 
 		services.AddSingleton<IHttpClientFactory>(s =>
-			config.PublishAsOnionService
+			config.UseTorForPublicData
 				? new OnionHttpClientFactory(torSetting.SocksEndpoint.ToUri("socks5"))
-				: new HttpClientFactory()
+				: new DirectHttpClientFactory()
 			);
 
 		services.AddSingleton<FeeRateProvider>(s =>
@@ -144,7 +144,7 @@ public class Startup(IConfiguration configuration)
 					Timeout = TimeSpan.FromSeconds(5)
 				});
 
-		if (config.PublishAsOnionService)
+		if (config.PublishAsOnionService || config.UseTorForPublicData)
 		{
 			services.AddBackgroundService<TorManagerService>();
 		}

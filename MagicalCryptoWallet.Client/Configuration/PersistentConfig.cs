@@ -31,7 +31,8 @@ public record PersistentConfig(
 	int AbsoluteMinInputCount,
 	int MaxDaysInMempool,
 	ValueList<string> ExperimentalFeatures,
-	int ConfigVersion
+	int ConfigVersion,
+	bool UseTorForPublicData = false
 	) : IPersistentConfig
 {
 	public string GetConfigFileName() =>

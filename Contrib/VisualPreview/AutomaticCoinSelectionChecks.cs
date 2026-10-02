@@ -128,7 +128,7 @@ internal static class AutomaticCoinSelectionChecks
 		var confirmCommand = ReactiveCommand.Create(() => confirm?.Invoke());
 		SetProperty(parent, nameof(TransactionPreviewViewModel.NextCommand), confirmCommand);
 		var destination = ExtKey.CreateFromSeed(new byte[32]).Neuter().PubKey.GetAddress(ScriptPubKeyType.Segwit, Network.RegTest);
-		var info = new TransactionInfo(new Destination.Loudly(destination.ScriptPubKey), 50);
+		var info = new TransactionInfo(new Destination(destination.ScriptPubKey), 50);
 		var services = DispatchProxy.Create<IServices, AutomaticPreviewServices>();
 		((AutomaticPreviewServices)(object)services).UsdExchangeRate = usdExchangeRate ?? 0m;
 		var amountProvider = new AmountProvider(services);

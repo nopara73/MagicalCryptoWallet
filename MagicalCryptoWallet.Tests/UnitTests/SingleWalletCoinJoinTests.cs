@@ -32,7 +32,7 @@ public class SingleWalletCoinJoinTests
 		fixture.Manager.WalletEnteredSendWorkflow();
 		await fixture.Manager.SignalToStopCoinjoinsAsync();
 		using var recipient = new Key();
-		var payments = new[] { new PaymentInfo { Sendto = new Destination.Loudly(recipient.PubKey.GetAddress(ScriptPubKeyType.Segwit, Network.RegTest).ScriptPubKey), Amount = Money.Coins(0.01m), Label = "synthetic" } };
+		var payments = new[] { new PaymentInfo { Sendto = new Destination(recipient.PubKey.GetAddress(ScriptPubKeyType.Segwit, Network.RegTest).ScriptPubKey), Amount = Money.Coins(0.01m), Label = "synthetic" } };
 		var rpc = new MagicalCryptoWalletJsonRpcService(fixture.Application.Global);
 		Assert.Throws<SecurityException>(() => rpc.BuildTransaction(payments, feeRate: 2m, password: "wrong"));
 		Assert.True(session.Snapshot.CoinJoinRequiresAuthorization);
