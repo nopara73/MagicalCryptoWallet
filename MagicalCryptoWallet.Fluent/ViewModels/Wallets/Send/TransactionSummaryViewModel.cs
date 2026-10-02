@@ -29,8 +29,6 @@ public partial class TransactionSummaryViewModel : ViewModelBase
 		IsPreview = isPreview;
 		IsPayToMany = info.IsPayToMany;
 		AddressText = info.Destination.ToString(_network);
-		PayJoinUrl = info.PayJoinClient?.PaymentUrl.AbsoluteUri;
-		IsPayJoin = PayJoinUrl is not null;
 	}
 
 	public TransactionPreviewViewModel Parent { get; }
@@ -38,10 +36,6 @@ public partial class TransactionSummaryViewModel : ViewModelBase
 	public bool IsPreview { get; }
 
 	public string AddressText { get; }
-
-	public string? PayJoinUrl { get; }
-
-	public bool IsPayJoin { get; }
 
 	public bool IsPayToMany { get; }
 

@@ -115,7 +115,7 @@ public class RpcTests
 		var paymentInfo = new PaymentInfo
 		{
 			Amount = Money.Coins(1),
-			Sendto = new Destination.Loudly(BitcoinAddress.Create("bc1q7zqqsmqx5ymhd7qn73lm96w5yqdkrmx7fdevah", Network.Main).ScriptPubKey),
+			Sendto = new Destination(BitcoinAddress.Create("bc1q7zqqsmqx5ymhd7qn73lm96w5yqdkrmx7fdevah", Network.Main).ScriptPubKey),
 			Label = "Cesar"
 		};
 

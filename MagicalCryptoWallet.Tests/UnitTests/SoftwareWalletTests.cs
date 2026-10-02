@@ -108,7 +108,7 @@ public class SoftwareWalletTests
 		var path = Path.Combine(await Common.GetEmptyWorkDirAsync(), "invalid.json");
 		var keys = NewKeys();
 		Assert.Throws<InvalidDataException>(() => new KeyManager(keys.EncryptedSecret, new byte[length], keys.MasterFingerprint,
-			keys.SegwitExtPubKey, keys.TaprootExtPubKey, keys.SilentPaymentScanExtPubKey, keys.SilentPaymentSpendExtPubKey,
+			keys.SegwitExtPubKey, keys.TaprootExtPubKey,
 			21, new BlockchainState(Network.RegTest), path));
 		Assert.False(File.Exists(path));
 	}
@@ -123,6 +123,8 @@ public class SoftwareWalletTests
 		var data = JObject.Parse(await File.ReadAllTextAsync(path));
 		data["Icon"] = "Trezor";
 		data["PreferPsbtWorkflow"] = true;
+		data["SilentPaymentScanExtPubKey"] = keys.SegwitExtPubKey.ToString(Network.Main);
+		data["SilentPaymentSpendExtPubKey"] = keys.TaprootExtPubKey!.ToString(Network.Main);
 		await File.WriteAllTextAsync(path, data.ToString());
 		var original = await File.ReadAllBytesAsync(path);
 		var imported = KeyManager.FromFile(path);
@@ -137,6 +139,8 @@ public class SoftwareWalletTests
 		var saved = JObject.Parse(await File.ReadAllTextAsync(path));
 		Assert.Null(saved["Icon"]);
 		Assert.Null(saved["PreferPsbtWorkflow"]);
+		Assert.Null(saved["SilentPaymentScanExtPubKey"]);
+		Assert.Null(saved["SilentPaymentSpendExtPubKey"]);
 		Assert.Equal(keys.EncryptedSecret, KeyManager.FromFile(path).EncryptedSecret);
 	}
 

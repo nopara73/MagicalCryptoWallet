@@ -26,7 +26,7 @@ public static class CurrencyExtensions
 
 		return result.InnerWalletOutputs
 			.Where(x =>
-			destination is Destination.Loudly loudly && x.ScriptPubKey == loudly.ScriptPubKey
+			x.ScriptPubKey == destination.ScriptPubKey
 			/* TODO add info to results about what is the change*/)
 			.Sum(x => x.Amount);
 	}

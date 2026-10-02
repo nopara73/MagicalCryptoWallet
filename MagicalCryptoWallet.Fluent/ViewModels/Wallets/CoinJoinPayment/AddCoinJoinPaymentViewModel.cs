@@ -149,17 +149,6 @@ public partial class AddCoinJoinPaymentViewModel : RoutableViewModel
 			return;
 		}
 
-		// Silent payments are not supported for CoinJoin payments
-		if (parseResult.Value is Address.SilentPayment)
-		{
-			errors.Add(ErrorSeverity.Error, "Silent payments are not supported for coinjoin payments.");
-			return;
-		}
-
-		if (parseResult.Value is Address.Bip21Uri { Address: Address.SilentPayment })
-		{
-			errors.Add(ErrorSeverity.Error, "Silent payments are not supported for coinjoin payments.");
-		}
 	}
 
 	private void ValidateAmount(IValidationErrors errors)

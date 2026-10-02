@@ -130,7 +130,7 @@ public partial class PrivacySuggestionsModel
 
 	private IEnumerable<PrivacyItem> VerifyPrivacyLevel(Parameters parameters)
 	{
-		var canModifyTransactionAmount = !parameters.TransactionInfo.IsPayJoin && !parameters.TransactionInfo.IsFixedAmount && !parameters.TransactionInfo.IsPayToMany;
+		var canModifyTransactionAmount = !parameters.TransactionInfo.IsFixedAmount && !parameters.TransactionInfo.IsPayToMany;
 
 		var transactionLabels = parameters.Transaction.SpentCoins.SelectMany(x => x.GetLabels(_wallet.AnonScoreTarget));
 		var onlyKnownByRecipient =
@@ -258,7 +258,7 @@ public partial class PrivacySuggestionsModel
 	private async IAsyncEnumerable<PrivacyItem> VerifyChangeAsync(Parameters parameters, CancellationTokenSource linkedCts)
 	{
 		var destinationScripts = parameters.TransactionInfo.AllRecipients
-			.Select(r => r.Destination.GetScriptPubKey())
+			.Select(r => r.Destination.ScriptPubKey)
 			.ToHashSet();
 
 		bool hasChange = parameters.Transaction.InnerWalletOutputs
@@ -268,7 +268,7 @@ public partial class PrivacySuggestionsModel
 		{
 			yield return new CreatesChangeWarning();
 
-			if (parameters.IncludeSuggestions && !parameters.TransactionInfo.IsFixedAmount && !parameters.TransactionInfo.IsPayJoin && !parameters.TransactionInfo.IsPayToMany)
+			if (parameters.IncludeSuggestions && !parameters.TransactionInfo.IsFixedAmount && !parameters.TransactionInfo.IsPayToMany)
 			{
 				var suggestions = await CreateChangeAvoidanceSuggestionsAsync(parameters.TransactionInfo, parameters.Transaction, linkedCts).ConfigureAwait(false);
 				foreach (var suggestion in suggestions)
@@ -354,7 +354,7 @@ public partial class PrivacySuggestionsModel
 			ChangelessTransactionCoinSelector.GetAllStrategyResultsAsync(
 				coinsToUse,
 				transactionInfo.FeeRate,
-				new TxOut(transactionInfo.Amount, transactionInfo.Destination.GetScriptPubKey()),
+				new TxOut(transactionInfo.Amount, transactionInfo.Destination.ScriptPubKey),
 				maxInputCount,
 				cancellationToken);
 
@@ -408,7 +408,6 @@ public partial class PrivacySuggestionsModel
 				transactionInfo.FeeRate,
 				coins,
 				false,
-				transactionInfo.PayJoinClient,
 				tryToSign: false);
 		}
 		catch (Exception)

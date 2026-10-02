@@ -15,7 +15,6 @@ using MagicalCryptoWallet.Io;
 using MagicalCryptoWallet.Models;
 using MagicalCryptoWallet.Serialization;
 using MagicalCryptoWallet.WabiSabi.Client;
-using MagicalCryptoWallet.Wallets.SilentPayment;
 using MagicalCryptoWallet.Wallets.Slip39;
 using Decode = MagicalCryptoWallet.Serialization.Decode;
 using Encode = MagicalCryptoWallet.Serialization.Encode;
@@ -38,8 +37,6 @@ public class KeyManager
 		HDFingerprint? masterFingerprint,
 		ExtPubKey extPubKey,
 		ExtPubKey? taprootExtPubKey,
-		ExtPubKey? silentPaymentScanExtPubKey,
-		ExtPubKey? silentPaymentSpendExtPubKey,
 		int? minGapLimit,
 		BlockchainState blockchainState,
 		string? filePath = null,
@@ -57,8 +54,6 @@ public class KeyManager
 		MasterFingerprint = masterFingerprint;
 		SegwitExtPubKey = extPubKey;
 		TaprootExtPubKey = taprootExtPubKey;
-		SilentPaymentScanExtPubKey = silentPaymentScanExtPubKey;
-		SilentPaymentSpendExtPubKey = silentPaymentSpendExtPubKey;
 
 		MinGapLimit = Math.Max(AbsoluteMinGapLimit, minGapLimit ?? 0);
 
@@ -75,46 +70,23 @@ public class KeyManager
 			_taprootInternalKeyGenerator = new HdPubKeyGenerator(TaprootExtPubKey.Derive(1), TaprootAccountKeyPath.Derive(1), MinGapLimit);
 		}
 
-		if (SilentPaymentScanExtPubKey is { })
-		{
-			_silentPaymentScanKeyGenerator = new HdPubKeyGenerator(SilentPaymentScanExtPubKey, GetAccountKeyPath(_blockchainState.Network, KeyPurpose.Scan), MinGapLimit);
-		}
-
-		if (SilentPaymentSpendExtPubKey is { })
-		{
-			_silentPaymentSpendKeyGenerator = new HdPubKeyGenerator(SilentPaymentSpendExtPubKey, GetAccountKeyPath(_blockchainState.Network, KeyPurpose.Spend), MinGapLimit);
-		}
-
 		SetFilePath(filePath);
 
 		ToFile();
 	}
 
 	public static KeyPath GetAccountKeyPath(Network network, ScriptPubKeyType scriptPubKeyType) =>
-		GetAccountKeyPath(network, new KeyPurpose.LoudPaymentKey(scriptPubKeyType));
-
-	public static KeyPath GetAccountKeyPath(Network network, KeyPurpose purpose) =>
-		new((network.Name, purpose) switch
+		new((network.Name, scriptPubKeyType) switch
 		{
-			("TestNet4", KeyPurpose.LoudPaymentKey(ScriptPubKeyType.Segwit)) => "m/84h/1h/0h",
-			("signet", KeyPurpose.LoudPaymentKey(ScriptPubKeyType.Segwit)) => "m/84h/1h/0h",
-			("RegTest", KeyPurpose.LoudPaymentKey(ScriptPubKeyType.Segwit)) => "m/84h/0h/0h",
-			("Main", KeyPurpose.LoudPaymentKey(ScriptPubKeyType.Segwit)) => "m/84h/0h/0h",
-			("TestNet4", KeyPurpose.LoudPaymentKey(ScriptPubKeyType.TaprootBIP86)) => "m/86h/1h/0h",
-			("signet", KeyPurpose.LoudPaymentKey(ScriptPubKeyType.TaprootBIP86)) => "m/86h/1h/0h",
-			("RegTest", KeyPurpose.LoudPaymentKey(ScriptPubKeyType.TaprootBIP86)) => "m/86h/0h/0h",
-			("Main", KeyPurpose.LoudPaymentKey(ScriptPubKeyType.TaprootBIP86)) => "m/86h/0h/0h",
-			("TestNet4", KeyPurpose.SilentPaymentKey.ScanKey) => "m/352h/1h/0h/1h",
-			("signet", KeyPurpose.SilentPaymentKey.ScanKey) => "m/352h/1h/0h/1h",
-			("RegTest", KeyPurpose.SilentPaymentKey.ScanKey) => "m/352h/0h/0h/1h",
-			("Main", KeyPurpose.SilentPaymentKey.ScanKey) => "m/352h/0h/0h/1h",
-			("TestNet4", KeyPurpose.SilentPaymentKey.SpendKey) => "m/352h/1h/0h/0h",
-			("signet", KeyPurpose.SilentPaymentKey.SpendKey) => "m/352h/1h/0h/0h",
-			("RegTest", KeyPurpose.SilentPaymentKey.SpendKey) => "m/352h/0h/0h/0h",
-			("Main", KeyPurpose.SilentPaymentKey.SpendKey) => "m/352h/0h/0h/0h",
-			(_, KeyPurpose.LoudPaymentKey s) => throw new ArgumentException($"Unknown account for network '{network}' and script type {s.ScriptPubKeyType}."),
-			(_, KeyPurpose.SilentPaymentKey) => throw new ArgumentException($"Unknown account for silentPayment and network '{network}'"),
-			_ => throw new ArgumentException($"Unknown account for network '{network}' and key purpose.")
+			("TestNet4", ScriptPubKeyType.Segwit) => "m/84h/1h/0h",
+			("signet", ScriptPubKeyType.Segwit) => "m/84h/1h/0h",
+			("RegTest", ScriptPubKeyType.Segwit) => "m/84h/0h/0h",
+			("Main", ScriptPubKeyType.Segwit) => "m/84h/0h/0h",
+			("TestNet4", ScriptPubKeyType.TaprootBIP86) => "m/86h/1h/0h",
+			("signet", ScriptPubKeyType.TaprootBIP86) => "m/86h/1h/0h",
+			("RegTest", ScriptPubKeyType.TaprootBIP86) => "m/86h/0h/0h",
+			("Main", ScriptPubKeyType.TaprootBIP86) => "m/86h/0h/0h",
+			_ => throw new ArgumentException($"Unknown account for network '{network}' and script type {scriptPubKeyType}.")
 		});
 
 	public WalletPolicy GetWpkhWalletPolicy(string password, Network network)
@@ -144,10 +116,6 @@ public class KeyManager
 	public KeyPath SegwitAccountKeyPath { get; private set; }
 
 	public KeyPath TaprootAccountKeyPath { get; private set; }
-
-	public ExtPubKey? SilentPaymentScanExtPubKey { get; private set; }
-
-	public ExtPubKey? SilentPaymentSpendExtPubKey { get; private set; }
 
 	private readonly BlockchainState _blockchainState;
 
@@ -188,9 +156,6 @@ public class KeyManager
 	private readonly HdPubKeyGenerator _segwitInternalKeyGenerator;
 	private HdPubKeyGenerator? TaprootExternalKeyGenerator { get; set; }
 	private readonly HdPubKeyGenerator? _taprootInternalKeyGenerator;
-	private HdPubKeyGenerator? _silentPaymentScanKeyGenerator;
-	private HdPubKeyGenerator? _silentPaymentSpendKeyGenerator;
-
 
 	public static KeyManager CreateNew(out Mnemonic mnemonic, string password, Network network, string? filePath = null)
 	{
@@ -226,10 +191,7 @@ public class KeyManager
 		KeyPath taprootAccountKeyPath = GetAccountKeyPath(network, ScriptPubKeyType.TaprootBIP86);
 		ExtPubKey taprootExtPubKey = extKey.Derive(taprootAccountKeyPath).Neuter();
 
-		ExtPubKey silentPaymentScanExtPubKey = extKey.Derive(GetAccountKeyPath(network, KeyPurpose.Scan)).Neuter();
-		ExtPubKey silentPaymentSpendExtPubKey = extKey.Derive(GetAccountKeyPath(network, KeyPurpose.Spend)).Neuter();
-
-		return new KeyManager(encryptedSecret, extKey.ChainCode, masterFingerprint, segwitExtPubKey, taprootExtPubKey, silentPaymentScanExtPubKey, silentPaymentSpendExtPubKey, AbsoluteMinGapLimit, blockchainState, filePath, segwitAccountKeyPath, taprootAccountKeyPath);
+		return new KeyManager(encryptedSecret, extKey.ChainCode, masterFingerprint, segwitExtPubKey, taprootExtPubKey, AbsoluteMinGapLimit, blockchainState, filePath, segwitAccountKeyPath, taprootAccountKeyPath);
 	}
 
 	public static KeyManager Recover(Mnemonic mnemonic, string password, Network network, KeyPath swAccountKeyPath, KeyPath? trAccountKeyPath = null, string? filePath = null, int minGapLimit = AbsoluteMinGapLimit, ChainHeight? birthHeight = null)
@@ -257,12 +219,10 @@ public class KeyManager
 		ExtPubKey segwitExtPubKey = extKey.Derive(segwitAccountKeyPath).Neuter();
 		KeyPath taprootAccountKeyPath = trAccountKeyPath ?? GetAccountKeyPath(network, ScriptPubKeyType.TaprootBIP86);
 		ExtPubKey taprootExtPubKey = extKey.Derive(taprootAccountKeyPath).Neuter();
-		ExtPubKey silentPaymentScanExtPubKey = extKey.Derive(GetAccountKeyPath(network, KeyPurpose.Scan)).Neuter();
-		ExtPubKey silentPaymentSpendExtPubKey = extKey.Derive(GetAccountKeyPath(network, KeyPurpose.Spend)).Neuter();
 
 		birthHeight ??= FilterCheckpoints.GetMagicalCryptoWalletGenesisFilter(network).Header.Height;
 		var blockchainState = new BlockchainState(network, height: birthHeight, birthHeight: birthHeight);
-		var km = new KeyManager(encryptedSecret, extKey.ChainCode, masterFingerprint, segwitExtPubKey, taprootExtPubKey, silentPaymentScanExtPubKey, silentPaymentSpendExtPubKey, minGapLimit, blockchainState, filePath, segwitAccountKeyPath, taprootAccountKeyPath);
+		var km = new KeyManager(encryptedSecret, extKey.ChainCode, masterFingerprint, segwitExtPubKey, taprootExtPubKey, minGapLimit, blockchainState, filePath, segwitAccountKeyPath, taprootAccountKeyPath);
 		km.AssertCleanKeysIndexedNoLock();
 		return km;
 	}
@@ -310,21 +270,15 @@ public class KeyManager
 		}
 	}
 
-	public HdPubKey GetNextReceiveKey(LabelsArray labels, ScriptPubKeyType scriptPubKeyType = ScriptPubKeyType.Segwit) =>
-		GetNextReceiveKey(labels, KeyPurpose.Loud(scriptPubKeyType));
-
-	public HdPubKey GetNextReceiveKey(LabelsArray labels, KeyPurpose purpose)
+	public HdPubKey GetNextReceiveKey(LabelsArray labels, ScriptPubKeyType scriptPubKeyType = ScriptPubKeyType.Segwit)
 	{
 		lock (_criticalStateLock)
 		{
-			var (generator, generatorSetter) = purpose switch
+			var (generator, generatorSetter) = scriptPubKeyType switch
 			{
-				KeyPurpose.LoudPaymentKey(ScriptPubKeyType.Segwit) => (SegwitExternalKeyGenerator, (Action<HdPubKeyGenerator>)(g => SegwitExternalKeyGenerator = g)),
-				KeyPurpose.LoudPaymentKey(ScriptPubKeyType.TaprootBIP86) => (TaprootExternalKeyGenerator, (g => TaprootExternalKeyGenerator = g)),
-				KeyPurpose.SilentPaymentKey.ScanKey => (_silentPaymentScanKeyGenerator, g => _silentPaymentScanKeyGenerator = g),
-				KeyPurpose.SilentPaymentKey.SpendKey => (_silentPaymentSpendKeyGenerator, g => _silentPaymentSpendKeyGenerator = g),
-				KeyPurpose.LoudPaymentKey(var scriptPubKeyType) => throw new NotSupportedException($"Script type '{scriptPubKeyType}' is not supported."),
-				_ => throw new NotSupportedException($"Key purpose is unknown.")
+				ScriptPubKeyType.Segwit => (SegwitExternalKeyGenerator, (Action<HdPubKeyGenerator>)(g => SegwitExternalKeyGenerator = g)),
+				ScriptPubKeyType.TaprootBIP86 => (TaprootExternalKeyGenerator, (g => TaprootExternalKeyGenerator = g)),
+				_ => throw new NotSupportedException($"Script type '{scriptPubKeyType}' is not supported.")
 			};
 
 			if (generator is not { } nonNullKeyGenerator)
@@ -448,7 +402,6 @@ public class KeyManager
 			// Backwards compatibility:
 			MasterFingerprint ??= secret.PubKey.GetHDFingerPrint();
 			DeriveTaprootExtPubKey(extKey);
-			DeriveSilentPaymentExtPubKeys(extKey);
 
 			return extKey;
 		}
@@ -503,16 +456,6 @@ public class KeyManager
 			(false, ScriptPubKeyType.TaprootBIP86) => TaprootExternalKeyGenerator,
 			_ => throw new NotSupportedException($"There is not available generator for '{scriptPubKeyType}.")
 		};
-
-	private void DeriveSilentPaymentExtPubKeys(ExtKey extKey)
-	{
-		SilentPaymentScanExtPubKey ??= extKey.Derive(GetAccountKeyPath(_blockchainState.Network, KeyPurpose.Scan)).Neuter();
-		SilentPaymentSpendExtPubKey ??= extKey.Derive(GetAccountKeyPath(_blockchainState.Network, KeyPurpose.Spend)).Neuter();
-		_silentPaymentScanKeyGenerator = new HdPubKeyGenerator(SilentPaymentScanExtPubKey, GetAccountKeyPath(_blockchainState.Network, KeyPurpose.Scan), MinGapLimit);
-		_silentPaymentSpendKeyGenerator = new HdPubKeyGenerator(SilentPaymentSpendExtPubKey, GetAccountKeyPath(_blockchainState.Network, KeyPurpose.Spend), MinGapLimit);
-
-
-	}
 
 	private void AssertCleanKeysIndexedNoLock()
 	{
@@ -669,8 +612,6 @@ public class KeyManager
 			("MasterFingerprint", Encode.Optional(keyManager.MasterFingerprint, Encode.HDFingerprint)),
 			("ExtPubKey", Encode.ExtPubKey(keyManager.SegwitExtPubKey)),
 			("TaprootExtPubKey", Encode.Optional(keyManager.TaprootExtPubKey, Encode.ExtPubKey)),
-			("SilentPaymentScanExtPubKey", Encode.Optional(keyManager.SilentPaymentScanExtPubKey, Encode.ExtPubKey)),
-			("SilentPaymentSpendExtPubKey", Encode.Optional(keyManager.SilentPaymentSpendExtPubKey, Encode.ExtPubKey)),
 			("MinGapLimit", Encode.Int(keyManager.MinGapLimit)),
 			("AccountKeyPath", Encode.KeyPath(keyManager.SegwitAccountKeyPath)),
 			("TaprootAccountKeyPath", Encode.KeyPath(keyManager.TaprootAccountKeyPath)),
@@ -714,8 +655,6 @@ public class KeyManager
 
 				get.Required("ExtPubKey", Decode.ExtPubKey),
 				get.Optional("TaprootExtPubKey", Decode.ExtPubKey),
-				get.Optional("SilentPaymentScanExtPubKey", Decode.ExtPubKey),
-				get.Optional("SilentPaymentSpendExtPubKey", Decode.ExtPubKey),
 				get.Optional("MinGapLimit", Decode.Int),
 				blockchainState,
 				(string?) "",
@@ -756,22 +695,4 @@ public static class HdPubKeyExtensions
 
 	public static Script GetAssumedScriptPubKey(this HdPubKey me) =>
 		me.PubKey.GetScriptPubKey(me.FullKeyPath.GetScriptTypeFromKeyPath());
-}
-
-public abstract record KeyPurpose
-{
-	public static readonly KeyPurpose Scan = new SilentPaymentKey.ScanKey();
-	public static readonly KeyPurpose Spend = new SilentPaymentKey.SpendKey();
-	public static readonly KeyPurpose Account = new SilentPaymentKey.AccountKey();
-	public static KeyPurpose Loud(ScriptPubKeyType spk) => new LoudPaymentKey(spk);
-
-	public abstract record SilentPaymentKey : KeyPurpose
-	{
-		public record ScanKey : SilentPaymentKey;
-
-		public record SpendKey : SilentPaymentKey;
-		public record AccountKey : SilentPaymentKey;
-	};
-
-	public record LoudPaymentKey(ScriptPubKeyType ScriptPubKeyType) : KeyPurpose;
 }
