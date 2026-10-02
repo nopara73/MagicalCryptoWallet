@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "audited_commit": "1228c2c589333a49a9af894da9876518739fab76",
+  "audited_commit": "875e929193d11106766603767a939d1985a431cf",
   "retained_callers": [
     {
       "path": "MagicalCryptoWallet/Crypto/OwnershipIdentifier.cs",
@@ -120,15 +120,15 @@
     }
   ],
   "direct_hash_call_sites": [
-    "1228c2c589333a49a9af894da9876518739fab76:MagicalCryptoWallet.Tests/Helpers/AnalyzedTransaction/AnalyzedTransaction.cs:29:\t\t\treturn new Key(Hashes.DoubleSHA256(Encoders.ASCII.DecodeData(label)).ToBytes());",
-    "1228c2c589333a49a9af894da9876518739fab76:MagicalCryptoWallet.Tests/Helpers/WabiSabiFactory.cs:46:\t\t\tnew OutPoint(Hashes.DoubleSHA256(key.PubKey.ToBytes().Concat(BitConverter.GetBytes(amount)).ToArray()), 0),",
-    "1228c2c589333a49a9af894da9876518739fab76:MagicalCryptoWallet/Crypto/OwnershipIdentifier.cs:13:\t\t: this(Hashes.HMACSHA256(identificationKey.ToBytes(), scriptPubKey.ToBytes()))",
-    "1228c2c589333a49a9af894da9876518739fab76:MagicalCryptoWallet/Crypto/ProofBody.cs:51:\t\tnew(Hashes.SHA256(this.ToBytes().Concat(ProofFooter(scriptPubKey, commitmentData)).ToArray()));",
-    "1228c2c589333a49a9af894da9876518739fab76:MagicalCryptoWallet/Crypto/Slip21Node.cs:23:\t\tnew(HMACSHA512(Encoding.ASCII.GetBytes(\"Symmetric key seed\"), seed));",
-    "1228c2c589333a49a9af894da9876518739fab76:MagicalCryptoWallet/Crypto/Slip21Node.cs:29:\t\tnew(HMACSHA512(_data[..KEY_SIZE], label.Prepend((byte)0x00).ToArray()));",
-    "1228c2c589333a49a9af894da9876518739fab76:MagicalCryptoWallet/Tor/Control/TorControlClientFactory.cs:103:\t\tusing HMACSHA256 hmacSha256 = new(ClientHmacKey);",
-    "1228c2c589333a49a9af894da9876518739fab76:MagicalCryptoWallet/Wallets/ShamirSecretSharing/Slip39.cs:335:\t\tusing var hmac = new HMACSHA256(random);",
-    "1228c2c589333a49a9af894da9876518739fab76:MagicalCryptoWallet/Wallets/ShamirSecretSharing/Slip39.cs:441:\t\tvar pbkdf2 =  Rfc2898DeriveBytes.Pbkdf2(key, salt, iters, HashAlgorithmName.SHA256, block.Length);"
+    "875e929193d11106766603767a939d1985a431cf:MagicalCryptoWallet.Tests/Helpers/AnalyzedTransaction/AnalyzedTransaction.cs:29:\t\t\treturn new Key(Hashes.DoubleSHA256(Encoders.ASCII.DecodeData(label)).ToBytes());",
+    "875e929193d11106766603767a939d1985a431cf:MagicalCryptoWallet.Tests/Helpers/WabiSabiFactory.cs:46:\t\t\tnew OutPoint(Hashes.DoubleSHA256(key.PubKey.ToBytes().Concat(BitConverter.GetBytes(amount)).ToArray()), 0),",
+    "875e929193d11106766603767a939d1985a431cf:MagicalCryptoWallet/Crypto/OwnershipIdentifier.cs:13:\t\t: this(Hashes.HMACSHA256(identificationKey.ToBytes(), scriptPubKey.ToBytes()))",
+    "875e929193d11106766603767a939d1985a431cf:MagicalCryptoWallet/Crypto/ProofBody.cs:51:\t\tnew(Hashes.SHA256(this.ToBytes().Concat(ProofFooter(scriptPubKey, commitmentData)).ToArray()));",
+    "875e929193d11106766603767a939d1985a431cf:MagicalCryptoWallet/Crypto/Slip21Node.cs:23:\t\tnew(HMACSHA512(Encoding.ASCII.GetBytes(\"Symmetric key seed\"), seed));",
+    "875e929193d11106766603767a939d1985a431cf:MagicalCryptoWallet/Crypto/Slip21Node.cs:29:\t\tnew(HMACSHA512(_data[..KEY_SIZE], label.Prepend((byte)0x00).ToArray()));",
+    "875e929193d11106766603767a939d1985a431cf:MagicalCryptoWallet/Tor/Control/TorControlClientFactory.cs:103:\t\tusing HMACSHA256 hmacSha256 = new(ClientHmacKey);",
+    "875e929193d11106766603767a939d1985a431cf:MagicalCryptoWallet/Wallets/ShamirSecretSharing/Slip39.cs:335:\t\tusing var hmac = new HMACSHA256(random);",
+    "875e929193d11106766603767a939d1985a431cf:MagicalCryptoWallet/Wallets/ShamirSecretSharing/Slip39.cs:441:\t\tvar pbkdf2 =  Rfc2898DeriveBytes.Pbkdf2(key, salt, iters, HashAlgorithmName.SHA256, block.Length);"
   ],
   "retained_package_references": [
     {
