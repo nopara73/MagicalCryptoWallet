@@ -123,7 +123,7 @@ public class CpfpInfoUpdaterTests
 			return Task.FromResult(HttpResponseMessageEx.Ok(cpfpJson));
 		};
 
-		var httpClientFactory = new MockHttpClientFactory { OnCreateClient = _ => mockHttpClient };
+		var httpClientFactory = new MockHttpClientFactory { OnCreateClient = _ => new MockHttpClient { OnSendAsync = mockHttpClient.OnSendAsync } };
 		var eventBus = new EventBus();
 		var handler = CpfpInfoUpdater.Create(httpClientFactory, Network.Main, eventBus);
 		var tx = BitcoinFactory.CreateSmartTransaction(height: Height.Mempool);
@@ -417,7 +417,7 @@ public class CpfpInfoProviderTests
 			return Task.FromResult(HttpResponseMessageEx.Ok(cpfpJson));
 		};
 
-		var httpClientFactory = new MockHttpClientFactory { OnCreateClient = _ => mockHttpClient };
+		var httpClientFactory = new MockHttpClientFactory { OnCreateClient = _ => new MockHttpClient { OnSendAsync = mockHttpClient.OnSendAsync } };
 		var eventBus = new EventBus();
 		var handler = CpfpInfoUpdater.Create(httpClientFactory, Network.Main, eventBus);
 
@@ -546,7 +546,7 @@ public class CpfpInfoUpdaterCancellationTests
 		using var mockHttpClient = new MockHttpClient();
 		mockHttpClient.OnSendAsync = _ => tcs.Task;
 
-		var httpClientFactory = new MockHttpClientFactory { OnCreateClient = _ => mockHttpClient };
+		var httpClientFactory = new MockHttpClientFactory { OnCreateClient = _ => new MockHttpClient { OnSendAsync = mockHttpClient.OnSendAsync } };
 		var eventBus = new EventBus();
 		var handler = CpfpInfoUpdater.Create(httpClientFactory, Network.Main, eventBus);
 		var tx = BitcoinFactory.CreateSmartTransaction(height: Height.Mempool);
@@ -576,7 +576,7 @@ public class CpfpInfoUpdaterCancellationTests
 			return HttpResponseMessageEx.Ok("{}");
 		};
 
-		var httpClientFactory = new MockHttpClientFactory { OnCreateClient = _ => mockHttpClient };
+		var httpClientFactory = new MockHttpClientFactory { OnCreateClient = _ => new MockHttpClient { OnSendAsync = mockHttpClient.OnSendAsync } };
 		var eventBus = new EventBus();
 		var handler = CpfpInfoUpdater.Create(httpClientFactory, Network.Main, eventBus);
 		var tx = BitcoinFactory.CreateSmartTransaction(height: Height.Mempool);
@@ -611,7 +611,7 @@ public class CpfpInfoUpdaterCancellationTests
 			return HttpResponseMessageEx.Ok("{}");
 		};
 
-		var httpClientFactory = new MockHttpClientFactory { OnCreateClient = _ => mockHttpClient };
+		var httpClientFactory = new MockHttpClientFactory { OnCreateClient = _ => new MockHttpClient { OnSendAsync = mockHttpClient.OnSendAsync } };
 		var eventBus = new EventBus();
 		var handler = CpfpInfoUpdater.Create(httpClientFactory, Network.Main, eventBus);
 		var tx = BitcoinFactory.CreateSmartTransaction(height: Height.Mempool);
@@ -679,7 +679,7 @@ public class CpfpInfoUpdaterCancellationTests
 			return HttpResponseMessageEx.Ok(cpfpJson);
 		};
 
-		var httpClientFactory = new MockHttpClientFactory { OnCreateClient = _ => mockHttpClient };
+		var httpClientFactory = new MockHttpClientFactory { OnCreateClient = _ => new MockHttpClient { OnSendAsync = mockHttpClient.OnSendAsync } };
 		var eventBus = new EventBus();
 		var handler = CpfpInfoUpdater.Create(httpClientFactory, Network.Main, eventBus);
 
@@ -886,7 +886,7 @@ public class CpfpInfoProviderCancellationTests
 			return HttpResponseMessageEx.Ok(cpfpJson);
 		};
 
-		var httpClientFactory = new MockHttpClientFactory { OnCreateClient = _ => mockHttpClient };
+		var httpClientFactory = new MockHttpClientFactory { OnCreateClient = _ => new MockHttpClient { OnSendAsync = mockHttpClient.OnSendAsync } };
 		var eventBus = new EventBus();
 		var handler = CpfpInfoUpdater.Create(httpClientFactory, Network.Main, eventBus);
 

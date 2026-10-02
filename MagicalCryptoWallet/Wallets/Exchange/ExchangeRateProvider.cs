@@ -33,7 +33,7 @@ public static class ExchangeRateProviders
 			httpClientFactory, PickRandomUserAgent(), cancellationToken);
 
 	public static ExchangeRateProvider GeminiAsync(IHttpClientFactory httpClientFactory) =>
-		cancellationToken => GetExchangeRateAsync("CoinGecko", "https://api.gemini.com/v1/pubticker/btcusd", JsonPath(".bid"),
+		cancellationToken => GetExchangeRateAsync("Gemini", "https://api.gemini.com/v1/pubticker/btcusd", JsonPath(".bid"),
 			httpClientFactory, PickRandomUserAgent(), cancellationToken);
 
 	public static ExchangeRateProvider NoneAsync() =>
