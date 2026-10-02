@@ -30,6 +30,10 @@ UI rewrite. No existing managed caller or shared host file was edited by this
 worker. Coordinator supplies any precise narrower assignment before caller
 overlaps or manifest changes are resolved with their owners.
 
+The subsequently assigned bounded factory-contract package removal is tracked
+in [http-factory.md](http-factory.md). It preserves managed HTTP transport and
+does not activate this codec or the old networking draft.
+
 An unpublished draft is preserved in the worker's isolated
 `.artifacts/mcw-http1` checkout: `mcw/src/network_service/**`,
 `mcw/tests/http1_network.rs`, `mcw/tests/http1_network_verify.ps1`, and ignored
