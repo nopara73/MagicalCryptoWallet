@@ -1,0 +1,787 @@
+{
+  "source_commit": "88bd734f82862fda5b8210cb37fd112d98705d97",
+  "native_entries": [
+    {
+      "path": "MagicalCryptoWallet/BundledApps/Binaries/linux-arm64/Tor/libcrypto.so.3",
+      "bytes": 5778424,
+      "sha256": "863cd72e532412f853542d8024464acd092fe4d2a3f7477e9a1a8bc16bb81462",
+      "status": "retained; not retired",
+      "format": "ELF64",
+      "imports": [
+        "ld-linux-aarch64.so.1",
+        "libc.so.6",
+        "libdl.so.2",
+        "libpthread.so.0"
+      ],
+      "runtime_paths": []
+    },
+    {
+      "path": "MagicalCryptoWallet/BundledApps/Binaries/linux-arm64/Tor/libevent-2.1.so.7",
+      "bytes": 395592,
+      "sha256": "4d52e92d52405dc1dcf69c4ceda69ecd8907acbfa7721c3dcc263fcd1604253d",
+      "status": "retained; not retired",
+      "format": "ELF64",
+      "imports": [
+        "ld-linux-aarch64.so.1",
+        "libc.so.6",
+        "libpthread.so.0"
+      ],
+      "runtime_paths": []
+    },
+    {
+      "path": "MagicalCryptoWallet/BundledApps/Binaries/linux-arm64/Tor/libssl.so.3",
+      "bytes": 1064696,
+      "sha256": "fb1ca43e12019764bbedfe85d19a3c43492180bc86c43ee2a1d700c13cc62523",
+      "status": "retained; not retired",
+      "format": "ELF64",
+      "imports": [
+        "ld-linux-aarch64.so.1",
+        "libc.so.6",
+        "libcrypto.so.3",
+        "libdl.so.2",
+        "libpthread.so.0"
+      ],
+      "runtime_paths": []
+    },
+    {
+      "path": "MagicalCryptoWallet/BundledApps/Binaries/linux-arm64/Tor/libstdc++/libstdc++.so.6",
+      "bytes": 1911616,
+      "sha256": "5361f216fb733d94ece22c9e15ed8d408a7dbf415b7818864cea5c002f7637d4",
+      "status": "retained; not retired",
+      "format": "ELF64",
+      "imports": [
+        "libc.so.6",
+        "libgcc_s.so.1",
+        "libm.so.6"
+      ],
+      "runtime_paths": []
+    },
+    {
+      "path": "MagicalCryptoWallet/BundledApps/Binaries/linux-arm64/Tor/tor",
+      "bytes": 3785640,
+      "sha256": "6a7bd16c5cf6cc84f690e1e3c8d360fecc1add92dbfc1a9be1713ab533bcc394",
+      "status": "retained; not retired",
+      "format": "ELF64",
+      "imports": [
+        "ld-linux-aarch64.so.1",
+        "libc.so.6",
+        "libcrypto.so.3",
+        "libdl.so.2",
+        "libevent-2.1.so.7",
+        "libm.so.6",
+        "libpthread.so.0",
+        "libssl.so.3",
+        "libz.so.1"
+      ],
+      "runtime_paths": []
+    },
+    {
+      "path": "MagicalCryptoWallet/BundledApps/Binaries/linux-x64/Tor/.gitattributes",
+      "bytes": 12,
+      "sha256": "52ed1906f9f755854e3a5d860f0644200fcf3eddea43ac77ea19b771d09372de",
+      "status": "retained; not retired",
+      "format": "data",
+      "imports": []
+    },
+    {
+      "path": "MagicalCryptoWallet/BundledApps/Binaries/linux-x64/Tor/LICENSE",
+      "bytes": 20040,
+      "sha256": "fa14c36ee65b62accc19e819455a2c1639d1ccb68cc2120273cf5382ceda8638",
+      "status": "retained; not retired",
+      "format": "data",
+      "imports": []
+    },
+    {
+      "path": "MagicalCryptoWallet/BundledApps/Binaries/linux-x64/Tor/libcrypto.so.3",
+      "bytes": 5476656,
+      "sha256": "fc9f029c1545534f9ccdb20a4ed338a5956ee2ce67a8af568706792427cffc5a",
+      "status": "retained; not retired",
+      "format": "ELF64",
+      "imports": [
+        "libc.so.6",
+        "libdl.so.2",
+        "libpthread.so.0"
+      ],
+      "runtime_paths": []
+    },
+    {
+      "path": "MagicalCryptoWallet/BundledApps/Binaries/linux-x64/Tor/libevent-2.1.so.7",
+      "bytes": 342328,
+      "sha256": "ac9c728b83f8ac5b814f2ee4458f90e71330e7f960bc0505ac089c3bfa0f74a4",
+      "status": "retained; not retired",
+      "format": "ELF64",
+      "imports": [
+        "libc.so.6",
+        "libpthread.so.0"
+      ],
+      "runtime_paths": []
+    },
+    {
+      "path": "MagicalCryptoWallet/BundledApps/Binaries/linux-x64/Tor/libssl.so.3",
+      "bytes": 1048256,
+      "sha256": "fe15605e04a0d1467ba4e4ab7aebe46259c61fe3009aff828f2e615570f1aa95",
+      "status": "retained; not retired",
+      "format": "ELF64",
+      "imports": [
+        "libc.so.6",
+        "libcrypto.so.3",
+        "libdl.so.2",
+        "libpthread.so.0"
+      ],
+      "runtime_paths": []
+    },
+    {
+      "path": "MagicalCryptoWallet/BundledApps/Binaries/linux-x64/Tor/libstdc++/libstdc++.so.6",
+      "bytes": 1911264,
+      "sha256": "d015803ac62c46cc12cb7573d712437e890a9959f9220f0162385e411a2c81d2",
+      "status": "retained; not retired",
+      "format": "ELF64",
+      "imports": [
+        "ld-linux-x86-64.so.2",
+        "libc.so.6",
+        "libgcc_s.so.1",
+        "libm.so.6"
+      ],
+      "runtime_paths": []
+    },
+    {
+      "path": "MagicalCryptoWallet/BundledApps/Binaries/linux-x64/Tor/tor",
+      "bytes": 3594072,
+      "sha256": "ff37b5be3c321db4be3ecb81f3ca8c822e64b3ededc60b6fd2f1ce8e626a8a07",
+      "status": "retained; not retired",
+      "format": "ELF64",
+      "imports": [
+        "libc.so.6",
+        "libcrypto.so.3",
+        "libdl.so.2",
+        "libevent-2.1.so.7",
+        "libm.so.6",
+        "libpthread.so.0",
+        "libssl.so.3",
+        "libz.so.1"
+      ],
+      "runtime_paths": []
+    },
+    {
+      "path": "MagicalCryptoWallet/BundledApps/Binaries/osx64/Tor/.gitattributes",
+      "bytes": 12,
+      "sha256": "52ed1906f9f755854e3a5d860f0644200fcf3eddea43ac77ea19b771d09372de",
+      "status": "retained; not retired",
+      "format": "data",
+      "imports": []
+    },
+    {
+      "path": "MagicalCryptoWallet/BundledApps/Binaries/osx64/Tor/LICENSE",
+      "bytes": 20040,
+      "sha256": "fa14c36ee65b62accc19e819455a2c1639d1ccb68cc2120273cf5382ceda8638",
+      "status": "retained; not retired",
+      "format": "data",
+      "imports": []
+    },
+    {
+      "path": "MagicalCryptoWallet/BundledApps/Binaries/osx64/Tor/libevent-2.1.7.dylib",
+      "bytes": 823056,
+      "sha256": "2eb13c45dd9a7adf27b6cfdad8890719eec3064c2f3cb5e08c780533cca70db4",
+      "status": "retained; not retired",
+      "format": "Mach-O universal",
+      "architectures": [
+        {
+          "cpu": 16777223,
+          "format": "Mach-O64",
+          "imports": [
+            "/usr/lib/libSystem.B.dylib"
+          ]
+        },
+        {
+          "cpu": 16777228,
+          "format": "Mach-O64",
+          "imports": [
+            "/usr/lib/libSystem.B.dylib"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "MagicalCryptoWallet/BundledApps/Binaries/osx64/Tor/tor",
+      "bytes": 17600464,
+      "sha256": "28f2cd62c1dc9ea89788c23a80a8a9105321f397961cf893e1057c20c5e53c7b",
+      "status": "retained; not retired",
+      "format": "Mach-O universal",
+      "architectures": [
+        {
+          "cpu": 16777223,
+          "format": "Mach-O64",
+          "imports": [
+            "/usr/lib/libSystem.B.dylib",
+            "/usr/lib/libz.1.dylib",
+            "@executable_path/libevent-2.1.7.dylib"
+          ]
+        },
+        {
+          "cpu": 16777228,
+          "format": "Mach-O64",
+          "imports": [
+            "/usr/lib/libSystem.B.dylib",
+            "/usr/lib/libz.1.dylib",
+            "@executable_path/libevent-2.1.7.dylib"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "MagicalCryptoWallet/BundledApps/Binaries/win-x64/Tor/.gitattributes",
+      "bytes": 16,
+      "sha256": "fc616803e5268399a08cbe85af97beafe077c2a6a1ebe8f1b0f65066495b3615",
+      "status": "retained; not retired",
+      "format": "data",
+      "imports": []
+    },
+    {
+      "path": "MagicalCryptoWallet/BundledApps/Binaries/win-x64/Tor/LICENSE",
+      "bytes": 20040,
+      "sha256": "fa14c36ee65b62accc19e819455a2c1639d1ccb68cc2120273cf5382ceda8638",
+      "status": "retained; not retired",
+      "format": "data",
+      "imports": []
+    },
+    {
+      "path": "MagicalCryptoWallet/BundledApps/Binaries/win-x64/Tor/tor.exe",
+      "bytes": 10210816,
+      "sha256": "af7d71ba304eaaa24b5c824cd869d8bdfb554ff4d55e694f9037f979e7600362",
+      "status": "retained; not retired",
+      "format": "PE",
+      "imports": [
+        "ADVAPI32.dll",
+        "CRYPT32.dll",
+        "IPHLPAPI.DLL",
+        "KERNEL32.dll",
+        "SHELL32.dll",
+        "SHLWAPI.dll",
+        "USER32.dll",
+        "WS2_32.dll",
+        "api-ms-win-crt-conio-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll",
+        "api-ms-win-crt-environment-l1-1-0.dll",
+        "api-ms-win-crt-filesystem-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-locale-l1-1-0.dll",
+        "api-ms-win-crt-math-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-time-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ]
+    }
+  ],
+  "callers": [
+    {
+      "path": "MagicalCryptoWallet/BitcoinP2p/CompactFilterBehavior.cs",
+      "line": 39,
+      "code": "if (AttachedNode.Behaviors.Find<SocksSettingsBehavior>() is null)"
+    },
+    {
+      "path": "MagicalCryptoWallet/Tor/TorManager.cs",
+      "line": 11,
+      "code": "public class TorManager : IAsyncDisposable"
+    },
+    {
+      "path": "MagicalCryptoWallet/Tor/TorManager.cs",
+      "line": 16,
+      "code": "private volatile TaskCompletionSource<(CancellationToken, TorControlClient?)> _tcs = new();"
+    },
+    {
+      "path": "MagicalCryptoWallet/Tor/TorManager.cs",
+      "line": 18,
+      "code": "public TorManager(TorSettings settings, TorProcessManager processManager)"
+    },
+    {
+      "path": "MagicalCryptoWallet/Tor/TorManager.cs",
+      "line": 21,
+      "code": "TorControlClient = null;"
+    },
+    {
+      "path": "MagicalCryptoWallet/Tor/TorManager.cs",
+      "line": 28,
+      "code": "/// <summary>Guards <see cref=\"TorProcess\"/> and <see cref=\"TorControlClient\"/>.</summary>"
+    },
+    {
+      "path": "MagicalCryptoWallet/Tor/TorManager.cs",
+      "line": 36,
+      "code": "private readonly TorSettings _settings;"
+    },
+    {
+      "path": "MagicalCryptoWallet/Tor/TorManager.cs",
+      "line": 37,
+      "code": "private readonly TorProcessManager _processManager;"
+    },
+    {
+      "path": "MagicalCryptoWallet/Tor/TorManager.cs",
+      "line": 49,
+      "code": "private TorControlClient? TorControlClient { get; set; }"
+    },
+    {
+      "path": "MagicalCryptoWallet/Tor/TorManager.cs",
+      "line": 52,
+      "code": "public Task<(CancellationToken, TorControlClient?)> StartAsync(CancellationToken cancellationToken)"
+    },
+    {
+      "path": "MagicalCryptoWallet/Tor/TorManager.cs",
+      "line": 63,
+      "code": "public async Task<(CancellationToken, TorControlClient?)> StartAsync(int attempts, CancellationToken cancellationToken)"
+    },
+    {
+      "path": "MagicalCryptoWallet/Tor/TorManager.cs",
+      "line": 97,
+      "code": "public Task<(CancellationToken, TorControlClient?)> WaitForNextAttemptAsync(CancellationToken cancellationToken)"
+    },
+    {
+      "path": "MagicalCryptoWallet/Tor/TorManager.cs",
+      "line": 183,
+      "code": "TorControlClient? controlClient = null;"
+    },
+    {
+      "path": "MagicalCryptoWallet/Tor/TorManager.cs",
+      "line": 268,
+      "code": "TorControlClient = controlClient;"
+    },
+    {
+      "path": "MagicalCryptoWallet/Tor/TorManager.cs",
+      "line": 348,
+      "code": "TorControlClient = null;"
+    },
+    {
+      "path": "MagicalCryptoWallet/Tor/TorManager.cs",
+      "line": 356,
+      "code": "TaskCompletionSource<(CancellationToken, TorControlClient?)> originalTcs = _tcs;"
+    },
+    {
+      "path": "MagicalCryptoWallet/Tor/TorManager.cs",
+      "line": 361,
+      "code": "TaskCompletionSource<(CancellationToken, TorControlClient?)> newTcs = new();"
+    },
+    {
+      "path": "MagicalCryptoWallet/Tor/TorManager.cs",
+      "line": 402,
+      "code": "TorControlClient? torControlClient;"
+    },
+    {
+      "path": "MagicalCryptoWallet/Tor/TorManager.cs",
+      "line": 407,
+      "code": "torControlClient = TorControlClient;"
+    },
+    {
+      "path": "MagicalCryptoWallet/Tor/TorProcessManager.cs",
+      "line": 14,
+      "code": "public class TorProcessManager"
+    },
+    {
+      "path": "MagicalCryptoWallet/Tor/TorProcessManager.cs",
+      "line": 22,
+      "code": "public TorProcessManager(TorSettings settings, EventBus eventBus)"
+    },
+    {
+      "path": "MagicalCryptoWallet/Tor/TorProcessManager.cs",
+      "line": 28,
+      "code": "private readonly TorSettings _settings;"
+    },
+    {
+      "path": "MagicalCryptoWallet/Tor/TorProcessManager.cs",
+      "line": 162,
+      "code": "return Process.GetProcessesByName(TorSettings.TorBinaryFileName);"
+    },
+    {
+      "path": "MagicalCryptoWallet/Tor/TorProcessManager.cs",
+      "line": 170,
+      "code": "public virtual async Task<TorControlClient> InitTorControlAsync(CancellationToken token)"
+    },
+    {
+      "path": "MagicalCryptoWallet/Tor/TorProcessManager.cs",
+      "line": 182,
+      "code": "TorControlClientFactory factory = new(RandomnessProviders.Secure);"
+    },
+    {
+      "path": "MagicalCryptoWallet/Tor/TorProcessManager.cs",
+      "line": 183,
+      "code": "TorControlClient client = await factory.ConnectAndAuthenticateAsync(_settings.ControlEndpoint, cookieString, token).ConfigureAwait(false);"
+    },
+    {
+      "path": "MagicalCryptoWallet/Tor/TorSettings.cs",
+      "line": 12,
+      "code": "public class TorSettings"
+    },
+    {
+      "path": "MagicalCryptoWallet/Tor/TorSettings.cs",
+      "line": 23,
+      "code": "public TorSettings("
+    },
+    {
+      "path": "MagicalCryptoWallet/Tor/Control/TorControlClient.cs",
+      "line": 20,
+      "code": "public class TorControlClient : IAsyncDisposable"
+    },
+    {
+      "path": "MagicalCryptoWallet/Tor/Control/TorControlClient.cs",
+      "line": 30,
+      "code": "public TorControlClient(TcpClient tcpClient) :"
+    },
+    {
+      "path": "MagicalCryptoWallet/Tor/Control/TorControlClient.cs",
+      "line": 36,
+      "code": "internal TorControlClient(PipeReader pipeReader, PipeWriter pipeWriter)"
+    },
+    {
+      "path": "MagicalCryptoWallet/Tor/Control/TorControlClient.cs",
+      "line": 180,
+      "code": "public Task<string> CreateEphemeralOnionServiceAsync(int virtualPort, int remotePort, CancellationToken cancellationToken)"
+    },
+    {
+      "path": "MagicalCryptoWallet/Tor/Control/TorControlClient.cs",
+      "line": 182,
+      "code": "return CreateOnionServiceAsync(\"NEW:BEST\", \"Flags=DiscardPK\", virtualPort, remotePort, cancellationToken);"
+    },
+    {
+      "path": "MagicalCryptoWallet/Tor/Control/TorControlClient.cs",
+      "line": 187,
+      "code": "var reply = await CreateOnionServiceCommandAsync(\"NEW:ED25519-V3\", \"\", virtualPort, remotePort, cancellationToken).ConfigureAwait(false);"
+    },
+    {
+      "path": "MagicalCryptoWallet/Tor/Control/TorControlClient.cs",
+      "line": 207,
+      "code": "public Task<string> CreateOnionServiceAsync(string key, int virtualPort, int remotePort, CancellationToken cancellationToken)"
+    },
+    {
+      "path": "MagicalCryptoWallet/Tor/Control/TorControlClient.cs",
+      "line": 209,
+      "code": "return CreateOnionServiceAsync(key, \"\", virtualPort, remotePort, cancellationToken);"
+    },
+    {
+      "path": "MagicalCryptoWallet/Tor/Control/TorControlClient.cs",
+      "line": 212,
+      "code": "private async Task<string> CreateOnionServiceAsync(string key, string flags, int virtualPort, int remotePort, CancellationToken cancellationToken)"
+    },
+    {
+      "path": "MagicalCryptoWallet/Tor/Control/TorControlClient.cs",
+      "line": 214,
+      "code": "var reply = await CreateOnionServiceCommandAsync(key, flags, virtualPort, remotePort, cancellationToken).ConfigureAwait(false);"
+    },
+    {
+      "path": "MagicalCryptoWallet/Tor/Control/TorControlClient.cs",
+      "line": 227,
+      "code": "private async Task<TorControlReply> CreateOnionServiceCommandAsync(string key, string flags, int virtualPort,"
+    },
+    {
+      "path": "MagicalCryptoWallet/Tor/Control/TorControlClient.cs",
+      "line": 281,
+      "code": "/// await foreach (TorControlReply reply in TorControlClient.ReadEventsAsync())"
+    },
+    {
+      "path": "MagicalCryptoWallet/Tor/Control/TorControlClientFactory.cs",
+      "line": 18,
+      "code": "public partial class TorControlClientFactory(RandomnessProvider random)"
+    },
+    {
+      "path": "MagicalCryptoWallet/Tor/Control/TorControlClientFactory.cs",
+      "line": 31,
+      "code": "public async Task<TorControlClient> ConnectAndAuthenticateAsync(EndPoint endPoint, string cookieString, CancellationToken cancellationToken)"
+    },
+    {
+      "path": "MagicalCryptoWallet/Tor/Control/TorControlClientFactory.cs",
+      "line": 43,
+      "code": "TorControlClient? clientToDispose = null;"
+    },
+    {
+      "path": "MagicalCryptoWallet/Tor/Control/TorControlClientFactory.cs",
+      "line": 47,
+      "code": "TorControlClient controlClient = clientToDispose = new(tcpClient);"
+    },
+    {
+      "path": "MagicalCryptoWallet/Tor/Control/TorControlClientFactory.cs",
+      "line": 71,
+      "code": "internal async Task<TorControlClient> AuthSafeCookieOrThrowAsync(TorControlClient controlClient, string cookieString, CancellationToken cancellationToken)"
+    },
+    {
+      "path": "MagicalCryptoWallet/Tor/StatusChecker/TorStatusChecker.cs",
+      "line": 14,
+      "code": "public static class TorStatusChecker"
+    },
+    {
+      "path": "MagicalCryptoWallet/Services/NodesManagement/P2pConnectionManager.cs",
+      "line": 504,
+      "code": "connParams.TemplateBehaviors.Add(new SocksSettingsBehavior(torEndpoint, onlyForOnionHosts: false,"
+    },
+    {
+      "path": "MagicalCryptoWallet/Services/NodesManagement/P2pConnectionManager.cs",
+      "line": 894,
+      "code": "connParams.TemplateBehaviors.Add(new SocksSettingsBehavior(torEndpoint, onlyForOnionHosts: false, streamIsolation:false, networkCredential:null));"
+    },
+    {
+      "path": "MagicalCryptoWallet/Services/NodesManagement/P2pConnectionManager.cs",
+      "line": 988,
+      "code": "var maximumRounds = _dnsResolver is DnsSocksResolver ? 16 : 1;"
+    },
+    {
+      "path": "MagicalCryptoWallet.Client/Bootstrap.cs",
+      "line": 69,
+      "code": "RegisterNativeFunction(\"tor-settings\", () => global.TorSettings);"
+    },
+    {
+      "path": "MagicalCryptoWallet.Client/Global.cs",
+      "line": 60,
+      "code": "TorSettings = new TorSettings("
+    },
+    {
+      "path": "MagicalCryptoWallet.Client/Global.cs",
+      "line": 68,
+      "code": "bridges: config.TorBridges,"
+    },
+    {
+      "path": "MagicalCryptoWallet.Client/Global.cs",
+      "line": 139,
+      "code": "private TorManager? _torManager;"
+    },
+    {
+      "path": "MagicalCryptoWallet.Client/Global.cs",
+      "line": 149,
+      "code": "public TorSettings TorSettings { get; }"
+    },
+    {
+      "path": "MagicalCryptoWallet.Client/Global.cs",
+      "line": 297,
+      "code": "? TorSettings.SocksEndpoint : null;"
+    },
+    {
+      "path": "MagicalCryptoWallet.Client/Global.cs",
+      "line": 299,
+      "code": "? new DnsSocksResolver(torEndpoint){ StreamIsolation = true }"
+    },
+    {
+      "path": "MagicalCryptoWallet.Client/Global.cs",
+      "line": 336,
+      "code": "? new OnionHttpClientFactory(TorSettings.SocksEndpoint.ToUri(\"socks5\"), config)"
+    },
+    {
+      "path": "MagicalCryptoWallet.Client/Global.cs",
+      "line": 507,
+      "code": "ConfigureTorStatusChecker(_stoppingCts.Token);"
+    },
+    {
+      "path": "MagicalCryptoWallet.Client/Global.cs",
+      "line": 518,
+      "code": "try { await StartTorProcessManagerAsync(linkedCtsToken).ConfigureAwait(false); }"
+    },
+    {
+      "path": "MagicalCryptoWallet.Client/Global.cs",
+      "line": 590,
+      "code": "private async Task StartTorProcessManagerAsync(CancellationToken cancellationToken)"
+    },
+    {
+      "path": "MagicalCryptoWallet.Client/Global.cs",
+      "line": 594,
+      "code": "TorProcessManager processManager = new(TorSettings, EventBus);"
+    },
+    {
+      "path": "MagicalCryptoWallet.Client/Global.cs",
+      "line": 595,
+      "code": "_torManager = new TorManager(TorSettings, processManager);"
+    },
+    {
+      "path": "MagicalCryptoWallet.Client/Global.cs",
+      "line": 598,
+      "code": "Logger.LogInfo($\"{nameof(TorManager)} is initialized.\");"
+    },
+    {
+      "path": "MagicalCryptoWallet.Client/Global.cs",
+      "line": 601,
+      "code": "if (Config is { JsonRpcServerEnabled: true, RpcOnionEnabled: true } && torControlClient is { } nonNullTorControlClient)"
+    },
+    {
+      "path": "MagicalCryptoWallet.Client/Global.cs",
+      "line": 606,
+      "code": "var onionServiceId = await nonNullTorControlClient.CreateEphemeralOnionServiceAsync(80, 38129, cancellationToken).ConfigureAwait(false);"
+    },
+    {
+      "path": "MagicalCryptoWallet.Client/Global.cs",
+      "line": 619,
+      "code": "private void ConfigureTorStatusChecker(CancellationToken cancellationToken)"
+    },
+    {
+      "path": "MagicalCryptoWallet.Client/Global.cs",
+      "line": 624,
+      "code": "var torStatusChecker = Spawn(\"TorStatusChecker\","
+    },
+    {
+      "path": "MagicalCryptoWallet.Client/Global.cs",
+      "line": 628,
+      "code": "TorStatusChecker.CreateChecker(torStatusHttpClient, EventBus)),"
+    },
+    {
+      "path": "MagicalCryptoWallet.Client/Global.cs",
+      "line": 631,
+      "code": "EventBus.Subscribe<Tick>(_ => torStatusChecker.Post(new TorStatusChecker.CheckMessage()))"
+    },
+    {
+      "path": "MagicalCryptoWallet.Client/Global.cs",
+      "line": 633,
+      "code": "torStatusChecker.Post(new TorStatusChecker.CheckMessage());"
+    },
+    {
+      "path": "MagicalCryptoWallet.Client/Global.cs",
+      "line": 787,
+      "code": "Result<(CancellationToken, TorControlClient), Exception>"
+    },
+    {
+      "path": "MagicalCryptoWallet.Client/Global.cs",
+      "line": 792,
+      "code": "if (OnionServiceUri is { } nonNullOnionServiceUri && torControlClient is { } nonNullTorControlClient)"
+    },
+    {
+      "path": "MagicalCryptoWallet.Client/Global.cs",
+      "line": 796,
+      "code": "var isDestroyedSuccessfully = await nonNullTorControlClient"
+    },
+    {
+      "path": "MagicalCryptoWallet.Client/Global.cs",
+      "line": 809,
+      "code": "Logger.LogInfo(\"TorManager is stopped.\");"
+    },
+    {
+      "path": "MagicalCryptoWallet.Client/Configuration/Config.cs",
+      "line": 44,
+      "code": "[nameof(TorSocksPort)] = GetLongValue(\"TorSocksPort\", TorSettings.DefaultSocksPort, cliArgs),"
+    },
+    {
+      "path": "MagicalCryptoWallet.Client/Configuration/Config.cs",
+      "line": 45,
+      "code": "[nameof(TorControlPort)] = GetLongValue(\"TorControlPort\", TorSettings.DefaultControlPort, cliArgs),"
+    },
+    {
+      "path": "MagicalCryptoWallet.Client/Configuration/Config.cs",
+      "line": 46,
+      "code": "[nameof(TorBridges)] = GetStringArrayValue(\"TorBridges\", PersistentConfig.TorBridges.ToArray(), cliArgs),"
+    },
+    {
+      "path": "MagicalCryptoWallet.Client/Configuration/Config.cs",
+      "line": 96,
+      "code": "[nameof(TorBridges)] = \"Tor is started with the set of specified bridges\","
+    },
+    {
+      "path": "MagicalCryptoWallet.Client/Configuration/Config.cs",
+      "line": 127,
+      "code": "public string[] TorBridges => GetEffectiveValue<string[]>(nameof(TorBridges));"
+    },
+    {
+      "path": "MagicalCryptoWallet.Client/Configuration/PersistentConfig.cs",
+      "line": 18,
+      "code": "ValueList<string> TorBridges,"
+    },
+    {
+      "path": "MagicalCryptoWallet.Client/Configuration/PersistentConfigManager.cs",
+      "line": 21,
+      "code": "TorBridges : [],"
+    },
+    {
+      "path": "MagicalCryptoWallet.Client/Configuration/Serialization.cs",
+      "line": 24,
+      "code": "(\"TorBridges\", Array(cfg.TorBridges.Select(String))),"
+    },
+    {
+      "path": "MagicalCryptoWallet.Client/Configuration/Serialization.cs",
+      "line": 71,
+      "code": "TorBridges: get.Required(\"TorBridges\", ValueList(Decode.String)),"
+    },
+    {
+      "path": "MagicalCryptoWallet.Coordinator/Startup.cs",
+      "line": 66,
+      "code": "var torSetting = new TorSettings(dataDir,"
+    },
+    {
+      "path": "MagicalCryptoWallet.Coordinator/Startup.cs",
+      "line": 145,
+      "code": "services.AddBackgroundService<TorManagerService>();"
+    },
+    {
+      "path": "MagicalCryptoWallet.Coordinator/TorManagerService.cs",
+      "line": 13,
+      "code": "public class TorManagerService(TorSettings torSettings, WabiSabiConfig config, IConfiguration configuration) : IHostedService"
+    },
+    {
+      "path": "MagicalCryptoWallet.Coordinator/TorManagerService.cs",
+      "line": 15,
+      "code": "private readonly TorManager _torManager = new(torSettings, new TorProcessManager(torSettings, new EventBus()));"
+    },
+    {
+      "path": "MagicalCryptoWallet.Coordinator/TorManagerService.cs",
+      "line": 20,
+      "code": "Logger.LogInfo($\"{nameof(TorManager)} is initialized.\");"
+    },
+    {
+      "path": "MagicalCryptoWallet.Coordinator/TorManagerService.cs",
+      "line": 39,
+      "code": ".CreateOnionServiceAsync(config.OnionServicePrivateKey, 80, uri.Port, cancellationToken).ConfigureAwait(false);"
+    },
+    {
+      "path": "MagicalCryptoWallet.Fluent/App.axaml.cs",
+      "line": 129,
+      "code": "var torStatusChecker = new TorStatusCheckerModel(services);"
+    },
+    {
+      "path": "MagicalCryptoWallet.Fluent/Services.cs",
+      "line": 28,
+      "code": "private readonly TorSettings _torSettings;"
+    },
+    {
+      "path": "MagicalCryptoWallet.Fluent/Services.cs",
+      "line": 41,
+      "code": "Guard.NotNull(nameof(global.TorSettings), global.TorSettings);"
+    },
+    {
+      "path": "MagicalCryptoWallet.Fluent/Services.cs",
+      "line": 54,
+      "code": "_torSettings = global.TorSettings;"
+    },
+    {
+      "path": "MagicalCryptoWallet.Fluent/Models/UI/TorStatusCheckerModel.cs",
+      "line": 10,
+      "code": "public partial class TorStatusCheckerModel"
+    },
+    {
+      "path": "MagicalCryptoWallet.Fluent/Models/UI/TorStatusCheckerModel.cs",
+      "line": 12,
+      "code": "public TorStatusCheckerModel(IServices services)"
+    },
+    {
+      "path": "MagicalCryptoWallet.Fluent/Models/UI/UiContext.cs",
+      "line": 29,
+      "code": "TorStatusCheckerModel torStatusChecker,"
+    },
+    {
+      "path": "MagicalCryptoWallet.Fluent/Models/UI/UiContext.cs",
+      "line": 45,
+      "code": "TorStatusChecker = torStatusChecker ?? throw new ArgumentNullException(nameof(torStatusChecker));"
+    },
+    {
+      "path": "MagicalCryptoWallet.Fluent/Models/UI/UiContext.cs",
+      "line": 62,
+      "code": "public TorStatusCheckerModel TorStatusChecker { get; }"
+    },
+    {
+      "path": "MagicalCryptoWallet.Fluent/Models/Wallets/HealthMonitor.cs",
+      "line": 29,
+      "code": "public HealthMonitor(IServices services, TorStatusCheckerModel torStatusChecker)"
+    }
+  ],
+  "live_network_tests": false,
+  "production_integrated": false,
+  "old_implementation_retired": false,
+  "dependency_removed": false,
+  "targets": {
+    "Windows x64": "runtime execution unverified",
+    "Linux x64": "runtime execution unverified",
+    "Linux ARM64": "runtime execution unverified",
+    "macOS x64": "runtime execution unverified",
+    "macOS ARM64": "runtime execution unverified"
+  },
+  "note": "Imports establish dynamic references only; static implementation provenance remains Tor build/license plus version evidence. No Tor process or public connection was started."
+}
