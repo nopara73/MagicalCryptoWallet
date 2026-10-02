@@ -381,6 +381,7 @@ fn incremental_service_quota_close_and_terminal_cleanup() {
 
 #[test]
 fn incremental_eof_bare_cr_and_child_lifetime_cleanup() {
+    let _exclusive = SERVICE_TEST_GATE.lock().unwrap();
     use codec::stream::{Decoder, Kind};
     let mut line = Decoder::new(Kind::Line);
     for byte in b"bare\rbody\r" {
@@ -417,4 +418,215 @@ fn incremental_eof_bare_cr_and_child_lifetime_cleanup() {
         service::dispatch(service::FEED, &reader_packet(handle, 0, b".\r\n250 OK\r\n")),
         Err(service::ServiceError::InvalidRequest)
     );
+}
+
+static SERVICE_TEST_GATE: std::sync::Mutex<()> = std::sync::Mutex::new(());
+
+#[test]
+fn controlled_dispatch_preserves_packets_and_rejections() {
+    use std::sync::atomic::AtomicBool;
+    let token = AtomicBool::new(false);
+    for (_, wire, _) in fixtures() {
+        for eof in [0, 1] {
+            for prefix in 0..=wire.len() {
+                let mut packet = vec![eof];
+                packet.extend_from_slice(&wire[..prefix]);
+                for op in [service::PARSE_LINE, service::PARSE_REPLY] {
+                    assert_eq!(
+                        service::dispatch_control(op, &packet, &token),
+                        service::dispatch(op, &packet)
+                    );
+                }
+            }
+        }
+        let mut old = service::Readers::new();
+        let mut controlled = service::Readers::new();
+        let begin = reader_packet(1, 0, &[]);
+        assert_eq!(
+            controlled.dispatch_control(service::BEGIN, &begin, &token),
+            old.dispatch(service::BEGIN, &begin)
+        );
+        for (index, &byte) in wire.iter().enumerate() {
+            let packet = reader_packet(1, u8::from(index + 1 == wire.len()), &[byte]);
+            assert_eq!(
+                controlled.dispatch_control(service::FEED, &packet, &token),
+                old.dispatch(service::FEED, &packet)
+            );
+        }
+        assert_eq!(controlled.active_count(), 0);
+    }
+    for op in [service::PARSE_REPLY, service::PARSE_LINE, 0xffff] {
+        for payload in [
+            &[][..],
+            &[2][..],
+            &b"\x01xx OK\r\n"[..],
+            &b"\x00250 partial"[..],
+        ] {
+            assert_eq!(
+                service::dispatch_control(op, payload, &token),
+                service::dispatch(op, payload)
+            );
+        }
+    }
+}
+
+fn interrupt_at<T: Send + 'static>(
+    point: codec::control::Point,
+    minimum: usize,
+    work: impl FnOnce(&std::sync::atomic::AtomicBool) -> T + Send + 'static,
+) -> (usize, T) {
+    use std::sync::{
+        Arc,
+        atomic::{AtomicBool, Ordering},
+        mpsc,
+    };
+    use std::time::Duration;
+    let interrupted = Arc::new(AtomicBool::new(false));
+    let worker_token = Arc::clone(&interrupted);
+    let (entered, arrival) = mpsc::sync_channel(0);
+    let (release, resume) = mpsc::sync_channel(0);
+    let worker = std::thread::spawn(move || {
+        codec::control::observe(
+            move |actual, progress| {
+                if actual == point && progress >= minimum {
+                    entered.send(progress).unwrap();
+                    resume.recv_timeout(Duration::from_secs(3)).unwrap();
+                }
+            },
+            || work(&worker_token),
+        )
+    });
+    let progress = arrival
+        .recv_timeout(Duration::from_secs(3))
+        .expect("work never reached its real checkpoint");
+    interrupted.store(true, Ordering::Release);
+    release.send(()).unwrap();
+    (progress, worker.join().unwrap())
+}
+
+#[test]
+fn late_begin_cancellation_reclaims_inserted_session() {
+    let (_, (result, mut readers)) =
+        interrupt_at(codec::control::Point::BeginCommitted, 0, |token| {
+            let mut readers = service::Readers::new();
+            let result =
+                readers.dispatch_control(service::BEGIN, &reader_packet(41, 0, &[]), token);
+            (result, readers)
+        });
+    assert_eq!(result, Err(service::ServiceError::Interrupted));
+    assert_eq!(readers.active_count(), 0);
+    readers
+        .dispatch(service::BEGIN, &reader_packet(42, 0, &[]))
+        .unwrap();
+    assert_eq!(readers.active_count(), 1);
+}
+
+#[test]
+fn active_feed_scan_cancellation_reclaims_session() {
+    let (progress, (result, mut readers)) =
+        interrupt_at(codec::control::Point::Scan, 4096, |token| {
+            let mut readers = service::Readers::new();
+            readers
+                .dispatch(service::BEGIN, &reader_packet(51, 0, &[]))
+                .unwrap();
+            let mut body = b"250+data\r\n".to_vec();
+            body.resize(service::MAX_CHUNK, b'x');
+            let result =
+                readers.dispatch_control(service::FEED, &reader_packet(51, 0, &body), token);
+            (result, readers)
+        });
+    assert!(progress >= 4096 && progress < service::MAX_CHUNK);
+    assert_eq!(result, Err(service::ServiceError::Interrupted));
+    assert_eq!(readers.active_count(), 0);
+    readers
+        .dispatch(service::BEGIN, &reader_packet(52, 0, &[]))
+        .unwrap();
+    assert_eq!(
+        readers.dispatch(service::FEED, &reader_packet(52, 1, b"250 OK\r\n")),
+        service::dispatch(service::PARSE_REPLY, b"\x01250 OK\r\n")
+    );
+}
+
+fn cancel_long_line_at(point: codec::control::Point) {
+    let (progress, (result, readers)) = interrupt_at(point, 4096, |token| {
+        let mut readers = service::Readers::new();
+        readers
+            .dispatch(service::BEGIN, &reader_packet(61, 1, &[]))
+            .unwrap();
+        for _ in 0..MAX_LINE / service::MAX_CHUNK {
+            assert_eq!(
+                readers
+                    .dispatch(
+                        service::FEED,
+                        &reader_packet(61, 0, &vec![b'x'; service::MAX_CHUNK])
+                    )
+                    .unwrap(),
+                [0]
+            );
+        }
+        let result = readers.dispatch_control(service::FEED, &reader_packet(61, 1, b"\r\n"), token);
+        (result, readers)
+    });
+    assert!(progress >= 4096 && progress < MAX_LINE);
+    assert_eq!(result, Err(service::ServiceError::Interrupted));
+    assert_eq!(readers.active_count(), 0);
+}
+
+#[test]
+fn active_feed_projection_cancellation_reclaims_session() {
+    cancel_long_line_at(codec::control::Point::Project);
+}
+
+#[test]
+fn active_feed_encoding_cancellation_returns_no_partial_packet() {
+    cancel_long_line_at(codec::control::Point::EncodeBytes);
+}
+
+#[test]
+fn precancel_cleanup_and_global_control_api_are_fail_closed() {
+    use std::sync::atomic::AtomicBool;
+    let _exclusive = SERVICE_TEST_GATE.lock().unwrap();
+    let _child = service::ChildScope::new();
+    let canceled = AtomicBool::new(true);
+    let live = AtomicBool::new(false);
+    assert_eq!(
+        service::dispatch_control(service::BEGIN, &reader_packet(71, 0, &[]), &canceled),
+        Err(service::ServiceError::Interrupted)
+    );
+    assert_eq!(
+        service::dispatch(service::FEED, &reader_packet(71, 1, b"250 OK\r\n")),
+        Err(service::ServiceError::InvalidRequest)
+    );
+    service::dispatch_control(service::BEGIN, &reader_packet(72, 0, &[]), &live).unwrap();
+    assert_eq!(
+        service::dispatch_control(
+            service::FEED,
+            &reader_packet(72, 0, b"250+body\r\n"),
+            &canceled
+        ),
+        Err(service::ServiceError::Interrupted)
+    );
+    assert_eq!(
+        service::dispatch(service::FEED, &reader_packet(72, 1, b".\r\n250 OK\r\n")),
+        Err(service::ServiceError::InvalidRequest)
+    );
+    service::dispatch(service::BEGIN, &reader_packet(73, 0, &[])).unwrap();
+    assert_eq!(
+        service::dispatch_control(service::CLOSE, &73_u64.to_le_bytes(), &canceled),
+        Ok(vec![0])
+    );
+    assert_eq!(
+        service::dispatch(service::FEED, &reader_packet(73, 1, b"250 OK\r\n")),
+        Err(service::ServiceError::InvalidRequest)
+    );
+    for id in 100..100 + service::MAX_READERS as u64 {
+        service::dispatch_control(service::BEGIN, &reader_packet(id, 0, &[]), &live).unwrap();
+    }
+    let mut decoder = codec::stream::Decoder::new(codec::stream::Kind::Reply);
+    assert_eq!(
+        decoder.feed_control(b"250 OK\r\n", true, &canceled),
+        Err(Error::Interrupted)
+    );
+    assert_eq!(decoder.work().examined, 0);
+    assert_eq!(decoder.feed(b"250 OK\r\n", true), Err(Error::Limit));
 }

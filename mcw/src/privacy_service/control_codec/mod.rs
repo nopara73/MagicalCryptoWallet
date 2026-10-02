@@ -9,6 +9,7 @@
 //! of the semantic correctness or authentication of Tor replies.
 #![forbid(unsafe_code)]
 
+pub(crate) mod control;
 pub mod service;
 pub mod stream;
 
@@ -26,6 +27,7 @@ pub enum Error {
     MissingStatus,
     InvalidStatus([u8; 3]),
     Limit,
+    Interrupted,
 }
 
 impl fmt::Display for Error {
@@ -37,6 +39,7 @@ impl fmt::Display for Error {
             Self::MissingStatus => "Status code requires at least 3 characters.",
             Self::InvalidStatus(_) => "Unknown Tor control status code.",
             Self::Limit => "Tor control parsing limit exceeded.",
+            Self::Interrupted => "Tor control parsing interrupted.",
         })
     }
 }
@@ -74,12 +77,24 @@ impl<T> fmt::Debug for Scan<T> {
     }
 }
 
-fn ascii(bytes: &[u8]) -> String {
+fn ascii(
+    bytes: &[u8],
+    interrupted: Option<&std::sync::atomic::AtomicBool>,
+) -> Result<String, Error> {
+    control::check(interrupted, control::Point::ProjectAllocate, bytes.len())?;
     let mut text = String::with_capacity(bytes.len());
-    for &byte in bytes {
-        text.push(if byte.is_ascii() { byte as char } else { '?' });
+    for (index, chunk) in bytes.chunks(control::CHECK_INTERVAL).enumerate() {
+        control::check(
+            interrupted,
+            control::Point::Project,
+            index * control::CHECK_INTERVAL,
+        )?;
+        for &byte in chunk {
+            text.push(if byte.is_ascii() { byte as char } else { '?' });
+        }
     }
-    text
+    control::check(interrupted, control::Point::Project, bytes.len())?;
+    Ok(text)
 }
 
 pub fn line(bytes: &[u8], eof: bool) -> Result<Scan<String>, Error> {

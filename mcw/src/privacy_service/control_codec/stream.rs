@@ -1,7 +1,8 @@
 //! Incremental grammar owner. Each new input octet is examined once; completed
 //! lines are projected once. No accumulated reply prefix is replayed or rescanned.
 
-use super::{Error, MAX_INPUT, MAX_LINE, MAX_LINES, Reply, Scan, ascii, status};
+use super::{Error, MAX_INPUT, MAX_LINE, MAX_LINES, Reply, Scan, ascii, control, status};
+use std::sync::atomic::AtomicBool;
 
 pub const MAX_BUFFER_BYTES: usize = MAX_INPUT + 2 * MAX_LINE + MAX_LINES * size_of::<String>();
 
@@ -86,11 +87,12 @@ impl Decoder {
         Ok(())
     }
 
-    fn finish_line(&mut self) -> Result<bool, Error> {
+    fn finish_line(&mut self, interrupted: Option<&AtomicBool>) -> Result<bool, Error> {
         self.work.projected += self.current.len();
-        let mut line = ascii(&self.current);
+        let mut line = ascii(&self.current, interrupted)?;
         self.current.clear();
         self.account_buffers(line.capacity());
+        control::check(interrupted, control::Point::LineInsert, self.lines.len())?;
         if self.kind == Kind::Line {
             self.push(line)?;
             return Ok(true);
@@ -155,10 +157,51 @@ impl Decoder {
     /// Consumption is relative to this new chunk, never a previously fed prefix.
     /// EOF errors are classified using the retained grammar/partial-line state.
     pub fn feed(&mut self, bytes: &[u8], eof: bool) -> Result<Scan<Reply>, Error> {
+        self.feed_with_control(bytes, eof, None)
+    }
+
+    /// Interruption is terminal. Discard the decoder rather than resuming its
+    /// partially consumed reply; the service also removes its reader handle.
+    pub fn feed_control(
+        &mut self,
+        bytes: &[u8],
+        eof: bool,
+        interrupted: &AtomicBool,
+    ) -> Result<Scan<Reply>, Error> {
+        self.feed_with_control(bytes, eof, Some(interrupted))
+    }
+
+    pub(super) fn feed_with_control(
+        &mut self,
+        bytes: &[u8],
+        eof: bool,
+        interrupted: Option<&AtomicBool>,
+    ) -> Result<Scan<Reply>, Error> {
+        let result = self.feed_inner(bytes, eof, interrupted);
+        if matches!(result, Err(Error::Interrupted)) {
+            self.phase = Phase::Done;
+            self.pending_cr = false;
+            self.current = Vec::new();
+            self.lines = Vec::new();
+            self.retained_line_capacity = 0;
+        }
+        result
+    }
+
+    fn feed_inner(
+        &mut self,
+        bytes: &[u8],
+        eof: bool,
+        interrupted: Option<&AtomicBool>,
+    ) -> Result<Scan<Reply>, Error> {
+        control::check(interrupted, control::Point::Entry, self.work.examined)?;
         if matches!(self.phase, Phase::Done) {
             return Err(Error::Limit);
         }
         for (index, &byte) in bytes.iter().enumerate() {
+            if index % control::CHECK_INTERVAL == 0 {
+                control::check(interrupted, control::Point::Scan, self.work.examined)?;
+            }
             if self.work.examined == MAX_INPUT {
                 return Err(Error::Limit);
             }
@@ -166,7 +209,12 @@ impl Decoder {
             if self.pending_cr {
                 self.pending_cr = false;
                 if byte == b'\n' {
-                    if self.finish_line()? {
+                    if self.finish_line(interrupted)? {
+                        control::check(
+                            interrupted,
+                            control::Point::ScanFinished,
+                            self.work.examined,
+                        )?;
                         self.phase = Phase::Done;
                         return Ok(Scan::Complete {
                             consumed: index + 1,
@@ -186,6 +234,11 @@ impl Decoder {
                 self.append(byte)?;
             }
         }
+        control::check(
+            interrupted,
+            control::Point::ScanFinished,
+            self.work.examined,
+        )?;
         if self.work.examined == MAX_INPUT {
             return Err(Error::Limit);
         }
