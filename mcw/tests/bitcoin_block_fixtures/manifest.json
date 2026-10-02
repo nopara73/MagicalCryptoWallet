@@ -1,0 +1,83 @@
+{
+  "reference": "Bitcoin Core v30.0",
+  "sources": {
+    "src/primitives/block.h": {
+      "url": "https://raw.githubusercontent.com/bitcoin/bitcoin/v30.0/src/primitives/block.h",
+      "sha256": "c8c5108a38421e2f0a9217c69df6fa27980d9094835f812286eaf389cf3ebb3b",
+      "bytes": 4061
+    },
+    "src/consensus/merkle.cpp": {
+      "url": "https://raw.githubusercontent.com/bitcoin/bitcoin/v30.0/src/consensus/merkle.cpp",
+      "sha256": "fb0c8aae0e4a1f8b37c13a1a8bae92f48094766233ff13290798ec749144c596",
+      "bytes": 7608
+    },
+    "src/merkleblock.cpp": {
+      "url": "https://raw.githubusercontent.com/bitcoin/bitcoin/v30.0/src/merkleblock.cpp",
+      "sha256": "6e3fe0ea7467ac84ec1ffeb0214f114d7a59b09782c6d85e89d712dc4461ee79",
+      "bytes": 6941
+    },
+    "src/merkleblock.h": {
+      "url": "https://raw.githubusercontent.com/bitcoin/bitcoin/v30.0/src/merkleblock.h",
+      "sha256": "6736e6b92f7f7ad99c179f8dc1cc5437e2465db41fd8c5ffd86b9172fd71672c",
+      "bytes": 5990
+    },
+    "src/arith_uint256.cpp": {
+      "url": "https://raw.githubusercontent.com/bitcoin/bitcoin/v30.0/src/arith_uint256.cpp",
+      "sha256": "33099a41d032d02f49f2d0269f31749c6b9d7cee3fdc8ce0c3cadfe46786d1a8",
+      "bytes": 6473
+    },
+    "src/test/arith_uint256_tests.cpp": {
+      "url": "https://raw.githubusercontent.com/bitcoin/bitcoin/v30.0/src/test/arith_uint256_tests.cpp",
+      "sha256": "c142e276bce85643d4607f30274c88668b4eb85ae40aeb6175127e9dde4dd61b",
+      "bytes": 24895
+    },
+    "src/test/merkle_tests.cpp": {
+      "url": "https://raw.githubusercontent.com/bitcoin/bitcoin/v30.0/src/test/merkle_tests.cpp",
+      "sha256": "4831751c6283d28da701780554dac4d7ed758022a1295ea0ca27380657712ee9",
+      "bytes": 9301
+    },
+    "src/test/merkleblock_tests.cpp": {
+      "url": "https://raw.githubusercontent.com/bitcoin/bitcoin/v30.0/src/test/merkleblock_tests.cpp",
+      "sha256": "774b146770fb5e88d865cf782737342525b2373a9f0c8ebba877da4d761a79fc",
+      "bytes": 2501
+    },
+    "src/test/data/blockfilters.json": {
+      "url": "https://raw.githubusercontent.com/bitcoin/bitcoin/v30.0/src/test/data/blockfilters.json",
+      "sha256": "d9049756f744e561b882a8eff507582fb7cd74ed9cf5542bdac58257449ee2a2",
+      "bytes": 17816
+    },
+    "src/consensus/consensus.h": {
+      "url": "https://raw.githubusercontent.com/bitcoin/bitcoin/v30.0/src/consensus/consensus.h",
+      "sha256": "094d4b6e3fbebee71102255f47cd1d91f1afa4cc0ad1633d93cb126e6a0e011e",
+      "bytes": 1734
+    },
+    "src/kernel/chainparams.cpp": {
+      "url": "https://raw.githubusercontent.com/bitcoin/bitcoin/v30.0/src/kernel/chainparams.cpp",
+      "sha256": "e646ed7e7e8d829851c723d72f10be63ed88d42b978cfe14598c7e25173df79f",
+      "bytes": 35302
+    },
+    "src/test/util/setup_common.cpp": {
+      "url": "https://raw.githubusercontent.com/bitcoin/bitcoin/v30.0/src/test/util/setup_common.cpp",
+      "sha256": "f1e08b3da3e2cd212ea1159129098d86454a7a07027ab9892b3ee0df9d1d11e3",
+      "bytes": 33576
+    },
+    "test/functional/test_framework/messages.py": {
+      "url": "https://raw.githubusercontent.com/bitcoin/bitcoin/v30.0/test/functional/test_framework/messages.py",
+      "sha256": "93cb0ea436b18ce9cecaaf0d156a6de3cfc14f547766b090b2105ce72d341f85",
+      "bytes": 57199
+    },
+    "COPYING": {
+      "url": "https://raw.githubusercontent.com/bitcoin/bitcoin/v30.0/COPYING",
+      "sha256": "7c4a87f43afaf667b4c2187af92ebdd27310a24cec113f973e058e3300a76002",
+      "bytes": 1142
+    }
+  },
+  "block_vectors": 14,
+  "partial_vectors": 33,
+  "witness_transactions": 4,
+  "files": {
+    "blocks.tsv": "300df1908bb654a16a31202dcc91aa5ed644e13a00e4070cf637b051df2395e8",
+    "partial.tsv": "5b0673fbac006f725dd3f3342c1d603a6dea7a35a25e20ba371719f99d519d7d",
+    "BITCOIN-CORE-LICENSE.txt": "7c4a87f43afaf667b4c2187af92ebdd27310a24cec113f973e058e3300a76002"
+  }
+}
