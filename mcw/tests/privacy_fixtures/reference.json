@@ -1,0 +1,11 @@
+{
+  "provider": "Python hashlib standard-library independent reference (its native backend is dev-only)",
+  "python": "3.14.7 (tags/v3.14.7:823f032, Aug  5 2026, 10:51:32) [MSC v.1944 64 bit (AMD64)]",
+  "shipping_dependency": false,
+  "vectors": 24,
+  "sources": [
+    "https://csrc.nist.gov/pubs/fips/202/final",
+    "https://spec.torproject.org/rend-spec/encoding-onion-addresses.html"
+  ],
+  "sha256": "1f40e6677b1b20baef994575908fbd402c5d232e109bc15f0c89ad28cba4cbff"
+}

@@ -453,6 +453,6 @@
     "path": "mcw/tests/bitcoin_block_fixtures/managed_callers.tsv",
     "line": 202,
     "line_sha256": "c1fd85e2dd80bb5a3c3b11ea22efdaa7da13ec36918d87ce2efc077003e28f24",
-    "reason": "Immutable migration caller snapshot records the removed standalone broadcast model; it is not an active application caller."
+    "reason": "Source provenance: immutable managed-caller inventory at 748a961c78980c42bba293ff7ad1b9ca696566ec records the removed adapter; it is not active application source."
   }
 ]

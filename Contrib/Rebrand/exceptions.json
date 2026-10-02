@@ -183,13 +183,6 @@
   },
   {
     "path": "MagicalCryptoWallet.Tests/UnitTests/BlockchainAnalysis/CoinJoinAnonscoreTests.cs",
-    "line": 330,
-    "line_sha256": "905d546ba08b8db03cc941db4ef81eccb937730f05ead5b931311a591927c29f",
-    "category": "source provenance",
-    "text": "// Input merging and large unique denomination in current results in maximum anonymity punishment in relation to the largest inputs: https://github.com/WalletWasabi/WalletWasabi/pull/10699/"
-  },
-  {
-    "path": "MagicalCryptoWallet.Tests/UnitTests/BlockchainAnalysis/CoinJoinAnonscoreTests.cs",
     "line": 357,
     "line_sha256": "19b3c1a301edd39e3a687463a2762b994ad3a33a26d36a1e168eccaf53c5f305",
     "category": "source provenance",

@@ -1,4 +1,4 @@
-# HTTP wire checkpoint and networking workstream
+# Bounded HTTP wire checkpoint
 
 Worker `01a0fc46-15ed-7fe3-88dc-bba09fad5d45`, slug `http1`.
 Verified wire implementation commit: **`05b7a3b3b5a446ff3893ac9faddb06f7be500c52`**.
@@ -7,9 +7,10 @@ fetch verified that the remote contains that commit. Caller inspection began at
 `ff69d01b53be342ef672a5e0ebd8018217786a14`; publication reconciled in this
 worker's isolated checkout onto `a96873b6a5` without staging peer files.
 
-**This is an intermediate wire-engine checkpoint, ready for host registration.
-The expanded application networking workstream is not complete. No production
-HTTP caller, upstream package, TLS implementation, or Tor runtime was removed.**
+**This is a verified wire-engine checkpoint with no production caller integration.
+The full networking/TLS migration was stopped by the explicit human scope
+correction `MCW-SCOPE-CORRECTION-20261002-1135`. No production HTTP caller,
+upstream package, TLS implementation, or Tor runtime was removed.**
 
 ## Ownership
 
@@ -21,15 +22,22 @@ Published checkpoint files:
 - `mcw/tests/http1_verify.ps1`
 - this handoff
 
-The human subsequently expanded this worker's responsibility to
-`mcw/src/network_service/` and `MagicalCryptoWallet/Mcw/Network/`, secure
-connections, cancellation/deadlines, proxy isolation, bounded concurrency,
-redirects, HTTP orchestration and retained production HTTP flows. Exclusive
-ownership of `WebClients/MagicalCryptoWallet/MagicalCryptoWalletHttpClientFactory.cs`
-was proposed to QR before edits; shared/caller overlap must be resolved first.
-The Content worker owns `content_service`, compression and managed Content leaves.
-The Nostr worker owns its service/adapters and proposed Nostr callers including
-`Services/UpdateManager.cs`; this worker will not edit those caller files.
+The earlier full application networking assignment is revoked. The current scope
+is bounded, independently replaceable dependencies or complete small
+responsibilities, with actual caller replacement and compatibility evidence.
+Do not use the long-term one-mcw architecture to resume a broad HTTP/TLS/Tor or
+UI rewrite. No existing managed caller or shared host file was edited by this
+worker. Coordinator supplies any precise narrower assignment before caller
+overlaps or manifest changes are resolved with their owners.
+
+An unpublished draft is preserved in the worker's isolated
+`.artifacts/mcw-http1` checkout: `mcw/src/network_service/**`,
+`mcw/tests/http1_network.rs`, `mcw/tests/http1_network_verify.ps1`, and ignored
+`.artifacts/http1-network-verification/**`. Actual-source metadata and Clippy
+checks passed, but the draft test compilation failed on an unused re-export;
+no draft runtime test success is claimed. It implements no TLS or curve
+primitive, has no native dispatch/managed adapter/production cutover, and must
+not be registered as a production service or used to retire dependencies.
 
 QR thread `01a0fbf5-89e2-7e90-9b98-50e3ff9bb5bc` retains shared manifests,
 `lib.rs`, dispatch, platform unsafe bindings, lifecycle, packaging and the shared
@@ -216,7 +224,7 @@ Only Windows x64 native runtime evidence exists for this checkpoint. Linux
 x64/ARM64 and macOS x64/ARM64 native executions/packaging remain required. A
 metadata compile or Windows test is not five-target runtime evidence.
 
-## Concrete production caller and removal gate
+## Former migration inventory; no current broad assignment
 
 | Current caller | Retained flow and required migration |
 |---|---|
@@ -229,6 +237,7 @@ metadata compile or Windows test is not five-target runtime evidence.
 | Blockchain/TransactionBroadcasting/TransactionBroadcaster.cs | POST transaction bytes; errors and uncertainty must not silently trigger unsafe replay. |
 | Services/UpdateManager.cs | HTTP release download and content stream to disk, then signature/hash verification. Nostr worker owns this shared caller file; coordinate Rust HTTP use and a bounded streaming sink. |
 
+The table records the former full migration inventory, not authorized new work.
 These callers still run their original managed implementations at this
 checkpoint. `Microsoft.Extensions.Http` remains referenced in
 `MagicalCryptoWallet.csproj`, centrally versioned in `Directory.Packages.props`
@@ -249,21 +258,21 @@ handling remain application work. Linux TLS must have a first-party implementati
 where native OS APIs do not supply one; OpenSSL/rustls/curl or plaintext/certificate
 bypass are not acceptable substitutes.
 
-## Host operation proposal and full acceptance
+## Codec integration proposal and evidence limits
 
 Reserve **`0x0B00–0x0BFF`**. Production Rust services should call this module
 directly. Pure format bridge proposals, if needed during transition, are
 `0x0B01` serialize, `0x0B02` start response, `0x0B03` feed, `0x0B04` orderly EOF,
 `0x0B05` abort and `0x0B06` release. Host-owned handles must be typed, limited and
 bound to one request/identity; arbitrary callers must not mark resets as EOF.
-Full network operations in this range require a separate concrete service/frame
-agreement; no dispatch or managed adapter is implemented by this checkpoint.
+No dispatch or managed adapter is implemented by this checkpoint. These format
+operations remain proposals until a real bounded caller need and host contract
+are approved; an unused parser registration does not constitute dependency
+replacement. Existing managed clients delegate wire parsing to their transport,
+so this checkpoint alone supplies no small transport-removal claim.
 
-Completion requires real native/first-party secure connections, local synthetic
-TLS/proxy/failure/privacy/cancellation/redirect tests, retained flow execution in
-Rust, managed caller implementation removal from those flows, Content and Nostr
-compatibility, frame fragmentation/ownership validation, one-executable packaging,
-zero external Cargo/runtime audit and native runtime evidence on Windows x64,
-Linux x64/ARM64 and macOS x64/ARM64. Package removal additionally requires no
-remaining shared caller or packaged reference. The worker continues this expanded
-workstream after publishing the wire checkpoint.
+A future bounded codec integration requires an actual caller, exact format/frame
+compatibility and ownership evidence, packaging/runtime checks for the targets
+that use it, and a zero external Cargo/runtime audit. Package removal additionally
+requires no remaining shared caller or packaged reference. The full networking
+draft is preserved without further expansion or broad publication/cutover.

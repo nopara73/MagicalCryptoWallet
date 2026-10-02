@@ -62,6 +62,11 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.14'
+      - name: Tracked source and immutable fixture audit
+        shell: bash
+        run: |
+          python Contrib/SingleWallet/audit.py
+          python Contrib/Rebrand/audit.py
       - name: Release inventory and mixed-version regression checks
         run: python Contrib/Signing/test-sign-release.py
       - name: Linux runtime and packaging dependencies
@@ -99,7 +104,7 @@ jobs:
           suffix=''
           case "$bitcoin_rid" in osx-*) bitcoin_rid=osx64 ;; win-*) suffix=.exe ;; esac
           python Contrib/Tests/test-single-wallet-process.py --package '.artifacts/packages/${{ matrix.rid }}/MagicalCryptoWallet' --bitcoind "MagicalCryptoWallet.IntegrationTests/bin/Release/net10.0/BundledApps/Binaries/$bitcoin_rid/bitcoind$suffix"
-      - name: Send authorizes automatic CoinJoin across five isolated encrypted clients
+      - name: Send authorizes automatic CoinJoin across independent encrypted clients
         if: matrix.rid == 'linux-x64'
         run: python Contrib/Tests/test-single-wallet-coinjoin.py --package .artifacts/packages/linux-x64/MagicalCryptoWallet --bitcoind MagicalCryptoWallet.IntegrationTests/bin/Release/net10.0/BundledApps/Binaries/linux-x64/bitcoind
       - name: Retired single-wallet interfaces, generated code, symbols and package contents
