@@ -50,6 +50,13 @@ public sealed class NativeConnection : IMcwApplicationServices, IDisposable
         _output.Dispose(); _process.Dispose();
     }
 }
+// Distinguishes the framework's span preallocation overload from the string
+// overload without changing the actual UTF-8 encoding or decoder behavior.
+public sealed class SpanByteCountEncoding : UTF8Encoding
+{
+    public SpanByteCountEncoding() : base(true, true) { }
+    public override int GetByteCount(string value) => throw new InvalidOperationException("String byte-count overload should not be called.");
+}
 public static class Program
 {
     static string Snapshot(string path) => string.Join("|", new[] { "", ".new", ".old" }.Select(s => File.Exists(path + s) ? Convert.ToHexString(File.ReadAllBytes(path + s)) : Directory.Exists(path + s) ? "DIRECTORY" : "MISSING"));
@@ -95,6 +102,7 @@ public static class Program
             ("short-invalid-ascii", "🧙", Encoding.GetEncoding("us-ascii", EncoderFallback.ExceptionFallback, DecoderFallback.ExceptionFallback)),
             ("large-invalid-ascii", new string('x', 8192) + "🧙", Encoding.GetEncoding("us-ascii", EncoderFallback.ExceptionFallback, DecoderFallback.ExceptionFallback)),
             ("split-surrogate", new string('x', 8191) + "🧙end", new UTF8Encoding(true, true)),
+            ("large-span-byte-count", new string('x', 8192), new SpanByteCountEncoding()),
             ("null-text", null, Encoding.UTF8),
             ("null-encoding", "synthetic", null)
         };
@@ -126,6 +134,24 @@ public static class Program
             string? expectedError = Try(() => OracleInvoker.Text(old, "synthetic", Encoding.UTF8)); string? actualError = Try(() => CandidateInvoker.Text(candidate, "synthetic", Encoding.UTF8));
             if (expectedError != actualError || Snapshot(old) != Snapshot(candidate)) { throw new Exception($"safe-file path parity failed: {shape} {expectedError}/{actualError}"); }
             evidence.Add(new { shape, expectedError, actualError, matched = true });
+        }
+        if (OperatingSystem.IsWindows())
+        foreach (var shape in new (string name, string parent, string leaf)[] {
+            ("unpaired-high", "parent", "synthetic-\ud800.wallet"),
+            ("unpaired-low", "parent", "synthetic-\udc00.wallet"),
+            ("unpaired-parent", "parent-\ud800-\udc00-\udc00", "synthetic.wallet"),
+            ("paired-and-unpaired", "parent-🧙", "synthetic-\ud800-🧙-\udc00.wallet") })
+        foreach (int mask in Enumerable.Range(0, 8))
+        foreach (bool text in new[] { false, true })
+        {
+            string directory = Path.Combine(root, "surrogate-" + cases++);
+            string old = Path.Combine(directory, "oracle", shape.parent, shape.leaf);
+            string candidate = Path.Combine(directory, "rust", shape.parent, shape.leaf);
+            Seed(old, mask); Seed(candidate, mask);
+            string? expectedError = Try(() => { if (text) { OracleInvoker.Text(old, "synthetic 🧙", Encoding.Unicode); } else { OracleInvoker.Bytes(old, new byte[] { 0, 1, 255 }); } });
+            string? actualError = Try(() => { if (text) { CandidateInvoker.Text(candidate, "synthetic 🧙", Encoding.Unicode); } else { CandidateInvoker.Bytes(candidate, new byte[] { 0, 1, 255 }); } });
+            if (expectedError != actualError || Snapshot(old) != Snapshot(candidate)) { throw new Exception($"safe-file surrogate path parity failed: {shape.name}/{mask}/{text} {expectedError}/{actualError}"); }
+            evidence.Add(new { path_shape = shape.name, initial_mask = mask, text, expectedError, actualError, matched = true });
         }
         foreach (string fault in new[] { "new-directory", "old-directory", "parent-file", "new-readonly", "old-readonly", "main-readonly" })
         {

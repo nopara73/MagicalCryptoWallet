@@ -202,6 +202,112 @@ fn dispatcher_validates_frames_and_cancellation_closes_sessions() {
     assert_eq!(existing_read(&path).unwrap(), b"original");
 }
 #[test]
+fn queued_append_commit_and_abort_cancellation_closes_the_existing_token() {
+    use mcw::safe_file_service::payload::{ABORT, APPEND, BEGIN, COMMIT, Dispatch};
+    for operation in [APPEND, COMMIT, ABORT] {
+        let temp = Temp::new();
+        let path = temp.file();
+        fs::write(&path, b"original").unwrap();
+        let mut dispatch = Dispatch::new(NativeFileSystem);
+        let text = path.to_str().unwrap().as_bytes();
+        let mut begin = 1u16.to_le_bytes().to_vec();
+        begin.extend_from_slice(&(if operation == APPEND { 8u64 } else { 4 }).to_le_bytes());
+        begin.extend_from_slice(&0u64.to_le_bytes());
+        begin.push(0);
+        begin.extend_from_slice(&(text.len() as u32).to_le_bytes());
+        begin.extend_from_slice(text);
+        let opened = dispatch.request(10, BEGIN, &begin);
+        assert_eq!(opened[2], 0);
+        let token = u64::from_le_bytes(opened[3..].try_into().unwrap());
+        let mut append = 1u16.to_le_bytes().to_vec();
+        append.extend_from_slice(&token.to_le_bytes());
+        append.extend_from_slice(&0u64.to_le_bytes());
+        append.extend_from_slice(b"part");
+        assert_eq!(dispatch.request(11, APPEND, &append), [1, 0, 0]);
+        let mut queued = 1u16.to_le_bytes().to_vec();
+        queued.extend_from_slice(&token.to_le_bytes());
+        if operation == APPEND {
+            queued.extend_from_slice(&4u64.to_le_bytes());
+            queued.extend_from_slice(b"tail");
+        } else if operation == COMMIT {
+            queued.extend_from_slice(&4u64.to_le_bytes());
+        }
+        dispatch.cancel(99); // The queued request ID has not been dispatched.
+        assert_eq!(dispatch.service.active_count(), 1);
+        assert!(!dispatch.cancel_pending(BEGIN, &queued));
+        assert!(!dispatch.cancel_pending(operation, &queued[..9]));
+        assert_eq!(dispatch.service.active_count(), 1);
+        assert!(dispatch.cancel_pending(operation, &queued));
+        assert!(!dispatch.cancel_pending(operation, &queued));
+        assert_eq!(dispatch.service.active_count(), 0);
+        assert_eq!(fs::read(&path).unwrap(), b"original");
+        assert_eq!(fs::read(with_suffix(&path, ".new")).unwrap(), b"part");
+        let mut commit = 1u16.to_le_bytes().to_vec();
+        commit.extend_from_slice(&token.to_le_bytes());
+        assert_eq!(dispatch.request(100, COMMIT, &commit)[2], 1);
+    }
+}
+#[cfg(windows)]
+#[test]
+fn windows_utf16_path_requests_preserve_unpaired_units_and_reject_malformed_paths() {
+    use mcw::safe_file_service::payload::{APPEND, BEGIN, COMMIT, Dispatch, PREPARE};
+    use std::{
+        ffi::OsString,
+        os::windows::ffi::{OsStrExt, OsStringExt},
+    };
+    let temp = Temp::new();
+    let mut name = "synthetic-".encode_utf16().collect::<Vec<_>>();
+    name.extend_from_slice(&[0xd800, 45, 0xdc00]);
+    name.extend(".wallet".encode_utf16());
+    let path = temp.0.join(OsString::from_wide(&name));
+    fs::write(&path, b"original").unwrap();
+    fs::write(with_suffix(&path, ".old"), b"older").unwrap();
+    let encoded = path
+        .as_os_str()
+        .encode_wide()
+        .flat_map(u16::to_le_bytes)
+        .collect::<Vec<_>>();
+    let mut prepare = 2u16.to_le_bytes().to_vec();
+    prepare.extend_from_slice(&(encoded.len() as u32).to_le_bytes());
+    prepare.extend_from_slice(&encoded);
+    let mut dispatch = Dispatch::new(NativeFileSystem);
+    for length in 0..prepare.len() {
+        assert_eq!(dispatch.request(1, PREPARE, &prepare[..length])[2], 1);
+    }
+    let mut odd = prepare.clone();
+    odd.pop();
+    odd[2..6].copy_from_slice(&((encoded.len() - 1) as u32).to_le_bytes());
+    assert_eq!(dispatch.request(1, PREPARE, &odd)[2], 1);
+    let mut nul = prepare.clone();
+    nul[6..8].copy_from_slice(&[0, 0]);
+    assert_eq!(dispatch.request(1, PREPARE, &nul)[2], 1);
+    let relative = [2, 0, 2, 0, 0, 0, b'x', 0];
+    assert_eq!(dispatch.request(1, PREPARE, &relative)[2], 1);
+    assert_eq!(dispatch.request(1, APPEND, &prepare)[2], 1);
+    assert_eq!(dispatch.request(2, PREPARE, &prepare), [1, 0, 0]);
+    let mut begin = 2u16.to_le_bytes().to_vec();
+    begin.extend_from_slice(&4u64.to_le_bytes());
+    begin.extend_from_slice(&0u64.to_le_bytes());
+    begin.push(0);
+    begin.extend_from_slice(&(encoded.len() as u32).to_le_bytes());
+    begin.extend_from_slice(&encoded);
+    let opened = dispatch.request(3, BEGIN, &begin);
+    assert_eq!(opened[2], 0);
+    let token = u64::from_le_bytes(opened[3..].try_into().unwrap());
+    let mut append = 1u16.to_le_bytes().to_vec();
+    append.extend_from_slice(&token.to_le_bytes());
+    append.extend_from_slice(&0u64.to_le_bytes());
+    append.extend_from_slice(b"data");
+    assert_eq!(dispatch.request(4, APPEND, &append), [1, 0, 0]);
+    let mut commit = 1u16.to_le_bytes().to_vec();
+    commit.extend_from_slice(&token.to_le_bytes());
+    commit.extend_from_slice(&4u64.to_le_bytes());
+    assert_eq!(dispatch.request(5, COMMIT, &commit), [1, 0, 0]);
+    assert_eq!(fs::read(&path).unwrap(), b"data");
+    assert!(!with_suffix(&path, ".new").exists());
+    assert!(!with_suffix(&path, ".old").exists());
+}
+#[test]
 fn streaming_commit_requires_an_explicit_exact_final_length() {
     let temp = Temp::new();
     let path = temp.file();

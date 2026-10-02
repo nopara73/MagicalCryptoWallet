@@ -11,7 +11,16 @@ public static class McwSafeFile
 {
 	private const ushort Begin = 0x1000, Append = 0x1001, Commit = 0x1002, Abort = 0x1003, Prepare = 0x1004;
 	private const int ChunkSize = 256 * 1024, CharacterChunk = 8192;
-	private static readonly Encoding PathEncoding = new UTF8Encoding(false, true);
+	private static readonly ushort PathVersion = OperatingSystem.IsWindows() ? (ushort)2 : (ushort)1;
+	private static byte[] EncodePath(string path)
+	{
+		if (!OperatingSystem.IsWindows()) { return Encoding.UTF8.GetBytes(path); }
+		// Windows filenames are native UTF-16 code units, including unpaired
+		// surrogates. Encoding.Unicode would replace these before the OS sees them.
+		byte[] bytes = new byte[checked(path.Length * 2)];
+		for (int i = 0; i < path.Length; i++) { BinaryPrimitives.WriteUInt16LittleEndian(bytes.AsSpan(i * 2), path[i]); }
+		return bytes;
+	}
 	private static readonly bool DisableFileLocking = ReadFileLockingConfiguration();
 	private static bool ReadFileLockingConfiguration()
 	{
@@ -38,7 +47,7 @@ public static class McwSafeFile
 		byte[] preamble = encoding.GetPreamble();
 		// File.WriteAllText validates a large encoding for preallocation before
 		// opening the file. Short input is encoded only after .new is truncated.
-		ulong total = text.Length < CharacterChunk ? ulong.MaxValue : checked((ulong)preamble.Length + (ulong)encoding.GetByteCount(text));
+		ulong total = text.Length < CharacterChunk ? ulong.MaxValue : checked((ulong)preamble.Length + (ulong)encoding.GetByteCount(text.AsSpan()));
 		write.Open(total, text.Length < CharacterChunk ? 0 : total);
 		if (text.Length == 0)
 		{
@@ -75,11 +84,11 @@ public static class McwSafeFile
 			// Append before normalizing, like the retained helper. This preserves
 			// relative paths, dot components and trailing directory separators.
 			string temporary = Path.GetFullPath(filePath + ".new");
-			_path = PathEncoding.GetBytes(temporary[..^4]);
+			_path = EncodePath(temporary[..^4]);
 			if (_path.Length == 0 || _path.Length > 128 * 1024) { throw new PathTooLongException(); }
 			_services = McwApplicationServices.Current;
 			byte[] prepare = new byte[6 + _path.Length];
-			BinaryPrimitives.WriteUInt16LittleEndian(prepare, 1);
+			BinaryPrimitives.WriteUInt16LittleEndian(prepare, PathVersion);
 			BinaryPrimitives.WriteUInt32LittleEndian(prepare.AsSpan(2), (uint)_path.Length);
 			_path.CopyTo(prepare, 6);
 			Check(Request(Prepare, prepare), false);
@@ -88,7 +97,7 @@ public static class McwSafeFile
 		public void Open(ulong total, ulong allocation)
 		{
 			byte[] begin = new byte[23 + _path.Length];
-			BinaryPrimitives.WriteUInt16LittleEndian(begin, 1);
+			BinaryPrimitives.WriteUInt16LittleEndian(begin, PathVersion);
 			BinaryPrimitives.WriteUInt64LittleEndian(begin.AsSpan(2), total);
 			BinaryPrimitives.WriteUInt64LittleEndian(begin.AsSpan(10), allocation);
 			begin[18] = DisableFileLocking ? (byte)1 : (byte)0;

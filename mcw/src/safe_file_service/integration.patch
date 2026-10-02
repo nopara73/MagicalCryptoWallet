@@ -1,6 +1,6 @@
 --- a/mcw/src/app.rs
 +++ b/mcw/src/app.rs
-@@ -59,6 +59,7 @@
+@@ -61,6 +61,7 @@
  }
  
  type Handoff = Option<(u16, Vec<String>)>;
@@ -8,7 +8,7 @@
  fn host(
      directory: &std::path::Path,
      args: &[OsString],
-@@ -116,9 +117,11 @@
+@@ -129,9 +130,11 @@
      let mut broken = false;
      let mut closing = false;
      let mut stopping = None;
@@ -18,9 +18,9 @@
          if let Some(status) = child.process.try_wait()? {
 +            safe_files.close();
              // Drain already queued handoffs even if the process exited immediately.
-             while let Ok(Ok(Some(frame))) = receive.try_recv() {
+             while let Event::Frame(frame) = receive.receive(Duration::ZERO) {
                  // The child waits for each handoff acknowledgement before exiting.
-@@ -130,6 +133,7 @@
+@@ -143,6 +146,7 @@
                      &mut handoff,
                      &mut closing,
                      bootstrap,
@@ -28,7 +28,7 @@
                  );
              }
              return Ok((
-@@ -171,7 +175,9 @@
+@@ -184,7 +188,9 @@
                      &mut handoff,
                      &mut closing,
                      bootstrap,
@@ -38,23 +38,15 @@
                      eprintln!("mcw: {error}");
                      broken = true;
                      let _ = Frame {
-@@ -185,6 +191,7 @@
+@@ -198,6 +204,7 @@
                  }
              }
-             Ok(Ok(None)) | Err(mpsc::RecvTimeoutError::Disconnected) => {
+             Event::Closed(failure) => {
 +                safe_files.close();
-                 // Unannounced EOF is the same failure signal observed by the child.
-                 // Do not return early and orphan a child still cleaning up its wallet.
-                 if stopping.is_none() {
-@@ -201,6 +208,7 @@
-                 std::thread::sleep(Duration::from_millis(50));
-             }
-             Ok(Err(error)) => {
-+                safe_files.close();
-                 eprintln!("mcw: {error}");
-                 broken = true;
-                 let _ = Frame {
-@@ -224,6 +232,7 @@
+                 if let Some(failure) = failure {
+                     eprintln!("mcw: {}", failure.error);
+                     broken = true;
+@@ -232,6 +239,7 @@
      handoff: &mut Handoff,
      closing: &mut bool,
      bootstrap: &[u8],
@@ -62,7 +54,7 @@
  ) -> io::Result<()> {
      if !*ready {
          if frame.kind != bridge::HELLO
-@@ -242,6 +251,9 @@
+@@ -250,6 +258,9 @@
          && (frame.operation == bridge::QR || frame.operation >= 0x0100)
          && frame.payload.is_empty()
      {
@@ -72,7 +64,7 @@
          return Ok(());
      }
      if frame.kind != bridge::REQUEST || frame.id == 0 {
-@@ -250,9 +262,13 @@
+@@ -258,9 +269,13 @@
      match frame.operation {
          bridge::SHUTDOWN if frame.payload.is_empty() => {
              *closing = true;
@@ -88,14 +80,14 @@
                  Ok(args) => args,
 --- a/mcw/src/lib.rs
 +++ b/mcw/src/lib.rs
-@@ -16,6 +16,7 @@
- pub mod privacy_service;
- pub mod psbt;
+@@ -18,6 +18,7 @@
+ pub mod psbt_metadata;
+ pub mod psbt_metadata_service;
  pub mod qr;
 +pub mod safe_file_service;
  pub mod script_service;
+ pub mod script_text;
  pub mod socks5;
- pub mod wallet_hash_service;
 --- a/mcw/src/platform.rs
 +++ b/mcw/src/platform.rs
 @@ -17,3 +17,5 @@

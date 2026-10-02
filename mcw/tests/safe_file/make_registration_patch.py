@@ -23,8 +23,11 @@ def app_registration(text):
         raise RuntimeError("shared dispatch sites changed")
     text = text.replace("                    bootstrap,\n", "                    bootstrap,\n                    &mut safe_files,\n")
     text = once(text, "                    eprintln!(\"mcw: {error}\");\n", "                    safe_files.close();\n                    eprintln!(\"mcw: {error}\");\n")
-    text = once(text, "            Ok(Ok(None)) | Err(mpsc::RecvTimeoutError::Disconnected) => {\n", "            Ok(Ok(None)) | Err(mpsc::RecvTimeoutError::Disconnected) => {\n                safe_files.close();\n")
-    text = once(text, "            Ok(Err(error)) => {\n", "            Ok(Err(error)) => {\n                safe_files.close();\n")
+    if "            Event::Closed(failure) => {\n" in text:
+        text = once(text, "            Event::Closed(failure) => {\n", "            Event::Closed(failure) => {\n                safe_files.close();\n")
+    else:
+        text = once(text, "            Ok(Ok(None)) | Err(mpsc::RecvTimeoutError::Disconnected) => {\n", "            Ok(Ok(None)) | Err(mpsc::RecvTimeoutError::Disconnected) => {\n                safe_files.close();\n")
+        text = once(text, "            Ok(Err(error)) => {\n", "            Ok(Err(error)) => {\n                safe_files.close();\n")
     text = once(text, "    closing: &mut bool,\n    bootstrap: &[u8],\n", "    closing: &mut bool,\n    bootstrap: &[u8],\n    safe_files: &mut SafeFiles,\n")
     text = once(text, "        && frame.payload.is_empty()\n    {\n        return Ok(());\n", "        && frame.payload.is_empty()\n    {\n        if (0x1000..=0x10ff).contains(&frame.operation) {\n            safe_files.cancel(frame.id);\n        }\n        return Ok(());\n")
     text = once(text, "            *closing = true;\n", "            *closing = true;\n            safe_files.close();\n")
@@ -81,7 +84,8 @@ def main():
     after[paths[0]] = app_registration(after[paths[0]])
     after[paths[3]] = managed_registration(after[paths[3]])
     if "pub mod safe_file_service;" not in after[paths[1]]:
-        after[paths[1]] = once(after[paths[1]], "pub mod qr;\n", "pub mod qr;\npub mod safe_file_service;\n")
+        previous = "pub mod round_hash;\n" if "pub mod round_hash;\n" in after[paths[1]] else "pub mod qr;\n"
+        after[paths[1]] = once(after[paths[1]], previous, previous + "pub mod safe_file_service;\n")
     if "pub mod safe_file;" not in after[paths[2]]:
         after[paths[2]] += "\npub mod safe_file;\n"
     if args.patch:

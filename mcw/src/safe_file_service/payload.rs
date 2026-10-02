@@ -1,7 +1,7 @@
 //! Service-owned bounded wire payloads. Shared bridge framing stays host-owned.
 #![forbid(unsafe_code)]
 use super::{Error, FileSystem, MAX_CHUNK, Stage, WriteService};
-use std::{collections::BTreeMap, io, path::Path};
+use std::{collections::BTreeMap, io, path::PathBuf};
 
 pub const BEGIN: u16 = 0x1000;
 pub const APPEND: u16 = 0x1001;
@@ -9,6 +9,9 @@ pub const COMMIT: u16 = 0x1002;
 pub const ABORT: u16 = 0x1003;
 pub const PREPARE: u16 = 0x1004;
 pub const VERSION: u16 = 1;
+/// BEGIN/PREPARE only: native Windows UTF-16LE code units, including unpaired
+/// surrogates. Every non-path operation and every response remains version 1.
+pub const WINDOWS_PATH_VERSION: u16 = 2;
 pub const MAX_PATH: usize = 128 * 1024;
 
 pub struct Dispatch<F: FileSystem> {
@@ -45,6 +48,25 @@ impl<F: FileSystem> Dispatch<F> {
             self.service.abort(token);
             self.requests.remove(&token);
         }
+    }
+    /// The host retains the request payload when removing a queued request. Its
+    /// request ID has not reached this dispatcher, so cancel the existing token
+    /// directly. A canceled queued write can never install or delete artifacts.
+    pub fn cancel_pending(&mut self, operation: u16, payload: &[u8]) -> bool {
+        if !matches!(operation, APPEND | COMMIT | ABORT)
+            || payload.get(..2) != Some(VERSION.to_le_bytes().as_slice())
+        {
+            return false;
+        }
+        let Some(bytes) = payload.get(2..10) else {
+            return false;
+        };
+        let Ok(bytes) = bytes.try_into() else {
+            return false;
+        };
+        let token = u64::from_le_bytes(bytes);
+        self.requests.remove(&token);
+        self.service.abort(token)
     }
     /// Response version:u16, status:u8, then token or typed I/O error. Diagnostics
     /// contain no path/content; filesystem failures are never a bridge fallback.
@@ -98,7 +120,11 @@ impl<F: FileSystem> Dispatch<F> {
             *p = &p[8..];
             Some(n)
         };
-        if request_id == 0 || n16(&mut p) != Some(VERSION) {
+        let version = n16(&mut p).ok_or_else(invalid)?;
+        if request_id == 0
+            || (version != VERSION
+                && !(version == WINDOWS_PATH_VERSION && matches!(operation, BEGIN | PREPARE)))
+        {
             return Err(invalid());
         }
         match operation {
@@ -123,12 +149,9 @@ impl<F: FileSystem> Dispatch<F> {
                 if length == 0 || length > MAX_PATH || p.len() != length {
                     return Err(invalid());
                 }
-                let text = std::str::from_utf8(p).map_err(|_| invalid())?;
-                if text.contains('\0') || !Path::new(text).is_absolute() {
-                    return Err(invalid());
-                }
+                let path = decode_path(version, p).ok_or_else(invalid)?;
                 if operation == PREPARE {
-                    self.service.prepare(Path::new(text))?;
+                    self.service.prepare(&path)?;
                     return Ok(None);
                 }
                 let total = match total {
@@ -136,12 +159,9 @@ impl<F: FileSystem> Dispatch<F> {
                     Some(total) => Some(total),
                     None => return Err(invalid()),
                 };
-                let token = self.service.begin_options(
-                    Path::new(text),
-                    total,
-                    allocation,
-                    disable_file_locking,
-                )?;
+                let token =
+                    self.service
+                        .begin_options(&path, total, allocation, disable_file_locking)?;
                 self.requests.insert(token, (request_id, request_id));
                 Ok(Some(token))
             }
@@ -190,6 +210,43 @@ impl<F: FileSystem> Dispatch<F> {
             _ => Err(invalid()),
         }
     }
+}
+fn decode_path(version: u16, bytes: &[u8]) -> Option<PathBuf> {
+    let path = match version {
+        VERSION => {
+            let text = std::str::from_utf8(bytes).ok()?;
+            if text.contains('\0') {
+                return None;
+            }
+            PathBuf::from(text)
+        }
+        WINDOWS_PATH_VERSION => {
+            #[cfg(windows)]
+            {
+                use std::{ffi::OsString, os::windows::ffi::OsStringExt};
+                if !bytes.len().is_multiple_of(2) {
+                    return None;
+                }
+                let units = bytes
+                    .as_chunks::<2>()
+                    .0
+                    .iter()
+                    .copied()
+                    .map(u16::from_le_bytes)
+                    .collect::<Vec<_>>();
+                if units.contains(&0) {
+                    return None;
+                }
+                PathBuf::from(OsString::from_wide(&units))
+            }
+            #[cfg(not(windows))]
+            {
+                return None;
+            }
+        }
+        _ => return None,
+    };
+    path.is_absolute().then_some(path)
 }
 fn stage_number(s: Stage) -> u8 {
     match s {
