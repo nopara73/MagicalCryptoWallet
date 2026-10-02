@@ -118,10 +118,17 @@ def main():
             wrong = rpc(url, "build", [payment, None, 2, "incorrect passphrase"], allow_error=True, timeout=60)
             assert "error" in wrong, "A previous Send skipped a later passphrase check."
             print(f"Client {len(sends) - 1}: Send authorized automatic CoinJoin; later wrong password rejected.", flush=True)
-        for _, url in clients:
-            wait_for(lambda: rpc(url, "getwalletinfo")["coinjoinStatus"] != "Idle", timeout=360)
         rpc(node_url, "generatetoaddress", [1, mining_address], timeout=60)
-        # All clients are authorized before opening a round, so setup speed cannot split participants across rounds.
+        target_height = rpc(node_url, "getblockcount")
+        def waiting_for_round(url):
+            info = rpc(url, "getwalletinfo")
+            return info if (info["synchronized"] and info["syncHeight"] >= target_height
+                and info["coinjoinStatus"] == "InProgress") else False
+        for index, (_, url) in enumerate(clients):
+            wait_for(lambda: waiting_for_round(url), timeout=360)
+            print(f"Client {index}: synchronized at {target_height}; automatic CoinJoin is waiting for a round.", flush=True)
+        # InSchedule includes the randomized 60-180 second startup delay. Wait for
+        # every tracker to reach InProgress before opening the short synthetic round.
         service = launch(coordinator, [f"--datadir={coordinator_data}", f"--urls={coordinator_url}"], "coordinator")
         def coordinator_ready():
             assert service.poll() is None, "The isolated coordinator exited before becoming ready."
