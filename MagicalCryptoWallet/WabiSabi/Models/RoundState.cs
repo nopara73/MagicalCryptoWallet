@@ -1,7 +1,7 @@
 using WabiSabi.Crypto;
 using WabiSabi.Crypto.Randomness;
 using MagicalCryptoWallet.WabiSabi.Coordinator.Rounds;
-using MagicalCryptoWallet.WabiSabi.Crypto;
+using MagicalCryptoWallet.Mcw.CoinJoin;
 using MagicalCryptoWallet.WabiSabi.Models.MultipartyTransaction;
 using CredentialIssuerParameters = WabiSabi.Crypto.CredentialIssuerParameters;
 
@@ -17,29 +17,8 @@ public record RoundState(uint256 Id,
 	TimeSpan InputRegistrationTimeout,
 	MultipartyTransactionState CoinjoinState)
 {
-	private readonly Lazy<uint256> _calculatedRoundId = new(() => RoundHasher.CalculateHash(
-		InputRegistrationStart,
-		InputRegistrationTimeout,
-		CoinjoinState.Parameters.ConnectionConfirmationTimeout,
-		CoinjoinState.Parameters.OutputRegistrationTimeout,
-		CoinjoinState.Parameters.TransactionSigningTimeout,
-		CoinjoinState.Parameters.AllowedInputAmounts,
-		CoinjoinState.Parameters.AllowedInputTypes,
-		CoinjoinState.Parameters.AllowedOutputAmounts,
-		CoinjoinState.Parameters.AllowedOutputTypes,
-		CoinjoinState.Parameters.Network,
-		CoinjoinState.Parameters.MiningFeeRate.FeePerK,
-		CoinjoinState.Parameters.MaxTransactionSize,
-		CoinjoinState.Parameters.MinRelayTxFee.FeePerK,
-		CoinjoinState.Parameters.MaxAmountCredentialValue,
-		CoinjoinState.Parameters.MaxVsizeCredentialValue,
-		CoinjoinState.Parameters.MaxVsizeAllocationPerAlice,
-		CoinjoinState.Parameters.MaxSuggestedAmount,
-		CoinjoinState.Parameters.CoordinationIdentifier,
-		AmountCredentialIssuerParameters,
-		VsizeCredentialIssuerParameters));
-
-	public bool IsRoundIdMatching() => Id == _calculatedRoundId.Value;
+	public async Task<bool> IsRoundIdMatchingAsync(CancellationToken cancellationToken = default) =>
+		Id == await McwRoundHash.CalculateAsync(this, cancellationToken).ConfigureAwait(false);
 	public DateTimeOffset InputRegistrationEnd => InputRegistrationStart + InputRegistrationTimeout;
 	public bool IsBlame => BlameOf != uint256.Zero;
 

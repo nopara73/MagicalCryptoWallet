@@ -27,17 +27,18 @@ public class TorControlClient : IAsyncDisposable
 	/// <remarks>This helps with graceful stopping of the reader loop.</remarks>
 	private volatile bool _readLastSyncReply;
 
-	public TorControlClient(TcpClient tcpClient) :
-		this(PipeReader.Create(tcpClient.GetStream()), PipeWriter.Create(tcpClient.GetStream()))
+	public TorControlClient(TcpClient tcpClient, Func<PipeReader, CancellationToken, Task<TorControlReply>>? readReply = null) :
+		this(PipeReader.Create(tcpClient.GetStream()), PipeWriter.Create(tcpClient.GetStream()), readReply)
 	{
 		_tcpClient = tcpClient;
 	}
 
-	internal TorControlClient(PipeReader pipeReader, PipeWriter pipeWriter)
+	internal TorControlClient(PipeReader pipeReader, PipeWriter pipeWriter, Func<PipeReader, CancellationToken, Task<TorControlReply>>? readReply = null)
 	{
 		_tcpClient = null;
 		_pipeReader = pipeReader;
 		_pipeWriter = pipeWriter;
+		_readReply = readReply ?? TorControlReplyReader.ReadReplyAsync;
 
 		_syncChannel = Channel.CreateUnbounded<TorControlReply>(Options);
 		AsyncChannels = new List<Channel<TorControlReply>>();
@@ -47,6 +48,7 @@ public class TorControlClient : IAsyncDisposable
 	private readonly TcpClient? _tcpClient;
 	private readonly PipeReader _pipeReader;
 	private readonly PipeWriter _pipeWriter;
+	private readonly Func<PipeReader, CancellationToken, Task<TorControlReply>> _readReply;
 	private readonly CancellationTokenSource _readerCts = new();
 	private readonly Task _readerLoopTask;
 
@@ -453,7 +455,7 @@ public class TorControlClient : IAsyncDisposable
 		{
 			while (!_readerCts.IsCancellationRequested)
 			{
-				TorControlReply reply = await TorControlReplyReader.ReadReplyAsync(_pipeReader, _readerCts.Token).ConfigureAwait(false);
+				TorControlReply reply = await _readReply(_pipeReader, _readerCts.Token).ConfigureAwait(false);
 
 				if (reply.StatusCode == StatusCode.AsynchronousEventNotify)
 				{

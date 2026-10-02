@@ -12,6 +12,11 @@ using SkiaSharp;
 
 static class Program
 {
+    // The portable probe uses the actual Fluent assembly's internal capture
+    // boundary, without copying that leaf or widening the application's API.
+    private static readonly Func<ArraySegment<byte>, CancellationToken, Task<string>> DecodeCapturedImageAsync =
+        typeof(QrCodeReader).GetMethod("DecodeCapturedImageAsync", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic)!
+            .CreateDelegate<Func<ArraySegment<byte>, CancellationToken, Task<string>>>();
     public static async Task Main(string[] args)
     {
         VerifyDiagnosticRedaction();
@@ -31,7 +36,7 @@ static class Program
         var maximum = await McwQrDecoder.DecodeLuminanceAsync(4096, 4096, 4096, Enumerable.Repeat((byte)255, 16777216).ToArray());
         Require(maximum is null, "Maximum-resolution blank frame became text.");
         var malformed = false;
-        try { await QrCodeReader.DecodeCapturedImageAsync(new ArraySegment<byte>(new byte[] { 1, 2, 3 }), CancellationToken.None); }
+        try { await DecodeCapturedImageAsync(new ArraySegment<byte>(new byte[] { 1, 2, 3 }), CancellationToken.None); }
         catch (InvalidOperationException) { malformed = true; }
         Require(malformed, "Invalid acquired image was not rejected.");
 
@@ -108,7 +113,7 @@ static class Program
         ];
         foreach (var image in expected)
         {
-            var actual = await QrCodeReader.DecodeCapturedImageAsync(new ArraySegment<byte>(File.ReadAllBytes(Path.Combine(directory, image.Name))), CancellationToken.None);
+            var actual = await DecodeCapturedImageAsync(new ArraySegment<byte>(File.ReadAllBytes(Path.Combine(directory, image.Name))), CancellationToken.None);
             Require(actual == image.Text, "The production image boundary changed a retained fixture result.");
         }
         return expected.Length;
@@ -117,7 +122,7 @@ static class Program
     {
         foreach (var item in cases)
         {
-            var actual = await QrCodeReader.DecodeCapturedImageAsync(new ArraySegment<byte>(EncodeSymbol(item)), CancellationToken.None);
+            var actual = await DecodeCapturedImageAsync(new ArraySegment<byte>(EncodeSymbol(item)), CancellationToken.None);
             Require(actual == item.expected, "The production capture decode leaf changed text.");
         }
         return cases.Count;

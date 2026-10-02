@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Actual production client/serializer source, retained application graph. -->
+    <ProjectReference Include="../../../MagicalCryptoWallet/MagicalCryptoWallet.csproj" />
+    <ProjectReference Include="../../../MagicalCryptoWallet.Client/MagicalCryptoWallet.Client.csproj" />
+  </ItemGroup>
+</Project>

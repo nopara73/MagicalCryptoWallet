@@ -17,6 +17,7 @@ def group(name):
     return "application-services"
 
 def role(path):
+    if path.startswith(("Contrib/Mcw/", "mcw/tests/")): return "verification"
     if path.startswith("Contrib/McwMigration/"): return "verification"
     if any(part in path for part in ("Tests","VisualPreview","BridgeProbe","AssemblyAudit")): return "verification"
     if "Coordinator" in path or "Backend" in path: return "external-service"
@@ -25,6 +26,8 @@ def role(path):
     return "application"
 
 def inventory():
+    incorporation=json.loads((ROOT/"Contrib/McwMigration/incorporated-flows.json").read_text(encoding="utf-8"))
+    activated={component:flow["name"] for flow in incorporation["flows"] for component in flow["components"]}
     rust_sources={path.stem:path for path in (ROOT/"mcw/src").glob("*.rs")
                   if path.stem not in {"app","bridge","command","lib","main","platform"}}
     rust_sources.update({path.parent.name:path for path in (ROOT/"mcw/src").glob("*/mod.rs")
@@ -38,7 +41,10 @@ def inventory():
                       "safe_file_service":"storage","content_service":"compression"}.get(name,name.replace("_","-"))
         handoff=ROOT/"Contrib/McwMigration/Handoffs"/(handoff_name+".md")
         rust_components.append({"name":name,"path":path.relative_to(ROOT).as_posix(),
-            "status":"production callers migrated" if name=="qr" else "implementation present; production caller integration pending",
+            "status":"production callers migrated" if name=="qr" else
+                     "bounded callers incorporated; other roles retained" if name in activated else
+                     "implementation present; production caller integration pending",
+            "incorporation":activated.get(name),
             "handoff":"MagicalCryptoWallet.Documentation/McwArchitecture.md" if name=="qr"
                        else handoff.relative_to(ROOT).as_posix() if handoff.is_file() else None})
     packages={}
@@ -58,6 +64,10 @@ def inventory():
                 use={"lock":relative,"framework":framework,"type":entry["type"],"role":role(relative)}
                 if use not in item["uses"]: item["uses"].append(use)
                 item["dependencies"].update(entry.get("dependencies",{}))
+    for package in packages.values():
+        if package["name"] in incorporation["verification_only_packages"]:
+            assert all(use["role"] == "verification" for use in package["uses"]), "Independent oracle acquired a runtime role"
+            package["status"] = "retained verification-only oracle"
     references=[]
     for project in sorted(ROOT.rglob("*.csproj"),key=lambda path:path.relative_to(ROOT).as_posix()):
         relative=project.relative_to(ROOT).as_posix()
@@ -93,19 +103,21 @@ def inventory():
         "nuget":sorted(packages.values(),key=lambda x:(x["name"].lower(),x["version"])),
         "package_references":references,"central_pins":pins,"bundled_files":bundles,
         "rust_components":rust_components,
+        "incorporated_flows":incorporation,
         "copied_source":[
             {"name":"Gma.QrCodeNet","path":"MagicalCryptoWallet/Gma/QrCodeNet","status":"removed","replacement":"mcw/src/qr.rs","evidence":"160 independent version/ECC decodes plus Unicode, numeric, URI and cancellation; source and package audits"},
             {"name":"Nito AsyncEx/Collections/Disposables","path":"MagicalCryptoWallet/Nito","status":"retained","group":"application-services"},
             {"name":"WabiSabi managed/native fork","path":"ThirdParty/WabiSabi","status":"retained","group":"wallet-cryptography","provenance":"ThirdParty/WabiSabi/UPSTREAM.json"}
         ] + ([{"name":"JSONTestSuite reference fixtures","path":"mcw/tests/json_vectors/JSONTestSuite","status":"verification-only oracle","provenance":"mcw/tests/json_vectors/README.md"}]
               if (ROOT/"mcw/tests/json_vectors/JSONTestSuite").is_dir() else [])
-          + ([{"name":"Brotli RFC static dictionary and transform data","path":"mcw/src/content_service/data","status":"standard format data; caller integration pending","provenance":"mcw/src/content_service/data/PROVENANCE.md"}]
+          + ([{"name":"Brotli RFC static dictionary and transform data","path":"mcw/src/content_service/data","status":"standard format data; bounded fee-content caller incorporated","provenance":"mcw/src/content_service/data/PROVENANCE.md"}]
               if (ROOT/"mcw/src/content_service/data/PROVENANCE.md").is_file() else [])
-          + ([{"name":"QR scanning character mapping data","path":"mcw/src/scan_service/charset_data.rs","status":"generated format data; caller integration pending","provenance":"mcw/tests/qr_scanning_charset_tables.py"}]
+          + ([{"name":"QR scanning character mapping data","path":"mcw/src/scan_service/charset_data.rs","status":"generated format data; acquired-image caller incorporated","provenance":"mcw/tests/qr_scanning_charset_tables.py"}]
               if (ROOT/"mcw/src/scan_service/charset_data.rs").is_file() else []),
         "native_and_embedded":[
             {"name":".NET runtime and ASP.NET shared libraries","status":"retained","owner":"managed application/external coordinator","evidence":"self-contained dotnet publish and .deps.json"},
             {"name":"Avalonia native platform backends, Skia and HarfBuzz","status":"retained","owner":"managed UI","evidence":"NuGet locks plus published runtimes/*/native payloads"},
+            {"name":"FlashCap camera capture APIs embedded in QRackers","status":"retained; QR image decoding callers migrated while camera capture remains","owner":"managed camera UI","evidence":"QRackers 1.1.0 exports FlashCap capture types; QrCodeReader.cs still acquires frames through them"},
             {"name":"SQLite native e_sqlite3","status":"retained","owner":"managed storage","evidence":"SQLitePCLRaw bundle/provider/native NuGet locks"},
             {"name":"libwabisabi","status":"retained","owner":"managed credential protocol","evidence":"ThirdParty/WabiSabi/c/CMakeLists.txt"},
             {"name":"libsecp256k1","version":"0.7.1","status":"retained, statically embedded in libwabisabi","owner":"credential cryptography","evidence":"CMake FetchContent URL and checksum"},

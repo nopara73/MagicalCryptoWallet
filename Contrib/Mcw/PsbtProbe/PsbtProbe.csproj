@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><OutputType>Exe</OutputType></PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../../MagicalCryptoWallet.Client/MagicalCryptoWallet.Client.csproj" />
+    <Compile Include="../../../mcw/tests/psbt_metadata_host_reference.cs" Link="Program.cs" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,285 @@
+{
+  "schema": 1,
+  "application": "mcw",
+  "foundation_commit": "2889a0710d3190a175a8ca35e4e18afac835ac0e",
+  "accepted_batch": "MCW-BOUNDED-INCORPORATION-20261002T155400Z-01",
+  "batch_sha256": "9b2b7ca0ecf253204b9732607eb0bf58ec84a570a2cfd7ec3553767a1ebeb15f",
+  "policy": "one application executable; no external Cargo normal/build/test dependencies; one private managed connection",
+  "status": "bounded caller and host source incorporated; release qualification requires the exact-source five-target workflow",
+  "production_release": false,
+  "verification": [
+    "Contrib/Mcw/test-migrations.py",
+    "Contrib/Mcw/run-managed-tests.py",
+    "Contrib/Mcw/test-host.py",
+    "mcw/tests/compression_content_host_portable.py",
+    "mcw/tests/compression_content_inbox_portable.py",
+    ".github/workflows/build.yml"
+  ],
+  "flows": [
+    {
+      "name": "psbt",
+      "components": [
+        "psbt_metadata",
+        "psbt_metadata_service"
+      ],
+      "operations": [
+        "0x0600-0x0606"
+      ],
+      "callers": [
+        "MagicalCryptoWallet/Blockchain/Transactions/TransactionFactory.cs",
+        "MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs"
+      ],
+      "compatibility_and_remaining_owner": "inspection and enrichment only; managed keys, builder, signing and policy remain",
+      "handoff": "Contrib/McwMigration/Handoffs/psbt-metadata.md",
+      "caller_activation": "source-incorporated",
+      "verification_policy": "actual current caller and supplied shipping binary, followed by all-five package/import CI"
+    },
+    {
+      "name": "wallet-hmac",
+      "components": [
+        "wallet_hashes",
+        "wallet_hash_service"
+      ],
+      "operations": [
+        "0x0A10-0x0A12"
+      ],
+      "callers": [
+        "MagicalCryptoWallet/Crypto/OwnershipIdentifier.cs",
+        "MagicalCryptoWallet/Crypto/Slip21Node.cs"
+      ],
+      "compatibility_and_remaining_owner": "exact ownership/SLIP21 MACs; managed wallet keys and authorization remain",
+      "handoff": "Contrib/McwMigration/Handoffs/wallet-hmac.md",
+      "caller_activation": "source-incorporated",
+      "verification_policy": "actual current caller and supplied shipping binary, followed by all-five package/import CI"
+    },
+    {
+      "name": "safe-file",
+      "components": [
+        "safe_file_service"
+      ],
+      "operations": [
+        "0x1000-0x1004"
+      ],
+      "callers": [
+        "MagicalCryptoWallet/Io/SafeFile.cs"
+      ],
+      "compatibility_and_remaining_owner": "serialized writes and temporary streams only; managed formats, read/recovery policy and SQLite remain; physical power-loss persistence is unverified",
+      "handoff": "Contrib/McwMigration/Handoffs/storage.md",
+      "caller_activation": "source-incorporated",
+      "verification_policy": "actual current caller and supplied shipping binary, followed by all-five package/import CI"
+    },
+    {
+      "name": "round-hash",
+      "components": [
+        "round_hash"
+      ],
+      "operations": [
+        "0x1200"
+      ],
+      "callers": [
+        "MagicalCryptoWallet/WabiSabi/Models/RoundState.cs",
+        "MagicalCryptoWallet/WabiSabi/Client/RoundStateAwaiters/RoundStateUpdater.cs"
+      ],
+      "compatibility_and_remaining_owner": "new client round validation only; external coordinator reference and managed round authority remain",
+      "handoff": "Contrib/McwMigration/Handoffs/coinjoin.md",
+      "caller_activation": "source-incorporated",
+      "verification_policy": "actual current caller and supplied shipping binary, followed by all-five package/import CI"
+    },
+    {
+      "name": "content",
+      "components": [
+        "content_service"
+      ],
+      "operations": [
+        "0x0900"
+      ],
+      "callers": [
+        "MagicalCryptoWallet/WebClients/MagicalCryptoWallet/MagicalCryptoWalletHttpClientFactory.cs"
+      ],
+      "compatibility_and_remaining_owner": "MempoolSpace fee-response content decoding only; HTTP/TLS/routes and other handlers remain",
+      "handoff": "Contrib/McwMigration/Handoffs/compression.md",
+      "caller_activation": "source-incorporated",
+      "verification_policy": "actual current caller and supplied shipping binary, followed by all-five package/import CI"
+    },
+    {
+      "name": "http-factory",
+      "components": [],
+      "operations": [],
+      "callers": [
+        "MagicalCryptoWallet/Mcw/Network/IMcwHttpClientFactory.cs"
+      ],
+      "compatibility_and_remaining_owner": "application-owned factory contract only; managed transport and external ASP.NET framework roles remain",
+      "handoff": "Contrib/McwMigration/Handoffs/http-factory.md",
+      "caller_activation": "source-incorporated",
+      "verification_policy": "actual current caller and supplied shipping binary, followed by all-five package/import CI"
+    },
+    {
+      "name": "tor-control-readiness",
+      "components": [
+        "privacy_service",
+        "socks5"
+      ],
+      "operations": [
+        "0x0F00-0x0F04",
+        "0x0805"
+      ],
+      "callers": [
+        "MagicalCryptoWallet/Tor/Control/TorControlReplyReader.cs",
+        "MagicalCryptoWallet/Tor/Control/PipeReaderLineReaderExtension.cs",
+        "MagicalCryptoWallet/Tor/TorProcessManager.cs"
+      ],
+      "compatibility_and_remaining_owner": "client parsing/read-session and loopback readiness only; Tor executable, sockets/policy and explicit managed coordinator overrides remain",
+      "handoff": "Contrib/McwMigration/Handoffs/privacy.md",
+      "caller_activation": "source-incorporated",
+      "verification_policy": "actual current caller and supplied shipping binary, followed by all-five package/import CI"
+    },
+    {
+      "name": "qr-scan",
+      "components": [
+        "scan_service"
+      ],
+      "operations": [
+        "0x1300-0x1303"
+      ],
+      "callers": [
+        "MagicalCryptoWallet.Fluent/Models/UI/QrCodeReader.cs"
+      ],
+      "compatibility_and_remaining_owner": "acquired-image decoding only; FlashCap capture, Skia conversion and existing camera/UI flow remain",
+      "handoff": "Contrib/McwMigration/Handoffs/qr-scanning.md",
+      "caller_activation": "source-incorporated",
+      "verification_policy": "actual current caller and supplied shipping binary, followed by all-five package/import CI"
+    },
+    {
+      "name": "markdown",
+      "components": [
+        "markdown"
+      ],
+      "operations": [
+        "0x1100"
+      ],
+      "callers": [
+        "MagicalCryptoWallet.Fluent/Views/Dialogs/ReleaseHighlights/ReleaseHighlightsDialogView.axaml",
+        "MagicalCryptoWallet.Fluent/Views/Dialogs/ReleaseHighlights/ReleaseHighlightsDialogView.cs"
+      ],
+      "compatibility_and_remaining_owner": "release-highlights grammar only; native text/link presentation uses retained Avalonia and themes",
+      "handoff": "Contrib/McwMigration/Handoffs/native-ui.md",
+      "caller_activation": "source-incorporated",
+      "verification_policy": "actual current caller and supplied shipping binary, followed by all-five package/import CI"
+    },
+    {
+      "name": "address",
+      "components": [
+        "bitcoin_encoding"
+      ],
+      "operations": [
+        "0x020C"
+      ],
+      "callers": [
+        "MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs",
+        "MagicalCryptoWallet/Mcw/BitcoinAddressValidation.cs"
+      ],
+      "compatibility_and_remaining_owner": "network-aware address validation/script bytes only; managed address objects, URI rules and derivation remain",
+      "handoff": "Contrib/McwMigration/Handoffs/bitcoin-encoding.md",
+      "caller_activation": "source-incorporated",
+      "verification_policy": "actual current caller and supplied shipping binary, followed by all-five package/import CI"
+    },
+    {
+      "name": "block-header",
+      "components": [
+        "bitcoin_block_service"
+      ],
+      "operations": [
+        "0x0E00"
+      ],
+      "callers": [
+        "MagicalCryptoWallet/Wallets/FileSystemBlockRepository.cs"
+      ],
+      "compatibility_and_remaining_owner": "80-byte block cache identity only; block parsing/consensus/cache/synchronization remain managed",
+      "handoff": "Contrib/McwMigration/Handoffs/bitcoin-block.md",
+      "caller_activation": "source-incorporated",
+      "verification_policy": "actual current caller and supplied shipping binary, followed by all-five package/import CI"
+    },
+    {
+      "name": "script-text",
+      "components": [
+        "script_text"
+      ],
+      "operations": [
+        "0x0D08",
+        "0x0D09"
+      ],
+      "callers": [
+        "MagicalCryptoWallet/WabiSabi/Client/WabiSabiHttpApiClient.cs",
+        "MagicalCryptoWallet/Serialization/Bitcoin.cs",
+        "MagicalCryptoWallet/Serialization/Coordination.cs"
+      ],
+      "compatibility_and_remaining_owner": "retained client output-registration and round-event script text only; managed Script values, signing and coordinator serializers remain",
+      "handoff": "Contrib/McwMigration/Handoffs/script-text.md",
+      "caller_activation": "source-incorporated",
+      "verification_policy": "actual current caller and supplied shipping binary, followed by all-five package/import CI"
+    },
+    {
+      "name": "filters",
+      "components": [
+        "compact_filters"
+      ],
+      "operations": [
+        "0x0702"
+      ],
+      "callers": [
+        "MagicalCryptoWallet/Wallets/WalletFilterProcessor.cs"
+      ],
+      "compatibility_and_remaining_owner": "canonical filter matching only; managed synchronization/reorg/retry/height ownership remains",
+      "handoff": "Contrib/McwMigration/Handoffs/compact-filters.md",
+      "caller_activation": "source-incorporated",
+      "verification_policy": "actual current caller and supplied shipping binary, followed by all-five package/import CI"
+    },
+    {
+      "name": "nostr-id",
+      "components": [
+        "nostr_event_id"
+      ],
+      "operations": [
+        "0x0C00"
+      ],
+      "callers": [
+        "MagicalCryptoWallet/WebClients/MagicalCryptoWalletNostrClient.cs"
+      ],
+      "compatibility_and_remaining_owner": "one native event digest feeds ID comparison and retained BIP340 verification; NNostr/network/release trust remain",
+      "handoff": "Contrib/McwMigration/Handoffs/nostr-event-id.md",
+      "caller_activation": "source-incorporated",
+      "verification_policy": "actual current caller and supplied shipping binary, followed by all-five package/import CI"
+    }
+  ],
+  "not_in_this_batch": [
+    "PNG encoding/decoding",
+    "payment URI parsing",
+    "JSON caller replacement",
+    "wallet state/keys/recovery ownership",
+    "SQLite",
+    "native HTTP/TLS/network synchronization",
+    "Tor runtime",
+    "hardware interfaces",
+    "whole native UI"
+  ],
+  "retirement_candidates": [
+    "Markdown.Avalonia",
+    "Markdown.Avalonia.Html",
+    "Markdown.Avalonia.Svg",
+    "Markdown.Avalonia.SyntaxHigh",
+    "Markdown.Avalonia.Tight",
+    "ColorDocument.Avalonia",
+    "ColorTextBlock.Avalonia",
+    "Avalonia.AvaloniaEdit",
+    "Avalonia.Svg",
+    "ExCSS",
+    "Fizzler",
+    "HtmlAgilityPack",
+    "ShimSkiaSharp",
+    "Svg.Custom",
+    "Svg.Model",
+    "Microsoft.Extensions.Http"
+  ],
+  "verification_only_packages": [],
+  "retirement_rule": "source/manifest/lock/Nix cache removal plus every packaged target; historical oracle names and external shared-framework roles are qualified separately"
+}

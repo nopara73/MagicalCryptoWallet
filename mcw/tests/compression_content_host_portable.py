@@ -15,6 +15,7 @@ import subprocess
 import sys
 import time
 import xml.etree.ElementTree as ET
+import zipfile
 
 
 def sha(path):
@@ -33,6 +34,10 @@ def sources(root):
                    'ThirdParty/WabiSabi/Directory.Build.props', 'Directory.Build.props',
                    'Directory.Build.targets', 'Directory.Packages.props', 'global.json',
                    'NuGet.Config', 'BannedSymbols.txt', '.editorconfig'))
+    result.update(path.relative_to(root).as_posix() for path in (
+        root / 'mcw/Cargo.toml', root / 'mcw/Cargo.lock', root / 'mcw/rust-toolchain.toml',
+        root / 'mcw/build.rs', root / 'mcw/.cargo/config.toml', root / 'Contrib/Mcw/build.py',
+        root / 'Contrib/Mcw/build-windows.ps1', root / 'Contrib/Mcw/link-linux.sh') if path.is_file())
     return {name: sha(root / name) for name in sorted(result)}
 
 
@@ -108,6 +113,11 @@ def main():
     test_hashes = {str(path): sha(path) for path in tests}
     binary_hash = sha(native)
     out.mkdir(parents=True)
+    with zipfile.ZipFile(out / 'source-snapshot.zip', 'x', compression=zipfile.ZIP_DEFLATED) as archive:
+        for name in pinned:
+            archive.write(root / name, name)
+        for path in tests:
+            archive.write(path, path.relative_to(root).as_posix())
     project = ET.Element('Project', {'Sdk': 'Microsoft.NET.Sdk'})
     properties = ET.SubElement(project, 'PropertyGroup')
     for name, value in {
@@ -168,6 +178,12 @@ def main():
         if os.name != 'nt':
             staged_native.chmod(staged_native.stat().st_mode | 0o111)
         record['staged_binary'] = str(staged_native)
+        def assemblies():
+            return {path.relative_to(stage).as_posix(): sha(path) for path in sorted(stage.rglob('*'))
+                    if path.is_file() and (path.suffix in ('.dll', '.exe', '.pdb', '.so', '.dylib')
+                                           or path.name in ('mcw', 'magicalcryptowallet'))}
+        record['assemblies_before'] = assemblies()
+        record['source_archive_sha256'] = sha(out / 'source-snapshot.zip')
         if not args.build_only:
             flags = subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0
             def run(label, arguments):
@@ -212,6 +228,8 @@ def main():
         for path, expected in test_hashes.items():
             assert sha(Path(path)) == expected, 'Fixture changed during proof: ' + path
         assert sha(native) == binary_hash and sha(staged_native) == binary_hash
+        record['assemblies_after'] = assemblies()
+        assert record['assemblies_before'] == record['assemblies_after'], 'Managed fixture assembly changed during proof'
         record['source_stable'] = True
         record['passed'] = not args.build_only
     except Exception as error:

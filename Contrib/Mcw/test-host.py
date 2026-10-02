@@ -1,23 +1,34 @@
 #!/usr/bin/env python3
 """Exercise the actual mcw host/managed pipe with synthetic children and payloads."""
-import argparse, json, os, shutil, signal, subprocess, tempfile, time
+import argparse, contextlib, json, os, shutil, signal, subprocess, time
 from pathlib import Path
+from evidence import assemblies, finish, new_run, sha, snapshot
 
 ROOT = Path(__file__).resolve().parents[2]
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("--binary", type=Path, required=True)
 args = parser.parse_args()
 binary = args.binary.resolve()
-subprocess.run(["dotnet","build",str(ROOT / "Contrib/Mcw/BridgeProbe"),"-c","Release"],check=True)
-source = ROOT / "Contrib/Mcw/BridgeProbe/bin/Release/net10.0"
-evidence = ROOT / ".artifacts/mcw-evidence";evidence.mkdir(parents=True,exist_ok=True)
-with tempfile.TemporaryDirectory(prefix="mcw spaces 你好 ", dir=ROOT / ".artifacts") as temporary:
-    work=Path(temporary);shutil.copytree(source,work,dirs_exist_ok=True)
+evidence = new_run(ROOT / '.artifacts/mcw-evidence', 'host')
+record = snapshot(ROOT, evidence)
+record.update(native_sha256=sha(binary), production_release=False)
+source = evidence / 'build'
+with (evidence / 'build.log').open('wb') as log:
+    built = subprocess.run(["dotnet","build",str(ROOT / "Contrib/Mcw/BridgeProbe"),"-c","Release","-m:1",
+                            '/p:UseSharedCompilation=false','/p:BuildMcwHost=false','/p:RestoreLockedMode=true',
+                            '--artifacts-path',str(evidence / 'artifacts'),'-o',str(source)],
+                           stdout=log,stderr=subprocess.STDOUT,timeout=300)
+if built.returncode:
+    print((evidence / 'build.log').read_text(encoding='utf-8', errors='replace'))
+    built.check_returncode()
+with contextlib.nullcontext(evidence / 'mcw spaces 你好') as work:
+    shutil.copytree(source,work)
     suffix=".exe" if os.name=="nt" else ""
     shutil.copy2(binary,work / ("mcw"+suffix))
     for child in ("magicalcryptowallet",):
         shutil.copy2(work / ("BridgeProbe"+suffix),work / (child+suffix))
     host=work / ("mcw"+suffix)
+    record['assemblies_before'] = assemblies(work)
     results={}
     def run(action, expected=0, mode="gui", timeout=180):
         report=work / (action+".json")
@@ -39,13 +50,18 @@ with tempfile.TemporaryDirectory(prefix="mcw spaces 你好 ", dir=ROOT / ".artif
     run("unknown-operation")
     run("queue-eof",1)
     run("queue-overload",1)
+    run("sessions-cancel")
+    run("sessions-eof",1)
+    run("sessions-overload",1)
+    for action in ('sessions-cancel', 'sessions-eof', 'sessions-overload'):
+        assert json.loads(results[action]['report'])['cleanup']
     run("early-exit",1)
     run("unexpected-exit",1)
     run("no-handshake",1,timeout=150)
     # Parent death closes private pipes. The real managed adapter requests orderly
     # shutdown; on Windows the private job also prevents orphaned descendants.
     report=work / "parent-exit.txt"
-    parent=subprocess.Popen([str(host),"gui","wait",str(report)],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    parent=subprocess.Popen([str(host),"gui","sessions-wait",str(report)],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     try:
         deadline=time.monotonic()+15
         while not report.exists() and time.monotonic()<deadline: time.sleep(0.05)
@@ -66,6 +82,8 @@ with tempfile.TemporaryDirectory(prefix="mcw spaces 你好 ", dir=ROOT / ".artif
             script=f"if (Get-Process -Id {pid} -ErrorAction SilentlyContinue) {{ exit 1 }}"
             subprocess.run(["pwsh","-NoProfile","-Command",script],check=True)
         results["parent-exit"]={"child_pid":pid,"cleaned":True}
+        assert Path(str(report) + '.wallet').read_text() == 'original synthetic bytes'
+        assert Path(str(report) + '.wallet.new').exists() and not Path(str(report) + '.wallet.old').exists()
     finally:
         if parent.poll() is None: parent.kill();parent.wait()
     # CLI input remains on stdin and is never printed to stderr.
@@ -79,4 +97,8 @@ with tempfile.TemporaryDirectory(prefix="mcw spaces 你好 ", dir=ROOT / ".artif
     assert not result.stderr
     results["cli"]={"width":width,"malformed_rejected":3}
 (evidence / "host-tests.json").write_text(json.dumps(results,indent=2)+"\n")
+record.update(results=results, passed=True, assemblies_after=assemblies(work))
+assert record['assemblies_before'] == record['assemblies_after']
+assert sha(binary) == record['native_sha256'] == sha(host)
+finish(ROOT, evidence, record)
 print(json.dumps(results))

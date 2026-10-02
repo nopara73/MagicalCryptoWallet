@@ -45,7 +45,7 @@ def audit(binary):
     assert 'name = "mcw"' in manifest and 'edition = "2024"' in manifest
     if os.name == "nt":
         imports=pe_imports(binary)
-        allowed={"kernel32.dll","kernelbase.dll","ntdll.dll","bcrypt.dll","userenv.dll","ws2_32.dll","dbghelp.dll","shell32.dll","advapi32.dll"}
+        allowed={"kernel32.dll","kernelbase.dll","ntdll.dll","bcrypt.dll","bcryptprimitives.dll","userenv.dll","ws2_32.dll","dbghelp.dll","shell32.dll","advapi32.dll"}
         for name in imports:
             assert name.lower() in allowed or name.lower().startswith(("api-ms-win-core-","api-ms-win-security-")), "Non-OS runtime import: "+name
         # Execution uses the audited executable; inspect loaded modules including

@@ -4,20 +4,68 @@ use crate::bridge::{self, Frame};
 use std::{
     collections::VecDeque,
     io,
-    sync::{Condvar, Mutex},
+    sync::{
+        Arc, Condvar, Mutex,
+        atomic::{AtomicBool, Ordering},
+    },
     time::Duration,
 };
 
 const MAX_REQUESTS: usize = 256;
 const MAX_BYTES: usize = 16 * 1024 * 1024;
 
+/// Only typed session metadata survives removal of a private request payload.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub(super) enum Cleanup {
+    #[default]
+    Unknown,
+    Request,
+    Psbt(u64),
+    SafeFile(u64),
+    Tor(u64),
+    Scan(u64),
+}
+impl Cleanup {
+    fn for_request(frame: &Frame) -> Self {
+        fn session(bytes: &[u8], offset: usize) -> Option<u64> {
+            let id = u64::from_le_bytes(bytes.get(offset..offset + 8)?.try_into().ok()?);
+            (id != 0).then_some(id)
+        }
+        let version = frame.payload.get(..2) == Some(&[1, 0]);
+        match frame.operation {
+            0x0603..=0x0606 if version => session(&frame.payload, 2).map(Self::Psbt),
+            0x1001..=0x1003 if version => session(&frame.payload, 2).map(Self::SafeFile),
+            0x0F02..=0x0F04 => session(&frame.payload, 0).map(Self::Tor),
+            0x1300..=0x1303 if frame.payload.get(..4) == Some(&[1, 0, 0, 0]) => {
+                session(&frame.payload, 4).map(Self::Scan)
+            }
+            _ => None,
+        }
+        .unwrap_or(Self::Request)
+    }
+}
+struct Active {
+    id: u64,
+    operation: u16,
+    cancelled: Arc<AtomicBool>,
+    cleanup: Cleanup,
+}
+struct Control {
+    frame: Frame,
+    cleanup: Cleanup,
+}
+
 #[derive(Default)]
 struct State {
     requests: VecDeque<Frame>,
-    cancellations: VecDeque<Frame>,
+    cancellations: VecDeque<Control>,
     bytes: usize,
     closed: bool,
     failure: Option<Failure>,
+    active: Option<Active>,
+    completed: VecDeque<(u64, u16, Cleanup)>,
+    delivered_cancel: Option<(u64, u16, Cleanup)>,
+    last_request_id: u64,
 }
 
 pub(super) struct Failure {
@@ -45,6 +93,11 @@ impl State {
             self.requests.clear();
             self.cancellations.clear();
             self.bytes = 0;
+            self.completed.clear();
+            self.delivered_cancel = None;
+            if let Some(active) = &self.active {
+                active.cancelled.store(true, Ordering::Release);
+            }
         }
     }
 
@@ -62,12 +115,25 @@ impl State {
         } else {
             self.cancellations
                 .pop_front()
+                .map(|control| {
+                    self.delivered_cancel =
+                        Some((control.frame.id, control.frame.operation, control.cleanup));
+                    control.frame
+                })
                 .or_else(|| self.requests.pop_front())
         };
         match frame {
             Some(frame) => {
                 if frame.kind != bridge::CANCEL {
                     self.bytes -= bridge::HEADER + frame.payload.len();
+                    if frame.kind == bridge::REQUEST {
+                        self.active = Some(Active {
+                            id: frame.id,
+                            operation: frame.operation,
+                            cancelled: Arc::new(AtomicBool::new(false)),
+                            cleanup: Cleanup::for_request(&frame),
+                        });
+                    }
                 }
                 Event::Frame(frame)
             }
@@ -77,6 +143,66 @@ impl State {
 }
 
 impl Inbox {
+    /// Synchronous services observe reader-side CANCEL and terminal ingress
+    /// closure without waiting for dispatch to consume another event. Dispatch
+    /// is the sole consumer while this query runs; request IDs pair with ops.
+    pub fn is_interrupted(&self, id: u64, operation: u16) -> bool {
+        let Ok(state) = self.state.lock() else {
+            return true;
+        };
+        state.closed
+            || state.active.as_ref().is_some_and(|active| {
+                active.id == id
+                    && active.operation == operation
+                    && active.cancelled.load(Ordering::Acquire)
+            })
+            || state
+                .cancellations
+                .iter()
+                .any(|cancel| cancel.frame.id == id && cancel.frame.operation == operation)
+    }
+
+    pub fn cancellation(&self, id: u64, operation: u16) -> Arc<AtomicBool> {
+        let state = self.state.lock().unwrap();
+        state
+            .active
+            .as_ref()
+            .filter(|a| a.id == id && a.operation == operation)
+            .map(|a| Arc::clone(&a.cancelled))
+            .unwrap_or_else(|| Arc::new(AtomicBool::new(true)))
+    }
+
+    pub fn cancel_cleanup(&self, id: u64, operation: u16) -> Cleanup {
+        let mut state = self.state.lock().unwrap();
+        state
+            .delivered_cancel
+            .take()
+            .filter(|(i, o, _)| *i == id && *o == operation)
+            .map(|(_, _, cleanup)| cleanup)
+            .unwrap_or_default()
+    }
+
+    /// Dispatch is the sole consumer. Completed receipts contain no payload and
+    /// expire after 256 later operations; old/unknown CANCEL never targets work.
+    pub fn finish(&self, id: u64, operation: u16) -> Option<Cleanup> {
+        let mut state = self.state.lock().unwrap();
+        let active = state.active.take()?;
+        if active.id != id || active.operation != operation {
+            state.active = Some(active);
+            return None;
+        }
+        if !state.closed {
+            if state.completed.len() == MAX_REQUESTS {
+                state.completed.pop_front();
+            }
+            state.completed.push_back((id, operation, active.cleanup));
+        }
+        active
+            .cancelled
+            .load(Ordering::Acquire)
+            .then_some(active.cleanup)
+    }
+
     pub fn push(&self, frame: Frame) -> bool {
         let mut state = self.state.lock().unwrap();
         if state.closed {
@@ -87,6 +213,7 @@ impl Inbox {
             && (frame.operation == bridge::QR || frame.operation >= 0x0100)
             && frame.payload.is_empty()
         {
+            let mut cleanup = Cleanup::Unknown;
             if let Some(index) = state.requests.iter().position(|request| {
                 request.kind == bridge::REQUEST
                     && request.id == frame.id
@@ -94,21 +221,52 @@ impl Inbox {
             }) {
                 let request = state.requests.remove(index).unwrap();
                 state.bytes -= bridge::HEADER + request.payload.len();
+                cleanup = Cleanup::for_request(&request);
+            } else if let Some(active) = &state.active
+                && active.id == frame.id
+                && active.operation == frame.operation
+            {
+                active.cancelled.store(true, Ordering::Release);
+                cleanup = active.cleanup;
+            } else if let Some((_, _, completed)) = state
+                .completed
+                .iter()
+                .find(|(id, op, _)| *id == frame.id && *op == frame.operation)
+            {
+                cleanup = *completed;
             }
             // Preserve a bounded control event for active/future service cleanup.
-            if state
-                .cancellations
-                .iter()
-                .any(|cancel| cancel.id == frame.id && cancel.operation == frame.operation)
-            {
+            if state.cancellations.iter().any(|cancel| {
+                cancel.frame.id == frame.id && cancel.frame.operation == frame.operation
+            }) {
                 return true;
             }
             if state.cancellations.len() < MAX_REQUESTS {
-                state.cancellations.push_back(frame);
+                state.cancellations.push_back(Control { frame, cleanup });
                 self.changed.notify_one();
                 return true;
             }
         } else {
+            if frame.kind == bridge::REQUEST && frame.id != 0 {
+                // The managed writer allocates IDs under its frame-write lock.
+                // Enforce non-reuse with constant space, including scanner IDs.
+                if frame.id <= state.last_request_id {
+                    let reply = frame.error(1, "application request ID reused or out of order");
+                    state.close(Some(Failure {
+                        error: bridge::invalid("application request ID reused or out of order"),
+                        reply: Some(reply),
+                    }));
+                    self.changed.notify_one();
+                    return false;
+                }
+                state.last_request_id = frame.id;
+                if frame.operation == bridge::SHUTDOWN
+                    && frame.payload.is_empty()
+                    && let Some(active) = &state.active
+                {
+                    active.cancelled.store(true, Ordering::Release);
+                }
+            }
             let size = bridge::HEADER + frame.payload.len();
             if state.requests.len() < MAX_REQUESTS && size <= MAX_BYTES - state.bytes {
                 state.bytes += size;

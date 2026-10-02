@@ -50,14 +50,19 @@ public record RoundsState(
 
 public static class RoundStateUpdater
 {
-	public static MessageHandler<RoundUpdateMessage, RoundsState> Create(IWabiSabiApiRequestHandler arenaRequestHandler, TimeProvider? timeProvider = null) =>
-		(msg, state, cancellationToken) => ProcessMessageAsync(msg, state, arenaRequestHandler, timeProvider ?? TimeProvider.System, cancellationToken);
+	public static MessageHandler<RoundUpdateMessage, RoundsState> Create(
+		IWabiSabiApiRequestHandler arenaRequestHandler,
+		TimeProvider? timeProvider = null,
+		Func<RoundState, CancellationToken, Task<bool>>? roundIdValidator = null) =>
+		(msg, state, cancellationToken) => ProcessMessageAsync(msg, state, arenaRequestHandler, timeProvider ?? TimeProvider.System,
+			roundIdValidator ?? ((round, token) => round.IsRoundIdMatchingAsync(token)), cancellationToken);
 
 	private static async Task<RoundsState> ProcessMessageAsync(
 		RoundUpdateMessage msg,
 		RoundsState state,
 		IWabiSabiApiRequestHandler arenaRequestHandler,
 		TimeProvider timeProvider,
+		Func<RoundState, CancellationToken, Task<bool>> roundIdValidator,
 		CancellationToken cancellationToken)
 	{
 		var finished = state.Awaiters.Where(a => a.Task.IsCompleted).ToArray();
@@ -70,7 +75,7 @@ public static class RoundStateUpdater
 				{
 					try
 					{
-						var (rounds, awaiters) = await UpdateRoundsStateAsync(state, arenaRequestHandler, cancellationToken).ConfigureAwait(false);
+						var (rounds, awaiters) = await UpdateRoundsStateAsync(state, arenaRequestHandler, roundIdValidator, cancellationToken).ConfigureAwait(false);
 						state = state with
 						{
 							NextQueryTime = timeProvider.GetUtcNow().UtcDateTime + state.QueryInterval,
@@ -111,6 +116,7 @@ public static class RoundStateUpdater
 	private static async Task<(Dictionary<uint256, RoundState> Rounds, ImmutableList<RoundStateAwaiter> Awaiters)> UpdateRoundsStateAsync(
 		RoundsState state,
 		IWabiSabiApiRequestHandler arenaRequestHandler,
+		Func<RoundState, CancellationToken, Task<bool>> roundIdValidator,
 		CancellationToken cancellationToken)
 	{
 		var request = new RoundStateRequest(
@@ -125,10 +131,13 @@ public static class RoundStateUpdater
 		var newRoundStates = roundStates
 			.Where(rs => !state.Rounds.ContainsKey(rs.Id));
 
-		if (newRoundStates.Any(r => !r.IsRoundIdMatching()))
+		foreach (var round in newRoundStates)
 		{
-			throw new InvalidOperationException(
-				"Coordinator is cheating by creating rounds that do not match the parameters.");
+			if (!await roundIdValidator(round, linkedCts.Token).ConfigureAwait(false))
+			{
+				throw new InvalidOperationException(
+					"Coordinator is cheating by creating rounds that do not match the parameters.");
+			}
 		}
 
 		// Don't use ToImmutable dictionary, because that ruins the original order and makes the server unable to suggest a round preference.

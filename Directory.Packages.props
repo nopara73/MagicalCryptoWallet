@@ -6,12 +6,10 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- AspNetCore. -->
-    <PackageVersion Include="Markdown.Avalonia" Version="11.0.3" />
     <PackageVersion Include="Microsoft.AspNetCore.WebUtilities" Version="$(NetPackagesVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Caching.Abstractions" Version="$(NetPackagesVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="$(NetPackagesVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="$(NetPackagesVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.Http" Version="$(NetPackagesVersion)" />
     <PackageVersion Include="NNostr.Client" Version="0.0.55" />
     <PackageVersion Include="SkiaSharp" Version="3.119.4" />
     <PackageVersion Include="SkiaSharp.HarfBuzz" Version="3.119.4" />
@@ -40,13 +38,14 @@
     <PackageVersion Include="Avalonia.Skia" Version="$(AvaloniaVersion)" />
     <PackageVersion Include="Avalonia.Themes.Fluent" Version="$(AvaloniaVersion)" />
     <PackageVersion Include="Avalonia.Fonts.Inter" Version="$(AvaloniaVersion)" />
-    <PackageVersion Include="QRackers" Version="1.1.0" />
     <!-- UI Mobile. -->
     <PackageVersion Include="Avalonia.Android" Version="$(AvaloniaVersion)" />
     <PackageVersion Include="Xamarin.AndroidX.AppCompat" Version="1.3.1.3" />
     <PackageVersion Include="Xamarin.AndroidX.Lifecycle.ViewModel" Version="2.3.1.3" />
     <PackageVersion Include="Avalonia.iOS" Version="$(AvaloniaVersion)" />
     <!-- Testing. -->
+    <!-- QRackers also supplies runtime FlashCap capture and the ZXing test oracle. -->
+    <PackageVersion Include="QRackers" Version="1.1.0" />
     <PackageVersion Include="coverlet.collector" Version="10.0.1" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="$(NetPackagesVersion)" />
     <PackageVersion Include="xunit.v3" Version="4.0.1" />

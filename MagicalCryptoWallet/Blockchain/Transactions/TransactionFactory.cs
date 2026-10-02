@@ -222,8 +222,7 @@ public class TransactionFactory
 
 		// Build the transaction
 
-		psbt.AddKeyPaths(KeyManager);
-		psbt.AddPrevTxs(_transactionStore);
+		psbt = MagicalCryptoWallet.Mcw.Psbt.McwPsbtMetadata.Enrich(psbt, KeyManager, _transactionStore);
 
 		Transaction tx;
 		if (!parameters.TryToSign)

@@ -10,7 +10,7 @@ Executable and library hashes describe exact file bytes. License notices use UTF
 |---|---|---|---|
 | Application lifetime | Flags, silent startup, instance activation, exit codes, app/data identity, restart, crash reporting, authenticated installer handoff | `app`, `command`, `platform`; bridge lifecycle operations | Implemented host. Managed startup, instance lock and wallet cleanup remain transitional. Five-target process/package checks are the release gate. |
 | QR generation | Exact decoded text, all ECCs, versions 1–40, URI/Unicode, async receive UI, cancellation | `qr::encode`; bridge operation 1; managed bool[x,y] adapter | Gma.QrCodeNet copied encoder removed. Accept independent decoding, capacity/malformed tests, source/assembly/package audit, rendered and exported four-module-margin PNGs. |
-| PNG/rendering/camera decoding | Native Save dialog, PNG export, sharp modules, camera scan and orientation | Receive control remains managed, future PNG/UI services call portable QR directly | Avalonia, Skia, QRackers, ZXing and FlashCap remain. QR generation removal does not remove scanning/rendering dependencies. |
+| PNG/rendering/camera decoding | Native Save dialog, PNG export, sharp modules, camera scan and orientation | Receive control remains managed, acquired-image decoding now uses Rust | Avalonia, Skia and camera capture remain. QRackers supplies both the FlashCap capture APIs and the ZXing test-oracle namespaces, so the package remains until capture migrates. |
 | Formats/parsers | JSON exact numbers/legacy converters; Bitcoin encodings, URIs, transactions/PSBTs, config semantics | Future bounded portable services; immutable typed values, no platform handles | Newtonsoft/System.Text.Json, NBitcoin format callers remain until every caller is migrated. Use published vectors and differential tests; reject unintended format changes. |
 | Wallet state, cryptography and recovery | Keys, encrypted storage, address derivation, signing, fee selection, automatic CoinJoin, recovery formats and authorization | Future wallet owner with typed commands/events; reviewed first-party crypto in mcw | NBitcoin/Secp256k1, WabiSabi source/native library/embedded secp256k1 remain. Require independent vectors, synthetic regtest, recovery and crash-safety evidence before ownership transfer. |
 | Persistent storage | Existing wallet/config/SQLite formats and journal recovery; no data changes in this milestone | Future single storage owner with transactional/crash-safe boundary | SQLite and managed serializers remain. Prove read/write compatibility, interrupted writes, corruption handling and export/recovery before switching. |
@@ -23,7 +23,34 @@ Executable and library hashes describe exact file bytes. License notices use UTF
 
 ## Removal rule
 
-Parallel work has supplied portable JSON, Bitcoin encoding/wire, payment URI, PSBT, compact-filter, SOCKS5 and PNG modules. Available [integration handoffs](../Contrib/McwMigration/Handoffs) record component evidence; the inventory leaves missing handoffs empty. Their production caller integration is pending. The inventory records them as implemented components; it continues to retain their managed/native dependencies. They are not substitutes for a migrated application responsibility until the host owner wires and verifies every caller.
+The [current incorporation record](../Contrib/McwMigration/incorporated-flows.json)
+records fourteen bounded flows whose callers now use the permanent application
+host. PSBT metadata, ownership/SLIP21 MACs, staged safe-file writes, client round
+fingerprints, fee content decoding, the application HTTP factory contract, Tor
+control/readiness, acquired-image decoding, release Markdown, address validation,
+block cache header identity, client script text, filter matching and Nostr event
+IDs have coupled native registration and real caller verification. Each entry
+identifies the preserved managed authority and dependency roles. The exact-source
+five-target workflow is still required for every release qualification.
+
+The [integration handoffs](../Contrib/McwMigration/Handoffs) preserve historical
+component-only evidence. Current incorporation status comes from the current
+record and dependency inventory; a historical pending flag does not describe the
+later composition. JSON caller replacement, payment URI, PNG, native transport,
+wallet/recovery state, SQLite, Tor runtime and whole native UI remain awaiting
+migration. No component implementation by itself is dependency removal.
+
+The Markdown package closure and the unused HTTP factory package are retired
+from current source references, restored lock graphs and Nix inputs only after
+the audit confirms their absence. Packaged-target audits enforce absence of their
+assemblies. Avalonia/Skia/QRackers (embedded FlashCap), NBitcoin/Secp256k1, Newtonsoft/NNostr,
+SQLite, bundled Tor and the managed framework retain their other responsibilities.
+The external coordinator's HTTP/Tor/reference hashing roles remain explicit.
+
+The safe-file replacement preserves main/.new/.old formats and the managed
+reader's recovery choice. Synthetic interruption tests and native flushes do not
+certify physical power-loss persistence. The replacement owns byte writes and
+temporary streams; it does not acquire wallet schema or recovery authority.
 
 The later daemon/automation API removal superseded the proposed RPC migration.
 Retiring its unused adapters and activation patches is obsolete-code removal;
@@ -53,3 +80,5 @@ Record a migration's source commit, portable API, managed callers switched, inpu
 - `Contrib/VisualPreview --qr-only` checks the actual receive control/PNG, orientation, four white modules, integral scaling, opaque black/white pixels and independent decoding.
 - Packaged synthetic-wallet tests cover normal/silent startup, activation, desktop locking, data paths and recovery; they inspect the host's owned process tree.
 - The five-platform build workflow is the shipping gate. Local Windows evidence is not proof of completed Linux/macOS builds or a signed production release.
+- `Contrib/Mcw/test-migrations.py` verifies actual bounded callers against the supplied shipping native binary, with source and binary hashes. The retained managed suites also run through that binary; they have no fallback implementation.
+- The content portable host proof requires a private cancellation reply with positive partial-work counters. Its schedule search and deterministic current-Inbox component proof remain separate evidence.

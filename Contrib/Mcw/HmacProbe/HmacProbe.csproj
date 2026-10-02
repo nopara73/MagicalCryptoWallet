@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <DisableImplicitNamespaceImports>true</DisableImplicitNamespaceImports>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../../MagicalCryptoWallet.Client/MagicalCryptoWallet.Client.csproj" />
+  </ItemGroup>
+</Project>

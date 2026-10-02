@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MagicalCryptoWallet.Mcw.Network;
 using MagicalCryptoWallet.Logging;
+using MagicalCryptoWallet.Mcw.Content;
 
 namespace MagicalCryptoWallet.WebClients.MagicalCryptoWallet;
 
@@ -25,7 +26,7 @@ public class HttpClientFactory : IMcwHttpClientFactory
 {
 	private readonly HttpClientHandlerConfiguration _httpHandlerConfig;
 	private readonly ConcurrentDictionary<string, DateTime> _expirationDatetimes = new();
-	private readonly ConcurrentDictionary<string, HttpClientHandler> _httpClientHandlers = new();
+	private readonly ConcurrentDictionary<string, HttpMessageHandler> _httpClientHandlers = new();
 	private readonly ConcurrentBag<LifetimeResolver> _lifetimeResolvers = new();
 
 	public HttpClientFactory(HttpClientHandlerConfiguration? httpHandlerConfig = null)
@@ -39,7 +40,13 @@ public class HttpClientFactory : IMcwHttpClientFactory
 	public HttpClient CreateClient(string name)
 	{
 		CheckForExpirations();
-		var httpClientHandler = _httpClientHandlers.GetOrAdd(name, CreateHttpClientHandler);
+		var httpClientHandler = _httpClientHandlers.GetOrAdd(name, identity =>
+        {
+            var transport = CreateHttpClientHandler(identity);
+            return identity == McwContentDecodingHandler.ClientName
+                ? new McwContentDecodingHandler(transport)
+                : transport;
+        });
 		return new HttpClient(httpClientHandler, false);
 	}
 
@@ -71,7 +78,8 @@ public class HttpClientFactory : IMcwHttpClientFactory
 				_expirationDatetimes.TryRemove(handlerName, out _);
 			}, _httpHandlerConfig);
 
-		handler.AutomaticDecompression = DecompressionMethods.All;
+		handler.AutomaticDecompression = name == McwContentDecodingHandler.ClientName
+            ? DecompressionMethods.None : DecompressionMethods.All;
 		return handler;
 	}
 

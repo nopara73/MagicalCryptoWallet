@@ -251,7 +251,7 @@ public class RoundStateUpdaterForTesting
 				: null;
 			var process = EventDriven(
 				new RoundsState(DateTime.UtcNow, TimeSpan.Zero, new Dictionary<uint256, RoundState>(), ImmutableList<RoundStateAwaiter>.Empty),
-				RoundStateUpdater.Create(api));
+				RoundStateUpdater.Create(api, roundIdValidator: MagicalCryptoWallet.Tests.Helpers.RoundHashReference.MatchesAsync));
 			await process(mailbox, token).ConfigureAwait(false);
 		}, cancellationToken);
 }

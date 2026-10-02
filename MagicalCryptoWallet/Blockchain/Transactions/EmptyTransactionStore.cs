@@ -14,7 +14,9 @@ public class EmptyTransactionStore : ITransactionStore
 
 	public bool TryGetTransaction(uint256 hash, [NotNullWhen(true)] out SmartTransaction? sameStx)
 	{
-		sameStx = new SmartTransaction(Transaction.Create(Network), height: Unknown);
-		return true;
+		// Fee estimation has no parent transactions. Reporting a synthetic empty
+		// transaction as available causes metadata serialization to fail.
+		sameStx = null;
+		return false;
 	}
 }

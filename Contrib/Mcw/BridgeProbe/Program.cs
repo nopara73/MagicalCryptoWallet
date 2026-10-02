@@ -21,6 +21,7 @@ var action = args[0];
 var report = args.Length > 1 ? Path.GetFullPath(args[1]) : "";
 if (action == "early-exit") { return 0; }
 if (action == "no-handshake") { await Task.Delay(TimeSpan.FromSeconds(180)); return 0; }
+if (action.StartsWith("sessions-", StringComparison.Ordinal)) { return await SessionProbe.Run(action, report); }
 if (action is "queue-eof" or "queue-overload") { return await ProbeQueueAsync(action, report); }
 if (action is "bad-version" or "bad-length" or "truncated")
 {

@@ -1,3 +1,4 @@
+using System.IO.Pipelines;
 using System.Net;
 using System.Net.Sockets;
 using System.Security.Cryptography;
@@ -15,7 +16,7 @@ namespace MagicalCryptoWallet.Tor.Control;
 /// <summary>
 /// Class to authenticate to Tor Control.
 /// </summary>
-public partial class TorControlClientFactory(RandomnessProvider random)
+public partial class TorControlClientFactory(RandomnessProvider random, Func<PipeReader, CancellationToken, Task<TorControlReply>>? readReply = null)
 {
 	/// <summary>Client HMAC-SHA256 key for AUTHCHALLENGE.</summary>
 	/// <remarks>Server's HMAC key is <c>Tor safe cookie authentication server-to-controller hash</c></remarks>
@@ -24,6 +25,7 @@ public partial class TorControlClientFactory(RandomnessProvider random)
 
 	/// <summary>Helps generate nonces for AUTH challenges.</summary>
 	private readonly RandomnessProvider _random = random;
+	private readonly Func<PipeReader, CancellationToken, Task<TorControlReply>> _readReply = readReply ?? TorControlReplyReader.ReadReplyAsync;
 
 	/// <summary>Connects to Tor Control endpoint and authenticates using safe-cookie mechanism.</summary>
 	/// <seealso href="https://gitweb.torproject.org/torspec.git/tree/control-spec.txt">See section 3.5</seealso>
@@ -44,7 +46,7 @@ public partial class TorControlClientFactory(RandomnessProvider random)
 
 		try
 		{
-			TorControlClient controlClient = clientToDispose = new(tcpClient);
+			TorControlClient controlClient = clientToDispose = new(tcpClient, _readReply);
 
 			await AuthSafeCookieOrThrowAsync(controlClient, cookieString, cancellationToken).ConfigureAwait(false);
 

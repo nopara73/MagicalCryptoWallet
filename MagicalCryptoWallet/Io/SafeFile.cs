@@ -1,6 +1,6 @@
 using System.IO;
 using System.Text;
-using MagicalCryptoWallet.Helpers;
+using MagicalCryptoWallet.Mcw.Storage;
 
 namespace MagicalCryptoWallet.Io;
 
@@ -10,7 +10,7 @@ public static class SafeFile
 	{
 		public static void SafelyWriteAllText(string filePath, string text, Encoding encoding)
 		{
-			Write(filePath, path => File.WriteAllText(path, text, encoding));
+			McwSafeFile.WriteAllText(filePath, text, encoding);
 		}
 
 		public static string SafelyReadAllText(string filePath, Encoding encoding)
@@ -20,37 +20,12 @@ public static class SafeFile
 
 		public static void SafelyWriteAllBytes(string filePath, byte[] content)
 		{
-			Write(filePath, path => File.WriteAllBytes(path, content));
+			McwSafeFile.WriteAllBytes(filePath, content);
 		}
 
 		public static byte[] SafelyReadAllBytes(string filePath)
 		{
 			return Read(filePath, File.ReadAllBytes);
-		}
-
-		private static void Write(string filePath, Action<string> write)
-		{
-			var newFilePath = filePath + ".new";
-			var oldFilePath = filePath + ".old";
-			IoHelpers.EnsureContainingDirectoryExists(newFilePath);
-
-			write(newFilePath);
-			if (File.Exists(filePath))
-			{
-				if (File.Exists(oldFilePath))
-				{
-					File.Delete(oldFilePath);
-				}
-
-				File.Move(filePath, oldFilePath);
-			}
-
-			File.Move(newFilePath, filePath);
-
-			if (File.Exists(oldFilePath))
-			{
-				File.Delete(oldFilePath);
-			}
 		}
 
 		private static T Read<T>(string filePath, Func<string, T> read)

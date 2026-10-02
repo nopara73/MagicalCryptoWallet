@@ -3,7 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:releaseHighlights="clr-namespace:MagicalCryptoWallet.Fluent.ViewModels.Dialogs.ReleaseHighlights"
-             xmlns:mdxaml="https://github.com/whistyun/Markdown.Avalonia"
+             xmlns:controls="clr-namespace:MagicalCryptoWallet.Fluent.Controls"
              mc:Ignorable="d" d:DesignWidth="428" d:DesignHeight="371"
              x:DataType="releaseHighlights:ReleaseHighlightsDialogViewModel"
              x:CompileBindings="True"
@@ -11,10 +11,10 @@
   <ContentArea Title="{Binding ReleaseHighlights.Title}"
                Caption="{Binding ReleaseHighlights.Caption}"
                EnableNext="True" NextContent="Great!">
-    <mdxaml:MarkdownScrollViewer Margin="0 -10 0 0" Markdown="{Binding ReleaseHighlights.MarkdownText}">
-      <mdxaml:MarkdownScrollViewer.Styles>
-        <StyleInclude Source="avares://MagicalCryptoWallet.Fluent/Styles/Markdown.axaml" />
-      </mdxaml:MarkdownScrollViewer.Styles>
-    </mdxaml:MarkdownScrollViewer>
+    <controls:ReleaseHighlightsText x:Name="ReleaseNotes" Margin="0 -10 0 0" Markdown="{Binding ReleaseHighlights.MarkdownText}">
+      <controls:ReleaseHighlightsText.Styles>
+        <StyleInclude Source="avares://MagicalCryptoWallet.Fluent/Styles/ReleaseHighlights.axaml" />
+      </controls:ReleaseHighlightsText.Styles>
+    </controls:ReleaseHighlightsText>
   </ContentArea>
 </UserControl>

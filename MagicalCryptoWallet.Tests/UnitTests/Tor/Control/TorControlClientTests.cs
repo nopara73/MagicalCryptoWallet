@@ -1,3 +1,4 @@
+using MagicalCryptoWallet.Coordinator.Tor;
 using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Threading;
@@ -25,7 +26,7 @@ public class TorControlClientTests
 		Pipe toClient = new();
 
 		// Set up Tor control client.
-		await using TorControlClient client = new(pipeReader: toClient.Reader, pipeWriter: toServer.Writer);
+		await using TorControlClient client = new(pipeReader: toClient.Reader, pipeWriter: toServer.Writer, readReply: CoordinatorTorControlReplyReader.ReadReplyAsync);
 
 		// Subscribe to Tor events.
 		IAsyncEnumerable<TorControlReply> events = client.ReadEventsAsync(timeoutCts.Token);
@@ -91,7 +92,7 @@ public class TorControlClientTests
 		Pipe toClient = new();
 
 		// Set up Tor control client.
-		await using TorControlClient client = new(pipeReader: toClient.Reader, pipeWriter: toServer.Writer);
+		await using TorControlClient client = new(pipeReader: toClient.Reader, pipeWriter: toServer.Writer, readReply: CoordinatorTorControlReplyReader.ReadReplyAsync);
 
 		// Subscribe to Tor events.
 		IAsyncEnumerable<TorControlReply> events = client.ReadEventsAsync(timeoutCts.Token);
@@ -107,7 +108,7 @@ public class TorControlClientTests
 			await toClient.Writer.WriteAsciiAndFlushAsync($"650 {AsyncEventContent}\r\n", timeoutCts.Token).ConfigureAwait(false);
 
 			Logger.LogTrace("Server: Wait for TAKEOWNERSHIP command.");
-			string command = await toServer.Reader.ReadLineAsync(timeoutCts.Token).ConfigureAwait(false);
+			string command = await CoordinatorTorControlLineReader.ReadLineAsync(toServer.Reader, timeoutCts.Token).ConfigureAwait(false);
 			Assert.Equal("TAKEOWNERSHIP", command);
 
 			Logger.LogTrace("Server: Send msg #3 (sync) to client in response to TAKEOWNERSHIP command.");
@@ -165,14 +166,14 @@ public class TorControlClientTests
 		Pipe toClient = new();
 
 		// Set up Tor control client.
-		await using TorControlClient client = new(pipeReader: toClient.Reader, pipeWriter: toServer.Writer);
+		await using TorControlClient client = new(pipeReader: toClient.Reader, pipeWriter: toServer.Writer, readReply: CoordinatorTorControlReplyReader.ReadReplyAsync);
 
 		Logger.LogTrace("Client: Subscribe 'CIRC' events.");
 		{
 			Task task = client.SubscribeEventsAsync(new string[] { "CIRC" }, timeoutCts.Token);
 
 			Logger.LogTrace("Server: Wait for 'SETEVENTS CIRC' command.");
-			string command = await toServer.Reader.ReadLineAsync(timeoutCts.Token);
+			string command = await CoordinatorTorControlLineReader.ReadLineAsync(toServer.Reader, timeoutCts.Token);
 			Assert.Equal("SETEVENTS CIRC", command);
 
 			Logger.LogTrace("Server: Reply with OK code.");
@@ -187,7 +188,7 @@ public class TorControlClientTests
 
 			// CIRC is already subscribed.
 			Logger.LogTrace("Server: Wait for 'SETEVENTS CIRC STATUS_CLIENT' command.");
-			string command = await toServer.Reader.ReadLineAsync(timeoutCts.Token);
+			string command = await CoordinatorTorControlLineReader.ReadLineAsync(toServer.Reader, timeoutCts.Token);
 
 			// This means that BOTH 'CIRC' and 'STATUS_CLIENT' must be subscribed now.
 			// Note: Given we count logical event subscriptions, 'CIRC' is now (logically) subscribed twice!
@@ -205,7 +206,7 @@ public class TorControlClientTests
 
 			// CIRC is already subscribed.
 			Logger.LogTrace("Server: Wait for 'SETEVENTS CIRC' command.");
-			string command = await toServer.Reader.ReadLineAsync(timeoutCts.Token);
+			string command = await CoordinatorTorControlLineReader.ReadLineAsync(toServer.Reader, timeoutCts.Token);
 
 			// This means that CIRC is still subscribed (!). The reason for that is that we count logical subscriptions,
 			// so when two distinct components can work the subscription API and they don't affect each other.
@@ -223,7 +224,7 @@ public class TorControlClientTests
 
 			// CIRC is already subscribed.
 			Logger.LogTrace("Server: Wait for 'SETEVENTS' command.");
-			string command = await toServer.Reader.ReadLineAsync(timeoutCts.Token);
+			string command = await CoordinatorTorControlLineReader.ReadLineAsync(toServer.Reader, timeoutCts.Token);
 
 			// This means that no events are subscribed.
 			Assert.Equal("SETEVENTS", command);

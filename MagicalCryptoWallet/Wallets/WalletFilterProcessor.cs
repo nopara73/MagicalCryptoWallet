@@ -151,7 +151,12 @@ public class WalletFilterProcessor : BackgroundService
 		var matchFound = false;
 		if (toTestKeys.Length != 0)
 		{
-			matchFound = filter.Filter.MatchAny(toTestKeys, filter.FilterKey);
+			if (filter.Filter.P != 19 || filter.Filter.M != 784_931)
+			{
+				throw new System.InvalidOperationException("Wallet block filters require BIP158 basic parameters.");
+			}
+			matchFound = await MagicalCryptoWallet.Mcw.CompactFilters.McwCompactFilterMatcher.MatchAnyAsync(
+				filter.FilterData, filter.Header.BlockHash.ToBytes(), toTestKeys, cancellationToken).ConfigureAwait(false);
 
 			if (matchFound)
 			{

@@ -1012,3 +1012,6 @@ fn deterministic_malformed_decoding_never_panics() {
         assert!(result.is_ok(), "case {case}");
     }
 }
+
+#[path = "bitcoin_block_fixtures/header_conformance.rs"]
+mod bounded_header;

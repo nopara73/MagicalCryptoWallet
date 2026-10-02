@@ -6,6 +6,13 @@
 //! themselves. Inline assembly and volatile byte accesses enforce that property.
 use core::ffi::c_void;
 
+// LLVM's Windows floating-point objects reference this ABI marker. It is data,
+// not a floating-point runtime implementation or initializer. Keeping it here
+// lets the scanner's native instructions link without a redistributable CRT.
+#[used]
+#[unsafe(no_mangle)]
+pub static _fltused: i32 = 0;
+
 #[cfg(target_feature = "crt-static")]
 compile_error!("Magical Crypto Wallet must not statically link a redistributable CRT");
 #[cfg(all(mcw_windows_runtime, not(panic = "abort")))]

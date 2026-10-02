@@ -3,5 +3,6 @@
   <ItemGroup>
     <ProjectReference Include="../../MagicalCryptoWallet.Fluent/MagicalCryptoWallet.Fluent.csproj" />
     <PackageReference Include="Avalonia.Headless" />
+    <PackageReference Include="QRackers" PrivateAssets="all" />
   </ItemGroup>
 </Project>

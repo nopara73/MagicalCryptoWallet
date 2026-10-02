@@ -10,6 +10,7 @@ mod windows;
 #[cfg(all(windows, mcw_windows_runtime))]
 mod windows_runtime;
 static SHUTDOWN: AtomicBool = AtomicBool::new(false);
+pub mod safe_file;
 pub fn shutdown_requested() -> bool {
     SHUTDOWN.load(Ordering::Relaxed)
 }

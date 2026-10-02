@@ -1,7 +1,9 @@
 using System.Text.Json.Nodes;
+using System.Threading;
 using NBitcoin;
 using NBitcoin.DataEncoders;
 using MagicalCryptoWallet.Helpers;
+using MagicalCryptoWallet.Mcw.Scripts;
 using ByteHelpers = WabiSabi.Helpers.ByteHelpers;
 
 namespace MagicalCryptoWallet.Serialization;
@@ -23,6 +25,9 @@ public static partial class Encode
 
 	private static JsonNode Script(Script script) =>
 		String(script.ToString());
+
+	private static JsonNode ClientScript(Script script, CancellationToken cancellationToken) =>
+		String(ScriptTextClient.Render(script.ToBytes(), cancellationToken));
 
 	public static JsonNode MoneySatoshis(Money money) =>
 		Int64(money.Satoshi);
@@ -102,15 +107,24 @@ public static partial class Decode
 	private static Decoder<Script> Script =>
 		String.Map(s => new Script(s)).Catch();
 
+	private static Decoder<Script> ClientScript(CancellationToken cancellationToken) =>
+		String.Map(s => new Script(ScriptTextClient.Parse(s, cancellationToken))).Catch();
+
 	private static Decoder<TxOut> TxOut =>
+		TxOutWithScript(Script);
+
+	private static Decoder<TxOut> TxOutWithScript(Decoder<Script> script) =>
 		Object(get => new TxOut(
 			get.Required("Value", MoneySatoshis),
-			get.Required("ScriptPubKey", Script)
+			get.Required("ScriptPubKey", script)
 		));
 
 	private static Decoder<Coin> Coin =>
+		CoinWithScript(Script);
+
+	private static Decoder<Coin> CoinWithScript(Decoder<Script> script) =>
 		Object(get => new Coin(
 			get.Required("Outpoint", OutPoint),
-			get.Required("TxOut", TxOut)
+			get.Required("TxOut", TxOutWithScript(script))
 		));
 }

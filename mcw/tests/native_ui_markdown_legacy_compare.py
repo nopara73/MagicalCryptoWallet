@@ -17,11 +17,11 @@ def blocks(document):
              [(run["Text"], run["Style"], run["Link"]) for run in block["Runs"]])
             for block in document["Blocks"]]
 
-def compare(output, host=False):
+def compare(output, host=False, inputs=None):
     results = []
     for record in EXPECTED["records"]:
         assert hashlib.sha256(record["markdown"].encode()).hexdigest() == record["markdown_sha256"]
-        source = (ROOT/".artifacts/native-ui-markdown-inputs"/record["fixture"]).read_text(encoding="utf-8")
+        source = ((inputs or ROOT/".artifacts/native-ui-markdown-inputs")/record["fixture"]).read_text(encoding="utf-8")
         assert source == record["markdown"], "Reference input changed: " + record["fixture"]
         name = Path(record["fixture"]).stem + (".host.json" if host else ".json")
         actual = json.loads((output/name if host else output/"render"/name).read_text())
@@ -35,5 +35,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, default=ROOT/".artifacts/native-ui-markdown-verification")
     parser.add_argument("--host", action="store_true")
+    parser.add_argument("--inputs", type=Path)
     args = parser.parse_args()
-    compare(args.output, args.host)
+    compare(args.output, args.host, args.inputs)

@@ -2,6 +2,7 @@ using System.Net.Http;
 using System.Net.Mime;
 using System.Text;
 using MagicalCryptoWallet.Mcw.Network;
+using MagicalCryptoWallet.Mcw.Scripts;
 using MagicalCryptoWallet.Serialization;
 using MagicalCryptoWallet.WabiSabi.Coordinator.PostRequests;
 using MagicalCryptoWallet.WabiSabi.Models;
@@ -64,7 +65,7 @@ public class WabiSabiHttpApiClient : IWabiSabiApiRequestHandler
 
 	private async Task<string> InternalSendAsync<TRequest>(RemoteAction action, TRequest request, CancellationToken cancellationToken) where TRequest : class
 	{
-		var jsonRequest = JsonEncoder.ToString(request, Encode.CoordinatorMessage);
+		var jsonRequest = JsonEncoder.ToString(request, value => ClientScriptTextJson.EncodeRequest(value, cancellationToken));
 		using var response = await InternalSendAsync(action, jsonRequest, cancellationToken).ConfigureAwait(false);
 
 		if (!response.IsSuccessStatusCode)
@@ -83,7 +84,7 @@ public class WabiSabiHttpApiClient : IWabiSabiApiRequestHandler
 	private async Task<TResponse> SendAndReceiveAsync<TRequest, TResponse>(RemoteAction action, TRequest request, CancellationToken cancellationToken) where TRequest : class
 	{
 		var jsonString = await InternalSendAsync(action, request, cancellationToken).ConfigureAwait(false);
-		return Decode.CoordinatorMessage<TResponse>(jsonString);
+		return ClientScriptTextJson.DecodeResponse<TResponse>(jsonString, cancellationToken);
 	}
 
 	private static string GetUriEndPoint(RemoteAction action) =>

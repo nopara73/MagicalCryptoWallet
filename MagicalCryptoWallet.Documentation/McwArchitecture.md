@@ -20,7 +20,7 @@ The eventual native UI calls the same portable Rust services directly. Delete th
 - `qr` owns Model 2 versions 1–40, all correction levels, numeric/alphanumeric/UTF-8 byte modes, ECI 26 for non-ASCII input, Reed-Solomon interleaving, function patterns and deterministic minimum-penalty masking. It preserves the exact text, including whitespace and an explicitly supplied BOM.
 - `bridge` translates typed frames into service calls. Domain code is independent of the transport and has `forbid(unsafe_code)`.
 - `platform` contains native bindings, unsafe code, shutdown handlers, Windows job ownership and the first-party Windows runtime entry/TLS/memory boundary.
-- The managed child exclusively owns wallet state, keys, files, synchronization and credentials for this milestone. The Rust host neither opens nor rewrites wallet data.
+- The managed child exclusively owns wallet state, keys, schemas, synchronization and credentials. Its SafeFile adapter supplies already serialized bytes and an explicit path to the Rust file writer. Rust owns only that bounded write operation and its temporary stream; the managed reader and recovery policy remain authoritative.
 
 Only Rust's standard library and native OS APIs are allowed. Cargo normal/build/test dependency sections remain empty. Replacing a dependency must include its non-OS dependencies in this same executable; no feature-specific companion program, native library or bundled runtime is an acceptable replacement. The existing managed and bundled programs remain explicit transitional components.
 
@@ -56,9 +56,9 @@ Future entropy remains a platform responsibility and must return an error when
 native OS entropy is unavailable; no entropy implementation is added by QR work.
 
 The following service ranges are reserved for later bounded migrations.
-Registration is a separate integration change; reserving a range implements no
-service, authorizes no whole-subsystem rewrite and removes no dependency. This
-milestone switches QR only. Later integrations should select independently
+Reserving a range implements no service, authorizes no whole-subsystem rewrite
+and removes no dependency. The QR foundation now also hosts the bounded
+integrations listed below. Later integrations should select independently
 replaceable dependencies or small responsibilities with verified production
 callers. Completed portable codec ranges `0x0200` to
 `0x0500`, `0x0700` and `0x0800` remain reserved for their existing handoffs.
@@ -105,7 +105,19 @@ the backlog and requests graceful child cleanup. Queue overflow returns typed
 resource-limit error 4 when a request can be identified, then shuts down the
 connection. Request IDs are unique for the entire connection: the managed owner
 allocates increasing IDs and never reuses a completed or canceled ID. Arrival
-order may differ under concurrent writes; services must not infer ordering from IDs.
+order also increases: allocation and the complete frame write share the managed
+write lock. The native reader rejects reuse and non-increasing request IDs using
+one scalar high-water mark, including IDs whose earlier work has completed.
+
+Queued cancellation retains only a typed session/ticket prefix, clears the
+discarded frame, and releases the actual PSBT, file, Tor or scanner resource.
+The dispatcher retains at most 256 payload-free completion receipts for late
+cancellation. Older unknown cancellation is harmless. A live per-request atomic
+flag lets Markdown/Tor/content work observe reader-side CANCEL, EOF and overload
+while dispatch is occupied. Scanner registration shares the same ingress and
+signals its decoder handle immediately. Finish cleanup handles cancellation
+between a service return and acknowledgement. Connection closure destroys every
+connection-owned session and temporary stream.
 
 All integers are little-endian. Each frame begins with a **u32 body length** in bytes, followed by this 16-byte header and its typed payload. Body length must be 16–1,048,576; validate it before allocation.
 
@@ -131,7 +143,51 @@ Kinds: hello=1, response=2, request=3, error=4, cancel=5. The child sends hello 
 
 A string list is u32 count (maximum 256), then repeated u32 byte length plus strict UTF-8 bytes, with no NUL or trailing data. Error payloads are u16 code and a UTF-8 diagnostic: invalid request=1, capacity/content=2, unsupported operation=3. Diagnostics never echo input.
 
-The managed adapter serializes writes so concurrent callers cannot interleave frames, validates response shape and operation IDs, and bounds outstanding requests. Disposal/cancellation releases pending completions immediately; late replies are drained. The host validates versions/header/operations, bounds its receive queue and uses a 15-second startup handshake deadline. A broken connection fails pending calls and triggers existing graceful termination. QR failures follow the existing receive-screen error dialog; there is no legacy fallback.
+The managed adapter serializes writes so concurrent callers cannot interleave frames, validates response shape and operation IDs, and bounds outstanding requests. Disposal/cancellation releases pending completions immediately; late replies are drained. Failure closes admission before completing pending calls, including calls racing with disconnection. Native rejections expose `McwServiceException.Operation` and `.Code`; diagnostic payload text is validated and discarded. Request/frame/error buffers receive best-effort clearing, without a formal erasure claim. The host validates versions/header/operations, bounds its receive queue and uses a 15-second startup handshake deadline. A broken connection fails pending calls and triggers existing graceful termination. QR failures follow the existing receive-screen error dialog; there is no legacy fallback.
+
+## Bounded services in the same application
+
+These integrations migrate actual callers together with host dispatch. They do
+not confer ownership of an entire wallet, network, UI or storage subsystem.
+The [current incorporation record](../Contrib/McwMigration/incorporated-flows.json)
+identifies exact callers and remaining dependencies. Individual handoff documents
+retain their historical component evidence; their earlier pending statements
+refer to those checkpoints rather than the current composition.
+
+| Responsibility | Active native boundary | Authority retained elsewhere |
+|---|---|---|
+| PSBT metadata | `0x0600–0x0606`, inspection/enrichment and bounded transfers | Managed builder, signer, policy checks, keys and typed NBitcoin results |
+| Ownership/SLIP21 MACs | `0x0A10–0x0A12`, exact HMAC-SHA256/SHA512 results | KeyManager and spend authorization |
+| Safe-file writes | `0x1000–0x1004`, staged bytes, flush and existing rename sequence | Managed serialization, paths, reads and recovery choice |
+| Round fingerprints | `0x1200`, client validation before accepting new rounds | External coordinator calculation and managed client round state |
+| Fee response decoding | `0x0900`, bounded reverse gzip/zlib/Brotli content layers | Managed HTTP/TLS, routes, retries and all other response paths |
+| HTTP factory contract | Application-owned `IMcwHttpClientFactory`; no native opcode | Existing transport implementation and external ASP.NET framework role |
+| Tor control/readiness | `0x0F00–0x0F04` parsing/read sessions; `0x0805` loopback SOCKS readiness | Bundled Tor daemon, managed sockets/control policy, explicit managed coordinator overrides |
+| Acquired QR images | `0x1300–0x1303`, staged luminance and decoding | FlashCap camera capture, Skia image conversion and user scan flow |
+| Release highlights | `0x1100`, bounded Markdown presentation | Existing Avalonia text/link controls, theme, navigation and dialog |
+| Address validation | `0x020C`, network-aware validation and script bytes | Managed address objects, URI policy and wallet derivation |
+| Block cache identity | `0x0E00`, hash of the exact 80-byte header | Managed block parsing, consensus checks, cache and synchronization |
+| Client script text | `0x0D08–0x0D09`, parse/render | Managed Script values, signatures and external coordinator serialization |
+| Compact filter matching | `0x0702`, canonical filter and candidate matching | Managed heights, retries, reorg and synchronization state |
+| Nostr event ID | `0x0C00`, exact canonical event digest | Managed relay/update policy, retained BIP340 verification and NNostr |
+
+The JSON/hash/wire primitives used by these services are internal modules. They
+add no public modes, additional connection, Cargo dependency or shipping binary.
+When a UI becomes native it calls these same domain APIs directly.
+
+`Contrib/Mcw/test-migrations.py` compiles the current callers and exercises the
+supplied shipping host, including signed/unsigned PSBT construction, >1 MiB
+metadata, independent MAC vectors, round acceptance, Tor reply fixtures,
+historical Markdown semantics, acquired images, client serialization and Nostr
+verification. The native tests synchronize actual ingress interruption with
+Markdown/Tor progress and scanner threshold execution. Content verification
+separately requires positive partial input/output counters in a native failure
+reply; its shipping schedule search is distinct from its deterministic component
+checkpoint test. All five package jobs run these current-source proofs.
+
+Safe-file tests cover synthetic interrupted writes and artifact/recovery order.
+They do not certify persistence through a physical power loss. No wallet schema
+or storage ownership migration is implied by replacing the file-operation leaf.
 
 Ordinary managed console output is redirected to stderr before startup logging. stdout is exclusively the saved binary pipe. QR and lifecycle payloads never appear in logs or command arguments. Legacy user-supplied flags retain their existing semantics and are forwarded as application arguments.
 

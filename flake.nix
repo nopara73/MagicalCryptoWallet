@@ -75,7 +75,7 @@
           doCheck = true;
           checkPhase = ''
             unset RUSTFLAGS RUSTC_BOOTSTRAP
-            cargo test --locked --offline
+              cargo test --locked --offline -- --test-threads=1
             if readelf -d target/x86_64-unknown-linux-gnu/release/mcw | grep -E 'NEEDED.*(libgcc|libstdc|libssl|libcrypto)'; then exit 1; fi
           '';
           installPhase = "install -Dm755 target/x86_64-unknown-linux-gnu/release/mcw $out/bin/mcw";
@@ -95,6 +95,7 @@
         # Common build settings for all configurations
         commonBuildAttrs = rec {
           pname = "MagicalCryptoWallet";
+          nativeBuildInputs = [ pkgs.python3 ];
           projectFile = [
              "MagicalCryptoWallet.Coordinator/MagicalCryptoWallet.Coordinator.csproj"
              "MagicalCryptoWallet.Tests/MagicalCryptoWallet.Tests.csproj"
@@ -143,7 +144,7 @@
           doCheck = true;
           checkPhase = ''
             runHook preCheck
-            dotnet MagicalCryptoWallet.Tests/bin/Release/net10.0/linux-x64/MagicalCryptoWallet.Tests.dll \
+            python Contrib/Mcw/run-managed-tests.py --binary ${mcwHost}/bin/mcw --project MagicalCryptoWallet.Tests --prebuilt MagicalCryptoWallet.Tests/bin/Release/net10.0/linux-x64 \
               --filter-namespace "*UnitTests*" \
               --no-progress \
               --no-ansi \
@@ -157,7 +158,7 @@
           doCheck = true;
           checkPhase = ''
             runHook preCheck
-            dotnet MagicalCryptoWallet.IntegrationTests/bin/Release/net10.0/linux-x64/MagicalCryptoWallet.IntegrationTests.dll \
+            python Contrib/Mcw/run-managed-tests.py --binary ${mcwHost}/bin/mcw --project MagicalCryptoWallet.IntegrationTests --prebuilt MagicalCryptoWallet.IntegrationTests/bin/Release/net10.0/linux-x64 \
               --no-progress \
               --no-ansi \
               --output Detailed
@@ -170,12 +171,12 @@
           doCheck = true;
           checkPhase = ''
             runHook preCheck
-            dotnet MagicalCryptoWallet.Tests/bin/Release/net10.0/linux-x64/MagicalCryptoWallet.Tests.dll \
+            python Contrib/Mcw/run-managed-tests.py --binary ${mcwHost}/bin/mcw --project MagicalCryptoWallet.Tests --prebuilt MagicalCryptoWallet.Tests/bin/Release/net10.0/linux-x64 \
               --filter-namespace "*UnitTests*" \
               --no-progress \
               --no-ansi \
               --output Detailed
-            dotnet MagicalCryptoWallet.IntegrationTests/bin/Release/net10.0/linux-x64/MagicalCryptoWallet.IntegrationTests.dll \
+            python Contrib/Mcw/run-managed-tests.py --binary ${mcwHost}/bin/mcw --project MagicalCryptoWallet.IntegrationTests --prebuilt MagicalCryptoWallet.IntegrationTests/bin/Release/net10.0/linux-x64 \
               --no-progress \
               --no-ansi \
               --output Detailed

@@ -1,3 +1,4 @@
+using MagicalCryptoWallet.Coordinator.Tor;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,7 +13,7 @@ namespace MagicalCryptoWallet.Coordinator;
 
 public class TorManagerService(TorSettings torSettings, WabiSabiConfig config, IConfiguration configuration) : IHostedService
 {
-	private readonly TorManager _torManager = new(torSettings, new TorProcessManager(torSettings, new EventBus()));
+	private readonly TorManager _torManager = new(torSettings, new CoordinatorTorProcessManager(torSettings, new EventBus()));
 
 	public async Task StartAsync(CancellationToken cancellationToken)
 	{

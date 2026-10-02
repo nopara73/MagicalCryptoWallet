@@ -39,7 +39,15 @@ internal static class ContentRawHost
         // This is an injection search, not proof of work. Only the native typed
         // partial-output counters below can establish in-flight interruption.
         Thread.SpinWait(spins);
-        if (mode == "cancel") { await Write(output, 5, 1, Content, [], token).ConfigureAwait(false); }
+        if (mode == "cancel")
+        {
+            await Write(output, 5, 1, Content, [], token).ConfigureAwait(false);
+            // Queued cancellation deliberately has no response. A later sibling
+            // makes that schedule miss observable without waiting for reply 1.
+            var follow = ContentHostFixture.NativePacket(Encoding.ASCII.GetBytes("synthetic sibling"));
+            await Write(output, 3, 2, Content, follow, token).ConfigureAwait(false);
+            Array.Clear(follow);
+        }
         else if (mode == "eof") { CloseOutput(output); }
         else
         {
@@ -48,7 +56,7 @@ internal static class ContentRawHost
             await output.WriteAsync(batch.ToArray(), token).ConfigureAwait(false);
             await output.FlushAsync(token).ConfigureAwait(false);
         }
-        var partial = false; var queueLimit = false; var shutdown = false;
+        var partial = false; var queueLimit = false; var shutdown = false; var siblingSeen = false;
         ulong consumed = 0, produced = 0; byte failedLayer = 0;
         for (var frames = 0; frames < 300; frames++)
         {
@@ -67,11 +75,17 @@ internal static class ContentRawHost
                         partial = consumed > 0 && produced > 0 && produced < PlainSize && failedLayer < 3;
                     }
                     // No success body or startup-only cancellation can pass.
-                    if (mode == "cancel") { break; }
                     // A completed/startup-only saturation trial cannot prove
                     // active overload. Finish this miss rather than waiting for
                     // a shutdown that an unsaturated queue need never produce.
                     if (mode == "saturation" && !partial) { break; }
+                }
+                if (mode == "cancel" && response.Id == 2)
+                {
+                    Check(response.Kind == 2 && response.Operation == Content && response.Payload.Length == 29
+                        && response.Payload[2] == 0 && response.Payload[11] == 0, "Post-cancel sibling must survive");
+                    siblingSeen = true;
+                    break;
                 }
                 if (response.Kind == 4 && response.Id == 258 && response.Operation == Content)
                 { queueLimit = response.Payload.Length >= 2 && BinaryPrimitives.ReadUInt16LittleEndian(response.Payload) == 4; }
@@ -83,12 +97,7 @@ internal static class ContentRawHost
         if (mode == "cancel")
         {
             // The live connection and a later sibling must remain usable.
-            var follow = ContentHostFixture.NativePacket(Encoding.ASCII.GetBytes("synthetic sibling"));
-            await Write(output, 3, 2, Content, follow, token).ConfigureAwait(false);
-            var sibling = await Read(input, token).ConfigureAwait(false);
-            Check(sibling.Id == 2 && sibling.Kind == 2 && sibling.Payload.Length == 29
-                && sibling.Payload[2] == 0 && sibling.Payload[11] == 0, "Post-cancel sibling must survive");
-            Array.Clear(sibling.Payload);
+            Check(siblingSeen, "Post-cancel sibling reply required");
             await Write(output, 3, 3, 2, [], token).ConfigureAwait(false);
             var stopped = await Read(input, token).ConfigureAwait(false);
             Check(stopped.Kind == 2 && stopped.Id == 3 && stopped.Operation == 2 && stopped.Payload.Length == 0, "Orderly host shutdown acknowledgement");

@@ -1,6 +1,6 @@
 using NBitcoin;
-using NBitcoin.Crypto;
 using System.Linq;
+using MagicalCryptoWallet.Mcw.Crypto;
 
 namespace MagicalCryptoWallet.Crypto;
 
@@ -10,8 +10,16 @@ public class OwnershipIdentifier : IBitcoinSerializable, IEquatable<OwnershipIde
 	private byte[] _bytes;
 
 	public OwnershipIdentifier(Key identificationKey, Script scriptPubKey)
-		: this(Hashes.HMACSHA256(identificationKey.ToBytes(), scriptPubKey.ToBytes()))
 	{
+		var keyBytes = identificationKey.ToBytes();
+		try
+		{
+			_bytes = WalletHmac.ComputeOwnershipIdentifier(keyBytes, scriptPubKey.ToBytes());
+		}
+		finally
+		{
+			Array.Clear(keyBytes);
+		}
 	}
 
 	public OwnershipIdentifier(byte[] bytes)

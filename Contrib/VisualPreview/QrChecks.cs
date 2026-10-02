@@ -4,6 +4,8 @@ using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using MagicalCryptoWallet.Fluent.Controls;
+using MagicalCryptoWallet.Fluent.Models.UI;
+using System.Reactive.Threading.Tasks;
 using SkiaSharp;
 using ZXing;
 using ZXing.Common;
@@ -53,23 +55,10 @@ internal static class QrChecks
 
     public static void Run(string destination)
     {
-        var hostPath = Environment.GetEnvironmentVariable("MCW_TEST_EXECUTABLE")
-            ?? throw new InvalidOperationException("Set MCW_TEST_EXECUTABLE to the built Rust host.");
         const string text = "bitcoin:bc1qsynthetic?label=你好%20exact";
-        var start = new System.Diagnostics.ProcessStartInfo(hostPath)
-        {
-            RedirectStandardInput = true, RedirectStandardOutput = true, RedirectStandardError = true,
-            UseShellExecute = false, CreateNoWindow = true, StandardInputEncoding = new System.Text.UTF8Encoding(false)
-        };
-        start.ArgumentList.Add("qr"); start.ArgumentList.Add("encode");
-        using var process = System.Diagnostics.Process.Start(start)!;
-        process.StandardInput.Write(text); process.StandardInput.Close();
-        var lines = process.StandardOutput.ReadToEnd().Split('\n', StringSplitOptions.RemoveEmptyEntries);
-        process.WaitForExit();
-        if (process.ExitCode != 0) { throw new Exception(process.StandardError.ReadToEnd()); }
-        var width = int.Parse(lines[0], System.Globalization.CultureInfo.InvariantCulture);
-        var matrix = new bool[width, width];
-        for (var y = 0; y < width; y++) { for (var x = 0; x < width; x++) { matrix[x,y] = lines[y + 1][x] == '1'; } }
+        var matrix = new QrCodeGenerator().Generate(text).ToTask().GetAwaiter().GetResult();
+        var width = matrix.GetLength(0);
+        Console.WriteLine("Receive QR generator: production mcw private bridge.");
         foreach (var scale in new[] { 1.0, 1.25, 1.5, 2.0 })
         {
             var qr = new QrCode { Matrix = matrix };

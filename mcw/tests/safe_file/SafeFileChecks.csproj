@@ -19,6 +19,7 @@
     <Compile Include="$(SafeFileCandidatePath)" />
     <Compile Include="../../../MagicalCryptoWallet/Mcw/Storage/McwSafeFile.cs" />
     <Compile Include="../../../MagicalCryptoWallet/Mcw/IMcwApplicationServices.cs" />
+    <Compile Include="../../../MagicalCryptoWallet/Mcw/McwServiceException.cs" />
     <Compile Include="../../../MagicalCryptoWallet.Client/Application/ManagedApplicationHost.cs" />
   </ItemGroup>
 </Project>

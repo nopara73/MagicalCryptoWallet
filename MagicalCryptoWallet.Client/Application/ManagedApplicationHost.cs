@@ -32,6 +32,7 @@ public sealed class ManagedApplicationHost : IDisposable, IMcwApplicationService
     private readonly CancellationTokenSource _stop = new();
     private long _nextId;
     private bool _disposed;
+    private int _failed;
     private Action? _terminate;
     private IDisposable? _serviceBinding;
     private record Pending(ushort Operation, TaskCompletionSource<byte[]> Completion);
@@ -76,7 +77,16 @@ public sealed class ManagedApplicationHost : IDisposable, IMcwApplicationService
     public static ManagedApplicationHost Connect()
     {
         if (Current is not null) { throw new InvalidOperationException("The application already has a host connection."); }
-        var host = new ManagedApplicationHost(Console.OpenStandardInput(), Console.OpenStandardOutput());
+        return Connect(Console.OpenStandardInput(), Console.OpenStandardOutput());
+    }
+
+    /// <summary>Connect through owned protocol streams, including the real-host test runner.</summary>
+    public static ManagedApplicationHost Connect(Stream input, Stream output)
+    {
+        ArgumentNullException.ThrowIfNull(input);
+        ArgumentNullException.ThrowIfNull(output);
+        if (Current is not null) { throw new InvalidOperationException("The application already has a host connection."); }
+        var host = new ManagedApplicationHost(input, output);
         // Only the binary protocol may use stdout. Capture the stream first.
         Console.SetOut(Console.Error);
         Current = host;
@@ -149,27 +159,51 @@ public sealed class ManagedApplicationHost : IDisposable, IMcwApplicationService
 
     private async Task<byte[]> RequestAsync(ushort operation, byte[] payload, CancellationToken cancellationToken)
     {
-        cancellationToken.ThrowIfCancellationRequested();
-        _stop.Token.ThrowIfCancellationRequested();
-        if (!_requestSlots.Wait(0, cancellationToken)) { throw new IOException("Too many outstanding application requests."); }
-        var id = (ulong)Interlocked.Increment(ref _nextId);
-        var source = new TaskCompletionSource<byte[]>(TaskCreationOptions.RunContinuationsAsynchronously);
-        if (!_pending.TryAdd(id, new Pending(operation, source)))
-        { _requestSlots.Release(); throw new IOException("Duplicate application request."); }
         try
         {
-            await WriteAsync(3, id, operation, payload, cancellationToken).ConfigureAwait(false);
-            return await source.Task.WaitAsync(TimeSpan.FromSeconds(30), cancellationToken).ConfigureAwait(false);
-        }
-        finally
-        {
-            if (_pending.TryRemove(id, out _) && (operation == QrOperation || operation >= 0x0100) && !_stop.IsCancellationRequested)
+            cancellationToken.ThrowIfCancellationRequested();
+            _stop.Token.ThrowIfCancellationRequested();
+            if (!_requestSlots.Wait(0, cancellationToken)) { throw new IOException("Too many outstanding application requests."); }
+            ulong id = 0;
+            var source = new TaskCompletionSource<byte[]>(TaskCreationOptions.RunContinuationsAsynchronously);
+            try
             {
-                // The caller stops waiting immediately; the reader still drains late replies.
-                _ = CancelAsync(id, operation);
+                await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+                try
+                {
+                    _stop.Token.ThrowIfCancellationRequested();
+                    // IDs are allocated in wire order. The bounded native ingress
+                    // can reject reuse without retaining unbounded ID history.
+                    id = checked((ulong)Interlocked.Increment(ref _nextId));
+                    if (!_pending.TryAdd(id, new Pending(operation, source)))
+                    { throw new IOException("Duplicate application request."); }
+                    if (_stop.IsCancellationRequested) { throw new IOException("The mcw application service disconnected."); }
+                    await WriteLockedAsync(3, id, operation, payload).ConfigureAwait(false);
+                }
+                finally { _writeLock.Release(); }
+                return await source.Task.WaitAsync(TimeSpan.FromSeconds(30), cancellationToken).ConfigureAwait(false);
             }
-            _requestSlots.Release();
+            catch
+            {
+                // The reader may have removed the pending entry just before cancellation.
+                // Clear that orphaned result whenever it arrives, including this race.
+                _ = source.Task.ContinueWith(completed =>
+                {
+                    if (completed.IsCompletedSuccessfully) { Array.Clear(completed.Result); }
+                }, CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
+                throw;
+            }
+            finally
+            {
+                if (id != 0 && _pending.TryRemove(id, out _) && (operation == QrOperation || operation >= 0x0100) && !_stop.IsCancellationRequested)
+                {
+                    // The caller stops waiting immediately; the reader still drains late replies.
+                    _ = CancelAsync(id, operation);
+                }
+                _requestSlots.Release();
+            }
         }
+        finally { Array.Clear(payload); }
     }
 
     private async Task CancelAsync(ulong id, ushort operation)
@@ -180,6 +214,13 @@ public sealed class ManagedApplicationHost : IDisposable, IMcwApplicationService
 
     private async Task WriteAsync(byte kind, ulong id, ushort operation, byte[] payload, CancellationToken cancellationToken)
     {
+        await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try { await WriteLockedAsync(kind, id, operation, payload).ConfigureAwait(false); }
+        finally { _writeLock.Release(); }
+    }
+
+    private async Task WriteLockedAsync(byte kind, ulong id, ushort operation, byte[] payload)
+    {
         if (payload.Length > MaxFrame - HeaderSize) { throw new IOException("Application frame exceeds the limit."); }
         var bytes = new byte[4 + HeaderSize + payload.Length];
         BinaryPrimitives.WriteInt32LittleEndian(bytes, bytes.Length - 4);
@@ -188,15 +229,14 @@ public sealed class ManagedApplicationHost : IDisposable, IMcwApplicationService
         BinaryPrimitives.WriteUInt64LittleEndian(bytes.AsSpan(8), id);
         BinaryPrimitives.WriteUInt16LittleEndian(bytes.AsSpan(16), operation);
         payload.CopyTo(bytes, 20);
-        await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            // Cancellation must not leave a partial frame in the persistent stream.
+            // Once admitted, cancellation must not leave a partial frame.
             await _output.WriteAsync(bytes, _stop.Token).ConfigureAwait(false);
             await _output.FlushAsync(_stop.Token).ConfigureAwait(false);
         }
         catch (Exception error) { Fail(error); throw; }
-        finally { _writeLock.Release(); }
+        finally { Array.Clear(bytes); }
     }
 
     private async Task ReadLoopAsync()
@@ -210,45 +250,57 @@ public sealed class ManagedApplicationHost : IDisposable, IMcwApplicationService
                 var length = BinaryPrimitives.ReadInt32LittleEndian(prefix);
                 if (length is < HeaderSize or > MaxFrame) { throw new IOException("Invalid application frame length."); }
                 var frame = new byte[length];
-                await _input.ReadExactlyAsync(frame, _stop.Token).ConfigureAwait(false);
-                if (BinaryPrimitives.ReadUInt16LittleEndian(frame) != 1 || frame[3] != 0 || frame[14] != 0 || frame[15] != 0)
+                byte[]? payload = null;
+                var transferred = false;
+                try
                 {
-                    throw new IOException("Application protocol mismatch.");
-                }
-                var kind = frame[2];
-                var id = BinaryPrimitives.ReadUInt64LittleEndian(frame.AsSpan(4));
-                var operation = BinaryPrimitives.ReadUInt16LittleEndian(frame.AsSpan(12));
-                var payload = frame[HeaderSize..];
-                if (kind == 2 && id == 0 && operation == 0 && !_handshake.Task.IsCompleted)
-                {
-                    _handshake.TrySetResult(payload);
-                }
-                else if (kind == 3 && id == 0 && operation == ShutdownOperation && payload.Length == 0)
-                {
-                    Fail(new IOException("The application host requested shutdown."));
-                    return;
-                }
-                else if (kind is 2 or 4 && id != 0)
-                {
-                    IOException? serviceError = null;
-                    if (kind == 4)
+                    await _input.ReadExactlyAsync(frame, _stop.Token).ConfigureAwait(false);
+                    if (BinaryPrimitives.ReadUInt16LittleEndian(frame) != 1 || frame[3] != 0 || frame[14] != 0 || frame[15] != 0)
                     {
-                        if (payload.Length < 2) { throw new IOException("Invalid application error."); }
-                        var code = BinaryPrimitives.ReadUInt16LittleEndian(payload);
-                        if (code == 0) { throw new IOException("Invalid application error code."); }
-                        // Validate before removing the pending request, so malformed UTF-8
-                        // also fails that caller immediately through the disconnect path.
-                        serviceError = new IOException($"mcw service error {code}: {Utf8.GetString(payload, 2, payload.Length - 2)}");
+                        throw new IOException("Application protocol mismatch.");
                     }
-                    if (_pending.TryRemove(id, out var pending))
+                    var kind = frame[2];
+                    var id = BinaryPrimitives.ReadUInt64LittleEndian(frame.AsSpan(4));
+                    var operation = BinaryPrimitives.ReadUInt16LittleEndian(frame.AsSpan(12));
+                    payload = frame[HeaderSize..];
+                    if (kind == 2 && id == 0 && operation == 0 && !_handshake.Task.IsCompleted)
                     {
-                        if (operation != pending.Operation) { pending.Completion.TrySetException(new IOException("Application operation mismatch.")); throw new IOException("Application operation mismatch."); }
-                        if (kind == 2) { pending.Completion.TrySetResult(payload); }
-                        else { pending.Completion.TrySetException(serviceError!); }
+                        transferred = _handshake.TrySetResult(payload);
                     }
-                    // A canceled caller has released this ID; its response is drained.
+                    else if (kind == 3 && id == 0 && operation == ShutdownOperation && payload.Length == 0)
+                    {
+                        Fail(new IOException("The application host requested shutdown."));
+                        return;
+                    }
+                    else if (kind is 2 or 4 && id != 0)
+                    {
+                        IOException? serviceError = null;
+                        if (kind == 4)
+                        {
+                            if (payload.Length < 2) { throw new IOException("Invalid application error."); }
+                            var code = BinaryPrimitives.ReadUInt16LittleEndian(payload);
+                            if (code == 0) { throw new IOException("Invalid application error code."); }
+                            // Validate before removing the pending request, so malformed UTF-8
+                            // also fails that caller immediately through the disconnect path.
+                            try { _ = Utf8.GetCharCount(payload, 2, payload.Length - 2); }
+                            catch (DecoderFallbackException) { throw new IOException("Invalid application error encoding."); }
+                            serviceError = new McwServiceException(operation, code);
+                        }
+                        if (_pending.TryRemove(id, out var pending))
+                        {
+                            if (operation != pending.Operation) { pending.Completion.TrySetException(new IOException("Application operation mismatch.")); throw new IOException("Application operation mismatch."); }
+                            if (kind == 2) { transferred = pending.Completion.TrySetResult(payload); }
+                            else { pending.Completion.TrySetException(serviceError!); }
+                        }
+                        // A canceled caller has released this ID; its response is drained.
+                    }
+                    else { throw new IOException("Unexpected application message."); }
                 }
-                else { throw new IOException("Unexpected application message."); }
+                finally
+                {
+                    Array.Clear(frame);
+                    if (!transferred && payload is not null) { Array.Clear(payload); }
+                }
             }
         }
         catch (Exception error) { if (!_disposed) { Fail(error); } }
@@ -256,13 +308,14 @@ public sealed class ManagedApplicationHost : IDisposable, IMcwApplicationService
 
     private void Fail(Exception error)
     {
+        // Close admission before enumerating pending entries. An operation
+        // racing this failure must either join that enumeration or observe the
+        // closed connection after registration; it cannot wait for a timeout.
+        var firstFailure = Interlocked.Exchange(ref _failed, 1) == 0;
+        if (firstFailure) { _stop.Cancel(); }
         _handshake.TrySetException(error);
         foreach (var pair in _pending) { if (_pending.TryRemove(pair.Key, out var pending)) { pending.Completion.TrySetException(new IOException("The mcw application service disconnected.", error)); } }
-        if (!_stop.IsCancellationRequested)
-        {
-            _stop.Cancel();
-            _terminate?.Invoke();
-        }
+        if (firstFailure) { _terminate?.Invoke(); }
     }
 
     private static byte[] EncodeStrings(string[] arguments)

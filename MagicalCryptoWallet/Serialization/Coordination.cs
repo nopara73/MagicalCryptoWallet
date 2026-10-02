@@ -3,6 +3,7 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Text.Json.Nodes;
+using System.Threading;
 using System.Threading.Tasks;
 using NBitcoin;
 using WabiSabi.CredentialRequesting;
@@ -218,9 +219,15 @@ public static partial class Encode
 		]);
 
 	public static JsonNode OutputRegistrationRequest(OutputRegistrationRequest rr) =>
+		OutputRegistrationRequestWithScript(rr, Script(rr.Script));
+
+	internal static JsonNode ClientOutputRegistrationRequest(OutputRegistrationRequest rr, CancellationToken cancellationToken) =>
+		OutputRegistrationRequestWithScript(rr, ClientScript(rr.Script, cancellationToken));
+
+	private static JsonNode OutputRegistrationRequestWithScript(OutputRegistrationRequest rr, JsonNode script) =>
 		Object([
 			("RoundId", UInt256(rr.RoundId)),
-			("Script", Script(rr.Script)),
+			("Script", script),
 			("AmountCredentialRequests", RealCredentialsRequest(rr.AmountCredentialRequests)),
 			("VsizeCredentialRequests", RealCredentialsRequest(rr.VsizeCredentialRequests)),
 		]);
@@ -391,13 +398,19 @@ public static partial class Decode
 		}).Catch();
 
 	public static Decoder<InputAdded> InputAdded =>
+		InputAddedWithScript(Script);
+
+	private static Decoder<InputAdded> InputAddedWithScript(Decoder<Script> script) =>
 		Object(get => new InputAdded(
-			get.Required("Coin", Coin),
+			get.Required("Coin", CoinWithScript(script)),
 			get.Required("OwnershipProof", OwnershipProof)
 		));
 
 	public static  Decoder<OutputAdded> OutputAdded =>
-		Object(get => new OutputAdded(get.Required("Output", TxOut)));
+		OutputAddedWithScript(Script);
+
+	private static Decoder<OutputAdded> OutputAddedWithScript(Decoder<Script> script) =>
+		Object(get => new OutputAdded(get.Required("Output", TxOutWithScript(script))));
 
 	public static Decoder<RoundCreated> RoundCreated =>
 		Object(get => new RoundCreated(get.Required("RoundParameters", RoundParameters)));
@@ -411,12 +424,15 @@ public static partial class Decode
 		decoder.Map(r => (TSource) r);
 
 	private static Decoder<IEvent> RoundEvent =>
+		RoundEventWithScript(Script);
+
+	private static Decoder<IEvent> RoundEventWithScript(Decoder<Script> script) =>
 		Field("Type", String)
 			.AndThen(t => t switch
 			{
 				"RoundCreated" => Cast<IEvent, RoundCreated>(RoundCreated),
-				"InputAdded" => Cast<IEvent, InputAdded>(InputAdded),
-				"OutputAdded" => Cast<IEvent, OutputAdded>(OutputAdded),
+				"InputAdded" => Cast<IEvent, InputAdded>(InputAddedWithScript(script)),
+				"OutputAdded" => Cast<IEvent, OutputAdded>(OutputAddedWithScript(script)),
 				_ => Fail<IEvent>($"Unknown event type 't'")
 			});
 
@@ -443,25 +459,37 @@ public static partial class Decode
 		});
 
 	private static Decoder<MultipartyTransactionState> MultipartyTransactionState =>
+		MultipartyTransactionStateWithScript(Script);
+
+	private static Decoder<MultipartyTransactionState> MultipartyTransactionStateWithScript(Decoder<Script> script) =>
 			Field("Type", String).AndThen(t => t switch
 			{
-				"ConstructionState" => Cast<MultipartyTransactionState, ConstructionState>(ConstructionState),
-				"SigningState" => Cast<MultipartyTransactionState, SigningState>(SigningState),
+				"ConstructionState" => Cast<MultipartyTransactionState, ConstructionState>(ConstructionStateWithScript(script)),
+				"SigningState" => Cast<MultipartyTransactionState, SigningState>(SigningStateWithScript(script)),
 				_ => Fail<MultipartyTransactionState>($"Unknown MultipartyTransactionState '{t}'")
 			});
 
 	private static Decoder<IEvent[]> RoundEvents =>
-		Field("Events", Array(RoundEvent));
+		RoundEventsWithScript(Script);
+
+	private static Decoder<IEvent[]> RoundEventsWithScript(Decoder<Script> script) =>
+		Field("Events", Array(RoundEventWithScript(script)));
 
 	private static Decoder<ConstructionState> ConstructionState =>
-		RoundEvents.Map(events =>
+		ConstructionStateWithScript(Script);
+
+	private static Decoder<ConstructionState> ConstructionStateWithScript(Decoder<Script> script) =>
+		RoundEventsWithScript(script).Map(events =>
 		{
 			var state = new ConstructionState(null!);
 			return state with {Events = events.ToImmutableList() };
 		});
 
 	private static Decoder<SigningState> SigningState =>
-		RoundEvents.Map(events => new SigningState(null!, events));
+		SigningStateWithScript(Script);
+
+	private static Decoder<SigningState> SigningStateWithScript(Decoder<Script> script) =>
+		RoundEventsWithScript(script).Map(events => new SigningState(null!, events));
 
 	private static Decoder<InputRegistrationRequest> InputRegistrationRequest =>
 		Object(get => new InputRegistrationRequest(
@@ -542,6 +570,9 @@ public static partial class Decode
 		));
 
 	private static Decoder<RoundState> RoundState =>
+		RoundStateWithScript(Script);
+
+	private static Decoder<RoundState> RoundStateWithScript(Decoder<Script> script) =>
 		Object(get => new RoundState(
 			get.Required("id", UInt256),
 			get.Required("blameOf", UInt256),
@@ -551,7 +582,7 @@ public static partial class Decode
 			get.Required("endRoundState", Int.Map(n => (EndRoundState)n)),
 			get.Required("inputRegistrationStart", DateTimeOffset),
 			get.Required("inputRegistrationTimeout", TimeSpan),
-			get.Required("coinjoinState", MultipartyTransactionState)
+			get.Required("coinjoinState", MultipartyTransactionStateWithScript(script))
 		));
 
 	private static Decoder<RoundStateCheckpoint> RoundStateCheckpoint =>
@@ -566,8 +597,14 @@ public static partial class Decode
 		)).Catch();
 
 	private static  Decoder<RoundStateResponse> RoundStateResponse =>
+		RoundStateResponseWithScript(Script);
+
+	internal static Decoder<RoundStateResponse> ClientRoundStateResponse(CancellationToken cancellationToken) =>
+		RoundStateResponseWithScript(ClientScript(cancellationToken));
+
+	private static Decoder<RoundStateResponse> RoundStateResponseWithScript(Decoder<Script> script) =>
 		Object(get => new RoundStateResponse(
-			get.Required("roundStates", Array(RoundState))
+			get.Required("roundStates", Array(RoundStateWithScript(script)))
 		));
 
 	private static Decoder<InputBannedExceptionData> InputBannedExceptionData =>

@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType><ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../../MagicalCryptoWallet.Fluent/MagicalCryptoWallet.Fluent.csproj" />
+    <Compile Include="../../../mcw/tests/qr_scanning_managed_fixture.cs" Link="Program.cs" />
+  </ItemGroup>
+</Project>

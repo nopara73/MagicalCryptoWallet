@@ -31,7 +31,7 @@
 		<PackageReference Include="SkiaSharp.NativeAssets.Linux" />
 		<PackageReference Include="Avalonia.Themes.Fluent" />
 		<PackageReference Include="Avalonia.Fonts.Inter" />
-		<PackageReference Include="Markdown.Avalonia" />
+		<!-- QRackers also embeds FlashCap; keep capture until its own migration. -->
 		<PackageReference Include="QRackers" />
 	</ItemGroup>
 

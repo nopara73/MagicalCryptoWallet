@@ -1,3 +1,4 @@
+using MagicalCryptoWallet.Coordinator.Tor;
 using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
@@ -70,6 +71,8 @@ public class TorControlReplyReaderTest
 		Pipe pipe = new();
 		await pipe.Writer.WriteAsciiAndFlushAsync(data, timeoutCts.Token);
 		await pipe.Writer.CompleteAsync();
-		return await TorControlReplyReader.ReadReplyAsync(pipe.Reader, timeoutCts.Token);
+		// External coordinator intentionally retains this parser. Hosted wallet
+		// compatibility is verified by PrivacyControlProbe through actual Rust.
+		return await CoordinatorTorControlReplyReader.ReadReplyAsync(pipe.Reader, timeoutCts.Token);
 	}
 }

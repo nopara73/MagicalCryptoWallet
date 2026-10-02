@@ -1,3 +1,4 @@
+using MagicalCryptoWallet.Coordinator.Tor;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipelines;
@@ -34,7 +35,7 @@ public class TorManagerTests
 			WaitForTorProcessDelay = TimeSpan.FromSeconds(2),
 			IsTorRunningAsyncResult = false,
 			EnsureRunningAsyncResult = true,
-			InitTorControlAsyncResult = new TorControlClient(pipeReader: new Pipe().Reader, pipeWriter: new Pipe().Writer)  // (1)
+			InitTorControlAsyncResult = new TorControlClient(pipeReader: new Pipe().Reader, pipeWriter: new Pipe().Writer, readReply: CoordinatorTorControlReplyReader.ReadReplyAsync)  // (1)
 		};
 
 		await using (TorManager manager = new(settings, processManager))

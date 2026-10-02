@@ -22,6 +22,10 @@ foreach (var input in Directory.EnumerateFiles(inputs, "*.md"))
     var document = await MarkdownPresentation.ParseAsync(await File.ReadAllTextAsync(input));
     documents++;
     File.WriteAllText(Path.Combine(Path.GetDirectoryName(report)!, Path.GetFileNameWithoutExtension(input) + ".host.json"), JsonSerializer.Serialize(document));
+    var text = System.Text.Encoding.UTF8.GetBytes(await File.ReadAllTextAsync(input));
+    var wire = await McwApplicationServices.Current.RequestAsync(MarkdownPresentation.Operation,
+        new byte[] { MarkdownPresentation.Schema }.Concat(text).ToArray());
+    File.WriteAllBytes(Path.Combine(Path.GetDirectoryName(report)!, Path.GetFileNameWithoutExtension(input) + ".bin"), wire);
 }
 await Rejected(new byte[] { 1, 0xff });
 await Rejected(new byte[] { 2, (byte)'x' });
@@ -32,7 +36,7 @@ foreach (var (character, terminator) in new[] { ('<', '>'), ('&', ';') })
 {
     var source = new string(character, MarkdownPresentation.MaximumInputBytes - 1) + terminator;
     try { await MarkdownPresentation.ParseAsync(source); }
-    catch (IOException error) when (error.Message.Contains("Markdown capacity exceeded", StringComparison.Ordinal)) { continue; }
+    catch (McwServiceException error) when (error.Operation == MarkdownPresentation.Operation && error.Code == 2) { continue; }
     throw new InvalidOperationException("Adversarial Markdown did not hit the charged work limit.");
 }
 // Requests and cancellation share the existing stream. It remains usable after

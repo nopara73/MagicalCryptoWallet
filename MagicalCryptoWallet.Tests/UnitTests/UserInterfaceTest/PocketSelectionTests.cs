@@ -16,6 +16,30 @@ namespace MagicalCryptoWallet.Tests.UnitTests.UserInterfaceTest;
 
 public class PocketSelectionTests
 {
+	[Fact]
+	public void ForeignWalletCoinsCanBeEstimatedWithoutPreviousTransactions()
+	{
+		var manager = KeyManager.Recover(new Mnemonic("all all all all all all all all all all all all"),
+			"", Network.Main, KeyManager.GetAccountKeyPath(Network.Main, ScriptPubKeyType.Segwit));
+		var coin = BitcoinFactory.CreateSmartCoin(LabelTestExtensions.NewKey(), 1.1m);
+		var destination = BitcoinAddress.Create("bc1q7v7qfhwx55erxkc66nsv39x4azwufvy6zq8ya4", Network.Main);
+		var factory = new MagicalCryptoWallet.Blockchain.Transactions.TransactionFactory(Network.Main, manager,
+			new CoinsView(new[] { coin }), new MagicalCryptoWallet.Blockchain.Transactions.EmptyTransactionStore(Network.Main), "");
+		var intent = new MagicalCryptoWallet.Blockchain.TransactionBuilding.PaymentIntent(destination, Money.Coins(1), false, LabelsArray.Empty);
+		var parameters = new MagicalCryptoWallet.Blockchain.Transactions.TransactionParameters(intent, new FeeRate(2m),
+			true, false, new[] { coin.Outpoint }, false, false);
+		var result = factory.BuildTransaction(parameters, lockTimeSelector: () => LockTime.Zero);
+		Assert.False(result.Signed);
+		Assert.Single(result.Psbt.Inputs);
+		Assert.Equal(coin.Outpoint, result.Psbt.Inputs[0].PrevOut);
+		Assert.Null(result.Psbt.Inputs[0].NonWitnessUtxo);
+		Assert.NotNull(result.Psbt.Inputs[0].WitnessUtxo);
+		Assert.Contains(result.Transaction.Transaction.Outputs,
+			output => output.ScriptPubKey == destination.ScriptPubKey && output.Value == Money.Coins(1));
+		Assert.True(result.Fee > Money.Zero);
+		Assert.Equal(coin.Amount, result.Transaction.Transaction.Outputs.Sum(output => output.Value) + result.Fee);
+	}
+
 	private LabelSelectionViewModel CreateLabelSelectionViewModel(Money amount, LabelsArray recipient)
 	{
 		var pw = "";

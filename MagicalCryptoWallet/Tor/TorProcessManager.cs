@@ -1,6 +1,7 @@
+using System.IO.Pipelines;
 using System.Diagnostics;
 using System.IO;
-using System.Net.Sockets;
+using MagicalCryptoWallet.Mcw.Network;
 using System.Runtime.InteropServices;
 using MagicalCryptoWallet.BundledApps;
 using MagicalCryptoWallet.Crypto.Randomness;
@@ -13,20 +14,16 @@ namespace MagicalCryptoWallet.Tor;
 
 public class TorProcessManager
 {
-	private static readonly byte[] NoAuthHandshakeMsg = [
-		0x05, // Version
-		0x01, // One method
-		0x00, // No authentication
-	];
-
-	public TorProcessManager(TorSettings settings, EventBus eventBus)
+	public TorProcessManager(TorSettings settings, EventBus eventBus, Func<PipeReader, CancellationToken, Task<TorControlReply>>? readReply = null)
 	{
 		_settings = settings;
 		_eventBus = eventBus;
+		_readReply = readReply ?? TorControlReplyReader.ReadReplyAsync;
 	}
 
 	private readonly TorSettings _settings;
 	private readonly EventBus _eventBus;
+	private readonly Func<PipeReader, CancellationToken, Task<TorControlReply>> _readReply;
 
 	/// <param name="arguments">Command line arguments to start Tor OS process with.</param>
 	public virtual Process StartProcess(string arguments)
@@ -79,43 +76,19 @@ public class TorProcessManager
 	/// </summary>
 	public virtual async Task<bool> IsTorRunningAsync(CancellationToken cancellationToken)
 	{
-		if (!_settings.SocksEndpoint.TryGetHostAndPort(out var host, out var port))
-		{
-			throw new InvalidOperationException("The Tor SOCKS5 endpoint is not supported.");
-		}
-
 		try
 		{
-			using var tcp = new TcpClient(_settings.SocksEndpoint.AddressFamily);
-			await tcp.ConnectAsync(host, port.Value, cancellationToken).ConfigureAwait(false);
-
-			var networkStream = tcp.GetStream();
-
-			await networkStream.WriteAsync(NoAuthHandshakeMsg, cancellationToken).ConfigureAwait(false);
-
-			var response = new byte[2];
-			await networkStream.ReadExactlyAsync(response, cancellationToken).ConfigureAwait(false);
-			bool isTorRunning = response is [0x05, 0x00];
-
-			_eventBus.Publish(new TorConnectionStateChanged(isTorRunning));
-			return isTorRunning;
+			var result = await McwSocksProbe.CheckAsync(_settings.SocksEndpoint, cancellationToken).ConfigureAwait(false);
+			if (!result.IsReady)
+			{
+				Logger.LogInfo($"Tor SOCKS5 readiness probe failed: {result.Failure}.");
+			}
+			_eventBus.Publish(new TorConnectionStateChanged(result.IsReady));
+			return result.IsReady;
 		}
-		catch (SocketException socketException) when (socketException.SocketErrorCode == SocketError.TimedOut && cancellationToken.IsCancellationRequested)
+		catch (IOException)
 		{
-			// The expectation is that if the conditions are met that the user really canceled the operation. Rarely it might not be true but it's a reasonable assumption.
-			throw new OperationCanceledException("The operation was canceled.", socketException);
-		}
-		catch (SocketException ex)
-		{
-			// Any other socket error means Tor is not usable right now.
-			Logger.LogInfo($"Failed to connect to {_settings.SocksEndpoint}. Socket error code was {ex.SocketErrorCode} ({ex.ErrorCode}): {ex.Message}");
-			_eventBus.Publish(new TorConnectionStateChanged(false));
-			return false;
-		}
-		catch (IOException ex)
-		{
-			// Handles reading and writing operations of the network stream.
-			Logger.LogInfo($"SOCKS5 handshake with {_settings.SocksEndpoint} failed: {ex.Message}");
+			Logger.LogInfo("Tor SOCKS5 readiness service is unavailable.");
 			_eventBus.Publish(new TorConnectionStateChanged(false));
 			return false;
 		}
@@ -179,7 +152,7 @@ public class TorProcessManager
 		string cookieString = Convert.ToHexString(File.ReadAllBytes(_settings.CookieAuthFilePath));
 
 		// Authenticate.
-		TorControlClientFactory factory = new(RandomnessProviders.Secure);
+		TorControlClientFactory factory = new(RandomnessProviders.Secure, _readReply);
 		TorControlClient client = await factory.ConnectAndAuthenticateAsync(_settings.ControlEndpoint, cookieString, token).ConfigureAwait(false);
 
 		if (_settings.TerminateOnExit)

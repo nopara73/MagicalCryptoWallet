@@ -9,6 +9,7 @@ using System.Threading.Channels;
 using System.Threading.Tasks;
 using MagicalCryptoWallet.Helpers;
 using MagicalCryptoWallet.Logging;
+using MagicalCryptoWallet.Mcw.Nostr;
 
 namespace MagicalCryptoWallet.WebClients;
 
@@ -69,7 +70,7 @@ public class MagicalCryptoWalletNostrClient : IDisposable
 
 			try
 			{
-				if (nostrEvent.Id != nostrEvent.ComputeId() || !nostrEvent.Verify())
+				if (!McwNostrEventId.IsAuthentic(nostrEvent))
 				{
 					continue;
 				}

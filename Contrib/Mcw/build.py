@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Build the one shipping mcw executable and verify the empty Cargo graph."""
-import argparse, json, os, shutil, subprocess, sys
+import argparse, hashlib, json, os, shutil, subprocess, sys, zipfile
+from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -9,6 +10,17 @@ TARGETS = {"win-x64": "x86_64-pc-windows-msvc", "linux-x64": "x86_64-unknown-lin
            "osx-arm64": "aarch64-apple-darwin"}
 
 def build(rid, version="99.99.99", test=False):
+    capture = ROOT / '.artifacts/mcw-evidence' / ('native-' + rid + '-' + datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%fZ'))
+    capture.mkdir(parents=True, exist_ok=False)
+    names = {path.relative_to(ROOT).as_posix() for path in (ROOT / 'mcw').rglob('*')
+             if path.is_file() and not set(path.relative_to(ROOT).parts) & {'.artifacts', 'target', 'bin', 'obj', '__pycache__'}}
+    names.update('Contrib/Mcw/' + name for name in ('build.py', 'build-windows.ps1', 'link-linux.sh', 'audit.py'))
+    inputs = {}
+    with zipfile.ZipFile(capture / 'source-snapshot.zip', 'x', compression=zipfile.ZIP_DEFLATED) as archive:
+        for name in sorted(names):
+            captured = (ROOT / name).read_bytes()
+            inputs[name] = hashlib.sha256(captured).hexdigest()
+            archive.writestr(name, captured)
     cargo = os.environ.get("CARGO", "cargo")
     env = os.environ.copy()
     env["MCW_VERSION"] = version
@@ -61,6 +73,14 @@ def build(rid, version="99.99.99", test=False):
     binary = Path(env["CARGO_TARGET_DIR"]) / target / "release" / ("mcw.exe" if rid.startswith("win") else "mcw")
     if not binary.is_file(): raise RuntimeError("mcw build output is missing")
     subprocess.run([sys.executable, str(ROOT / "Contrib/Mcw/audit.py"), "--binary", str(binary)], check=True, env=env)
+    assert all(hashlib.sha256((ROOT / name).read_bytes()).hexdigest() == value for name, value in inputs.items()), 'Native build inputs changed during compilation'
+    result = {'rid': rid, 'target': target, 'version': version, 'native_sha256': hashlib.sha256(binary.read_bytes()).hexdigest(),
+              'source_hashes': inputs, 'source_archive_sha256': hashlib.sha256((capture / 'source-snapshot.zip').read_bytes()).hexdigest(),
+              'external_cargo_dependencies': metadata['packages'][0]['dependencies'], 'tests_requested': test,
+              'runtime_import_audit_passed': True, 'production_release': False,
+              'build_environment': {name: env.get(name) for name in ('MCW_VERSION', 'CARGO_BUILD_JOBS', 'RUSTFLAGS', 'RUSTC_BOOTSTRAP', 'MCW_NATIVE_LINKER')},
+              'passed': True}
+    (capture / 'verification.json').write_text(json.dumps(result, indent=2) + '\n', encoding='utf-8')
     return binary
 
 if __name__ == "__main__":

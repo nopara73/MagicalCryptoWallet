@@ -1,7 +1,6 @@
-using System.Linq;
 using System.Text;
 using NBitcoin;
-using static NBitcoin.Crypto.Hashes;
+using MagicalCryptoWallet.Mcw.Crypto;
 
 namespace MagicalCryptoWallet.Crypto;
 
@@ -19,12 +18,18 @@ public class Slip21Node
 
 	public Key Key => new(_data[KEY_SIZE..]);
 
-	public static Slip21Node FromSeed(byte[] seed) =>
-		new(HMACSHA512(Encoding.ASCII.GetBytes("Symmetric key seed"), seed));
+	public static Slip21Node FromSeed(byte[] seed)
+	{
+		ArgumentNullException.ThrowIfNull(seed);
+		return new(WalletHmac.DeriveSlip21Seed(seed));
+	}
 
 	public Slip21Node DeriveChild(string label) =>
 		DeriveChild(Encoding.ASCII.GetBytes(label));
 
-	public Slip21Node DeriveChild(byte[] label) =>
-		new(HMACSHA512(_data[..KEY_SIZE], label.Prepend((byte)0x00).ToArray()));
+	public Slip21Node DeriveChild(byte[] label)
+	{
+		ArgumentNullException.ThrowIfNull(label);
+		return new(WalletHmac.DeriveSlip21Child(_data.AsSpan(0, KEY_SIZE), label));
+	}
 }

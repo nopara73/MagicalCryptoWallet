@@ -6,6 +6,7 @@
 		<NoWarn>1701;1702;1705;1591;CA1031;CA1822</NoWarn>
 		<OutputType>Exe</OutputType>
 		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
 		<!-- https://xunit.net/docs/getting-started/v3/microsoft-testing-platform -->
 		<UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
@@ -21,6 +22,7 @@
 		<PackageReference Include="Microsoft.CodeAnalysis.Common" />
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
 		<PackageReference Include="xunit.v3" />
+		<PackageReference Include="QRackers" PrivateAssets="all" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -69,4 +71,8 @@
 		<Compile Include="..\Contrib\Tests\RegTestRpcProviders.cs" Link="Infrastructure\RegTestRpcProviders.cs" />
 	</ItemGroup>
 
+	<ItemGroup>
+		<ProjectReference Include="..\MagicalCryptoWallet.Client\MagicalCryptoWallet.Client.csproj" />
+		<Compile Include="..\mcw\tests\psbt_metadata_managed_fixture.cs" Link="Infrastructure\McwManagedTestHost.cs" />
+	</ItemGroup>
 </Project>

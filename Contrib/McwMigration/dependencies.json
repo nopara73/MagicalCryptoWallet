@@ -16,6 +16,12 @@
           "role": "verification"
         },
         {
+          "lock": "Contrib/Mcw/ScannerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
           "lock": "Contrib/McwMigration/NativeUiVerification/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
@@ -70,48 +76,6 @@
       "source": "nuget-lock"
     },
     {
-      "name": "Avalonia.AvaloniaEdit",
-      "version": "11.0.0",
-      "group": "native-ui",
-      "status": "retained",
-      "uses": [
-        {
-          "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        },
-        {
-          "lock": "Contrib/VisualPreview/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Tests/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        }
-      ],
-      "dependencies": {
-        "Avalonia": "11.0.0"
-      },
-      "source": "nuget-lock"
-    },
-    {
       "name": "Avalonia.BuildServices",
       "version": "11.3.2",
       "group": "native-ui",
@@ -119,6 +83,12 @@
       "uses": [
         {
           "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/ScannerProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "verification"
@@ -158,31 +128,6 @@
       "source": "nuget-lock"
     },
     {
-      "name": "Avalonia.Controls.ColorPicker",
-      "version": "11.3.22",
-      "group": "native-ui",
-      "status": "retained",
-      "uses": [
-        {
-          "lock": "Contrib/VisualPreview/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Tests/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        }
-      ],
-      "dependencies": {
-        "Avalonia": "11.3.22",
-        "Avalonia.Remote.Protocol": "11.3.22"
-      },
-      "source": "nuget-lock"
-    },
-    {
       "name": "Avalonia.Controls.TreeDataGrid",
       "version": "11.1.1",
       "group": "native-ui",
@@ -190,6 +135,12 @@
       "uses": [
         {
           "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/ScannerProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "verification"
@@ -248,32 +199,6 @@
       "source": "nuget-lock"
     },
     {
-      "name": "Avalonia.Diagnostics",
-      "version": "11.3.22",
-      "group": "native-ui",
-      "status": "retained",
-      "uses": [
-        {
-          "lock": "Contrib/VisualPreview/packages.lock.json",
-          "framework": "net10.0",
-          "type": "CentralTransitive",
-          "role": "verification"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Tests/packages.lock.json",
-          "framework": "net10.0",
-          "type": "CentralTransitive",
-          "role": "verification"
-        }
-      ],
-      "dependencies": {
-        "Avalonia": "11.3.22",
-        "Avalonia.Controls.ColorPicker": "11.3.22",
-        "Avalonia.Themes.Simple": "11.3.22"
-      },
-      "source": "nuget-lock"
-    },
-    {
       "name": "Avalonia.Fonts.Inter",
       "version": "11.3.22",
       "group": "native-ui",
@@ -281,6 +206,12 @@
       "uses": [
         {
           "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/ScannerProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "verification"
@@ -395,6 +326,12 @@
           "role": "verification"
         },
         {
+          "lock": "Contrib/Mcw/ScannerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
           "lock": "Contrib/McwMigration/NativeUiVerification/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -436,6 +373,12 @@
       "uses": [
         {
           "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/ScannerProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "verification"
@@ -483,49 +426,6 @@
       "source": "nuget-lock"
     },
     {
-      "name": "Avalonia.Svg",
-      "version": "11.0.0",
-      "group": "native-ui",
-      "status": "retained",
-      "uses": [
-        {
-          "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        },
-        {
-          "lock": "Contrib/VisualPreview/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Tests/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        }
-      ],
-      "dependencies": {
-        "Avalonia": "11.0.0",
-        "Svg.Model": "1.0.0"
-      },
-      "source": "nuget-lock"
-    },
-    {
       "name": "Avalonia.Themes.Fluent",
       "version": "11.3.22",
       "group": "native-ui",
@@ -533,6 +433,12 @@
       "uses": [
         {
           "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/ScannerProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "verification"
@@ -565,30 +471,6 @@
           "lock": "MagicalCryptoWallet.Tests/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
-          "role": "verification"
-        }
-      ],
-      "dependencies": {
-        "Avalonia": "11.3.22"
-      },
-      "source": "nuget-lock"
-    },
-    {
-      "name": "Avalonia.Themes.Simple",
-      "version": "11.3.22",
-      "group": "native-ui",
-      "status": "retained",
-      "uses": [
-        {
-          "lock": "Contrib/VisualPreview/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Tests/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
           "role": "verification"
         }
       ],
@@ -655,91 +537,6 @@
       "source": "nuget-lock"
     },
     {
-      "name": "ColorDocument.Avalonia",
-      "version": "11.0.3",
-      "group": "native-ui",
-      "status": "retained",
-      "uses": [
-        {
-          "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        },
-        {
-          "lock": "Contrib/VisualPreview/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Tests/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        }
-      ],
-      "dependencies": {
-        "Avalonia": "11.0.0",
-        "ColorTextBlock.Avalonia": "11.0.3"
-      },
-      "source": "nuget-lock"
-    },
-    {
-      "name": "ColorTextBlock.Avalonia",
-      "version": "11.0.3",
-      "group": "native-ui",
-      "status": "retained",
-      "uses": [
-        {
-          "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        },
-        {
-          "lock": "Contrib/VisualPreview/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Tests/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        }
-      ],
-      "dependencies": {
-        "Avalonia": "11.0.0"
-      },
-      "source": "nuget-lock"
-    },
-    {
       "name": "coverlet.collector",
       "version": "10.0.1",
       "group": "verification-build",
@@ -769,6 +566,12 @@
       "uses": [
         {
           "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/ScannerProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "verification"
@@ -804,86 +607,6 @@
       "source": "nuget-lock"
     },
     {
-      "name": "ExCSS",
-      "version": "4.1.4",
-      "group": "application-services",
-      "status": "retained",
-      "uses": [
-        {
-          "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        },
-        {
-          "lock": "Contrib/VisualPreview/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Tests/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        }
-      ],
-      "dependencies": {},
-      "source": "nuget-lock"
-    },
-    {
-      "name": "Fizzler",
-      "version": "1.2.1",
-      "group": "application-services",
-      "status": "retained",
-      "uses": [
-        {
-          "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        },
-        {
-          "lock": "Contrib/VisualPreview/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Tests/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        }
-      ],
-      "dependencies": {},
-      "source": "nuget-lock"
-    },
-    {
       "name": "HarfBuzzSharp",
       "version": "8.3.1.1",
       "group": "native-ui",
@@ -891,6 +614,12 @@
       "uses": [
         {
           "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/ScannerProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "verification"
@@ -945,6 +674,12 @@
           "role": "verification"
         },
         {
+          "lock": "Contrib/Mcw/ScannerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
           "lock": "Contrib/McwMigration/NativeUiVerification/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -986,6 +721,12 @@
       "uses": [
         {
           "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/ScannerProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "verification"
@@ -1037,6 +778,12 @@
           "role": "verification"
         },
         {
+          "lock": "Contrib/Mcw/ScannerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
           "lock": "Contrib/McwMigration/NativeUiVerification/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -1083,47 +830,13 @@
           "role": "verification"
         },
         {
+          "lock": "Contrib/Mcw/ScannerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
           "lock": "Contrib/McwMigration/NativeUiVerification/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        },
-        {
-          "lock": "Contrib/VisualPreview/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Tests/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        }
-      ],
-      "dependencies": {},
-      "source": "nuget-lock"
-    },
-    {
-      "name": "HtmlAgilityPack",
-      "version": "1.11.42",
-      "group": "application-services",
-      "status": "retained",
-      "uses": [
-        {
-          "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "verification"
@@ -1163,7 +876,31 @@
       "status": "retained",
       "uses": [
         {
+          "lock": "Contrib/Mcw/BlockHeaderProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
           "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/FilterCallerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/HmacProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/PsbtProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "verification"
@@ -1172,7 +909,13 @@
           "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
-          "role": "application"
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/ScannerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
         },
         {
           "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
@@ -1244,7 +987,7 @@
           "lock": "mcw/tests/nostr_host/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
-          "role": "application"
+          "role": "verification"
         }
       ],
       "dependencies": {},
@@ -1257,7 +1000,31 @@
       "status": "retained",
       "uses": [
         {
+          "lock": "Contrib/Mcw/BlockHeaderProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
           "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/FilterCallerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/HmacProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/PsbtProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "verification"
@@ -1266,7 +1033,13 @@
           "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
-          "role": "application"
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/ScannerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
         },
         {
           "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
@@ -1338,233 +1111,10 @@
           "lock": "mcw/tests/nostr_host/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
-          "role": "application"
+          "role": "verification"
         }
       ],
       "dependencies": {},
-      "source": "nuget-lock"
-    },
-    {
-      "name": "Markdown.Avalonia",
-      "version": "11.0.3",
-      "group": "native-ui",
-      "status": "retained",
-      "uses": [
-        {
-          "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
-          "framework": "net10.0",
-          "type": "CentralTransitive",
-          "role": "verification"
-        },
-        {
-          "lock": "Contrib/VisualPreview/packages.lock.json",
-          "framework": "net10.0",
-          "type": "CentralTransitive",
-          "role": "verification"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
-          "framework": "net10.0",
-          "type": "CentralTransitive",
-          "role": "application"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Direct",
-          "role": "application"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Tests/packages.lock.json",
-          "framework": "net10.0",
-          "type": "CentralTransitive",
-          "role": "verification"
-        }
-      ],
-      "dependencies": {
-        "Markdown.Avalonia.Html": "11.0.3",
-        "Markdown.Avalonia.Svg": "11.0.3",
-        "Markdown.Avalonia.SyntaxHigh": "11.0.3",
-        "Markdown.Avalonia.Tight": "11.0.3"
-      },
-      "source": "nuget-lock"
-    },
-    {
-      "name": "Markdown.Avalonia.Html",
-      "version": "11.0.3",
-      "group": "native-ui",
-      "status": "retained",
-      "uses": [
-        {
-          "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        },
-        {
-          "lock": "Contrib/VisualPreview/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Tests/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        }
-      ],
-      "dependencies": {
-        "Avalonia": "11.0.0",
-        "ColorDocument.Avalonia": "11.0.3",
-        "ColorTextBlock.Avalonia": "11.0.3",
-        "HtmlAgilityPack": "1.11.42",
-        "Markdown.Avalonia.SyntaxHigh": "11.0.3",
-        "Markdown.Avalonia.Tight": "11.0.3"
-      },
-      "source": "nuget-lock"
-    },
-    {
-      "name": "Markdown.Avalonia.Svg",
-      "version": "11.0.3",
-      "group": "native-ui",
-      "status": "retained",
-      "uses": [
-        {
-          "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        },
-        {
-          "lock": "Contrib/VisualPreview/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Tests/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        }
-      ],
-      "dependencies": {
-        "Avalonia": "11.0.0",
-        "Avalonia.Svg": "11.0.0",
-        "Markdown.Avalonia.Tight": "11.0.3"
-      },
-      "source": "nuget-lock"
-    },
-    {
-      "name": "Markdown.Avalonia.SyntaxHigh",
-      "version": "11.0.3",
-      "group": "native-ui",
-      "status": "retained",
-      "uses": [
-        {
-          "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        },
-        {
-          "lock": "Contrib/VisualPreview/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Tests/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        }
-      ],
-      "dependencies": {
-        "Avalonia": "11.0.0",
-        "Avalonia.AvaloniaEdit": "11.0.0"
-      },
-      "source": "nuget-lock"
-    },
-    {
-      "name": "Markdown.Avalonia.Tight",
-      "version": "11.0.3",
-      "group": "native-ui",
-      "status": "retained",
-      "uses": [
-        {
-          "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        },
-        {
-          "lock": "Contrib/VisualPreview/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Tests/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        }
-      ],
-      "dependencies": {
-        "Avalonia": "11.0.0",
-        "ColorDocument.Avalonia": "11.0.3",
-        "ColorTextBlock.Avalonia": "11.0.3"
-      },
       "source": "nuget-lock"
     },
     {
@@ -1575,6 +1125,12 @@
       "uses": [
         {
           "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/ScannerProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "verification"
@@ -1619,6 +1175,18 @@
       "group": "application-services",
       "status": "retained",
       "uses": [
+        {
+          "lock": "Contrib/Mcw/BlockHeaderProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/FilterCallerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
         {
           "lock": "MagicalCryptoWallet.IntegrationTests/packages.lock.json",
           "framework": "net10.0",
@@ -1690,7 +1258,31 @@
       "status": "retained",
       "uses": [
         {
+          "lock": "Contrib/Mcw/BlockHeaderProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
           "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/FilterCallerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/HmacProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/PsbtProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "verification"
@@ -1699,7 +1291,13 @@
           "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
-          "role": "application"
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/ScannerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
         },
         {
           "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
@@ -1759,7 +1357,7 @@
           "lock": "mcw/tests/nostr_host/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
-          "role": "application"
+          "role": "verification"
         }
       ],
       "dependencies": {
@@ -1773,6 +1371,18 @@
       "group": "application-services",
       "status": "retained",
       "uses": [
+        {
+          "lock": "Contrib/Mcw/BlockHeaderProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/FilterCallerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
         {
           "lock": "Contrib/Releases/Publisher/packages.lock.json",
           "framework": "net10.0",
@@ -1846,7 +1456,31 @@
       "status": "retained",
       "uses": [
         {
+          "lock": "Contrib/Mcw/BlockHeaderProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Direct",
+          "role": "verification"
+        },
+        {
           "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Direct",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/FilterCallerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Direct",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/HmacProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Direct",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/PsbtProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Direct",
           "role": "verification"
@@ -1855,7 +1489,13 @@
           "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Direct",
-          "role": "application"
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/ScannerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Direct",
+          "role": "verification"
         },
         {
           "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
@@ -1939,7 +1579,7 @@
           "lock": "mcw/tests/nostr_host/packages.lock.json",
           "framework": "net10.0",
           "type": "Direct",
-          "role": "application"
+          "role": "verification"
         }
       ],
       "dependencies": {},
@@ -2017,7 +1657,31 @@
       "status": "retained",
       "uses": [
         {
+          "lock": "Contrib/Mcw/BlockHeaderProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
           "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/FilterCallerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/HmacProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/PsbtProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "verification"
@@ -2026,7 +1690,13 @@
           "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
-          "role": "application"
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/ScannerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
         },
         {
           "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
@@ -2092,7 +1762,7 @@
           "lock": "mcw/tests/nostr_host/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
-          "role": "application"
+          "role": "verification"
         }
       ],
       "dependencies": {
@@ -2109,7 +1779,31 @@
       "status": "retained",
       "uses": [
         {
+          "lock": "Contrib/Mcw/BlockHeaderProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
           "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/FilterCallerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/HmacProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/PsbtProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "verification"
@@ -2118,7 +1812,13 @@
           "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
-          "role": "application"
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/ScannerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
         },
         {
           "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
@@ -2184,7 +1884,7 @@
           "lock": "mcw/tests/nostr_host/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
-          "role": "application"
+          "role": "verification"
         }
       ],
       "dependencies": {
@@ -2199,7 +1899,31 @@
       "status": "retained",
       "uses": [
         {
+          "lock": "Contrib/Mcw/BlockHeaderProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
           "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/FilterCallerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/HmacProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/PsbtProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "verification"
@@ -2208,7 +1932,13 @@
           "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
-          "role": "application"
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/ScannerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
         },
         {
           "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
@@ -2268,7 +1998,7 @@
           "lock": "mcw/tests/nostr_host/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
-          "role": "application"
+          "role": "verification"
         }
       ],
       "dependencies": {
@@ -2283,7 +2013,31 @@
       "status": "retained",
       "uses": [
         {
+          "lock": "Contrib/Mcw/BlockHeaderProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
           "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/FilterCallerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/HmacProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/PsbtProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "verification"
@@ -2292,7 +2046,13 @@
           "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
-          "role": "application"
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/ScannerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
         },
         {
           "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
@@ -2359,76 +2119,10 @@
       "status": "retained",
       "uses": [
         {
-          "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        },
-        {
-          "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
-          "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        },
-        {
-          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        },
-        {
-          "lock": "Contrib/VisualPreview/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Client/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
-          "lock": "MagicalCryptoWallet.IntegrationTests/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        },
-        {
           "lock": "MagicalCryptoWallet.Tests/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "verification"
-        },
-        {
-          "lock": "MagicalCryptoWallet/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
-          "lock": "mcw/tests/nostr_host/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
         }
       ],
       "dependencies": {
@@ -2444,7 +2138,31 @@
       "status": "retained",
       "uses": [
         {
+          "lock": "Contrib/Mcw/BlockHeaderProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
           "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/FilterCallerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/HmacProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/PsbtProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "verification"
@@ -2453,7 +2171,13 @@
           "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
-          "role": "application"
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/ScannerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
         },
         {
           "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
@@ -2513,7 +2237,7 @@
           "lock": "mcw/tests/nostr_host/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
-          "role": "application"
+          "role": "verification"
         }
       ],
       "dependencies": {
@@ -2528,76 +2252,10 @@
       "status": "retained",
       "uses": [
         {
-          "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        },
-        {
-          "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
-          "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        },
-        {
-          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        },
-        {
-          "lock": "Contrib/VisualPreview/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Client/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
-          "lock": "MagicalCryptoWallet.IntegrationTests/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        },
-        {
           "lock": "MagicalCryptoWallet.Tests/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "verification"
-        },
-        {
-          "lock": "MagicalCryptoWallet/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
-          "lock": "mcw/tests/nostr_host/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
         }
       ],
       "dependencies": {
@@ -2715,76 +2373,10 @@
       "status": "retained",
       "uses": [
         {
-          "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        },
-        {
-          "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
-          "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        },
-        {
-          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        },
-        {
-          "lock": "Contrib/VisualPreview/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Client/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
-          "lock": "MagicalCryptoWallet.IntegrationTests/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        },
-        {
           "lock": "MagicalCryptoWallet.Tests/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "verification"
-        },
-        {
-          "lock": "MagicalCryptoWallet/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
-          "lock": "mcw/tests/nostr_host/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
         }
       ],
       "dependencies": {
@@ -2799,7 +2391,31 @@
       "status": "retained",
       "uses": [
         {
+          "lock": "Contrib/Mcw/BlockHeaderProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
           "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/FilterCallerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/HmacProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/PsbtProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "verification"
@@ -2808,7 +2424,13 @@
           "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
-          "role": "application"
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/ScannerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
         },
         {
           "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
@@ -2868,7 +2490,7 @@
           "lock": "mcw/tests/nostr_host/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
-          "role": "application"
+          "role": "verification"
         }
       ],
       "dependencies": {},
@@ -2897,76 +2519,10 @@
       "status": "retained",
       "uses": [
         {
-          "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        },
-        {
-          "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
-          "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        },
-        {
-          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        },
-        {
-          "lock": "Contrib/VisualPreview/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Client/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
-          "lock": "MagicalCryptoWallet.IntegrationTests/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        },
-        {
           "lock": "MagicalCryptoWallet.Tests/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "verification"
-        },
-        {
-          "lock": "MagicalCryptoWallet/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
-          "lock": "mcw/tests/nostr_host/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
         }
       ],
       "dependencies": {
@@ -2983,7 +2539,31 @@
       "status": "retained",
       "uses": [
         {
+          "lock": "Contrib/Mcw/BlockHeaderProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
           "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/FilterCallerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/HmacProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/PsbtProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "verification"
@@ -2992,7 +2572,13 @@
           "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
-          "role": "application"
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/ScannerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
         },
         {
           "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
@@ -3052,7 +2638,7 @@
           "lock": "mcw/tests/nostr_host/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
-          "role": "application"
+          "role": "verification"
         }
       ],
       "dependencies": {
@@ -3068,7 +2654,31 @@
       "status": "retained",
       "uses": [
         {
+          "lock": "Contrib/Mcw/BlockHeaderProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
           "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/FilterCallerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/HmacProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/PsbtProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "verification"
@@ -3077,7 +2687,13 @@
           "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
-          "role": "application"
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/ScannerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
         },
         {
           "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
@@ -3137,7 +2753,7 @@
           "lock": "mcw/tests/nostr_host/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
-          "role": "application"
+          "role": "verification"
         }
       ],
       "dependencies": {
@@ -3227,7 +2843,31 @@
       "status": "retained",
       "uses": [
         {
+          "lock": "Contrib/Mcw/BlockHeaderProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
           "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/FilterCallerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/HmacProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/PsbtProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "verification"
@@ -3236,7 +2876,13 @@
           "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
-          "role": "application"
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/ScannerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
         },
         {
           "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
@@ -3296,7 +2942,7 @@
           "lock": "mcw/tests/nostr_host/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
-          "role": "application"
+          "role": "verification"
         }
       ],
       "dependencies": {
@@ -3309,171 +2955,16 @@
       "source": "nuget-lock"
     },
     {
-      "name": "Microsoft.Extensions.Http",
-      "version": "10.0.12",
-      "group": "network-privacy",
-      "status": "retained",
-      "uses": [
-        {
-          "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
-          "framework": "net10.0",
-          "type": "CentralTransitive",
-          "role": "verification"
-        },
-        {
-          "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
-          "framework": "net10.0",
-          "type": "CentralTransitive",
-          "role": "application"
-        },
-        {
-          "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
-          "framework": "net10.0",
-          "type": "CentralTransitive",
-          "role": "verification"
-        },
-        {
-          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
-          "framework": "net10.0",
-          "type": "CentralTransitive",
-          "role": "verification"
-        },
-        {
-          "lock": "Contrib/VisualPreview/packages.lock.json",
-          "framework": "net10.0",
-          "type": "CentralTransitive",
-          "role": "verification"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Client/packages.lock.json",
-          "framework": "net10.0",
-          "type": "CentralTransitive",
-          "role": "application"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
-          "framework": "net10.0",
-          "type": "CentralTransitive",
-          "role": "application"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
-          "framework": "net10.0",
-          "type": "CentralTransitive",
-          "role": "application"
-        },
-        {
-          "lock": "MagicalCryptoWallet.IntegrationTests/packages.lock.json",
-          "framework": "net10.0",
-          "type": "CentralTransitive",
-          "role": "verification"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Tests/packages.lock.json",
-          "framework": "net10.0",
-          "type": "CentralTransitive",
-          "role": "verification"
-        },
-        {
-          "lock": "MagicalCryptoWallet/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Direct",
-          "role": "application"
-        },
-        {
-          "lock": "mcw/tests/nostr_host/packages.lock.json",
-          "framework": "net10.0",
-          "type": "CentralTransitive",
-          "role": "application"
-        }
-      ],
-      "dependencies": {
-        "Microsoft.Extensions.Configuration.Abstractions": "10.0.12",
-        "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.12",
-        "Microsoft.Extensions.Diagnostics": "10.0.12",
-        "Microsoft.Extensions.Logging": "10.0.12",
-        "Microsoft.Extensions.Logging.Abstractions": "10.0.12",
-        "Microsoft.Extensions.Options": "10.0.12"
-      },
-      "source": "nuget-lock"
-    },
-    {
       "name": "Microsoft.Extensions.Logging",
       "version": "10.0.12",
       "group": "application-services",
       "status": "retained",
       "uses": [
         {
-          "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        },
-        {
-          "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
-          "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        },
-        {
-          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        },
-        {
-          "lock": "Contrib/VisualPreview/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Client/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
-          "lock": "MagicalCryptoWallet.IntegrationTests/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        },
-        {
           "lock": "MagicalCryptoWallet.Tests/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "verification"
-        },
-        {
-          "lock": "MagicalCryptoWallet/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
-          "lock": "mcw/tests/nostr_host/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
         }
       ],
       "dependencies": {
@@ -3512,7 +3003,31 @@
       "status": "retained",
       "uses": [
         {
+          "lock": "Contrib/Mcw/BlockHeaderProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
           "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/FilterCallerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/HmacProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/PsbtProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "verification"
@@ -3521,7 +3036,13 @@
           "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
-          "role": "application"
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/ScannerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
         },
         {
           "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
@@ -3581,7 +3102,7 @@
           "lock": "mcw/tests/nostr_host/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
-          "role": "application"
+          "role": "verification"
         }
       ],
       "dependencies": {
@@ -3707,7 +3228,31 @@
       "status": "retained",
       "uses": [
         {
+          "lock": "Contrib/Mcw/BlockHeaderProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
           "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/FilterCallerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/HmacProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/PsbtProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "verification"
@@ -3716,7 +3261,13 @@
           "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
-          "role": "application"
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/ScannerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
         },
         {
           "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
@@ -3776,7 +3327,7 @@
           "lock": "mcw/tests/nostr_host/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
-          "role": "application"
+          "role": "verification"
         }
       ],
       "dependencies": {
@@ -3792,76 +3343,10 @@
       "status": "retained",
       "uses": [
         {
-          "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        },
-        {
-          "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
-          "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        },
-        {
-          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        },
-        {
-          "lock": "Contrib/VisualPreview/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Client/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
-          "lock": "MagicalCryptoWallet.IntegrationTests/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        },
-        {
           "lock": "MagicalCryptoWallet.Tests/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "verification"
-        },
-        {
-          "lock": "MagicalCryptoWallet/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
-          "lock": "mcw/tests/nostr_host/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
         }
       ],
       "dependencies": {
@@ -3880,7 +3365,31 @@
       "status": "retained",
       "uses": [
         {
+          "lock": "Contrib/Mcw/BlockHeaderProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
           "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/FilterCallerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/HmacProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/PsbtProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "verification"
@@ -3889,7 +3398,13 @@
           "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
-          "role": "application"
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/ScannerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
         },
         {
           "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
@@ -3949,7 +3464,7 @@
           "lock": "mcw/tests/nostr_host/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
-          "role": "application"
+          "role": "verification"
         }
       ],
       "dependencies": {},
@@ -3962,7 +3477,31 @@
       "status": "retained",
       "uses": [
         {
+          "lock": "Contrib/Mcw/BlockHeaderProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
           "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/FilterCallerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/HmacProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/PsbtProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "verification"
@@ -3971,7 +3510,13 @@
           "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
-          "role": "application"
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/ScannerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
         },
         {
           "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
@@ -4031,7 +3576,7 @@
           "lock": "mcw/tests/nostr_host/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
-          "role": "application"
+          "role": "verification"
         }
       ],
       "dependencies": {
@@ -4061,6 +3606,18 @@
       "group": "verification-build",
       "status": "retained",
       "uses": [
+        {
+          "lock": "Contrib/Mcw/BlockHeaderProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/FilterCallerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
         {
           "lock": "MagicalCryptoWallet.IntegrationTests/packages.lock.json",
           "framework": "net10.0",
@@ -4099,6 +3656,18 @@
       "status": "retained",
       "uses": [
         {
+          "lock": "Contrib/Mcw/BlockHeaderProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/FilterCallerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
           "lock": "MagicalCryptoWallet.IntegrationTests/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -4135,6 +3704,18 @@
       "status": "retained",
       "uses": [
         {
+          "lock": "Contrib/Mcw/BlockHeaderProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/FilterCallerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
           "lock": "MagicalCryptoWallet.IntegrationTests/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -4168,6 +3749,18 @@
       "group": "verification-build",
       "status": "retained",
       "uses": [
+        {
+          "lock": "Contrib/Mcw/BlockHeaderProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/FilterCallerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
         {
           "lock": "MagicalCryptoWallet.IntegrationTests/packages.lock.json",
           "framework": "net10.0",
@@ -4205,6 +3798,18 @@
       "status": "retained",
       "uses": [
         {
+          "lock": "Contrib/Mcw/BlockHeaderProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/FilterCallerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
           "lock": "MagicalCryptoWallet.IntegrationTests/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -4239,7 +3844,31 @@
       "status": "retained",
       "uses": [
         {
+          "lock": "Contrib/Mcw/BlockHeaderProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
           "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/FilterCallerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/HmacProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/PsbtProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "verification"
@@ -4248,7 +3877,13 @@
           "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
-          "role": "application"
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/ScannerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
         },
         {
           "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
@@ -4314,7 +3949,7 @@
           "lock": "mcw/tests/nostr_host/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
-          "role": "application"
+          "role": "verification"
         }
       ],
       "dependencies": {},
@@ -4345,7 +3980,31 @@
       "status": "retained",
       "uses": [
         {
+          "lock": "Contrib/Mcw/BlockHeaderProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
           "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/FilterCallerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/HmacProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/PsbtProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "verification"
@@ -4354,7 +4013,13 @@
           "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
-          "role": "application"
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/ScannerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
         },
         {
           "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
@@ -4432,7 +4097,7 @@
           "lock": "mcw/tests/nostr_host/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
-          "role": "application"
+          "role": "verification"
         }
       ],
       "dependencies": {
@@ -4448,7 +4113,31 @@
       "status": "retained",
       "uses": [
         {
+          "lock": "Contrib/Mcw/BlockHeaderProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
           "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/FilterCallerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/HmacProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/PsbtProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "verification"
@@ -4457,7 +4146,13 @@
           "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
-          "role": "application"
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/ScannerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
         },
         {
           "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
@@ -4553,7 +4248,7 @@
           "lock": "mcw/tests/nostr_host/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
-          "role": "application"
+          "role": "verification"
         }
       ],
       "dependencies": {},
@@ -4600,7 +4295,31 @@
       "status": "retained",
       "uses": [
         {
+          "lock": "Contrib/Mcw/BlockHeaderProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
           "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/FilterCallerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/HmacProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/PsbtProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "verification"
@@ -4609,7 +4328,13 @@
           "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
-          "role": "application"
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/ScannerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
         },
         {
           "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
@@ -4687,7 +4412,7 @@
           "lock": "mcw/tests/nostr_host/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
-          "role": "application"
+          "role": "verification"
         }
       ],
       "dependencies": {},
@@ -4700,7 +4425,31 @@
       "status": "retained",
       "uses": [
         {
+          "lock": "Contrib/Mcw/BlockHeaderProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
           "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/FilterCallerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/HmacProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/PsbtProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "verification"
@@ -4709,7 +4458,13 @@
           "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
-          "role": "application"
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/ScannerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
         },
         {
           "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
@@ -4781,7 +4536,7 @@
           "lock": "mcw/tests/nostr_host/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
-          "role": "application"
+          "role": "verification"
         }
       ],
       "dependencies": {
@@ -4801,13 +4556,19 @@
         {
           "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
           "framework": "net10.0",
+          "type": "Direct",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/ScannerProbe/packages.lock.json",
+          "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "verification"
         },
         {
           "lock": "Contrib/VisualPreview/packages.lock.json",
           "framework": "net10.0",
-          "type": "CentralTransitive",
+          "type": "Direct",
           "role": "verification"
         },
         {
@@ -4825,7 +4586,7 @@
         {
           "lock": "MagicalCryptoWallet.Tests/packages.lock.json",
           "framework": "net10.0",
-          "type": "CentralTransitive",
+          "type": "Direct",
           "role": "verification"
         }
       ],
@@ -4842,6 +4603,12 @@
       "uses": [
         {
           "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/ScannerProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "verification"
@@ -4891,6 +4658,12 @@
           "role": "verification"
         },
         {
+          "lock": "Contrib/Mcw/ScannerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
           "lock": "Contrib/VisualPreview/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
@@ -4923,46 +4696,6 @@
       "source": "nuget-lock"
     },
     {
-      "name": "ShimSkiaSharp",
-      "version": "1.0.0",
-      "group": "native-ui",
-      "status": "retained",
-      "uses": [
-        {
-          "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        },
-        {
-          "lock": "Contrib/VisualPreview/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Tests/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        }
-      ],
-      "dependencies": {},
-      "source": "nuget-lock"
-    },
-    {
       "name": "SkiaSharp",
       "version": "2.88.9",
       "group": "native-ui",
@@ -4989,6 +4722,12 @@
       "uses": [
         {
           "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/ScannerProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "verification"
@@ -5055,6 +4794,12 @@
           "role": "verification"
         },
         {
+          "lock": "Contrib/Mcw/ScannerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
           "lock": "Contrib/VisualPreview/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
@@ -5111,6 +4856,12 @@
           "role": "verification"
         },
         {
+          "lock": "Contrib/Mcw/ScannerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
           "lock": "Contrib/VisualPreview/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -5146,6 +4897,12 @@
       "uses": [
         {
           "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/ScannerProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "verification"
@@ -5213,6 +4970,12 @@
           "role": "verification"
         },
         {
+          "lock": "Contrib/Mcw/ScannerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
           "lock": "Contrib/VisualPreview/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -5248,6 +5011,12 @@
       "uses": [
         {
           "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/ScannerProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "verification"
@@ -5297,6 +5066,12 @@
           "role": "verification"
         },
         {
+          "lock": "Contrib/Mcw/ScannerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
           "lock": "Contrib/VisualPreview/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -5335,6 +5110,12 @@
       "uses": [
         {
           "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/ScannerProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "verification"
@@ -5382,6 +5163,12 @@
           "role": "verification"
         },
         {
+          "lock": "Contrib/Mcw/ScannerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
           "lock": "Contrib/VisualPreview/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -5419,7 +5206,31 @@
       "status": "retained",
       "uses": [
         {
+          "lock": "Contrib/Mcw/BlockHeaderProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
           "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/FilterCallerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/HmacProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/PsbtProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "verification"
@@ -5428,7 +5239,13 @@
           "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
-          "role": "application"
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/ScannerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
         },
         {
           "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
@@ -5494,7 +5311,7 @@
           "lock": "mcw/tests/nostr_host/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
-          "role": "application"
+          "role": "verification"
         }
       ],
       "dependencies": {
@@ -5510,7 +5327,31 @@
       "status": "retained",
       "uses": [
         {
+          "lock": "Contrib/Mcw/BlockHeaderProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
           "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/FilterCallerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/HmacProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/PsbtProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "verification"
@@ -5519,7 +5360,13 @@
           "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
-          "role": "application"
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/ScannerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
         },
         {
           "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
@@ -5585,7 +5432,7 @@
           "lock": "mcw/tests/nostr_host/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
-          "role": "application"
+          "role": "verification"
         }
       ],
       "dependencies": {},
@@ -5598,7 +5445,31 @@
       "status": "retained",
       "uses": [
         {
+          "lock": "Contrib/Mcw/BlockHeaderProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
           "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/FilterCallerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/HmacProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/PsbtProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "verification"
@@ -5607,7 +5478,13 @@
           "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
-          "role": "application"
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/ScannerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
         },
         {
           "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
@@ -5673,7 +5550,7 @@
           "lock": "mcw/tests/nostr_host/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
-          "role": "application"
+          "role": "verification"
         }
       ],
       "dependencies": {},
@@ -5686,7 +5563,31 @@
       "status": "retained",
       "uses": [
         {
+          "lock": "Contrib/Mcw/BlockHeaderProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
           "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/FilterCallerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/HmacProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/PsbtProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "verification"
@@ -5695,7 +5596,13 @@
           "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
-          "role": "application"
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/ScannerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
         },
         {
           "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
@@ -5761,97 +5668,11 @@
           "lock": "mcw/tests/nostr_host/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
-          "role": "application"
+          "role": "verification"
         }
       ],
       "dependencies": {
         "SQLitePCLRaw.core": "2.1.12"
-      },
-      "source": "nuget-lock"
-    },
-    {
-      "name": "Svg.Custom",
-      "version": "1.0.0",
-      "group": "application-services",
-      "status": "retained",
-      "uses": [
-        {
-          "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        },
-        {
-          "lock": "Contrib/VisualPreview/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Tests/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        }
-      ],
-      "dependencies": {
-        "ExCSS": "4.1.4",
-        "Fizzler": "1.2.1"
-      },
-      "source": "nuget-lock"
-    },
-    {
-      "name": "Svg.Model",
-      "version": "1.0.0",
-      "group": "application-services",
-      "status": "retained",
-      "uses": [
-        {
-          "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        },
-        {
-          "lock": "Contrib/VisualPreview/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Fluent.Desktop/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Fluent/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "application"
-        },
-        {
-          "lock": "MagicalCryptoWallet.Tests/packages.lock.json",
-          "framework": "net10.0",
-          "type": "Transitive",
-          "role": "verification"
-        }
-      ],
-      "dependencies": {
-        "ShimSkiaSharp": "1.0.0",
-        "Svg.Custom": "1.0.0"
       },
       "source": "nuget-lock"
     },
@@ -5947,7 +5768,31 @@
       "status": "retained",
       "uses": [
         {
+          "lock": "Contrib/Mcw/BlockHeaderProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
           "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/FilterCallerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/HmacProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/PsbtProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "verification"
@@ -5956,7 +5801,13 @@
           "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
-          "role": "application"
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/ScannerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
         },
         {
           "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
@@ -6022,7 +5873,7 @@
           "lock": "mcw/tests/nostr_host/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
-          "role": "application"
+          "role": "verification"
         }
       ],
       "dependencies": {},
@@ -6053,7 +5904,31 @@
       "status": "retained",
       "uses": [
         {
+          "lock": "Contrib/Mcw/BlockHeaderProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
           "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/FilterCallerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/HmacProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/PsbtProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "verification"
@@ -6062,7 +5937,13 @@
           "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
-          "role": "application"
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/ScannerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
         },
         {
           "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
@@ -6128,7 +6009,7 @@
           "lock": "mcw/tests/nostr_host/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
-          "role": "application"
+          "role": "verification"
         }
       ],
       "dependencies": {
@@ -6180,6 +6061,12 @@
       "uses": [
         {
           "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/ScannerProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "verification"
@@ -6253,6 +6140,18 @@
       "group": "application-services",
       "status": "retained",
       "uses": [
+        {
+          "lock": "Contrib/Mcw/BlockHeaderProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/FilterCallerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
         {
           "lock": "MagicalCryptoWallet.IntegrationTests/packages.lock.json",
           "framework": "net10.0",
@@ -6347,6 +6246,12 @@
           "role": "verification"
         },
         {
+          "lock": "Contrib/Mcw/ScannerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "verification"
+        },
+        {
           "lock": "Contrib/VisualPreview/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
@@ -6396,6 +6301,12 @@
           "role": "verification"
         },
         {
+          "lock": "Contrib/Mcw/ScannerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
           "lock": "Contrib/VisualPreview/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -6434,6 +6345,12 @@
       "uses": [
         {
           "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/ScannerProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "verification"
@@ -6482,6 +6399,12 @@
           "role": "verification"
         },
         {
+          "lock": "Contrib/Mcw/ScannerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
           "lock": "Contrib/VisualPreview/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -6520,6 +6443,12 @@
       "uses": [
         {
           "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/ScannerProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "verification"
@@ -6568,6 +6497,12 @@
           "role": "verification"
         },
         {
+          "lock": "Contrib/Mcw/ScannerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
           "lock": "Contrib/VisualPreview/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -6606,6 +6541,12 @@
       "uses": [
         {
           "lock": "Contrib/Mcw/BridgeProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/ScannerProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "verification"
@@ -6654,6 +6595,12 @@
           "role": "verification"
         },
         {
+          "lock": "Contrib/Mcw/ScannerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
           "lock": "Contrib/VisualPreview/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -6690,6 +6637,18 @@
       "status": "retained",
       "uses": [
         {
+          "lock": "Contrib/Mcw/BlockHeaderProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/FilterCallerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
           "lock": "MagicalCryptoWallet.IntegrationTests/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -6723,6 +6682,18 @@
       "group": "verification-build",
       "status": "retained",
       "uses": [
+        {
+          "lock": "Contrib/Mcw/BlockHeaderProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Direct",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/FilterCallerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Direct",
+          "role": "verification"
+        },
         {
           "lock": "MagicalCryptoWallet.IntegrationTests/packages.lock.json",
           "framework": "net10.0",
@@ -6760,6 +6731,18 @@
       "status": "retained",
       "uses": [
         {
+          "lock": "Contrib/Mcw/BlockHeaderProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/FilterCallerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
           "lock": "MagicalCryptoWallet.IntegrationTests/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -6793,6 +6776,18 @@
       "group": "verification-build",
       "status": "retained",
       "uses": [
+        {
+          "lock": "Contrib/Mcw/BlockHeaderProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/FilterCallerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
         {
           "lock": "MagicalCryptoWallet.IntegrationTests/packages.lock.json",
           "framework": "net10.0",
@@ -6829,6 +6824,18 @@
       "group": "verification-build",
       "status": "retained",
       "uses": [
+        {
+          "lock": "Contrib/Mcw/BlockHeaderProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/FilterCallerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
         {
           "lock": "MagicalCryptoWallet.IntegrationTests/packages.lock.json",
           "framework": "net10.0",
@@ -6871,6 +6878,18 @@
       "status": "retained",
       "uses": [
         {
+          "lock": "Contrib/Mcw/BlockHeaderProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/FilterCallerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
           "lock": "MagicalCryptoWallet.IntegrationTests/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -6906,6 +6925,18 @@
       "group": "verification-build",
       "status": "retained",
       "uses": [
+        {
+          "lock": "Contrib/Mcw/BlockHeaderProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/FilterCallerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
         {
           "lock": "MagicalCryptoWallet.IntegrationTests/packages.lock.json",
           "framework": "net10.0",
@@ -6945,6 +6976,18 @@
       "status": "retained",
       "uses": [
         {
+          "lock": "Contrib/Mcw/BlockHeaderProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/FilterCallerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
           "lock": "MagicalCryptoWallet.IntegrationTests/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -6983,6 +7026,18 @@
       "status": "retained",
       "uses": [
         {
+          "lock": "Contrib/Mcw/BlockHeaderProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
+          "lock": "Contrib/Mcw/FilterCallerProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "verification"
+        },
+        {
           "lock": "MagicalCryptoWallet.IntegrationTests/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -7016,6 +7071,21 @@
   ],
   "package_references": [
     {
+      "name": "xunit.v3",
+      "project": "Contrib/Mcw/BlockHeaderProbe/BlockHeaderProbe.csproj",
+      "role": "verification"
+    },
+    {
+      "name": "QRackers",
+      "project": "Contrib/Mcw/BridgeProbe/BridgeProbe.csproj",
+      "role": "verification"
+    },
+    {
+      "name": "xunit.v3",
+      "project": "Contrib/Mcw/FilterCallerProbe/FilterCallerProbe.csproj",
+      "role": "verification"
+    },
+    {
       "name": "Avalonia.Headless",
       "project": "Contrib/McwMigration/NativeUiVerification/NativeUiVerification.csproj",
       "role": "verification"
@@ -7047,6 +7117,11 @@
     },
     {
       "name": "Avalonia.Headless",
+      "project": "Contrib/VisualPreview/MagicalCryptoWallet.VisualPreview.csproj",
+      "role": "verification"
+    },
+    {
+      "name": "QRackers",
       "project": "Contrib/VisualPreview/MagicalCryptoWallet.VisualPreview.csproj",
       "role": "verification"
     },
@@ -7126,11 +7201,6 @@
       "role": "application"
     },
     {
-      "name": "Markdown.Avalonia",
-      "project": "MagicalCryptoWallet.Fluent/MagicalCryptoWallet.Fluent.csproj",
-      "role": "application"
-    },
-    {
       "name": "QRackers",
       "project": "MagicalCryptoWallet.Fluent/MagicalCryptoWallet.Fluent.csproj",
       "role": "application"
@@ -7176,6 +7246,11 @@
       "role": "verification"
     },
     {
+      "name": "QRackers",
+      "project": "MagicalCryptoWallet.Tests/MagicalCryptoWallet.Tests.csproj",
+      "role": "verification"
+    },
+    {
       "name": "Microsoft.AspNetCore.WebUtilities",
       "project": "MagicalCryptoWallet/MagicalCryptoWallet.csproj",
       "role": "application"
@@ -7187,11 +7262,6 @@
     },
     {
       "name": "Microsoft.Extensions.Hosting.Abstractions",
-      "project": "MagicalCryptoWallet/MagicalCryptoWallet.csproj",
-      "role": "application"
-    },
-    {
-      "name": "Microsoft.Extensions.Http",
       "project": "MagicalCryptoWallet/MagicalCryptoWallet.csproj",
       "role": "application"
     },
@@ -7253,11 +7323,6 @@
   ],
   "central_pins": [
     {
-      "name": "Markdown.Avalonia",
-      "version": "11.0.3",
-      "used_reference": true
-    },
-    {
       "name": "Microsoft.AspNetCore.WebUtilities",
       "version": "10.0.12",
       "used_reference": true
@@ -7274,11 +7339,6 @@
     },
     {
       "name": "Microsoft.Extensions.Hosting.Abstractions",
-      "version": "10.0.12",
-      "used_reference": true
-    },
-    {
-      "name": "Microsoft.Extensions.Http",
       "version": "10.0.12",
       "used_reference": true
     },
@@ -7403,11 +7463,6 @@
       "used_reference": true
     },
     {
-      "name": "QRackers",
-      "version": "1.1.0",
-      "used_reference": true
-    },
-    {
       "name": "Avalonia.Android",
       "version": "11.3.22",
       "used_reference": false
@@ -7426,6 +7481,11 @@
       "name": "Avalonia.iOS",
       "version": "11.3.22",
       "used_reference": false
+    },
+    {
+      "name": "QRackers",
+      "version": "1.1.0",
+      "used_reference": true
     },
     {
       "name": "coverlet.collector",
@@ -7633,171 +7693,484 @@
       "name": "bitcoin_block",
       "path": "mcw/src/bitcoin_block.rs",
       "status": "implementation present; production caller integration pending",
+      "incorporation": null,
       "handoff": "Contrib/McwMigration/Handoffs/bitcoin-block.md"
     },
     {
       "name": "bitcoin_block_service",
       "path": "mcw/src/bitcoin_block_service.rs",
-      "status": "implementation present; production caller integration pending",
+      "status": "bounded callers incorporated; other roles retained",
+      "incorporation": "block-header",
       "handoff": "Contrib/McwMigration/Handoffs/bitcoin-block.md"
     },
     {
       "name": "bitcoin_encoding",
       "path": "mcw/src/bitcoin_encoding.rs",
-      "status": "implementation present; production caller integration pending",
+      "status": "bounded callers incorporated; other roles retained",
+      "incorporation": "address",
       "handoff": "Contrib/McwMigration/Handoffs/bitcoin-encoding.md"
     },
     {
       "name": "bitcoin_script",
       "path": "mcw/src/bitcoin_script.rs",
       "status": "implementation present; production caller integration pending",
+      "incorporation": null,
       "handoff": "Contrib/McwMigration/Handoffs/bitcoin-script.md"
     },
     {
       "name": "bitcoin_wire",
       "path": "mcw/src/bitcoin_wire.rs",
       "status": "implementation present; production caller integration pending",
+      "incorporation": null,
       "handoff": "Contrib/McwMigration/Handoffs/bitcoin-wire.md"
     },
     {
       "name": "compact_filters",
       "path": "mcw/src/compact_filters.rs",
-      "status": "implementation present; production caller integration pending",
+      "status": "bounded callers incorporated; other roles retained",
+      "incorporation": "filters",
       "handoff": "Contrib/McwMigration/Handoffs/compact-filters.md"
     },
     {
       "name": "compression",
       "path": "mcw/src/compression.rs",
       "status": "implementation present; production caller integration pending",
+      "incorporation": null,
       "handoff": "Contrib/McwMigration/Handoffs/compression.md"
     },
     {
       "name": "content_service",
       "path": "mcw/src/content_service/mod.rs",
-      "status": "implementation present; production caller integration pending",
+      "status": "bounded callers incorporated; other roles retained",
+      "incorporation": "content",
       "handoff": "Contrib/McwMigration/Handoffs/compression.md"
     },
     {
       "name": "http1",
       "path": "mcw/src/http1.rs",
       "status": "implementation present; production caller integration pending",
+      "incorporation": null,
       "handoff": "Contrib/McwMigration/Handoffs/http1.md"
     },
     {
       "name": "json",
       "path": "mcw/src/json.rs",
       "status": "implementation present; production caller integration pending",
+      "incorporation": null,
       "handoff": "Contrib/McwMigration/Handoffs/json.md"
     },
     {
       "name": "markdown",
       "path": "mcw/src/markdown/mod.rs",
-      "status": "implementation present; production caller integration pending",
+      "status": "bounded callers incorporated; other roles retained",
+      "incorporation": "markdown",
       "handoff": "Contrib/McwMigration/Handoffs/native-ui.md"
     },
     {
       "name": "nostr_event_id",
       "path": "mcw/src/nostr_event_id.rs",
-      "status": "implementation present; production caller integration pending",
+      "status": "bounded callers incorporated; other roles retained",
+      "incorporation": "nostr-id",
       "handoff": "Contrib/McwMigration/Handoffs/nostr-event-id.md"
     },
     {
       "name": "payment_uri",
       "path": "mcw/src/payment_uri.rs",
       "status": "implementation present; production caller integration pending",
+      "incorporation": null,
       "handoff": "Contrib/McwMigration/Handoffs/payment-uri.md"
     },
     {
       "name": "png",
       "path": "mcw/src/png.rs",
       "status": "implementation present; production caller integration pending",
+      "incorporation": null,
       "handoff": "Contrib/McwMigration/Handoffs/png.md"
     },
     {
       "name": "privacy_service",
       "path": "mcw/src/privacy_service/mod.rs",
-      "status": "implementation present; production caller integration pending",
+      "status": "bounded callers incorporated; other roles retained",
+      "incorporation": "tor-control-readiness",
       "handoff": "Contrib/McwMigration/Handoffs/privacy.md"
     },
     {
       "name": "psbt",
       "path": "mcw/src/psbt.rs",
       "status": "implementation present; production caller integration pending",
+      "incorporation": null,
       "handoff": "Contrib/McwMigration/Handoffs/psbt.md"
     },
     {
       "name": "psbt_metadata",
       "path": "mcw/src/psbt_metadata.rs",
-      "status": "implementation present; production caller integration pending",
+      "status": "bounded callers incorporated; other roles retained",
+      "incorporation": "psbt",
       "handoff": "Contrib/McwMigration/Handoffs/psbt-metadata.md"
     },
     {
       "name": "psbt_metadata_service",
       "path": "mcw/src/psbt_metadata_service.rs",
-      "status": "implementation present; production caller integration pending",
+      "status": "bounded callers incorporated; other roles retained",
+      "incorporation": "psbt",
       "handoff": "Contrib/McwMigration/Handoffs/psbt-metadata.md"
     },
     {
       "name": "qr",
       "path": "mcw/src/qr.rs",
       "status": "production callers migrated",
+      "incorporation": null,
       "handoff": "MagicalCryptoWallet.Documentation/McwArchitecture.md"
     },
     {
       "name": "round_hash",
       "path": "mcw/src/round_hash/mod.rs",
-      "status": "implementation present; production caller integration pending",
+      "status": "bounded callers incorporated; other roles retained",
+      "incorporation": "round-hash",
       "handoff": null
     },
     {
       "name": "safe_file_service",
       "path": "mcw/src/safe_file_service/mod.rs",
-      "status": "implementation present; production caller integration pending",
+      "status": "bounded callers incorporated; other roles retained",
+      "incorporation": "safe-file",
       "handoff": "Contrib/McwMigration/Handoffs/storage.md"
     },
     {
       "name": "scan_service",
       "path": "mcw/src/scan_service/mod.rs",
-      "status": "implementation present; production caller integration pending",
+      "status": "bounded callers incorporated; other roles retained",
+      "incorporation": "qr-scan",
       "handoff": "Contrib/McwMigration/Handoffs/qr-scanning.md"
     },
     {
       "name": "script_service",
       "path": "mcw/src/script_service/mod.rs",
       "status": "implementation present; production caller integration pending",
+      "incorporation": null,
       "handoff": "Contrib/McwMigration/Handoffs/bitcoin-script.md"
     },
     {
       "name": "script_text",
       "path": "mcw/src/script_text.rs",
-      "status": "implementation present; production caller integration pending",
+      "status": "bounded callers incorporated; other roles retained",
+      "incorporation": "script-text",
       "handoff": "Contrib/McwMigration/Handoffs/script-text.md"
     },
     {
       "name": "socks5",
       "path": "mcw/src/socks5.rs",
-      "status": "implementation present; production caller integration pending",
+      "status": "bounded callers incorporated; other roles retained",
+      "incorporation": "tor-control-readiness",
       "handoff": "Contrib/McwMigration/Handoffs/socks5.md"
     },
     {
       "name": "wallet_hash_service",
       "path": "mcw/src/wallet_hash_service.rs",
-      "status": "implementation present; production caller integration pending",
+      "status": "bounded callers incorporated; other roles retained",
+      "incorporation": "wallet-hmac",
       "handoff": "Contrib/McwMigration/Handoffs/wallet-hmac.md"
     },
     {
       "name": "wallet_hashes",
       "path": "mcw/src/wallet_hashes.rs",
-      "status": "implementation present; production caller integration pending",
+      "status": "bounded callers incorporated; other roles retained",
+      "incorporation": "wallet-hmac",
       "handoff": "Contrib/McwMigration/Handoffs/wallet-hashes.md"
     },
     {
       "name": "websocket",
       "path": "mcw/src/websocket.rs",
       "status": "implementation present; production caller integration pending",
+      "incorporation": null,
       "handoff": "Contrib/McwMigration/Handoffs/websocket.md"
     }
   ],
+  "incorporated_flows": {
+    "schema": 1,
+    "application": "mcw",
+    "foundation_commit": "2889a0710d3190a175a8ca35e4e18afac835ac0e",
+    "accepted_batch": "MCW-BOUNDED-INCORPORATION-20261002T155400Z-01",
+    "batch_sha256": "9b2b7ca0ecf253204b9732607eb0bf58ec84a570a2cfd7ec3553767a1ebeb15f",
+    "policy": "one application executable; no external Cargo normal/build/test dependencies; one private managed connection",
+    "status": "bounded caller and host source incorporated; release qualification requires the exact-source five-target workflow",
+    "production_release": false,
+    "verification": [
+      "Contrib/Mcw/test-migrations.py",
+      "Contrib/Mcw/run-managed-tests.py",
+      "Contrib/Mcw/test-host.py",
+      "mcw/tests/compression_content_host_portable.py",
+      "mcw/tests/compression_content_inbox_portable.py",
+      ".github/workflows/build.yml"
+    ],
+    "flows": [
+      {
+        "name": "psbt",
+        "components": [
+          "psbt_metadata",
+          "psbt_metadata_service"
+        ],
+        "operations": [
+          "0x0600-0x0606"
+        ],
+        "callers": [
+          "MagicalCryptoWallet/Blockchain/Transactions/TransactionFactory.cs",
+          "MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs"
+        ],
+        "compatibility_and_remaining_owner": "inspection and enrichment only; managed keys, builder, signing and policy remain",
+        "handoff": "Contrib/McwMigration/Handoffs/psbt-metadata.md",
+        "caller_activation": "source-incorporated",
+        "verification_policy": "actual current caller and supplied shipping binary, followed by all-five package/import CI"
+      },
+      {
+        "name": "wallet-hmac",
+        "components": [
+          "wallet_hashes",
+          "wallet_hash_service"
+        ],
+        "operations": [
+          "0x0A10-0x0A12"
+        ],
+        "callers": [
+          "MagicalCryptoWallet/Crypto/OwnershipIdentifier.cs",
+          "MagicalCryptoWallet/Crypto/Slip21Node.cs"
+        ],
+        "compatibility_and_remaining_owner": "exact ownership/SLIP21 MACs; managed wallet keys and authorization remain",
+        "handoff": "Contrib/McwMigration/Handoffs/wallet-hmac.md",
+        "caller_activation": "source-incorporated",
+        "verification_policy": "actual current caller and supplied shipping binary, followed by all-five package/import CI"
+      },
+      {
+        "name": "safe-file",
+        "components": [
+          "safe_file_service"
+        ],
+        "operations": [
+          "0x1000-0x1004"
+        ],
+        "callers": [
+          "MagicalCryptoWallet/Io/SafeFile.cs"
+        ],
+        "compatibility_and_remaining_owner": "serialized writes and temporary streams only; managed formats, read/recovery policy and SQLite remain; physical power-loss persistence is unverified",
+        "handoff": "Contrib/McwMigration/Handoffs/storage.md",
+        "caller_activation": "source-incorporated",
+        "verification_policy": "actual current caller and supplied shipping binary, followed by all-five package/import CI"
+      },
+      {
+        "name": "round-hash",
+        "components": [
+          "round_hash"
+        ],
+        "operations": [
+          "0x1200"
+        ],
+        "callers": [
+          "MagicalCryptoWallet/WabiSabi/Models/RoundState.cs",
+          "MagicalCryptoWallet/WabiSabi/Client/RoundStateAwaiters/RoundStateUpdater.cs"
+        ],
+        "compatibility_and_remaining_owner": "new client round validation only; external coordinator reference and managed round authority remain",
+        "handoff": "Contrib/McwMigration/Handoffs/coinjoin.md",
+        "caller_activation": "source-incorporated",
+        "verification_policy": "actual current caller and supplied shipping binary, followed by all-five package/import CI"
+      },
+      {
+        "name": "content",
+        "components": [
+          "content_service"
+        ],
+        "operations": [
+          "0x0900"
+        ],
+        "callers": [
+          "MagicalCryptoWallet/WebClients/MagicalCryptoWallet/MagicalCryptoWalletHttpClientFactory.cs"
+        ],
+        "compatibility_and_remaining_owner": "MempoolSpace fee-response content decoding only; HTTP/TLS/routes and other handlers remain",
+        "handoff": "Contrib/McwMigration/Handoffs/compression.md",
+        "caller_activation": "source-incorporated",
+        "verification_policy": "actual current caller and supplied shipping binary, followed by all-five package/import CI"
+      },
+      {
+        "name": "http-factory",
+        "components": [],
+        "operations": [],
+        "callers": [
+          "MagicalCryptoWallet/Mcw/Network/IMcwHttpClientFactory.cs"
+        ],
+        "compatibility_and_remaining_owner": "application-owned factory contract only; managed transport and external ASP.NET framework roles remain",
+        "handoff": "Contrib/McwMigration/Handoffs/http-factory.md",
+        "caller_activation": "source-incorporated",
+        "verification_policy": "actual current caller and supplied shipping binary, followed by all-five package/import CI"
+      },
+      {
+        "name": "tor-control-readiness",
+        "components": [
+          "privacy_service",
+          "socks5"
+        ],
+        "operations": [
+          "0x0F00-0x0F04",
+          "0x0805"
+        ],
+        "callers": [
+          "MagicalCryptoWallet/Tor/Control/TorControlReplyReader.cs",
+          "MagicalCryptoWallet/Tor/Control/PipeReaderLineReaderExtension.cs",
+          "MagicalCryptoWallet/Tor/TorProcessManager.cs"
+        ],
+        "compatibility_and_remaining_owner": "client parsing/read-session and loopback readiness only; Tor executable, sockets/policy and explicit managed coordinator overrides remain",
+        "handoff": "Contrib/McwMigration/Handoffs/privacy.md",
+        "caller_activation": "source-incorporated",
+        "verification_policy": "actual current caller and supplied shipping binary, followed by all-five package/import CI"
+      },
+      {
+        "name": "qr-scan",
+        "components": [
+          "scan_service"
+        ],
+        "operations": [
+          "0x1300-0x1303"
+        ],
+        "callers": [
+          "MagicalCryptoWallet.Fluent/Models/UI/QrCodeReader.cs"
+        ],
+        "compatibility_and_remaining_owner": "acquired-image decoding only; FlashCap capture, Skia conversion and existing camera/UI flow remain",
+        "handoff": "Contrib/McwMigration/Handoffs/qr-scanning.md",
+        "caller_activation": "source-incorporated",
+        "verification_policy": "actual current caller and supplied shipping binary, followed by all-five package/import CI"
+      },
+      {
+        "name": "markdown",
+        "components": [
+          "markdown"
+        ],
+        "operations": [
+          "0x1100"
+        ],
+        "callers": [
+          "MagicalCryptoWallet.Fluent/Views/Dialogs/ReleaseHighlights/ReleaseHighlightsDialogView.axaml",
+          "MagicalCryptoWallet.Fluent/Views/Dialogs/ReleaseHighlights/ReleaseHighlightsDialogView.cs"
+        ],
+        "compatibility_and_remaining_owner": "release-highlights grammar only; native text/link presentation uses retained Avalonia and themes",
+        "handoff": "Contrib/McwMigration/Handoffs/native-ui.md",
+        "caller_activation": "source-incorporated",
+        "verification_policy": "actual current caller and supplied shipping binary, followed by all-five package/import CI"
+      },
+      {
+        "name": "address",
+        "components": [
+          "bitcoin_encoding"
+        ],
+        "operations": [
+          "0x020C"
+        ],
+        "callers": [
+          "MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs",
+          "MagicalCryptoWallet/Mcw/BitcoinAddressValidation.cs"
+        ],
+        "compatibility_and_remaining_owner": "network-aware address validation/script bytes only; managed address objects, URI rules and derivation remain",
+        "handoff": "Contrib/McwMigration/Handoffs/bitcoin-encoding.md",
+        "caller_activation": "source-incorporated",
+        "verification_policy": "actual current caller and supplied shipping binary, followed by all-five package/import CI"
+      },
+      {
+        "name": "block-header",
+        "components": [
+          "bitcoin_block_service"
+        ],
+        "operations": [
+          "0x0E00"
+        ],
+        "callers": [
+          "MagicalCryptoWallet/Wallets/FileSystemBlockRepository.cs"
+        ],
+        "compatibility_and_remaining_owner": "80-byte block cache identity only; block parsing/consensus/cache/synchronization remain managed",
+        "handoff": "Contrib/McwMigration/Handoffs/bitcoin-block.md",
+        "caller_activation": "source-incorporated",
+        "verification_policy": "actual current caller and supplied shipping binary, followed by all-five package/import CI"
+      },
+      {
+        "name": "script-text",
+        "components": [
+          "script_text"
+        ],
+        "operations": [
+          "0x0D08",
+          "0x0D09"
+        ],
+        "callers": [
+          "MagicalCryptoWallet/WabiSabi/Client/WabiSabiHttpApiClient.cs",
+          "MagicalCryptoWallet/Serialization/Bitcoin.cs",
+          "MagicalCryptoWallet/Serialization/Coordination.cs"
+        ],
+        "compatibility_and_remaining_owner": "retained client output-registration and round-event script text only; managed Script values, signing and coordinator serializers remain",
+        "handoff": "Contrib/McwMigration/Handoffs/script-text.md",
+        "caller_activation": "source-incorporated",
+        "verification_policy": "actual current caller and supplied shipping binary, followed by all-five package/import CI"
+      },
+      {
+        "name": "filters",
+        "components": [
+          "compact_filters"
+        ],
+        "operations": [
+          "0x0702"
+        ],
+        "callers": [
+          "MagicalCryptoWallet/Wallets/WalletFilterProcessor.cs"
+        ],
+        "compatibility_and_remaining_owner": "canonical filter matching only; managed synchronization/reorg/retry/height ownership remains",
+        "handoff": "Contrib/McwMigration/Handoffs/compact-filters.md",
+        "caller_activation": "source-incorporated",
+        "verification_policy": "actual current caller and supplied shipping binary, followed by all-five package/import CI"
+      },
+      {
+        "name": "nostr-id",
+        "components": [
+          "nostr_event_id"
+        ],
+        "operations": [
+          "0x0C00"
+        ],
+        "callers": [
+          "MagicalCryptoWallet/WebClients/MagicalCryptoWalletNostrClient.cs"
+        ],
+        "compatibility_and_remaining_owner": "one native event digest feeds ID comparison and retained BIP340 verification; NNostr/network/release trust remain",
+        "handoff": "Contrib/McwMigration/Handoffs/nostr-event-id.md",
+        "caller_activation": "source-incorporated",
+        "verification_policy": "actual current caller and supplied shipping binary, followed by all-five package/import CI"
+      }
+    ],
+    "not_in_this_batch": [
+      "PNG encoding/decoding",
+      "payment URI parsing",
+      "JSON caller replacement",
+      "wallet state/keys/recovery ownership",
+      "SQLite",
+      "native HTTP/TLS/network synchronization",
+      "Tor runtime",
+      "hardware interfaces",
+      "whole native UI"
+    ],
+    "retirement_candidates": [
+      "Markdown.Avalonia",
+      "Markdown.Avalonia.Html",
+      "Markdown.Avalonia.Svg",
+      "Markdown.Avalonia.SyntaxHigh",
+      "Markdown.Avalonia.Tight",
+      "ColorDocument.Avalonia",
+      "ColorTextBlock.Avalonia",
+      "Avalonia.AvaloniaEdit",
+      "Avalonia.Svg",
+      "ExCSS",
+      "Fizzler",
+      "HtmlAgilityPack",
+      "ShimSkiaSharp",
+      "Svg.Custom",
+      "Svg.Model",
+      "Microsoft.Extensions.Http"
+    ],
+    "verification_only_packages": [],
+    "retirement_rule": "source/manifest/lock/Nix cache removal plus every packaged target; historical oracle names and external shared-framework roles are qualified separately"
+  },
   "copied_source": [
     {
       "name": "Gma.QrCodeNet",
@@ -7828,13 +8201,13 @@
     {
       "name": "Brotli RFC static dictionary and transform data",
       "path": "mcw/src/content_service/data",
-      "status": "standard format data; caller integration pending",
+      "status": "standard format data; bounded fee-content caller incorporated",
       "provenance": "mcw/src/content_service/data/PROVENANCE.md"
     },
     {
       "name": "QR scanning character mapping data",
       "path": "mcw/src/scan_service/charset_data.rs",
-      "status": "generated format data; caller integration pending",
+      "status": "generated format data; acquired-image caller incorporated",
       "provenance": "mcw/tests/qr_scanning_charset_tables.py"
     }
   ],
@@ -7850,6 +8223,12 @@
       "status": "retained",
       "owner": "managed UI",
       "evidence": "NuGet locks plus published runtimes/*/native payloads"
+    },
+    {
+      "name": "FlashCap camera capture APIs embedded in QRackers",
+      "status": "retained; QR image decoding callers migrated while camera capture remains",
+      "owner": "managed camera UI",
+      "evidence": "QRackers 1.1.0 exports FlashCap capture types; QrCodeReader.cs still acquires frames through them"
     },
     {
       "name": "SQLite native e_sqlite3",
