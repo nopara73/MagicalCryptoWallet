@@ -1,4 +1,4 @@
-param([string]$SharedRoot='C:\Users\user\OneDrive\Documents\ChatGPT\MagicalCryptoWallet')
+param([string]$SharedRoot='C:\Users\user\OneDrive\Documents\ChatGPT\MagicalCryptoWallet',[switch]$CheckPatchesOnly)
 $ErrorActionPreference='Stop'
 $repoRoot=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
 $evidence=Join-Path $repoRoot '.artifacts/qr-scanning/managed-harness'
@@ -23,7 +23,10 @@ foreach($export in @(
     [IO.Directory]::CreateDirectory([IO.Path]::GetDirectoryName($export[1])) | Out-Null
     [IO.File]::WriteAllText($export[1],[string]::Join("`n",$source)+"`n",[Text.UTF8Encoding]::new($false))
 }
-$hostPatch=Join-Path $repoRoot 'Contrib/McwMigration/Patches/qr-scanning-host.patch'
+$hostPatch=Join-Path $evidence 'host-lf.patch'
+[IO.File]::WriteAllText($hostPatch,[IO.File]::ReadAllText((Join-Path $repoRoot 'Contrib/McwMigration/Patches/qr-scanning-host.patch')).Replace("`r`n","`n"),[Text.UTF8Encoding]::new($false))
+$callerPatch=Join-Path $evidence 'caller-lf.patch'
+[IO.File]::WriteAllText($callerPatch,[IO.File]::ReadAllText((Join-Path $repoRoot 'Contrib/McwMigration/Patches/qr-scanning-caller.patch')).Replace("`r`n","`n"),[Text.UTF8Encoding]::new($false))
 if((Get-Content -LiteralPath (Join-Path $repoRoot '.artifacts/qr-scanning/host-source/mcw/src/app.rs') -Raw) -notmatch 'scan_service::wire'){
     & git -C $repoRoot apply --no-index '--directory=.artifacts/qr-scanning/host-source' $hostPatch
     if($LASTEXITCODE -ne 0){throw 'Concrete scanner host patch does not apply to the retained source'}
@@ -33,10 +36,11 @@ if((Get-Content -LiteralPath $caller -Raw) -notmatch 'DecodeCapturedImageAsync')
     $callerCopy=Join-Path $evidence 'caller/MagicalCryptoWallet.Fluent/Models/UI/QrCodeReader.cs'
     [IO.Directory]::CreateDirectory([IO.Path]::GetDirectoryName($callerCopy)) | Out-Null
     Copy-Item -LiteralPath $caller -Destination $callerCopy
-    & git -C $repoRoot apply --no-index '--directory=.artifacts/qr-scanning/managed-harness/caller' (Join-Path $repoRoot 'Contrib/McwMigration/Patches/qr-scanning-caller.patch')
+    & git -C $repoRoot apply --no-index '--directory=.artifacts/qr-scanning/managed-harness/caller' $callerPatch
     if($LASTEXITCODE -ne 0){throw 'Concrete scanner caller patch does not apply to the retained source'}
     $caller=$callerCopy
 }
+if($CheckPatchesOnly){Write-Output 'Both concrete patches apply to the retained shared source/caller without a build.';return}
 $rustBin=Join-Path $SharedRoot '.artifacts/mcw-tools/rustup/toolchains/1.99.0-x86_64-pc-windows-msvc/bin'
 $handle=$null; $oldPath=$env:PATH; $oldLib=$env:LIB
 try {

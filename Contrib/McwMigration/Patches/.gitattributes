@@ -1,2 +1,2 @@
-nostr-event-id.patch text eol=lf
-nostr-event-id-caller.patch text eol=lf
+qr-scanning-caller.patch text eol=lf
+qr-scanning-host.patch text eol=lf
