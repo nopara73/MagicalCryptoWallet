@@ -20,22 +20,8 @@ public partial class TransactionBroadcasterModel
 		_network = network;
 	}
 
-	public SmartTransaction? Parse(string text)
-	{
-		if (PSBT.TryParse(text, _network, out var signedPsbt))
-		{
-			if (!signedPsbt.IsAllFinalized())
-			{
-				signedPsbt.Finalize();
-			}
-
-			return signedPsbt.ExtractSmartTransaction();
-		}
-		else
-		{
-			return new SmartTransaction(Transaction.Parse(text, _network), Height.Unknown);
-		}
-	}
+	public SmartTransaction Parse(string text) =>
+		new(Transaction.Parse(text.Trim(), _network), Height.Unknown);
 
 	public Task<SmartTransaction> LoadFromFileAsync(string filePath)
 	{
@@ -57,16 +43,12 @@ public partial class TransactionBroadcasterModel
 				_ => null
 			});
 
-		var outputSum = tx.Outputs.Select(x => x.Value).Sum();
-
-		var spendingAmount = spendingSum is not null ? new Amount(spendingSum) : null;
-		var outputAmount = outputSum is not null ? new Amount(outputSum) : null;
-
-		var networkFee = spendingAmount is null || outputAmount is null
+		var totalAmount = new Amount(tx.Outputs.Select(x => x.Value).Sum());
+		var networkFee = spendingSum is null
 			? null
-			: new Amount(spendingAmount.Btc - outputAmount.Btc);
+			: new Amount(spendingSum - totalAmount.Btc);
 
-		return new TransactionBroadcastInfo(transactionId, tx.Inputs.Count, tx.Outputs.Count , spendingAmount, outputAmount, networkFee);
+		return new TransactionBroadcastInfo(transactionId, totalAmount, networkFee);
 
 		TxOut? GetOutput(OutPoint outpoint) =>
 			_services.TryGetTransaction(outpoint.Hash, out var prevTxn)

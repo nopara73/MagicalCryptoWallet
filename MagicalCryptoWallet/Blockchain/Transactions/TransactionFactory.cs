@@ -54,11 +54,6 @@ public class TransactionFactory
 
 		var isSilentPayment = payments.Requests.Select(x => x.Destination).OfType<Destination.Silent>().Any();
 		var isPayJoin = payjoinClient is not null;
-		var canUsePrivateKeys = !KeyManager.IsWatchOnly;
-		if (isSilentPayment && !canUsePrivateKeys)
-		{
-			throw new InvalidOperationException("Silent payments requires a hot wallet.");
-		}
 		if (isSilentPayment && isPayJoin)
 		{
 			throw new InvalidOperationException("Silent payments cannot be combined with Payjoin.");
@@ -238,12 +233,11 @@ public class TransactionFactory
 
 		// Build the transaction
 
-		// It must be watch only, too, because if we have the key and also hardware wallet, we do not care we can sign.
 		psbt.AddKeyPaths(KeyManager);
 		psbt.AddPrevTxs(_transactionStore);
 
 		Transaction tx;
-		if (KeyManager.IsWatchOnly || !parameters.TryToSign)
+		if (!parameters.TryToSign)
 		{
 			tx = psbt.GetGlobalTransaction();
 		}
@@ -317,7 +311,7 @@ public class TransactionFactory
 			}
 		}
 
-		var sign = !KeyManager.IsWatchOnly && parameters.TryToSign;
+		var sign = parameters.TryToSign;
 
 		Logger.LogDebug($"Built tx: {totalOutgoingAmountNoFee.ToString(fplus: false, trimExcessZero: true)} BTC. Fee: {fee.Satoshi} sats. Vsize: {vSize} vBytes. Fee/Total ratio: {feePercentage:0.#}%. Tx hash: {tx.GetHash()}.");
 		return new BuildTransactionResult(smartTransaction, psbt, sign, fee, feePercentage, hdPubKeysWithNewLabels);

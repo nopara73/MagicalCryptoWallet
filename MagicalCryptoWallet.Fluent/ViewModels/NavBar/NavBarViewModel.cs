@@ -23,7 +23,7 @@ public partial class NavBarViewModel : ViewModelBase, IWalletNavigation, IDispos
 		UiContext.WalletSetupService.WhenAnyValue(x => x.Wallet)
 			.WhereNotNull()
 			.ObserveOn(RxApp.MainThreadScheduler)
-			.Subscribe(wallet => { Home?.Dispose(); Home = wallet.IsHardwareWallet ? new HardwareWalletViewModel(UiContext, wallet) : new WalletViewModel(UiContext, wallet); }).DisposeWith(_lifetime);
+			.Subscribe(wallet => { Home?.Dispose(); Home = new WalletViewModel(UiContext, wallet); }).DisposeWith(_lifetime);
 	}
 
 	public ObservableCollection<NavBarItemViewModel> BottomItems { get; }

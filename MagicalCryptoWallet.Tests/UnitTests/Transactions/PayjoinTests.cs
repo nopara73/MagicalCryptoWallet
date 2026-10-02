@@ -275,28 +275,13 @@ public class PayjoinTests
 		Assert.Equal(0.346m, outerOutput.Amount.ToUnit(MoneyUnit.BTC));
 		Assert.Equal(0.09899718m, innerOutput.Amount.ToUnit(MoneyUnit.BTC));
 
-		transactionFactory = ServiceFactory.CreateTransactionFactory(
-			new[]
-			{
-				("Pablo", 0, 0.1m, confirmed: true, anonymitySet: 1)
-			},
-			watchOnly: true);
-		allowedCoins = transactionFactory.Coins.ToArray();
+		// An unsigned software-wallet preview does not negotiate or sign a Payjoin.
+		var preview = transactionFactory.BuildTransaction(txParameters with { TryToSign = false }, payjoinClient: payjoinClient);
+		Assert.False(preview.Signed);
+		Assert.False(preview.Psbt.IsAllFinalized());
+		Assert.Equal(amountToPay, Assert.Single(preview.OuterWalletOutputs).Amount);
+		Assert.Equal(allowedCoins[0].Amount - amountToPay - preview.Fee, Assert.Single(preview.InnerWalletOutputs).Amount);
 
-		txParameters = CreateBuilder()
-			.SetPayment(payment)
-			.SetAllowedInputs(allowedCoins.Select(x => x.Outpoint))
-			.Build();
-		tx = transactionFactory.BuildTransaction(txParameters, payjoinClient: payjoinClient);
-
-		Assert.Equal(TransactionCheckResult.Success, tx.Transaction.Transaction.Check());
-		Assert.False(tx.Signed);
-		innerOutput = Assert.Single(tx.InnerWalletOutputs);
-		outerOutput = Assert.Single(tx.OuterWalletOutputs);
-
-		// No payjoin was involved
-		Assert.Equal(amountToPay, outerOutput.Amount);
-		Assert.Equal(allowedCoins[0].Amount - amountToPay - tx.Fee, innerOutput.Amount);
 	}
 
 	[Fact]

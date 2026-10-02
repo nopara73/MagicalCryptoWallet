@@ -35,9 +35,8 @@ public class RebrandIdentityTests
 		string root = await Common.GetEmptyWorkDirAsync();
 		string otherWallet = Path.Combine(root, "existing-application", "synthetic.json");
 		Directory.CreateDirectory(Path.GetDirectoryName(otherWallet)!);
-		// Public watch-only synthetic keys contain no real funds or recovery secrets.
-		var key = ExtKey.CreateFromSeed(new byte[32]);
-		var source = KeyManager.CreateNewHardwareWalletWatchOnly(key.Neuter().PubKey.GetHDFingerPrint(), key.Neuter(), null, null, null, Network.RegTest, otherWallet);
+		// Deterministic software keys are synthetic and contain no real funds.
+		var source = KeyManager.CreateNew(new Mnemonic(SingleWalletTests.SyntheticMnemonic), "", Network.RegTest, otherWallet);
 		source.ToFile();
 		byte[] original = await File.ReadAllBytesAsync(otherWallet);
 		var directories = new WalletDirectories(Network.RegTest, Path.Combine(root, "MagicalCryptoWallet", "Client"));

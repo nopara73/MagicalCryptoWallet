@@ -247,13 +247,11 @@ public class SmartTransaction : IEquatable<SmartTransaction>
 	}
 
 	public bool IsCpfpable(KeyManager keyManager) =>
-		!keyManager.IsWatchOnly && !keyManager.IsHardwareWallet // [Difficultly] Watch-only and hardware wallets are problematic. It remains a ToDo for the future.
-		&& !Confirmed // [Impossibility] We can only speed up unconfirmed transactions.
+		!Confirmed // [Impossibility] We can only speed up unconfirmed transactions.
 		&& GetWalletOutputs(keyManager).Any(x => !x.IsSpent()); // [Impossibility] If I have an unspent wallet output, then we can CPFP it.
 
 	public bool IsRbfable(KeyManager keyManager) =>
-		!keyManager.IsWatchOnly && !keyManager.IsHardwareWallet // [Difficultly] Watch-only and hardware wallets are problematic. It remains a ToDo for the future.
-		&& !Confirmed // [Impossibility] We can only speed up unconfirmed transactions.
+		!Confirmed // [Impossibility] We can only speed up unconfirmed transactions.
 		&& !GetForeignInputs(keyManager).Any() // [Impossibility] Must not have foreign inputs, otherwise we couldn't do RBF.
 		&& WalletOutputs.All(x => !x.IsSpent()); // [Dangerous] All the outputs we know of should not be spent, otherwise we shouldn't do RBF.
 

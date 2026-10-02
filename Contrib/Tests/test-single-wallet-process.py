@@ -97,17 +97,27 @@ def wait_for(check, timeout=45):
     raise AssertionError(f"Condition timed out after {timeout}s; last result: {last!r}")
 
 
-def rpc(url, method, params=(), allow_error=False):
+def wait_for_rpc_start(process, log_path):
+    # HttpListener on Unix accepts connections before its constructor has initialized
+    # its connection collection. Poll only after Start has returned, without a sleep.
+    def started():
+        if process.poll() is not None:
+            raise AssertionError(f"Wallet exited with {process.returncode}: {log_path.read_text(encoding='utf-8', errors='replace')[-4000:]}")
+        return "JSON-RPC server started." in log_path.read_text(encoding="utf-8", errors="replace")
+    wait_for(started)
+
+
+def rpc(url, method, params=(), allow_error=False, timeout=5):
     request = urllib.request.Request(url, json.dumps({"jsonrpc": "2.0", "id": 1, "method": method, "params": params}).encode(),
         {"Content-Type": "application/json", "Authorization": "Basic " + base64.b64encode(b"synthetic:synthetic").decode()})
-    with urllib.request.urlopen(request, timeout=60) as response:
+    with urllib.request.urlopen(request, timeout=timeout) as response:
         body = response.read()
     if not body:
         return None
     result = json.loads(body)
     if not allow_error and "error" in result:
         if result["error"].get("code") == -28:
-            raise OSError(f"{method}: Bitcoin Core is still starting.")
+            raise OSError(f"{method}: Bitcoin Core is still warming up: {result['error']['message']}")
         raise AssertionError(f"{method}: {result['error']}")
     return result if allow_error else result.get("result")
 
@@ -217,10 +227,11 @@ def main():
         wait_for(lambda: rpc(node_url, "getblockchaininfo"))
         wait_for(lambda: (indexes := rpc(node_url, "getindexinfo")) and all(index["synced"] for index in indexes.values()))
         first = launch(desktop if os.name == "nt" else daemon, initial + (["startsilent"] if os.name == "nt" else []), "first-setup")
+        wait_for_rpc_start(first, run / "first-setup.log")
         info = wait_for(lambda: rpc(wallet_url, "getwalletinfo"))
         assert info["state"] == "Unconfigured" and info["balance"] is None
         assert not visible_windows(first.pid), "Hidden first-run setup opened a window."
-        rpc(wallet_url, "recoverwallet", [MNEMONIC, "synthetic passphrase"])
+        rpc(wallet_url, "recoverwallet", [MNEMONIC, "synthetic passphrase"], timeout=60)
         info = wait_for(ready, timeout=360)
         assert info["syncHeight"] == info["targetHeight"] == 0 and info["hasCachedData"]
         assert info["coinJoinRequiresAuthorization"]
@@ -231,25 +242,25 @@ def main():
         rpc(node_url, "createwallet", ["synthetic-miner"])
         miner_url = node_url + "wallet/synthetic-miner"
         mining_address = rpc(miner_url, "getnewaddress")
-        rpc(node_url, "generatetoaddress", [101, mining_address])
+        rpc(node_url, "generatetoaddress", [101, mining_address], timeout=60)
         receive_address = rpc(wallet_url, "getnewaddress", ["synthetic funding", False])["address"]
         rpc(miner_url, "sendtoaddress", [receive_address, .05])
-        rpc(node_url, "generatetoaddress", [1, mining_address])
+        rpc(node_url, "generatetoaddress", [1, mining_address], timeout=60)
         wait_for(lambda: (info := ready()) and info["balance"] == 5_000_000, timeout=360)
         old_tip = rpc(node_url, "getbestblockhash")
         old_height = rpc(node_url, "getblockcount")
         rpc(node_url, "invalidateblock", [old_tip])
         replacement_address = rpc(miner_url, "getnewaddress")
-        rpc(node_url, "generatetoaddress", [2, replacement_address])
+        rpc(node_url, "generatetoaddress", [2, replacement_address], timeout=60)
         wait_for(lambda: (info := ready()) and info["syncHeight"] == old_height + 1 and info["balance"] == 5_000_000, timeout=360)
         assert rpc(node_url, "getblockhash", [old_height]) != old_tip
         results["p2p_reorg_recovers_funding_on_replacement_chain"] = True
         payment = [{"Sendto": mining_address, "Amount": 500_000, "Label": "synthetic spend"}]
-        assert "error" in rpc(wallet_url, "build", [payment, None, 2, "wrong"], allow_error=True)
+        assert "error" in rpc(wallet_url, "build", [payment, None, 2, "wrong"], allow_error=True, timeout=60)
         assert rpc(wallet_url, "getwalletinfo")["coinJoinRequiresAuthorization"]
-        assert rpc(wallet_url, "build", [payment, None, 2, "synthetic passphrase"])
+        assert rpc(wallet_url, "build", [payment, None, 2, "synthetic passphrase"], timeout=60)
         assert not rpc(wallet_url, "getwalletinfo")["coinJoinRequiresAuthorization"]
-        assert "error" in rpc(wallet_url, "build", [payment, None, 2, "wrong"], allow_error=True)
+        assert "error" in rpc(wallet_url, "build", [payment, None, 2, "wrong"], allow_error=True, timeout=60)
         results["signing_authorizes_coinjoin_but_never_skips_later_password_checks"] = True
         stop(first)
         rpc(node_url, "stop")
@@ -267,6 +278,7 @@ def main():
             RunOnSystemStartup=False, HideOnClose=True, SendAmountConversionReversed=False, WindowWidth=1100, WindowHeight=760)), encoding="utf-8")
         with reserve_offline_p2p_port():
             second = launch(desktop if os.name == "nt" else daemon, cli + (["startsilent"] if os.name == "nt" else []), "encrypted-restart")
+            wait_for_rpc_start(second, run / "encrypted-restart.log")
             offline = wait_for(lambda: (info := rpc(wallet_url, "getwalletinfo")) and info["state"] == "Offline" and info["hasCachedData"] and info)
             assert offline["balance"] == 5_000_000 and not offline["synchronized"]
             assert rpc(wallet_url, "gethistory")
@@ -314,13 +326,14 @@ def main():
         results["daemon_cannot_bypass_desktop_lock"] = True
         stop(second)
         final = launch(daemon, cli, "daemon-after-quit")
+        wait_for_rpc_start(final, run / "daemon-after-quit.log")
         info = wait_for(ready, timeout=360)
         assert info["coinJoinRequiresAuthorization"]
         if os.name == "nt":
             conflict = launch(desktop, cli, "desktop-daemon-conflict")
             assert conflict.wait(timeout=8) != 0 and final.poll() is None
             results["desktop_cannot_activate_daemon"] = True
-        sent = rpc(wallet_url, "send", [payment, None, 2, "synthetic passphrase"])
+        sent = rpc(wallet_url, "send", [payment, None, 2, "synthetic passphrase"], timeout=60)
         wait_for(lambda: sent["txid"] in rpc(node_url, "getrawmempool"))
         rpc(node_url, "generatetoaddress", [1, mining_address])
         wait_for(lambda: (info := ready()) and info["syncHeight"] == rpc(node_url, "getblockcount") and info["balance"] < 5_000_000, timeout=360)

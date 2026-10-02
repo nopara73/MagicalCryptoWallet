@@ -3,11 +3,9 @@ using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using MagicalCryptoWallet.Blockchain.Keys;
 using MagicalCryptoWallet.Helpers;
-using MagicalCryptoWallet.Hwi.Models;
 using MagicalCryptoWallet.Wallets;
 
 namespace MagicalCryptoWallet.Fluent.Models.Wallets;
@@ -45,13 +43,12 @@ public partial class WalletSetupService : ReactiveObject, IDisposable
 
 	private KeyPath AccountKeyPath => KeyManager.GetAccountKeyPath(_services.GetNetwork(), ScriptPubKeyType.Segwit);
 
-	public async Task<WalletSetupDraft> NewWalletAsync(WalletCreationOptions options, CancellationToken? cancelToken = null)
+	public async Task<WalletSetupDraft> NewWalletAsync(WalletCreationOptions options)
 	{
 		_services.WalletSession.EnsureCanConfigure();
 		return options switch
 		{
 			WalletCreationOptions.AddNewWallet add => await CreateNewWalletAsync(add),
-			WalletCreationOptions.ConnectToHardwareWallet hw => await ConnectToHardwareWalletAsync(hw, cancelToken),
 			WalletCreationOptions.ImportWallet import => await ImportWalletAsync(import),
 			WalletCreationOptions.RecoverWallet recover => await RecoverWalletAsync(recover),
 			_ => throw new InvalidOperationException($"{nameof(WalletCreationOptions)} not supported: {options?.GetType().Name}")
@@ -105,21 +102,6 @@ public partial class WalletSetupService : ReactiveObject, IDisposable
 				});
 
 		return new WalletSetupDraft(keyManager);
-	}
-
-	private async Task<WalletSetupDraft> ConnectToHardwareWalletAsync(WalletCreationOptions.ConnectToHardwareWallet options, CancellationToken? cancelToken)
-	{
-		var device = options.Device;
-
-		ArgumentNullException.ThrowIfNull(device);
-		ArgumentNullException.ThrowIfNull(cancelToken);
-
-		var walletFilePath = _services.WalletSession.WalletDirectories.NewWalletFilePath;
-		var keyManager = await HardwareWalletOperationHelpers.GenerateWalletAsync(device, walletFilePath, _services.GetNetwork(), cancelToken.Value, toFile: false);
-		keyManager.SetIcon(device.WalletType, toFile: false);
-
-		var result = new WalletSetupDraft(keyManager);
-		return result;
 	}
 
 	private async Task<WalletSetupDraft> ImportWalletAsync(WalletCreationOptions.ImportWallet options)
@@ -178,9 +160,7 @@ public partial class WalletSetupService : ReactiveObject, IDisposable
 	}
 
 	private WalletModel CreateWalletModel(Wallet wallet) =>
-		wallet.KeyManager.IsHardwareWallet
-		? new HardwareWalletModel(_services, wallet, _amountProvider)
-		: new WalletModel(_services, wallet, _amountProvider);
+		new WalletModel(_services, wallet, _amountProvider);
 	public void Dispose() { _disposable.Dispose(); (Wallet as IDisposable)?.Dispose(); }
 
 }

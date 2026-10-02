@@ -14,7 +14,6 @@ using MagicalCryptoWallet.Rpc;
 using MagicalCryptoWallet.Tests.Helpers;
 using MagicalCryptoWallet.Wallets;
 using Xunit;
-using WalletType = MagicalCryptoWallet.Wallets.Wallet;
 
 namespace MagicalCryptoWallet.Tests.UnitTests;
 

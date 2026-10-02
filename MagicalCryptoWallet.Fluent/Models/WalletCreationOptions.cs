@@ -1,6 +1,5 @@
 using NBitcoin;
 using MagicalCryptoWallet.Blockchain.Keys;
-using MagicalCryptoWallet.Hwi.Models;
 using MagicalCryptoWallet.Wallets.Slip39;
 
 namespace MagicalCryptoWallet.Fluent.Models;
@@ -33,9 +32,6 @@ public abstract record WalletCreationOptions
 			};
 		}
 	}
-
-	public record ConnectToHardwareWallet(
-		HwiEnumerateEntry? Device = null) : WalletCreationOptions;
 
 	public record ImportWallet(
 		string? FilePath = null) : WalletCreationOptions;

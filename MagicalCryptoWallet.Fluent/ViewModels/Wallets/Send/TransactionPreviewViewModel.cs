@@ -39,8 +39,6 @@ public partial class TransactionPreviewViewModel : RoutableViewModel
 	[AutoNotify] private string _nextButtonText;
 	[AutoNotify] private TransactionSummaryViewModel? _displayedTransactionSummary;
 	[AutoNotify] private bool _canUndo;
-	[AutoNotify] private bool _isFeeAdjustable = true;
-	[AutoNotify] private string _feeAdjustToolTip = "Change transaction fee or confirmation time";
 
 	public TransactionPreviewViewModel(UiContext uiContext, IWalletModel walletModel, SendFlowModel sendFlow) : base(uiContext)
 	{
@@ -68,21 +66,8 @@ public partial class TransactionPreviewViewModel : RoutableViewModel
 		SetupCancel(enableCancel: true, enableCancelOnEscape: true, enableCancelOnPressed: false);
 		EnableBack = true;
 
-		if (PreferPsbtWorkflow)
-		{
-			SkipCommand = ReactiveCommand.CreateFromTask(OnConfirmAsync);
-			NextCommand = ReactiveCommand.CreateFromTask(OnExportPsbtAsync);
-
-			_nextButtonText = "Save PSBT file";
-		}
-		else
-		{
-			NextCommand = ReactiveCommand.CreateFromTask(OnConfirmAsync);
-
-			_nextButtonText = "Confirm";
-		}
-
-		AdjustFeeCommand = ReactiveCommand.CreateFromTask(OnAdjustFeeAsync);
+		NextCommand = ReactiveCommand.CreateFromTask(OnConfirmAsync);
+		_nextButtonText = "Confirm";
 
 		UndoCommand = ReactiveCommand.Create(
 				() =>
@@ -105,34 +90,8 @@ public partial class TransactionPreviewViewModel : RoutableViewModel
 
 	public PrivacySuggestionsFlyoutViewModel PrivacySuggestions { get; }
 
-	public bool PreferPsbtWorkflow => _walletModel.Settings.PreferPsbtWorkflow;
-
-	public ICommand AdjustFeeCommand { get; }
-
 
 	public ICommand UndoCommand { get; }
-
-	private async Task OnExportPsbtAsync()
-	{
-		if (Transaction is { })
-		{
-			bool saved = false;
-			try
-			{
-				saved = await TransactionHelpers.ExportTransactionToBinaryAsync(Transaction);
-			}
-			catch (Exception ex)
-			{
-				Logger.LogError(ex);
-				await ShowErrorAsync("Transaction Export", ex.ToUserFriendlyString(), "Magical Crypto Wallet was unable to export the PSBT.");
-			}
-
-			if (saved)
-			{
-				Navigate().To().Success();
-			}
-		}
-	}
 
 	private void UpdateTransaction(TransactionSummaryViewModel summary, BuildTransactionResult transaction, bool addToUndoHistory = true)
 	{
@@ -145,68 +104,11 @@ public partial class TransactionPreviewViewModel : RoutableViewModel
 
 			Transaction = transaction;
 			_currentTransactionInfo = _info.Clone();
-
-			UpdateFeeAdjustability();
 		}
 
 		summary.UpdateTransaction(transaction, _info);
 
 		DisplayedTransactionSummary = summary;
-	}
-
-	private void UpdateFeeAdjustability()
-	{
-		if (Transaction is null || !_info.IsPayToMany)
-		{
-			IsFeeAdjustable = true;
-			FeeAdjustToolTip = "Change transaction fee or confirmation time";
-			return;
-		}
-
-		var hasSubtractFee = _info.SubtractFee || _info.AdditionalRecipients.Any(r => r.IsSubtractFee);
-
-		if (hasSubtractFee)
-		{
-			IsFeeAdjustable = true;
-			FeeAdjustToolTip = "Change transaction fee or confirmation time";
-			return;
-		}
-
-		// Check if the transaction has a change output (a wallet output that isn't a recipient destination)
-		var destinationScripts = _info.AllRecipients
-			.Select(r => r.Destination.GetScriptPubKey())
-			.ToHashSet();
-		var hasChange = Transaction.InnerWalletOutputs
-			.Any(c => !destinationScripts.Contains(c.ScriptPubKey));
-
-		if (hasChange)
-		{
-			IsFeeAdjustable = true;
-			FeeAdjustToolTip = "Change transaction fee or confirmation time";
-		}
-		else
-		{
-			// No change output and no SubtractFee — the fee is fixed to the leftover.
-			IsFeeAdjustable = false;
-			FeeAdjustToolTip = "Fee adjustment is not available because the difference between your inputs and payments is too small. Go back and adjust amounts or use Max on a recipient.";
-		}
-	}
-
-	private async Task OnAdjustFeeAsync()
-	{
-		DialogViewModelBase<FeeRate> feeDialog = _info.IsCustomFeeUsed
-			? new CustomFeeRateDialogViewModel(UiContext, _info)
-			: new SendFeeViewModel(UiContext, _wallet, _info, false);
-
-		var feeDialogResult = await NavigateDialogAsync(feeDialog, feeDialog.DefaultTarget);
-
-		if (feeDialogResult.Kind == DialogResultKind.Normal &&
-			feeDialogResult.Result is { } feeRate &&
-			feeRate != _info.FeeRate) // Prevent rebuild if the selected fee did not change.
-		{
-			_info.FeeRate = feeRate;
-			await BuildAndUpdateAsync();
-		}
 	}
 
 	private async Task BuildAndUpdateAsync()
@@ -221,18 +123,13 @@ public partial class TransactionPreviewViewModel : RoutableViewModel
 
 	private async Task<bool> InitialiseTransactionAsync()
 	{
-		if (_info.FeeRate == FeeRate.Zero)
+		if (!TransactionFeeHelper.TryGetHighestFeeRate(_wallet.FeeRateEstimations, _wallet.Network, out var feeRate))
 		{
-			var feeDialogResult = await NavigateDialogAsync(new SendFeeViewModel(UiContext, _wallet, _info, true));
-			if (feeDialogResult.Kind == DialogResultKind.Normal && feeDialogResult.Result is { } newFeeRate)
-			{
-				_info.FeeRate = newFeeRate;
-			}
-			else
-			{
-				return false;
-			}
+			await ShowErrorAsync("Transaction fee", "Transaction fee estimations are not available at the moment. Try again later.", "");
+			return false;
 		}
+
+		_info.FeeRate = feeRate;
 
 		if (!_info.Coins.Any())
 		{
@@ -273,11 +170,6 @@ public partial class TransactionPreviewViewModel : RoutableViewModel
 		}
 		catch (Exception ex) when (ex is NotEnoughFundsException or TransactionFeeOverpaymentException || (ex is InvalidTxException itx && itx.Errors.OfType<FeeTooHighPolicyError>().Any()))
 		{
-			if (await TransactionFeeHelper.TrySetMaxFeeRateAsync(UiContext, _wallet, _info))
-			{
-				return await BuildTransactionAsync();
-			}
-
 			await ShowErrorAsync(
 				"Transaction Building",
 				"The transaction cannot be sent because its fee is more than the payment amount.",
@@ -300,11 +192,6 @@ public partial class TransactionPreviewViewModel : RoutableViewModel
 					return await BuildTransactionAsync();
 				}
 			}
-			else if (await TransactionFeeHelper.TrySetMaxFeeRateAsync(UiContext, _wallet, _info))
-			{
-				return await BuildTransactionAsync();
-			}
-
 			await ShowErrorAsync(
 				"Transaction Building",
 				"There are not enough funds to cover the transaction fee.",

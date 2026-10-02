@@ -36,10 +36,6 @@ public partial class TransactionInfo
 
 	public LabelsArray Recipient { get; set; } = LabelsArray.Empty;
 
-	public FeeRate? MaximumPossibleFeeRate { get; set; }
-
-	public TimeSpan ConfirmationTimeSpan { get; set; }
-
 	public IEnumerable<SmartCoin> ChangelessCoins { get; set; } = Enumerable.Empty<SmartCoin>();
 
 	public IPayjoinClient? PayJoinClient { get; set; }
@@ -47,8 +43,6 @@ public partial class TransactionInfo
 	public bool IsPayJoin => PayJoinClient is { };
 
 	public bool IsOptimized => ChangelessCoins.Any();
-
-	public bool IsCustomFeeUsed { get; set; }
 
 	public bool SubtractFee { get; init; }
 
@@ -82,7 +76,6 @@ public partial class TransactionInfo
 
 	private void OnCoinsChanged()
 	{
-		MaximumPossibleFeeRate = null;
 		ChangelessCoins = Enumerable.Empty<SmartCoin>(); // Clear ChangelessCoins on pocket change, so we calculate the suggestions with the new pocket.
 	}
 
@@ -95,11 +88,8 @@ public partial class TransactionInfo
 			Amount = Amount,
 			Destination = Destination,
 			Recipient = Recipient,
-			MaximumPossibleFeeRate = MaximumPossibleFeeRate,
-			ConfirmationTimeSpan = ConfirmationTimeSpan,
 			ChangelessCoins = ChangelessCoins,
 			PayJoinClient = PayJoinClient,
-			IsCustomFeeUsed = IsCustomFeeUsed,
 			SubtractFee = SubtractFee,
 			IsOtherPocketSelectionPossible = IsOtherPocketSelectionPossible,
 			IsFixedAmount = IsFixedAmount,

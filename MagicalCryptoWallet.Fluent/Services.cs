@@ -120,8 +120,6 @@ public class Services : IServices
 	public bool GetAutoPaste() => UiConfig.AutoPaste;
 	public bool GetSendAmountConversionReversed() => UiConfig.SendAmountConversionReversed;
 	public void SetSendAmountConversionReversed(bool value) => UiConfig.SendAmountConversionReversed = value;
-	public int GetFeeTarget() => UiConfig.FeeTarget;
-	public void SetFeeTarget(int value) => UiConfig.FeeTarget = value;
 
 	// Temporary solution
 	public T? GetHostedService<T>() where T : class, Microsoft.Extensions.Hosting.IHostedService => _hostedServices.GetOrDefault<T>();

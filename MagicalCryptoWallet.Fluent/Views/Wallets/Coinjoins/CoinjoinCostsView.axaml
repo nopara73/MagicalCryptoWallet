@@ -10,36 +10,13 @@
              x:CompileBindings="True">
   <StackPanel Spacing="15">
 
-    <!-- Fees -->
-    <PreviewItem Icon="{StaticResource btc_logo}"
-                 Label="Fees"
-                 CopyableContent="{Binding TotalFeeAmount.Btc, Converter={x:Static conv:MoneyConverters.ToFeeWithoutUnit}}">
+    <!-- Total fee -->
+    <PreviewItem Icon="{StaticResource paper_cash_regular}"
+                 Label="Total fee"
+                 CopyableContent="{Binding #TotalFeeUsd.Text}"
+                 IsCopyButtonEnabled="{Binding TotalFeeAmount.HasUsdBalance^}">
       <PrivacyContentControl>
-        <AmountControl Classes="WithUsd" Amount="{Binding TotalFeeAmount}" />
-      </PrivacyContentControl>
-    </PreviewItem>
-
-    <!-- Mining fee -->
-    <PreviewItem IsVisible="{Binding IsBreakdownVisible}"
-                 Margin="25 0 0 0"
-                 Icon="{StaticResource paper_cash_regular}"
-                 Label="Mining fee"
-                 ToolTip.Tip="Fee paid to miners for the wallet's inputs and outputs."
-                 CopyableContent="{Binding MiningFeeAmount.Btc, Converter={x:Static conv:MoneyConverters.ToFeeWithoutUnit}}">
-      <PrivacyContentControl>
-        <AmountControl Classes="WithUsd" Amount="{Binding MiningFeeAmount}" />
-      </PrivacyContentControl>
-    </PreviewItem>
-
-    <!-- Wasted dust -->
-    <PreviewItem IsVisible="{Binding IsBreakdownVisible}"
-                 Margin="25 0 0 0"
-                 Icon="{StaticResource coinjoin_cost}"
-                 Label="Wasted dust"
-                 ToolTip.Tip="Leftover amount that was too small to become an output, so it was given up."
-                 CopyableContent="{Binding WastedDustAmount.Btc, Converter={x:Static conv:MoneyConverters.ToFeeWithoutUnit}}">
-      <PrivacyContentControl>
-        <AmountControl Classes="WithUsd" Amount="{Binding WastedDustAmount}" />
+        <TextBlock x:Name="TotalFeeUsd" Text="{Binding TotalFeeAmount.Usd^, Converter={x:Static conv:MoneyConverters.ToUsdFee}}" />
       </PrivacyContentControl>
     </PreviewItem>
 
@@ -50,7 +27,7 @@
                  Icon="{StaticResource embedded_payment}"
                  Label="Payments"
                  ToolTip.Tip="Total value of the payments batched into the coinjoin."
-                 CopyableContent="{Binding PaymentsAmount.Btc, Converter={x:Static conv:MoneyConverters.ToFeeWithoutUnit}}">
+                 CopyableContent="{Binding PaymentsAmount.Btc}">
       <PrivacyContentControl>
         <AmountControl Classes="WithUsd" Amount="{Binding PaymentsAmount}" />
       </PrivacyContentControl>

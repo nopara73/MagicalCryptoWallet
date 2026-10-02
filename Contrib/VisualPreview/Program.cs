@@ -37,19 +37,41 @@ using (Task.Run(() => RxSchedulers.MainThreadScheduler.Schedule(() => callbackOn
     if (!callbackOnUiThread) throw new InvalidOperationException("Headless command notifications must return to the Avalonia UI thread.");
 }
 Console.WriteLine("Headless UI scheduler check passed: background callbacks return to the Avalonia dispatcher.");
-string destination = args.FirstOrDefault(x => x != "--bitcoin-only") ?? ".artifacts/rebrand/screenshots";
+string destination = args.FirstOrDefault(x => !x.StartsWith("--", StringComparison.Ordinal)) ?? ".artifacts/rebrand/screenshots";
 Directory.CreateDirectory(destination);
 if (args.Contains("--bitcoin-only"))
 {
     BitcoinP2pChecks.Render(destination);
     return;
 }
+if (args.Contains("--recovery-words-only"))
+{
+    try { RecoveryWordsChecks.Run(destination); }
+    catch (Exception error) { Console.Error.WriteLine(error); Environment.ExitCode = 1; }
+    return;
+}
 var context = (UiContext)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(UiContext));
+if (args.Contains("--history-dates-only"))
+{
+    HistoryDateChecks.Run(context, destination);
+    return;
+}
+if (args.Contains("--fees-only"))
+{
+    var feeServices = (Services)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(Services));
+    AutomaticCoinSelectionChecks.SetBackingField(feeServices, nameof(Services.UiConfig), new UiConfig(Path.Combine(Path.GetFullPath(destination), "synthetic-fee-ui-config.json")));
+    typeof(Services).GetProperty(nameof(Services.Instance))!.SetValue(null, feeServices);
+    AutomaticCoinSelectionChecks.Run(context);
+    FeeDisplayChecks.Run(context, destination);
+    return;
+}
 PasswordBoxChecks.Run();
-using var syntheticWallets = LurkingWifeModeChecks.Run(context, destination);
+LurkingWifeModeChecks.Initialize(context, destination);
 SingleWalletChecks.Run(context);
 AutomaticCoinSelectionChecks.Run(context);
 using var bitcoinP2p = new BitcoinP2pChecks(destination);
+SoftwareWalletChecks.Run(context, destination);
+int capturedFrames = 0;
 foreach (var theme in new[] { ThemeVariant.Light, ThemeVariant.Dark })
 {
     Application.Current!.RequestedThemeVariant = theme;
@@ -103,6 +125,10 @@ foreach (var theme in new[] { ThemeVariant.Light, ThemeVariant.Dark })
         Render("wallet-general-settings", AutomaticCoinSelectionChecks.CreateWalletSettings(context), 900, 650);
         Render("bitcoin-settings", bitcoinP2p.CreateSettings(), 650, 340);
         Render("bitcoin-status", bitcoinP2p.CreateStatus(), 360, 560);
+        Render("send", SoftwareWalletChecks.CreateSend(context), 900, 650);
+        Render("receive", SoftwareWalletChecks.CreateReceive(context), 900, 650);
+        Render("recovery", SoftwareWalletChecks.CreateRecovery(context), 900, 650);
+        Render("recover-words", SoftwareWalletChecks.CreateRecoverWords(context), 900, 650);
         void Render(string name, Control content, int width, int height)
         {
             var panel = new DockPanel();
@@ -112,25 +138,35 @@ foreach (var theme in new[] { ThemeVariant.Light, ThemeVariant.Dark })
             panel.Children.Add(content);
             var window = new Window { Title = "Magical Crypto Wallet", Width = width, Height = height, Content = panel,
                 Background = theme == ThemeVariant.Dark ? new SolidColorBrush(Color.Parse("#151515")) : Brushes.White };
+            // Avalonia 11's headless backend fixes this property at 1. Simulate the
+            // platform's DPI notification so layout and the compositor use the same scale.
+            var platform = window.PlatformImpl ?? throw new InvalidOperationException("Missing headless window.");
+            var scalingField = platform.GetType().GetField("<RenderScaling>k__BackingField", BindingFlags.Instance | BindingFlags.NonPublic)
+                ?? throw new InvalidOperationException("The pinned headless backend no longer exposes its scaling field.");
+            scalingField.SetValue(platform, scale);
+            var scalingChanged = platform.GetType().GetProperty("ScalingChanged")?.GetValue(platform) as Action<double>;
+            (scalingChanged ?? throw new InvalidOperationException("Missing platform DPI notification."))(scale);
             window.Show();
             Dispatcher.UIThread.RunJobs();
             window.Measure(new Size(width, height));
             window.Arrange(new Rect(0, 0, width, height));
-            using var bitmap = new RenderTargetBitmap(new PixelSize((int)(width * scale), (int)(height * scale)), new Vector(96 * scale, 96 * scale));
-            bitmap.Render(window);
+            using var bitmap = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("The compositor did not render a frame.");
+            if (window.RenderScaling != scale || bitmap.PixelSize != PixelSize.FromSize(new Size(width, height), scale))
+                throw new InvalidOperationException("The captured frame does not match the requested display scale.");
             bitmap.Save(Path.Combine(destination, $"{name}-{theme.Key!.ToString()!.ToLowerInvariant()}-{(int)(scale * 100)}.png"));
+            capturedFrames++;
             window.Close();
         }
     }
 }
-Console.WriteLine("Rendered actual Welcome, About, password creation/authorization, Lurking Wife Mode, single-wallet sidebar/dashboard, first-run setup, wallet actions, transaction preview, read-only coins, wallet settings, and title bar views in both themes at 100, 125, 150, and 200 percent.");
+Console.WriteLine($"Rendered {capturedFrames} actual application captures: Welcome, About, password creation/authorization, Lurking Wife Mode, single-wallet sidebar/dashboard, setup, wallet actions, transaction preview, coins, settings, send, receive, recovery and recovery words in both themes at 100, 125, 150 and 200 percent.");
+using var syntheticWallets = LurkingWifeModeChecks.Run(context, destination);
 
 // Authorize is never invoked. Any attempt to use a wallet service fails immediately.
 public class InertPreviewWallet : DispatchProxy
 {
     protected override object? Invoke(MethodInfo? targetMethod, object?[]? args) => targetMethod?.Name switch
 	{
-		"get_IsHardwareWallet" => false,
 		"Dispose" => null,
 		_ => throw new InvalidOperationException("Wallet services are unavailable in the visual preview.")
 	};
