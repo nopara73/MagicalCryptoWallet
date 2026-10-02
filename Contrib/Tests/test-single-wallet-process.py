@@ -50,6 +50,8 @@ def rpc(url, method, params=(), allow_error=False):
         return None
     result = json.loads(body)
     if not allow_error and "error" in result:
+        if result["error"].get("code") == -28:
+            raise OSError(f"{method}: Bitcoin Core is still warming up: {result['error']['message']}")
         raise AssertionError(f"{method}: {result['error']}")
     return result if allow_error else result.get("result")
 
