@@ -98,5 +98,10 @@
     "path": "mcw/tests/json_vectors/application/persistent-config.json",
     "line_sha256": "2baa2f29fab325bf52b1974a8a4f54c2309790d4240ad295df8e1bf5441ef522",
     "reason": "Frozen version-4 legacy input for the generic JSON parser; no automation runtime."
+  },
+  {
+    "path": "mcw/tests/round_hash_vectors/verification.json",
+    "line_sha256": "e49fe40ef1bf0754c12f0df72f1825809e70198791630212acb8613fc0b3734e",
+    "reason": "Recorded historical build failure before wallet RPC deletion; no runtime implementation."
   }
 ]

@@ -63,7 +63,7 @@ callers. Completed portable codec ranges `0x0200` to
 
 | Service | Operation range | Rust service / managed adapter leaves |
 |---|---|---|
-| Serialization | 0x0100–0x01FF | `serialization_service` / `Mcw/Serialization` |
+| JSON value codecs | 0x0100–0x01FF | JSON engine; schema adapters pending |
 | Transactions | 0x0600–0x06FF | `transaction_service` / `Mcw/Transactions` |
 | Content decoding | 0x0900–0x09FF | `content_service` / `Mcw/Content` |
 | Wallet cryptography/recovery | 0x0A00–0x0AFF | `wallet_crypto` / `Mcw/Crypto` |

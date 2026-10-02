@@ -264,5 +264,263 @@
     "line_sha256": "c1083cca3902b36aa98bf54e9dcb765835a491e8e3e3b7d841f6e6c5beeba820",
     "category": "frozen parser conformance data",
     "text": "Legacy endpoint syntax in a checksum-pinned configuration fixture; no runtime default or listener."
+  },
+  {
+    "path": "mcw/tests/native_ui_markdown_legacy.json",
+    "line": 34,
+    "line_sha256": "70d88a5d1819039a98002086934e5b49578d18eae27051d7ac4d64bcd5a384e1",
+    "reason": "Immutable historical Markdown parser evidence; no retired runtime or packaged content."
+  },
+  {
+    "path": "mcw/tests/native_ui_markdown_legacy.json",
+    "line": 522,
+    "line_sha256": "413583f99d9170b89cf0e9bbcc4f6df4ab3dc09565c7d4d294cc6683d01a678e",
+    "reason": "Immutable historical Markdown parser evidence; no retired runtime or packaged content."
+  },
+  {
+    "path": "mcw/tests/native_ui_markdown_legacy.json",
+    "line": 640,
+    "line_sha256": "17ff611b1b06af7c443e5f391a00b4d7bd2c5afb8f4f741d8217cf54eace5d91",
+    "reason": "Immutable historical Markdown parser evidence; no retired runtime or packaged content."
+  },
+  {
+    "path": "mcw/tests/native_ui_markdown_legacy.json",
+    "line": 664,
+    "line_sha256": "a743068efc4704880884cf81f551ab47fc75208254dc2ffe3840abc2bd91e4d9",
+    "reason": "Immutable historical Markdown parser evidence; no retired runtime or packaged content."
+  },
+  {
+    "path": "mcw/tests/native_ui_markdown_legacy.json",
+    "line": 702,
+    "line_sha256": "57eaa134ca4080744c3e9daeeebf97c8825fa56f74ef4f3709bc63869aae2d07",
+    "reason": "Immutable historical Markdown parser evidence; no retired runtime or packaged content."
+  },
+  {
+    "path": "mcw/tests/native_ui_markdown_legacy.json",
+    "line": 844,
+    "line_sha256": "472b904502d2ecd233cf8f6d55d5b649dc5b6487ad7fd42873b3f02197b88478",
+    "reason": "Immutable historical Markdown parser evidence; no retired runtime or packaged content."
+  },
+  {
+    "path": "mcw/tests/native_ui_markdown_legacy.json",
+    "line": 856,
+    "line_sha256": "27b8dcad8b209850dbd8703b37cb24ae2d614f3eea3838449e6d493af62dfebb",
+    "reason": "Immutable historical Markdown parser evidence; no retired runtime or packaged content."
+  },
+  {
+    "path": "mcw/tests/native_ui_markdown_legacy.json",
+    "line": 868,
+    "line_sha256": "1a3075fecf7b211565526f940441b1d630371297b83fdd8ab206a6fe67ce8e05",
+    "reason": "Immutable historical Markdown parser evidence; no retired runtime or packaged content."
+  },
+  {
+    "path": "mcw/tests/native_ui_markdown_legacy.json",
+    "line": 1000,
+    "line_sha256": "58befc6cfdff73d05519127df7a15d24c660c0e4ef4ef99643a2ea124b253320",
+    "reason": "Immutable historical Markdown parser evidence; no retired runtime or packaged content."
+  },
+  {
+    "path": "mcw/tests/native_ui_markdown_legacy.json",
+    "line": 1024,
+    "line_sha256": "a9c90e430e862521077ab7a8c269462c51242bf8d98d2af6a1f5897f8ed85f0e",
+    "reason": "Immutable historical Markdown parser evidence; no retired runtime or packaged content."
+  },
+  {
+    "path": "mcw/tests/native_ui_markdown_legacy.json",
+    "line": 1084,
+    "line_sha256": "c1f0624c4a2a48d4b87af6d1b1bedf8c0b180923d583b13eee1901093f3f9a9f",
+    "reason": "Immutable historical Markdown parser evidence; no retired runtime or packaged content."
+  },
+  {
+    "path": "mcw/tests/native_ui_markdown_legacy.json",
+    "line": 1098,
+    "line_sha256": "bdd9d46a684b2d1b4beea88d506c232835713a3d0117b0209709c0bdb69b248c",
+    "reason": "Immutable historical Markdown parser evidence; no retired runtime or packaged content."
+  },
+  {
+    "path": "mcw/tests/native_ui_markdown_legacy.json",
+    "line": 1240,
+    "line_sha256": "18e17f8a285eac9d77ad18fcb831a51f7de23995305534f25d8eee705cb5e6cf",
+    "reason": "Immutable historical Markdown parser evidence; no retired runtime or packaged content."
+  },
+  {
+    "path": "mcw/tests/native_ui_markdown_legacy.json",
+    "line": 1444,
+    "line_sha256": "73fda7786cfece68ea8d2c90c7abfef45df7df8b2daf50e547c116e41beb523f",
+    "reason": "Immutable historical Markdown parser evidence; no retired runtime or packaged content."
+  },
+  {
+    "path": "mcw/tests/native_ui_markdown_legacy.json",
+    "line": 1542,
+    "line_sha256": "1cb4e4dfa412984410e5438774037cb03f8c18ded10b5f543e23f552c6c5daaa",
+    "reason": "Immutable historical Markdown parser evidence; no retired runtime or packaged content."
+  },
+  {
+    "path": "mcw/tests/native_ui_markdown_legacy.json",
+    "line": 1660,
+    "line_sha256": "58c77e3b0c1fff94744cbf90dae0d1363075e60b36bc4354153b566c011bd7ef",
+    "reason": "Immutable historical Markdown parser evidence; no retired runtime or packaged content."
+  },
+  {
+    "path": "mcw/tests/native_ui_markdown_legacy.json",
+    "line": 1684,
+    "line_sha256": "aa2dc18d9ff5c2b93defd14b636f975e70795d27b2ea4865b855249653848eca",
+    "reason": "Immutable historical Markdown parser evidence; no retired runtime or packaged content."
+  },
+  {
+    "path": "mcw/tests/native_ui_markdown_legacy.json",
+    "line": 1940,
+    "line_sha256": "6c14fb757b5d707d767caee6abe4f9678365892c58380fb956baf0bef1ddb171",
+    "reason": "Immutable historical Markdown parser evidence; no retired runtime or packaged content."
+  },
+  {
+    "path": "mcw/tests/native_ui_markdown_legacy.json",
+    "line": 2046,
+    "line_sha256": "ed3889550fe9407b770fe084aefc572c329f10ccd3bc6ed239cca976dc4c1e58",
+    "reason": "Immutable historical Markdown parser evidence; no retired runtime or packaged content."
+  },
+  {
+    "path": "mcw/tests/native_ui_markdown_legacy.json",
+    "line": 2070,
+    "line_sha256": "69bc60df25870b7d5830de26a69c755ff35d3fbaa3e9c732339dd1c7d63737e9",
+    "reason": "Immutable historical Markdown parser evidence; no retired runtime or packaged content."
+  },
+  {
+    "path": "mcw/tests/native_ui_markdown_legacy.json",
+    "line": 2082,
+    "line_sha256": "abe8d3c38cbdaf3cdae37e19b2c9aab1f8764256472db7445c392b5bc8250163",
+    "reason": "Immutable historical Markdown parser evidence; no retired runtime or packaged content."
+  },
+  {
+    "path": "mcw/tests/native_ui_markdown_legacy.json",
+    "line": 2250,
+    "line_sha256": "50e3cacef0d53ef914569c60ee05bbe23441b9ef49c7c222c3ae0fe9c190cd43",
+    "reason": "Immutable historical Markdown parser evidence; no retired runtime or packaged content."
+  },
+  {
+    "path": "mcw/tests/native_ui_markdown_legacy.json",
+    "line": 2286,
+    "line_sha256": "9f903f6df7ab45c1df6a80161100936596c8482d1c7fefe25edff5c3b035a47c",
+    "reason": "Immutable historical Markdown parser evidence; no retired runtime or packaged content."
+  },
+  {
+    "path": "mcw/tests/native_ui_markdown_legacy.json",
+    "line": 2334,
+    "line_sha256": "c847eff7c521bb766ffef3e8a9cec387c4eaf3b027c302bfa417d9c2e387e563",
+    "reason": "Immutable historical Markdown parser evidence; no retired runtime or packaged content."
+  },
+  {
+    "path": "mcw/tests/native_ui_markdown_legacy.json",
+    "line": 2358,
+    "line_sha256": "da6fe9dd460f04c4d143b9b1cc637e787c56151419ffde706b48ee2a38392439",
+    "reason": "Immutable historical Markdown parser evidence; no retired runtime or packaged content."
+  },
+  {
+    "path": "mcw/tests/native_ui_markdown_legacy.json",
+    "line": 2384,
+    "line_sha256": "de4ea262e4f7917b1bc646dbb5cf8b1413d86d72797235f6746cfedb997bdae4",
+    "reason": "Immutable historical Markdown parser evidence; no retired runtime or packaged content."
+  },
+  {
+    "path": "mcw/tests/native_ui_markdown_legacy.json",
+    "line": 2502,
+    "line_sha256": "d6fbb0809b632ac049a52c979cbd0e55024351d64c1f42768e984af9d2537604",
+    "reason": "Immutable historical Markdown parser evidence; no retired runtime or packaged content."
+  },
+  {
+    "path": "mcw/tests/native_ui_markdown_legacy.json",
+    "line": 2514,
+    "line_sha256": "cfbd9a4a9fb05becc095e5895a08a5d907e13be87510b755d6f2253e62c24cc8",
+    "reason": "Immutable historical Markdown parser evidence; no retired runtime or packaged content."
+  },
+  {
+    "path": "mcw/tests/native_ui_markdown_legacy.json",
+    "line": 2521,
+    "line_sha256": "d847b367eaa826df5b090ce6085d5a88c39c09ac69f189c5b72825585d716a31",
+    "reason": "Immutable historical Markdown parser evidence; no retired runtime or packaged content."
+  },
+  {
+    "path": "mcw/tests/native_ui_markdown_legacy.json",
+    "line": 2548,
+    "line_sha256": "a7e0964da725ffd1228b2de64863be6880ccc1c3c384f6a77b58667d91d439fc",
+    "reason": "Immutable historical Markdown parser evidence; no retired runtime or packaged content."
+  },
+  {
+    "path": "mcw/tests/native_ui_markdown_legacy.json",
+    "line": 2560,
+    "line_sha256": "a7a5f1b232e0e49028534d3698c38142b3bf186c01b26818d614e7a7177bbace",
+    "reason": "Immutable historical Markdown parser evidence; no retired runtime or packaged content."
+  },
+  {
+    "path": "mcw/tests/native_ui_markdown_legacy.json",
+    "line": 2644,
+    "line_sha256": "fe0a51a42521e7edc37299f208700556f33b270b802cc4f2bb5264a83cba2c3b",
+    "reason": "Immutable historical Markdown parser evidence; no retired runtime or packaged content."
+  },
+  {
+    "path": "mcw/tests/native_ui_markdown_legacy.json",
+    "line": 2680,
+    "line_sha256": "5e16a084c60d9dc2470b220e29f6ac5f0ad62a0a004462e593aa2f2b597d332c",
+    "reason": "Immutable historical Markdown parser evidence; no retired runtime or packaged content."
+  },
+  {
+    "path": "mcw/tests/native_ui_markdown_legacy.json",
+    "line": 2694,
+    "line_sha256": "e14a9f54a2a8f34aae5da8620c0d5bcdd1c41c6fd29c3dc2434e6449d0326296",
+    "reason": "Immutable historical Markdown parser evidence; no retired runtime or packaged content."
+  },
+  {
+    "path": "mcw/tests/native_ui_markdown_legacy.json",
+    "line": 2980,
+    "line_sha256": "a58f0c1956ec21df0e81399385917d333b95a80106d108f04b36677d03c86387",
+    "reason": "Immutable historical Markdown parser evidence; no retired runtime or packaged content."
+  },
+  {
+    "path": "mcw/tests/native_ui_markdown_legacy.json",
+    "line": 3108,
+    "line_sha256": "58cf9422e111188a3a0133b02ed71d5d127efc5076462db1e9be76f8eee520ef",
+    "reason": "Immutable historical Markdown parser evidence; no retired runtime or packaged content."
+  },
+  {
+    "path": "mcw/tests/native_ui_markdown_legacy.json",
+    "line": 3132,
+    "line_sha256": "c1ebee6626ab316cf2ed58b0f6fdb34025ef392b5123b104b128b0d8be72fd4d",
+    "reason": "Immutable historical Markdown parser evidence; no retired runtime or packaged content."
+  },
+  {
+    "path": "mcw/tests/native_ui_markdown_legacy.json",
+    "line": 3156,
+    "line_sha256": "f69038bddf728b51b66dd4297c31f0323919a1488530cd093ff46df340e1a6c7",
+    "reason": "Immutable historical Markdown parser evidence; no retired runtime or packaged content."
+  },
+  {
+    "path": "mcw/tests/native_ui_markdown_legacy.json",
+    "line": 3192,
+    "line_sha256": "afdf4bb1d194879d66f21cac5d85de4de7c7e7f005e901e090bfb4bdd5145e20",
+    "reason": "Immutable historical Markdown parser evidence; no retired runtime or packaged content."
+  },
+  {
+    "path": "mcw/tests/native_ui_markdown_legacy.json",
+    "line": 3226,
+    "line_sha256": "19528a18cea1c0e5cf1d0f77753ef2c68f71240bbd997aeb7eeeafb68c99f2e1",
+    "reason": "Immutable historical Markdown parser evidence; no retired runtime or packaged content."
+  },
+  {
+    "path": "mcw/tests/native_ui_markdown_inventory.py",
+    "line": 36,
+    "line_sha256": "a75ce01b2d9cbb17ee23ac2a348f9c0198de8118da740ba012c066483c198720",
+    "reason": "Immutable historical Markdown parser evidence; no retired runtime or packaged content."
+  },
+  {
+    "path": "mcw/tests/native_ui_markdown_inventory.py",
+    "line": 38,
+    "line_sha256": "03663a83459e92632507e08c2004f9084b8215e9328c15073b67e77a295b6d8d",
+    "reason": "Immutable historical Markdown parser evidence; no retired runtime or packaged content."
+  },
+  {
+    "path": "mcw/tests/native_ui_markdown_inventory.py",
+    "line": 41,
+    "line_sha256": "96449cfd828af3ff95e5612c7ec7a472d4ff695dde886cb651c91508bef7b55d",
+    "reason": "Immutable historical Markdown parser evidence; no retired runtime or packaged content."
   }
 ]

@@ -92,11 +92,11 @@ try {
         [IO.Directory]::CreateDirectory($controlRuntime) | Out-Null
         Copy-Item -Path (Join-Path $taskRoot 'Contrib/McwMigration/PrivacyControlProbe/bin/Release/net10.0/*') -Destination $controlRuntime -Recurse -Force
         Copy-Item -LiteralPath $binary -Destination (Join-Path $controlRuntime 'mcw.exe') -Force
-        foreach ($name in @('magicalcryptowallet','magicalcryptowalletd')) {
+        foreach ($name in @('magicalcryptowallet')) {
             Copy-Item -LiteralPath (Join-Path $controlRuntime 'PrivacyControlProbe.exe') -Destination (Join-Path $controlRuntime ($name + '.exe')) -Force
         }
         $controlResults = @{}
-        foreach ($mode in @('gui','daemon')) {
+        foreach ($mode in @('gui')) {
             $controlReport = Join-Path $controlRuntime ($mode + '.json')
             $controlError = Join-Path $outputRoot ('privacy-' + $mode + '-stderr.txt')
             $controlOutput = Join-Path $outputRoot ('privacy-' + $mode + '-stdout.txt')

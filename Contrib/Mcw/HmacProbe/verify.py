@@ -21,7 +21,7 @@ report = evidence / "caller-results.json"
 if report.exists():
     report.unlink()
 result = subprocess.run(
-    [str(run / "mcw.exe"), "daemon", str(fixture), str(report)],
+    [str(run / "mcw.exe"), "gui", str(fixture), str(report)],
     capture_output=True,
     timeout=90,
 )

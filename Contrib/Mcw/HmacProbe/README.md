@@ -18,7 +18,7 @@ Rust 1.99/MSVC tools. `-SharedRoot` and `-Python` select existing tools. Optiona
 are marked as staged evidence. Release the build slot before review or publication.
 
 The verifier builds a test-only Rust host into ignored artifacts and copies this
-probe as its managed daemon child. The probe exercises 441 offline independent
+probe as its managed desktop child. The probe exercises 441 offline independent
 fixtures and public SLIP19/SLIP21 paths through 462 actual domain calls. Six adapter
 fault checks, three actual-caller boundary checks and 37 scripted transport fault
 checks cover rejection, cancellation, error redaction and buffer lifetime. The

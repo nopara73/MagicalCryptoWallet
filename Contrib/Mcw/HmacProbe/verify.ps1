@@ -46,7 +46,7 @@ try {
  $run=Join-Path $evidence ('run-'+[Guid]::NewGuid().ToString('N'))
  New-Item -ItemType Directory -Path $run | Out-Null
  Copy-Item -Path (Join-Path $projectDirectory 'bin/Release/net10.0/*') -Destination $run -Recurse
- Copy-Item -LiteralPath (Join-Path $run 'HmacProbe.exe') -Destination (Join-Path $run 'magicalcryptowalletd.exe')
+ Copy-Item -LiteralPath (Join-Path $run 'HmacProbe.exe') -Destination (Join-Path $run 'magicalcryptowallet.exe')
  $linker=Get-ChildItem 'C:\Program Files\Microsoft Visual Studio\*\*\VC\Tools\MSVC\*\bin\Hostx64\x64\link.exe' | Sort-Object FullName -Descending | Select-Object -First 1
  $kernel=Get-ChildItem 'C:\Program Files (x86)\Windows Kits\10\Lib\*\um\x64\kernel32.lib' | Sort-Object FullName -Descending | Select-Object -First 1
  if (-not $linker -or -not $kernel) { throw 'Existing test linker/SDK unavailable' }

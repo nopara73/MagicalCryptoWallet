@@ -376,5 +376,17 @@
     "line": 16,
     "line_sha256": "f474968a6dc6898e70daff01a511db05b10902f919378d5a2d2a3df81b3b575b",
     "reason": "Long-term migration ledger describes the removed hardware scope without restoring it."
+  },
+  {
+    "path": "mcw/tests/native_ui_markdown_legacy.json",
+    "line": 378,
+    "line_sha256": "0eff1adb3aa71e83ad4be2290aa55804ebad5cdf1f405215b87ce64c95c76f4a",
+    "reason": "Immutable historical Markdown parser evidence; no retired runtime or packaged content."
+  },
+  {
+    "path": "mcw/tests/native_ui_markdown_legacy.json",
+    "line": 508,
+    "line_sha256": "84f7e0b3295f50042208d8ef1ff2d681a7ec0fffbcb15bf92210207c189f2708",
+    "reason": "Immutable historical Markdown parser evidence; no retired runtime or packaged content."
   }
 ]

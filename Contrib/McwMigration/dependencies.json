@@ -1169,7 +1169,7 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -1263,7 +1263,7 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -1696,7 +1696,7 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "application"
@@ -1852,7 +1852,7 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Direct",
           "role": "application"
@@ -2023,7 +2023,7 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "application"
@@ -2115,7 +2115,7 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -2205,7 +2205,7 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "application"
@@ -2289,7 +2289,7 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "application"
@@ -2365,7 +2365,7 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -2450,7 +2450,7 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -2534,7 +2534,7 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -2721,7 +2721,7 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -2805,7 +2805,7 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -2903,7 +2903,7 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -2989,7 +2989,7 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -3074,7 +3074,7 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -3233,7 +3233,7 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "application"
@@ -3321,7 +3321,7 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "application"
@@ -3410,7 +3410,7 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -3518,7 +3518,7 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -3713,7 +3713,7 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -3798,7 +3798,7 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -3886,7 +3886,7 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -3968,7 +3968,7 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -4245,7 +4245,7 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "application"
@@ -4351,7 +4351,7 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "application"
@@ -4454,7 +4454,7 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "application"
@@ -4606,7 +4606,7 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "application"
@@ -4706,7 +4706,7 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "application"
@@ -4790,28 +4790,6 @@
         "NBitcoin.Secp256k1": "3.1.6",
         "System.Interactive.Async": "6.0.1"
       },
-      "source": "nuget-lock"
-    },
-    {
-      "name": "NScheme",
-      "version": "0.0.1",
-      "group": "application-services",
-      "status": "retained",
-      "uses": [
-        {
-          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
-          "framework": "net10.0",
-          "type": "CentralTransitive",
-          "role": "application"
-        },
-        {
-          "lock": "Contrib/McwMigration/NativeUiBridgeProbe/packages.lock.json",
-          "framework": "net10.0",
-          "type": "CentralTransitive",
-          "role": "verification"
-        }
-      ],
-      "dependencies": {},
       "source": "nuget-lock"
     },
     {
@@ -5447,7 +5425,7 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -5538,7 +5516,7 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -5626,7 +5604,7 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -5714,7 +5692,7 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -5975,7 +5953,7 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -6081,7 +6059,7 @@
           "role": "verification"
         },
         {
-          "lock": "Contrib/Mcw/RpcProbe/packages.lock.json",
+          "lock": "Contrib/Mcw/RoundHashProbe/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "application"
@@ -7766,6 +7744,12 @@
       "handoff": "MagicalCryptoWallet.Documentation/McwArchitecture.md"
     },
     {
+      "name": "round_hash",
+      "path": "mcw/src/round_hash/mod.rs",
+      "status": "implementation present; production caller integration pending",
+      "handoff": null
+    },
+    {
       "name": "safe_file_service",
       "path": "mcw/src/safe_file_service/mod.rs",
       "status": "implementation present; production caller integration pending",
@@ -7788,12 +7772,6 @@
       "path": "mcw/src/script_text.rs",
       "status": "implementation present; production caller integration pending",
       "handoff": "Contrib/McwMigration/Handoffs/script-text.md"
-    },
-    {
-      "name": "serialization_service",
-      "path": "mcw/src/serialization_service/mod.rs",
-      "status": "implementation present; production caller integration pending",
-      "handoff": "Contrib/McwMigration/Handoffs/json-rpc.md"
     },
     {
       "name": "socks5",
