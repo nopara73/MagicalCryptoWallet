@@ -15,5 +15,7 @@
   "MagicalCryptoWallet/Scheme/Stdlib.scm",
   "Mode::Daemon",
   "mcw daemon",
-  "Some(\"daemon\")"
+  "Some(\"daemon\")",
+  "$arguments = @('daemon', $report)",
+  "[str(host), \"daemon\", str(report)]"
 ]

@@ -67,6 +67,7 @@ jobs:
         run: |
           python Contrib/SingleWallet/audit.py
           python Contrib/Rebrand/audit.py
+          python Contrib/AutomationRemoval/audit.py
       - name: Release inventory and mixed-version regression checks
         run: python Contrib/Signing/test-sign-release.py
       - name: Snapshot packaging regression checks

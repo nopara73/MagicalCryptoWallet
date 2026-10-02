@@ -1,5 +1,5 @@
 {
-  "forbidden_pattern": "\\b(?:NScheme|SchemeConsole\\w*|SchemeEditorTextBox|SchemeOutput|MagicalCryptoWalletLibGenerator|ExperimentalFeatures|JsonRpc\\w+|RpcOnionEnabled|OnionServiceUri|CreateEphemeralOnionServiceAsync|DestroyOnionServiceAsync|DaemonExecutableName|magicalcryptowalletd)\\b|MagicalCryptoWallet(?:\\.Client)?\\.Rpc\\b|MagicalCryptoWallet\\.Client\\.Scheme\\b|MagicalCryptoWallet\\.Daemon\\b|(?:^|[/\\\\])(?:Scheme|MagicalCryptoWallet\\.Daemon)(?:[/\\\\]|$)|Mode::Daemon\\b|mcw\\s+daemon\\b|Some\\(\\s*\"daemon\"\\s*\\)",
+  "forbidden_pattern": "\\b(?:NScheme|SchemeConsole\\w*|SchemeEditorTextBox|SchemeOutput|MagicalCryptoWalletLibGenerator|ExperimentalFeatures|JsonRpc\\w+|RpcOnionEnabled|OnionServiceUri|CreateEphemeralOnionServiceAsync|DestroyOnionServiceAsync|DaemonExecutableName|magicalcryptowalletd)\\b|MagicalCryptoWallet(?:\\.Client)?\\.Rpc\\b|MagicalCryptoWallet\\.Client\\.Scheme\\b|MagicalCryptoWallet\\.Daemon\\b|(?:^|[/\\\\])(?:Scheme|MagicalCryptoWallet\\.Daemon)(?:[/\\\\]|$)|Mode::Daemon\\b|mcw\\s+daemon\\b|Some\\(\\s*\"daemon\"\\s*\\)|(?:\\[\\s*|\\(\\s*|,\\s*)['\"]daemon['\"]\\s*,",
   "removed_coin_control_pattern": "(?!)",
   "allowed_user_strings": []
 }
