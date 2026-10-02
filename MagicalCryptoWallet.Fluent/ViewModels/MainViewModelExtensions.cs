@@ -42,11 +42,7 @@ public static class MainViewModelExtensions
 
 		AboutViewModel.RegisterLazy(() => new AboutViewModel(uiContext));
 		BroadcasterViewModel.RegisterLazy(() => new BroadcasterViewModel(uiContext));
-		UserSupportViewModel.RegisterLazy(() => new UserSupportViewModel(uiContext));
-		BugReportLinkViewModel.RegisterLazy(() => new BugReportLinkViewModel(uiContext));
-		DocsLinkViewModel.RegisterLazy(() => new DocsLinkViewModel(uiContext));
 		OpenDataFolderViewModel.RegisterLazy(() => new OpenDataFolderViewModel(uiContext));
-		FindCoordinatorLinkViewModel.RegisterLazy(() => new FindCoordinatorLinkViewModel(uiContext));
 		OpenWalletsFolderViewModel.RegisterLazy(() => new OpenWalletsFolderViewModel(uiContext));
 		OpenLogsViewModel.RegisterLazy(() => new OpenLogsViewModel(uiContext));
 		OpenTorLogsViewModel.RegisterLazy(() => new OpenTorLogsViewModel(uiContext));

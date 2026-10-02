@@ -45,7 +45,7 @@ internal static class PasswordBoxChecks
 			window.KeyTextInput("abcde");
 			Flush();
 			Check(model.Password == "abcde", "Typing must update the bound password, never the mask.");
-			Check(Rendered(password) == "这个笨老外", "The original creation sentence must replace bullets.");
+			Check(Rendered(password) == "This ", "The English creation sentence must replace bullets.");
 			confirmation.Text = "vwxyz";
 			Check(Rendered(password) == Rendered(confirmation), "Creation and confirmation must use the same mask.");
 
@@ -82,7 +82,7 @@ internal static class PasswordBoxChecks
 			Flush();
 			Check(clipboard.TryGetTextAsync().GetAwaiter().GetResult() == "a12e", "Revealed copy must copy the password, never its mask.");
 			password.RevealPassword = false;
-			Check(Rendered(password) == "这个笨老" && string.IsNullOrEmpty(peer.Value), "Hiding must immediately restore the sentence and protect accessibility.");
+			Check(Rendered(password) == "This" && string.IsNullOrEmpty(peer.Value), "Hiding must immediately restore the sentence and protect accessibility.");
 			Check(!password.CanCopyModified && !password.CanCutModified, "Hiding must disable clipboard commands.");
 
 			clipboard.SetTextAsync("Pasted 🪄密码").GetAwaiter().GetResult();
@@ -108,9 +108,9 @@ internal static class PasswordBoxChecks
 			model.Password = new string('x', 600);
 			Flush();
 			var sequence = Rendered(password);
-			foreach (var phrase in new[] { "这个笨老外不知道自己在写什么。", "法式炸薯条法式炸薯条法式炸薯条", "只有一支筷子的人会挨饿。", "说太多灯泡笑话的人，很快就会心力交瘁。", "汤面火锅", "你是我见过的最可爱的僵尸。", "永不放弃。", "如果你是只宠物小精灵，我就选你。" })
+			foreach (var phrase in new[] { "This dumb foreigner doesn't know what he's writing.", "French fries French fries French fries", "Anyone with only one chopstick will go hungry.", "Anyone who tells too many light bulb jokes will soon burn out.", "Noodle soup hot pot", "You're the cutest zombie I've ever seen.", "Never give up.", "If you were a Pokémon, I'd choose you." })
 			{
-				Check(sequence.Contains(phrase, StringComparison.Ordinal), "Every original sentence must participate in the shuffled mask.");
+				Check(sequence.Contains(phrase, StringComparison.Ordinal), "Every translated sentence must participate in the shuffled mask.");
 			}
 			model.Password = new string('y', 600);
 			Flush();
@@ -125,12 +125,13 @@ internal static class PasswordBoxChecks
 			Check(password.Text == "" && string.IsNullOrWhiteSpace(Rendered(password)), "Clearing the password must clear its mask.");
 
 			Check(Rendered(ordinary) == "Ordinary text", "Ordinary text boxes must remain unchanged.");
-			var glyphs = new Typeface(new FontFamily("avares://MagicalCryptoWallet.Fluent/Assets/Fonts#MagicalCryptoWallet Password Mask")).GlyphTypeface;
+			var presenter = Presenter(password);
+			var glyphs = new Typeface(presenter.FontFamily, presenter.FontStyle, presenter.FontWeight, presenter.FontStretch).GlyphTypeface;
 			foreach (char character in sequence.Distinct())
 			{
-				Check(glyphs.GetGlyph(character) != 0, "The bundled font must contain every sentence character.");
+				Check(glyphs.GetGlyph(character) != 0, "The application font must contain every translated sentence character.");
 			}
-			Console.WriteLine("Chinese password checks passed: native editing/binding, Unicode paste, reveal, clipboard/accessibility protection, all eight sentences, IME and bundled glyphs.");
+			Console.WriteLine("English password checks passed: native editing/binding, Unicode paste, reveal, clipboard/accessibility protection, all eight translated sentences, IME and application font glyphs.");
 		}
 		finally
 		{

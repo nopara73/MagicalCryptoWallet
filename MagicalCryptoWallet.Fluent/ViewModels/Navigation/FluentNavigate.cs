@@ -148,11 +148,6 @@ public partial class FluentNavigate
 		return new FluentDialog<System.Reactive.Unit>(target.NavigateDialogAsync(dialog, navigationMode));
 	}
 
-	public void BugReportLink(NavigationTarget navigationTarget = NavigationTarget.DialogScreen, NavigationMode navigationMode = NavigationMode.Normal)
-	{
-		UiContext.Navigate(navigationTarget).To(new BugReportLinkViewModel(UiContext), navigationMode);
-	}
-
 	public FluentDialog<IEnumerable<SmartCoin>> PrivacyControl(Wallet wallet, SendFlowModel sendFlow, TransactionInfo transactionInfo, IEnumerable<SmartCoin>? usedCoins, bool isSilent, NavigationTarget navigationTarget = NavigationTarget.DialogScreen, NavigationMode navigationMode = NavigationMode.Normal)
 	{
 		var dialog = new PrivacyControlViewModel(UiContext, wallet, sendFlow, transactionInfo, usedCoins, isSilent);
@@ -365,11 +360,6 @@ public partial class FluentNavigate
 		UiContext.Navigate(navigationTarget).To(new AddedWalletPageViewModel(UiContext, walletDraft, options), navigationMode);
 	}
 
-	public void UserSupport(NavigationTarget navigationTarget = NavigationTarget.DialogScreen, NavigationMode navigationMode = NavigationMode.Normal)
-	{
-		UiContext.Navigate(navigationTarget).To(new UserSupportViewModel(UiContext), navigationMode);
-	}
-
 	public FluentDialog<bool> NewCoordinatorConfirmationDialog(CoordinatorConnectionString coordinatorConnection, NavigationTarget navigationTarget = NavigationTarget.DialogScreen, NavigationMode navigationMode = NavigationMode.Normal)
 	{
 		var dialog = new NewCoordinatorConfirmationDialogViewModel(UiContext, coordinatorConnection);
@@ -390,20 +380,10 @@ public partial class FluentNavigate
 		UiContext.Navigate(navigationTarget).To(new MultiShareOptionsViewModel(UiContext, options), navigationMode);
 	}
 
-	public void FindCoordinatorLink(NavigationTarget navigationTarget = NavigationTarget.DialogScreen, NavigationMode navigationMode = NavigationMode.Normal)
-	{
-		UiContext.Navigate(navigationTarget).To(new FindCoordinatorLinkViewModel(UiContext), navigationMode);
-	}
-
 
 	public void ConfirmRecoveryWords(WalletCreationOptions.AddNewWallet options, List<RecoveryWordViewModel> words, NavigationTarget navigationTarget = NavigationTarget.DialogScreen, NavigationMode navigationMode = NavigationMode.Normal)
 	{
 		UiContext.Navigate(navigationTarget).To(new ConfirmRecoveryWordsViewModel(UiContext, options, words), navigationMode);
-	}
-
-	public void DocsLink(NavigationTarget navigationTarget = NavigationTarget.DialogScreen, NavigationMode navigationMode = NavigationMode.Normal)
-	{
-		UiContext.Navigate(navigationTarget).To(new DocsLinkViewModel(UiContext), navigationMode);
 	}
 
 	public FluentDialog<System.Reactive.Unit> WelcomePage(NavigationTarget navigationTarget = NavigationTarget.DialogScreen, NavigationMode navigationMode = NavigationMode.Normal)
