@@ -264,5 +264,12 @@
     "line_sha256": "36f4da022ef644c835b967e204df10dc8453ac64dab6dca214d77336aacb058d",
     "category": "source provenance",
     "text": "\"csharp/WabiSabi/Crypto/Randomness/WasabiRandom.cs\": \"3f0a3d8d688629bd25bae9a0fd23ba12ef61c0ef77fd205c9acdf1306d2a8733\","
+  },
+  {
+    "path": "mcw/tests/json_vectors/application/persistent-config.json",
+    "line": 10,
+    "line_sha256": "c1083cca3902b36aa98bf54e9dcb765835a491e8e3e3b7d841f6e6c5beeba820",
+    "category": "historical JSON parser fixture",
+    "text": "\"JsonRpcServerPrefixes\": [\"http://127.0.0.1:37129/\"],"
   }
 ]
