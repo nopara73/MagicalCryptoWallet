@@ -39,6 +39,12 @@ using (Task.Run(() => RxSchedulers.MainThreadScheduler.Schedule(() => callbackOn
 Console.WriteLine("Headless UI scheduler check passed: background callbacks return to the Avalonia dispatcher.");
 string destination = args.FirstOrDefault(x => !x.StartsWith("--", StringComparison.Ordinal)) ?? ".artifacts/rebrand/screenshots";
 Directory.CreateDirectory(destination);
+if (args.Contains("--recovery-words-only"))
+{
+    try { RecoveryWordsChecks.Run(destination); }
+    catch (Exception error) { Console.Error.WriteLine(error); Environment.ExitCode = 1; }
+    return;
+}
 var context = (UiContext)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(UiContext));
 if (args.Contains("--history-dates-only"))
 {

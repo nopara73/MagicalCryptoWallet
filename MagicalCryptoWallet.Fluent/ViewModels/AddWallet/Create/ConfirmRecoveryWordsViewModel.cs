@@ -5,14 +5,19 @@ using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using MagicalCryptoWallet.Fluent.ViewModels.Navigation;
+using WabiSabi.Crypto.Randomness;
 
 namespace MagicalCryptoWallet.Fluent.ViewModels.AddWallet.Create;
 
 [NavigationMetaData(Title = "Confirm Recovery Words")]
 public partial class ConfirmRecoveryWordsViewModel : RoutableViewModel
 {
+	private const int WordsToConfirm = 4;
+
 	private readonly List<RecoveryWordViewModel> _words;
 	private readonly WalletCreationOptions.AddNewWallet _options;
+	private readonly WalletRandom _random;
+	private List<RecoveryWordViewModel> _confirmationWords = new();
 
 	[AutoNotify] private bool _isSkipEnabled;
 	[AutoNotify] private RecoveryWordViewModel _currentWord;
@@ -20,9 +25,17 @@ public partial class ConfirmRecoveryWordsViewModel : RoutableViewModel
 	[AutoNotify(SetterModifier = AccessModifier.Private)] private bool _allWordsConfirmed;
 	[AutoNotify(SetterModifier = AccessModifier.Private)] private string _caption = "";
 
-	public ConfirmRecoveryWordsViewModel(UiContext uiContext, WalletCreationOptions.AddNewWallet options, List<RecoveryWordViewModel> words) : base(uiContext)
+	public ConfirmRecoveryWordsViewModel(UiContext uiContext, WalletCreationOptions.AddNewWallet options, List<RecoveryWordViewModel> words)
+		: this(uiContext, options, words, MagicalCryptoWallet.Crypto.Randomness.SecureRandom.Instance)
 	{
+	}
+
+	protected ConfirmRecoveryWordsViewModel(UiContext uiContext, WalletCreationOptions.AddNewWallet options, List<RecoveryWordViewModel> words, WalletRandom random) : base(uiContext)
+	{
+		ArgumentOutOfRangeException.ThrowIfLessThan(words.Count, WordsToConfirm, nameof(words));
+
 		_options = options;
+		_random = random;
 		_availableWords = new List<RecoveryWordViewModel>();
 		_words = words.OrderBy(x => x.Index).ToList();
 		_currentWord = words.First();
@@ -36,6 +49,15 @@ public partial class ConfirmRecoveryWordsViewModel : RoutableViewModel
 		base.OnNavigatedTo(isInHistory, disposables);
 
 		ConfirmationWords.Clear();
+		AllWordsConfirmed = false;
+
+		// Sample positions anew on every visit; keep the complete backup display untouched.
+		_confirmationWords = SelectConfirmationWords();
+		CurrentWord = _confirmationWords[0];
+		AvailableWords = _words
+			.Select(x => new RecoveryWordViewModel(UiContext, x.Index, x.Word))
+			.OrderBy(x => x.Word)
+			.ToList();
 
 		var confirmationWordsSourceList = new SourceList<RecoveryWordViewModel>();
 
@@ -44,7 +66,6 @@ public partial class ConfirmRecoveryWordsViewModel : RoutableViewModel
 			.Connect()
 			.ObserveOn(RxApp.MainThreadScheduler)
 			.Bind(ConfirmationWords)
-			.OnItemAdded(x => x.Reset())
 			.Subscribe()
 			.DisposeWith(disposables);
 
@@ -56,9 +77,11 @@ public partial class ConfirmRecoveryWordsViewModel : RoutableViewModel
 			confirmationWordsSourceList
 			.Connect()
 			.WhenValueChanged(x => x.IsConfirmed)
-			.Select(_ => confirmationWordsSourceList.Items.All(x => x.IsConfirmed));
+			.Select(_ => confirmationWordsSourceList.Count == WordsToConfirm && confirmationWordsSourceList.Items.All(x => x.IsConfirmed))
+			.StartWith(false)
+			.DistinctUntilChanged();
 
-		NextCommand = ReactiveCommand.CreateFromTask(OnNextAsync, nextCommandCanExecute);
+		NextCommand = ReactiveCommand.CreateFromTask(OnNextAsync, nextCommandCanExecute).DisposeWith(disposables);
 
 		nextCommandCanExecute.Do(x => AllWordsConfirmed = x)
 			.Subscribe()
@@ -76,19 +99,14 @@ public partial class ConfirmRecoveryWordsViewModel : RoutableViewModel
 
 		SetSkip();
 
-		confirmationWordsSourceList.AddRange(_words);
-
-		AvailableWords = confirmationWordsSourceList.Items
-			.Select(x => new RecoveryWordViewModel(UiContext, x.Index, x.Word))
-			.OrderBy(x => x.Word)
-			.ToList();
+		confirmationWordsSourceList.AddRange(_confirmationWords);
 
 		var availableWordsSourceList = new SourceList<RecoveryWordViewModel>()
 			.DisposeWith(disposables);
 
 		availableWordsSourceList
 			.Connect()
-			.WhenPropertyChanged(x => x.IsSelected)
+			.WhenPropertyChanged(x => x.IsSelected, notifyOnInitialValue: false)
 			.Subscribe(x => OnWordSelectionChanged(x.Sender))
 			.DisposeWith(disposables);
 
@@ -100,18 +118,42 @@ public partial class ConfirmRecoveryWordsViewModel : RoutableViewModel
 		SetupCancel(enableCancel: false, enableCancelOnEscape: enableCancel, enableCancelOnPressed: false);
 	}
 
-	private void SetNextWord()
+	private List<RecoveryWordViewModel> SelectConfirmationWords()
 	{
-		if (ConfirmationWords.FirstOrDefault(x => !x.IsConfirmed) is { } nextWord)
+		var candidates = _words.ToArray();
+		// Partial Fisher-Yates: four distinct positions, uniformly drawn from the full mnemonic.
+		for (int i = 0; i < WordsToConfirm; i++)
 		{
-			CurrentWord = nextWord;
+			var selected = _random.GetInt(i, candidates.Length);
+			(candidates[i], candidates[selected]) = (candidates[selected], candidates[i]);
 		}
 
-		EnableAvailableWords(true);
+		return candidates.Take(WordsToConfirm)
+			.OrderBy(x => x.Index)
+			.Select(x => new RecoveryWordViewModel(UiContext, x.Index, x.Word) { IsEnabled = true })
+			.ToList();
+	}
+
+	private void SetNextWord()
+	{
+		if (_confirmationWords.FirstOrDefault(x => !x.IsConfirmed) is { } nextWord)
+		{
+			CurrentWord = nextWord;
+			EnableAvailableWords(true);
+		}
+		else
+		{
+			EnableAvailableWords(false);
+		}
 	}
 
 	private void OnWordSelectionChanged(RecoveryWordViewModel selectedWord)
 	{
+		if (AllWordsConfirmed || selectedWord.IsConfirmed)
+		{
+			return;
+		}
+
 		if (selectedWord.IsSelected)
 		{
 			CurrentWord.SelectedWord = selectedWord.Word;
