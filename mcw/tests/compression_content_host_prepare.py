@@ -21,6 +21,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo", required=True)
     parser.add_argument("--out", required=True)
+    parser.add_argument("--integrated", action="store_true",
+                        help="Test incorporated master without applying any shared patch")
     args = parser.parse_args()
     repo = Path(args.repo).resolve()
     out = Path(args.out).resolve()
@@ -54,12 +56,18 @@ def main():
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(source, target)
         source_hashes[name] = digest(source)
-    patch_dir = out / ".artifacts/shared-patches"
-    subprocess.run([sys.executable, str(repo / "mcw/tests/compression_content_host_patch.py"),
-                    "--repo", str(repo), "--out", str(patch_dir)], check=True)
-    patch_record = json.loads((patch_dir / "patch-manifest.json").read_text())
-    for name in patch_record["source_hashes"]:
-        shutil.copy2(patch_dir / "review" / name, out / name)
+    patch_record = None
+    if args.integrated:
+        assert "pub mod content_service;" in (repo / "mcw/src/lib.rs").read_text()
+        factory = (repo / "MagicalCryptoWallet/WebClients/MagicalCryptoWallet/MagicalCryptoWalletHttpClientFactory.cs").read_text()
+        assert "McwContentDecodingHandler" in factory and "DecompressionMethods.None" in factory
+    else:
+        patch_dir = out / ".artifacts/shared-patches"
+        subprocess.run([sys.executable, str(repo / "mcw/tests/compression_content_host_patch.py"),
+                        "--repo", str(repo), "--out", str(patch_dir)], check=True)
+        patch_record = json.loads((patch_dir / "patch-manifest.json").read_text())
+        for name in patch_record["source_hashes"]:
+            shutil.copy2(patch_dir / "review" / name, out / name)
 
     fixture = out / "ContentActualHost"
     fixture.mkdir()
@@ -82,13 +90,14 @@ def main():
         "source_root": str(repo), "snapshot_root": str(out), "source_hashes": source_hashes,
         "snapshot_hashes": {name: digest(out / name) for name in sorted(files)},
         "shared_patches": patch_record, "actual_application_host": True,
-        "production_integrated": False, "test_local_shared_patches": True,
+        "production_integrated": args.integrated, "test_local_shared_patches": not args.integrated,
         "synthetic_only": True, "external_network": False, "active_checkouts_modified": False,
         "named_client": "MempoolSpace-bitcoin-fee-rate-provider",
     }
     (out / ".artifacts/source-manifest.json").write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8")
     print(json.dumps({"snapshot": str(out), "copied_files": len(files),
-                      "source_commit": record["source_commit"], "production_integrated": False}))
+                      "source_commit": record["source_commit"],
+                      "test_local_shared_patches": not args.integrated}))
 
 
 if __name__ == "__main__":
