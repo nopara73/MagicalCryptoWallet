@@ -1,11 +1,14 @@
-# Wallet Script/transaction validation workstream
+# Wallet Script format and signature-hash checkpoints
 
-State: **format checkpoint ready for integration; complete workstream in progress**.
-No production caller has been migrated by this checkpoint. It does not replace
+State: **verified checkpoints preserved; bounded caller assignment pending**.
+The human scope correction of 2026-10-02 stops the full Script/transaction
+validation migration. No interpreter or validation-engine code was written.
+No production caller has been migrated by these checkpoints. They do not replace
 NBitcoin as a package, implement script execution, or prove spendability.
 
 Worker: bitcoin-script, thread 01a0fc4b-dd8a-72b2-bed8-8298491abaa4.
 Format implementation commit: bc4d917ec209ea0f5bb27630e4dc48b76bcc3665.
+Signature-hash implementation commit: 88bd734f82862fda5b8210cb37fd112d98705d97.
 Canonical LF source SHA-256:
 `cbfaba9dda02462748ad036b1ce4500e433413c310f00f59f6db718e4e8e9556`.
 Normal direct master push and remote ancestry were verified.
@@ -18,20 +21,19 @@ platform binding or unsafe code is added. The only domain imports are `std::fmt`
 and actual first-party `crate::bitcoin_encoding`. Source/vector notices, license
 texts and hashes are retained in `bitcoin_script_fixtures/SOURCES.md` and manifest.
 
-Expanded ownership: `mcw/src/script_service/`, disjoint managed leaf
-`MagicalCryptoWallet/Mcw/Scripts/`, and agreed script-only caller leaves:
+Preserved signature-hash checkpoint: `mcw/src/script_service/{mod.rs,sighash.rs}`,
+its tests and fixtures. It uses actual first-party `bitcoin_wire` transaction,
+outpoint and output types and `bitcoin_encoding::Sha256`; it adds no curve or
+signature implementation. It was published immediately before the scope
+correction arrived; no production registration or cutover followed.
 
-- `Extensions/NBitcoinExtensions.cs`: ExtractKeyId/GetScriptType/TryGetScriptType;
-  the transaction owner retains PSBT metadata/extraction helpers.
-- `Crypto/Bip322Signature.cs`: script/witness verification orchestration;
-  key/signature primitives remain wallet-crypto-owned.
-- `WabiSabi/Models/MultipartyTransaction/SigningState.cs` and
-  `WabiSabi/Client/CoinJoin/Client/ArenaClient.cs`: VerifyScript leaves only.
-- `Serialization/Bitcoin.cs` remains JSON-owner-owned; provide a concrete Script
-  serialization leaf patch to that owner for incorporation.
-
-Caller migration was declared to QR and affected peers before editing. None of
-these existing caller leaves is changed in the format checkpoint. QR retains
+Former broad caller ownership is inactive under the correction. Bounded candidates
+being audited are `Extensions/NBitcoinExtensions.cs` classification/key-identifier
+leaves and the Script text leaf in `Serialization/Bitcoin.cs`. The latter file
+remains JSON-owner-owned. No existing managed file has been changed by this worker.
+Script execution, BIP322, CoinJoin verification and whole transaction validation
+are outside the revised assignment. A precise bounded assignment is required
+before further caller work. QR retains
 shared crate registration/manifests/host/dispatch/lifecycle/platform/packaging and
 the shared ledger. Coordinator alone dispatches actual incorporation when QR is idle.
 
@@ -108,7 +110,7 @@ UTF-8 before invoking domain code; preserve typed errors.
 | 0x0D05 | construct typed output from existing payloads |
 | 0x0D06 | Script number encode/decode with size/minimality policy |
 | 0x0D07 | address/script conversion with explicit network |
-| 0x0D20..0x0D3F | proposed actual sighash/validation services, pending implementation evidence |
+| 0x0D20..0x0D3F | preserved signature-hash proposal; production registration pending bounded assignment |
 
 Script CompactSize/witness wire framing belongs to actual `bitcoin_wire`; do not
 implement a second transaction/witness serializer or normalize Script bytes there.
@@ -145,6 +147,48 @@ Evidence root:
 The ignored actual-source rustc test harness uses the installed linker's static CRT
 for development tests only; it is never a shipping mcw artifact/runtime claim.
 
+## Concrete signature-hash API and evidence
+
+All fallible functions return typed `script_service::sighash::Error`. Digest bytes
+are the raw SHA-256 order, without display reversal. The cache immutably borrows
+the exact transaction and, when required, all spent outputs in input order.
+
+| API | Contract |
+| --- | --- |
+| legacy_sighash | full u32 hash type, historical SINGLE result, parsed OP_CODESEPARATOR removal |
+| without_code_separators | remove opcode instructions only; preserve separators inside pushed data |
+| find_and_delete_signature | remove matching length-only serialized pushes at instruction boundaries |
+| SighashCache::new/with_spent_outputs | bounded actual bitcoin_wire types; exact ordered prevout count |
+| segwit_v0_sighash/SighashCache::segwit_v0 | BIP143, supplied amount and explicit sliced scriptCode |
+| taproot_sighash[_message]/SighashCache::taproot[_message] | BIP341 epoch/message/tagged digest, explicit annex and TapScriptExtension |
+| tapleaf_hash/tapbranch_hash/taptweak_hash | tagged hashes only; no point lift, group operation or commitment verification |
+
+The caller retains responsibility for executed code-separator context, real
+prevout binding, signature verification and execution/policy. Unsupported Taproot
+hash types, missing SINGLE outputs, wrong prevout counts, annex/key-version errors
+and bounds fail explicitly. The cache prevents stale mutation through Rust
+borrowing; it does not verify supplied prevouts against a chain state.
+
+Command: `./mcw/tests/bitcoin_script_sighash_verify.ps1`, using the same installed
+toolchain and build-slot discipline as the format checkpoint. Rustfmt and strict
+Clippy pass. Debug and optimized overflow-checked profiles each pass nine tests
+(eight signature-hash tests and one real encoding module test). Exact published
+cases pass: 500 Core v29 legacy hashes, ten BIP143 preimage/hash cases and seven
+BIP341 epoch-message/hash cases. Independent Python differential checks pass
+3,600 synthetic legacy, SegWit and Taproot cases, including annex/extensions,
+full legacy hash types and output-mode boundaries. Fixtures exclude private keys
+and signing data; source hashes/license notices are in `SIGHASH_SOURCES.md` and
+`sighash_manifest.json`.
+
+Canonical LF sighash source SHA-256:
+`adc700286c4d45d81f89da7a3e4d75b0301081d907116358d95290d8e7952c30`.
+Evidence under the same evidence root, `sighash/verification.json` SHA-256
+`e71fef8bc206cd1edd0be0a65cf55456fda0e451cffd7f0db2c147d23407dcaa`;
+`sighash/differential.json` SHA-256
+`a66b95e507562957ce2a43dc95d6534f80620a5ffd065ab9792aad2659fa3a5a`.
+These are Windows x64 development tests; other native targets and shipping/runtime
+acceptance remain unverified. No validation or spendability claim follows.
+
 ## Remaining production/dependency acceptance
 
 Inventory revision: 748a961c78980c42bba293ff7ad1b9ca696566ec.
@@ -153,16 +197,15 @@ references in six files; six NBitcoin package references in five files; 56 lockf
 references in 14 files. Tests/comments are included; implicit imported references
 require further audit. Nothing in the checkpoint removes these references.
 
-Next concrete work: legacy/BIP143/BIP341/342 signature hashes and cached immutable
-tx/prevout binding; interpreter flags, legacy/SegWit/Taproot validation and policy;
-actual wallet-crypto ECDSA/BIP340/point-tweak checks; all OP_HASH primitives including
-the crypto-owned SHA1; synthetic signed transaction/CoinJoin/ownership proof tests;
-strict managed adapter payloads and agreed production caller migrations. Existing
-key/signing/curve operations stay crypto-owned; construction/signing orchestration
-stays transaction-owner-owned. No fake verifier, managed fallback or stub is accepted.
+Next permitted work is an audit of concrete minimal classification/serialization
+caller replacements, followed by the coordinator's precise bounded assignment.
+Full interpreter, signature verification, wallet-cryptography, CoinJoin and
+transaction-engine expansion is stopped. Existing legacy paths are retained.
+No fake verifier, managed fallback or stub is accepted.
 
-Workstream completion requires production paths to execute first-party Rust,
+Any bounded replacement requires its production paths to execute first-party Rust,
 old NBitcoin calls eliminated from those paths, current caller/package/runtime
 audits, shared integration and native five-target tests. Entire NBitcoin package
 removal requires every remaining caller and packaged reference to disappear,
 including transaction/key/PSBT/signature responsibilities owned by other workers.
+The checkpoints alone do not establish any package removal.
