@@ -84,7 +84,6 @@ public class CoinJoinClientTests
 			roundStateProvider,
 			new CoinJoinCoinSelector(consolidationMode: true, anonScoreTarget: int.MaxValue, semiPrivateThreshold: 0),
 			new CoinJoinConfiguration(roundParameters.CoordinationIdentifier, 150m, AbsoluteMinInputCount: 21, AllowSoloCoinjoining: false),
-			InputVerifiers.NoVerification(),
 			new LiquidityClueProvider());
 
 		// Create an AliceClient for the victim
@@ -293,7 +292,6 @@ public class CoinJoinClientTests
 			roundStateProvider,
 			new CoinJoinCoinSelector(consolidationMode: true, anonScoreTarget: int.MaxValue, semiPrivateThreshold: 0),
 			new CoinJoinConfiguration("CoinJoinCoordinatorIdentifier", 150m, AbsoluteMinInputCount: 2, AllowSoloCoinjoining: false),
-			InputVerifiers.NoVerification(),
 			new LiquidityClueProvider());
 }
 

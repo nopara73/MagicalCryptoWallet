@@ -8,11 +8,13 @@ import argparse
 import base64
 import ctypes
 from ctypes import wintypes
+from contextlib import contextmanager
 import json
 import os
 from pathlib import Path
 import socket
 import subprocess
+import tempfile
 import time
 import urllib.request
 import uuid
@@ -25,6 +27,60 @@ def free_port():
     with socket.socket() as listener:
         listener.bind(("127.0.0.1", 0))
         return listener.getsockname()[1]
+
+
+def require_regtest_p2p_port():
+    port = 18444
+    with socket.socket() as listener:
+        if os.name == "nt":
+            listener.setsockopt(socket.SOL_SOCKET, socket.SO_EXCLUSIVEADDRUSE, 1)
+        try:
+            listener.bind(("127.0.0.1", port))
+        except OSError as error:
+            raise RuntimeError(f"Regtest P2P port 127.0.0.1:{port} is occupied; leave the existing process running and retry later.") from error
+    return port
+
+
+@contextmanager
+def regtest_p2p_port_lease():
+    """Serialize synthetic harnesses across checkouts, including node downtime."""
+    lease = (Path(tempfile.gettempdir()) / "MagicalCryptoWallet-regtest-p2p-18444.lock").open("a+b")
+    if lease.tell() == 0:
+        lease.write(b"0")
+        lease.flush()
+    lease.seek(0)
+    try:
+        if os.name == "nt":
+            import msvcrt
+            msvcrt.locking(lease.fileno(), msvcrt.LK_NBLCK, 1)
+        else:
+            import fcntl
+            fcntl.flock(lease, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except OSError as error:
+        lease.close()
+        raise RuntimeError("Regtest P2P port 127.0.0.1:18444 is reserved by another synthetic harness; retry later without stopping it.") from error
+    try:
+        yield
+    finally:
+        lease.seek(0)
+        if os.name == "nt":
+            msvcrt.locking(lease.fileno(), msvcrt.LK_UNLCK, 1)
+        else:
+            fcntl.flock(lease, fcntl.LOCK_UN)
+        lease.close()
+
+
+@contextmanager
+def reserve_offline_p2p_port():
+    """Keep other nodes out while the client discovers an unavailable peer."""
+    with socket.socket() as reservation:
+        if os.name == "nt":
+            reservation.setsockopt(socket.SOL_SOCKET, socket.SO_EXCLUSIVEADDRUSE, 1)
+        try:
+            reservation.bind(("127.0.0.1", 18444))
+        except OSError as error:
+            raise RuntimeError("Regtest P2P port 127.0.0.1:18444 was occupied during the offline check; no existing process was stopped.") from error
+        yield
 
 
 def wait_for(check, timeout=45):
@@ -146,13 +202,14 @@ def main():
     suffix = ".exe" if os.name == "nt" else ""
     desktop = args.package.resolve() / ("magicalcryptowallet" + suffix)
     daemon = args.package.resolve() / ("magicalcryptowalletd" + suffix)
-    node_rpc, node_p2p, wallet_rpc = free_port(), free_port(), free_port()
+    node_p2p = require_regtest_p2p_port()
+    node_rpc, wallet_rpc = free_port(), free_port()
     node_url = f"http://127.0.0.1:{node_rpc}/"
     wallet_url = f"http://127.0.0.1:{wallet_rpc}/"
     cli = [f"--datadir={data}", "--network=RegTest"]
     initial = cli + ["--jsonrpcserverenabled=true", "--jsonrpcuser=synthetic", "--jsonrpcpassword=synthetic",
-        f"--jsonrpcserverprefixes={wallet_url}", f"--bitcoinrpcendpoint={node_url}", "--bitcoinrpccredentialstring=synthetic:synthetic",
-        "--coordinatoruri=", "--exchangerateprovider=None", "--feerateestimationprovider=None", "--downloadnewversion=false", "--enablegpu=false"]
+        f"--jsonrpcserverprefixes={wallet_url}",
+        "--coordinatoruri=", "--usetor=Disabled", "--exchangerateprovider=None", "--feerateestimationprovider=None", "--downloadnewversion=false", "--enablegpu=false"]
     env = {key: value for key, value in os.environ.items() if not key.startswith("MAGICALCRYPTOWALLET_")}
     env["AVALONIA_TELEMETRY_OPTOUT"] = "1"
     children, logs, results = [], [], {}
@@ -170,7 +227,7 @@ def main():
         return info if info["state"] == "Ready" else False
     try:
         node = launch(args.bitcoind.resolve(), ["-regtest", f"-datadir={bitcoin}", "-server=1", "-blockfilterindex=1",
-            f"-rpcport={node_rpc}", f"-port={node_p2p}", "-rpcuser=synthetic", "-rpcpassword=synthetic", "-fallbackfee=0.0001", "-listen=0", "-discover=0"], "bitcoin")
+            f"-rpcport={node_rpc}", f"-port={node_p2p}", "-rpcuser=synthetic", "-rpcpassword=synthetic", "-fallbackfee=0.0001", "-listen=1", "-bind=127.0.0.1", "-peerblockfilters=1", "-discover=0"], "bitcoin")
         wait_for(lambda: rpc(node_url, "getblockchaininfo"))
         wait_for(lambda: (indexes := rpc(node_url, "getindexinfo")) and all(index["synced"] for index in indexes.values()))
         first = launch(desktop if os.name == "nt" else daemon, initial + (["startsilent"] if os.name == "nt" else []), "first-setup")
@@ -178,8 +235,8 @@ def main():
         info = wait_for(lambda: rpc(wallet_url, "getwalletinfo"))
         assert info["state"] == "Unconfigured" and info["balance"] is None
         assert not visible_windows(first.pid), "Hidden first-run setup opened a window."
-        rpc(wallet_url, "recoverwallet", [MNEMONIC, "synthetic passphrase"])
-        info = wait_for(ready)
+        rpc(wallet_url, "recoverwallet", [MNEMONIC, "synthetic passphrase"], timeout=60)
+        info = wait_for(ready, timeout=360)
         assert info["syncHeight"] == info["targetHeight"] == 0 and info["hasCachedData"]
         assert info["coinJoinRequiresAuthorization"]
         assert "walletName" not in info and "loaded" not in info
@@ -193,39 +250,54 @@ def main():
         receive_address = rpc(wallet_url, "getnewaddress", ["synthetic funding", False])["address"]
         rpc(miner_url, "sendtoaddress", [receive_address, .05])
         rpc(node_url, "generatetoaddress", [1, mining_address], timeout=60)
-        wait_for(lambda: (info := ready()) and info["balance"] == 5_000_000, timeout=90)
+        wait_for(lambda: (info := ready()) and info["balance"] == 5_000_000, timeout=360)
+        old_tip = rpc(node_url, "getbestblockhash")
+        old_height = rpc(node_url, "getblockcount")
+        rpc(node_url, "invalidateblock", [old_tip])
+        replacement_address = rpc(miner_url, "getnewaddress")
+        rpc(node_url, "generatetoaddress", [2, replacement_address], timeout=60)
+        wait_for(lambda: (info := ready()) and info["syncHeight"] == old_height + 1 and info["balance"] == 5_000_000, timeout=360)
+        assert rpc(node_url, "getblockhash", [old_height]) != old_tip
+        results["p2p_reorg_recovers_funding_on_replacement_chain"] = True
         payment = [{"Sendto": mining_address, "Amount": 500_000, "Label": "synthetic spend"}]
-        assert "error" in rpc(wallet_url, "build", [payment, None, 2, "wrong"], allow_error=True)
+        assert "error" in rpc(wallet_url, "build", [payment, None, 2, "wrong"], allow_error=True, timeout=60)
         assert rpc(wallet_url, "getwalletinfo")["coinJoinRequiresAuthorization"]
-        assert rpc(wallet_url, "build", [payment, None, 2, "synthetic passphrase"])
+        assert rpc(wallet_url, "build", [payment, None, 2, "synthetic passphrase"], timeout=60)
         assert not rpc(wallet_url, "getwalletinfo")["coinJoinRequiresAuthorization"]
-        assert "error" in rpc(wallet_url, "build", [payment, None, 2, "wrong"], allow_error=True)
+        assert "error" in rpc(wallet_url, "build", [payment, None, 2, "wrong"], allow_error=True, timeout=60)
         results["signing_authorizes_coinjoin_but_never_skips_later_password_checks"] = True
         stop(first)
         rpc(node_url, "stop")
         assert node.wait(timeout=20) == 0
 
-        # Persist the test's node and RPC settings so the exact startup command only needs its normal resolved context.
+        # Persist wallet settings; the Bitcoin transport uses the standard regtest P2P endpoint.
         config_file = data / "Config.RegTest.json"
         config = json.loads(config_file.read_text(encoding="utf-8-sig"))
-        config.update(CoordinatorUri="", BitcoinRpcEndPoint=node_url, BitcoinRpcCredentialString="synthetic:synthetic",
+        config.update(CoordinatorUri="", UseTor="Disabled",
             JsonRpcServerEnabled=True, JsonRpcUser="synthetic", JsonRpcPassword="synthetic", JsonRpcServerPrefixes=[wallet_url],
             DownloadNewVersion=False, EnableGpu=False, ExchangeRateProvider="None", FeeRateEstimationProvider="None")
         config_file.write_text(json.dumps(config), encoding="utf-8")
         (data / "UiConfig.json").write_text(json.dumps(dict(Oobe=False, LastVersionHighlightsDisplayed="99.99.99.0", WindowState="Normal",
             FeeTarget=2, Autocopy=False, AutoPaste=False, IsCustomChangeAddress=False, PrivacyMode=True, DarkModeEnabled=True,
             RunOnSystemStartup=False, HideOnClose=True, SendAmountConversionReversed=False, WindowWidth=1100, WindowHeight=760)), encoding="utf-8")
-        second = launch(desktop if os.name == "nt" else daemon, cli + (["startsilent"] if os.name == "nt" else []), "encrypted-restart")
-        wait_for_rpc_start(second, run / "encrypted-restart.log")
-        offline = wait_for(lambda: (info := rpc(wallet_url, "getwalletinfo")) and info["state"] == "Offline" and info["hasCachedData"] and info)
-        assert offline["balance"] == 5_000_000 and not offline["synchronized"]
-        assert rpc(wallet_url, "gethistory")
-        assert not visible_windows(second.pid)
-        results["offline_startup_shows_cached_balance_and_history"] = True
+        with reserve_offline_p2p_port():
+            second = launch(desktop if os.name == "nt" else daemon, cli + (["startsilent"] if os.name == "nt" else []), "encrypted-restart")
+            wait_for_rpc_start(second, run / "encrypted-restart.log")
+            offline = wait_for(lambda: (info := rpc(wallet_url, "getwalletinfo")) and info["state"] == "Offline" and info["hasCachedData"] and info)
+            assert offline["balance"] == 5_000_000 and not offline["synchronized"]
+            assert rpc(wallet_url, "gethistory")
+            assert not visible_windows(second.pid)
+            # Finish the initial failed discovery before bringing the peer back.
+            wait_for(lambda: "Seeding from DNS" in (run / "encrypted-restart.log").read_text(encoding="utf-8", errors="replace"))
+            time.sleep(16)  # The existing discovery attempt is bounded to fifteen seconds.
+            assert rpc(wallet_url, "getwalletinfo")["state"] == "Offline"
+            results["offline_startup_shows_cached_balance_and_history"] = True
+        require_regtest_p2p_port()
         node = launch(args.bitcoind.resolve(), ["-regtest", f"-datadir={bitcoin}", "-server=1", "-blockfilterindex=1",
-            f"-rpcport={node_rpc}", f"-port={node_p2p}", "-rpcuser=synthetic", "-rpcpassword=synthetic", "-fallbackfee=0.0001", "-listen=0", "-discover=0"], "bitcoin-restart")
-        info = wait_for(ready)
+            f"-rpcport={node_rpc}", f"-port={node_p2p}", "-rpcuser=synthetic", "-rpcpassword=synthetic", "-fallbackfee=0.0001", "-listen=1", "-bind=127.0.0.1", "-peerblockfilters=1", "-discover=0"], "bitcoin-restart")
+        info = wait_for(ready, timeout=360)
         assert info["balance"] == 5_000_000
+        assert info["syncHeight"] == info["targetHeight"] == rpc(node_url, "getblockcount")
         assert info["coinJoinRequiresAuthorization"] and not visible_windows(second.pid)
         assert len(list((data / "Wallets/RegTest").glob("*.json"))) == 1
         results["encrypted_restart_synchronizes_before_window"] = True
@@ -259,12 +331,18 @@ def main():
         stop(second)
         final = launch(daemon, cli, "daemon-after-quit")
         wait_for_rpc_start(final, run / "daemon-after-quit.log")
-        info = wait_for(ready)
+        info = wait_for(ready, timeout=360)
         assert info["coinJoinRequiresAuthorization"]
         if os.name == "nt":
             conflict = launch(desktop, cli, "desktop-daemon-conflict")
             assert conflict.wait(timeout=8) != 0 and final.poll() is None
             results["desktop_cannot_activate_daemon"] = True
+        sent = rpc(wallet_url, "send", [payment, None, 2, "synthetic passphrase"], timeout=60)
+        wait_for(lambda: sent["txid"] in rpc(node_url, "getrawmempool"))
+        rpc(node_url, "generatetoaddress", [1, mining_address])
+        wait_for(lambda: (info := ready()) and info["syncHeight"] == rpc(node_url, "getblockcount") and info["balance"] < 5_000_000, timeout=360)
+        assert rpc(miner_url, "gettransaction", [sent["txid"]])["confirmations"] >= 1
+        results["p2p_send_is_independently_confirmed"] = True
         stop(final)
         results["clean_quit_releases_lock_and_credentials"] = True
         rpc(node_url, "stop")
@@ -281,4 +359,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    with regtest_p2p_port_lease():
+        main()

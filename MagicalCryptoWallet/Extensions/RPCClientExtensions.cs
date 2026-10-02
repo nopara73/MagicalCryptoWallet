@@ -211,22 +211,4 @@ public static class RPCClientExtensions
 	}
 
 
-	public static async Task<Result<bool>> SupportsBlockFiltersAsync(this IRPCClient rpc, CancellationToken cancellationToken)
-	{
-		try
-		{
-			var blockHash = await rpc.GetBestBlockHashAsync(cancellationToken).ConfigureAwait(false);
-			await rpc.GetBlockFilterAsync(blockHash, cancellationToken).ConfigureAwait(false);
-			return Result<bool>.Ok();
-		}
-		catch (RPCException e) when (e.RPCCode == RPCErrorCode.RPC_MISC_ERROR && e.Message.Contains("Index is not enabled"))
-		{
-			return Result<bool>.Fail(true);
-		}
-		catch (Exception e)
-		{
-			Logger.LogWarning(e);
-			return Result<bool>.Fail(false);
-		}
-	}
 }

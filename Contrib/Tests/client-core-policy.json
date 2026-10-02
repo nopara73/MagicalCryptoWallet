@@ -1,0 +1,4 @@
+{
+  "forbidden_pattern": "BitcoinRpcCredentialString|BitcoinRpcEndPoint|^BitcoinRpcUri$|BitcoinRpcStatus|VerifyConnection|InputVerifier|RpcMonitor|ConnectedRpcStatus|RpcBroadcaster|BroadcastByRpc|RpcBlockProvider|CreateBitcoinCoreFilterProvider|SupportsBlockFiltersAsync|BitcoinConfigParser|_bitcoinRpcClient|_rpcConnected|RpcStatusChanged|RegTestRpcProviders",
+  "removed_coin_control_pattern": "(?!)"
+}

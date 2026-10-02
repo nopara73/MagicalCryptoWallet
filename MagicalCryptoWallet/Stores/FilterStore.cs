@@ -38,7 +38,7 @@ public class FilterStore : IFilterStore, IDisposable
 			if (storage.GetPragmaUserVersion() < 2)
 			{
 				storage.Dispose();
-				Logger.LogInfo("Migrating from old Indexer filters to Bitcoin Core RPC filters.");
+				Logger.LogInfo("Migrating from old Indexer filters to BIP158 compact filters.");
 				SqliteStorageHelper.DeleteDatabaseFiles(_storageFilePath);
 				storage = BlockFilterSqliteStorage.FromFile(_storageFilePath);
 				storage.SetPragmaUserVersion(2);

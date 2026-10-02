@@ -20,8 +20,6 @@ public static class PersistentConfigManager
 		TerminateTorOnExit : false,
 		TorBridges : [],
 		DownloadNewVersion : true,
-		BitcoinRpcCredentialString : string.Empty,
-		BitcoinRpcUri : Constants.DefaultMainNetBitcoinRpcUri,
 		JsonRpcServerEnabled : false,
 		JsonRpcUser : GenerateRandomString(12),
 		JsonRpcPassword : GenerateRandomString(12),
@@ -42,8 +40,6 @@ public static class PersistentConfigManager
 	{
 		Network = Network.TestNet,
 		CoordinatorUri = Constants.TestnetCoordinatorUri,
-		BitcoinRpcCredentialString = string.Empty,
-		BitcoinRpcUri = Constants.DefaultTestNetBitcoinRpcUri,
 		JsonRpcServerEnabled = true,
 		AbsoluteMinInputCount = Constants.AbsoluteMinInputCount,
 		ExperimentalFeatures = new ValueList<string>(["scripting"]),
@@ -53,14 +49,12 @@ public static class PersistentConfigManager
 	{
 		Network = Network.RegTest,
 		CoordinatorUri = Constants.RegTestCoordinatorUri,
-		BitcoinRpcUri = Constants.DefaultRegTestBitcoinRpcUri,
 	};
 
 	public static readonly PersistentConfig DefaultSignetConfig = DefaultTestNetConfig with
 	{
 		Network = Bitcoin.Instance.Signet,
 		CoordinatorUri = Constants.SignetCoordinatorUri,
-		BitcoinRpcUri = Constants.DefaultSignetBitcoinRpcUri,
 	};
 
 	public static string ToFile(string filePath, PersistentConfig obj)

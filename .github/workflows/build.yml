@@ -37,7 +37,8 @@ jobs:
   platform:
     name: ${{ matrix.rid }}
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 45
+    # P2P reconnect, reorg and broadcast checks include five-minute cooldowns.
+    timeout-minutes: 90
     strategy:
       fail-fast: false
       matrix:
@@ -103,6 +104,8 @@ jobs:
         run: python Contrib/Tests/test-single-wallet-coinjoin.py --package .artifacts/packages/linux-x64/MagicalCryptoWallet --bitcoind MagicalCryptoWallet.IntegrationTests/bin/Release/net10.0/BundledApps/Binaries/linux-x64/bitcoind
       - name: Retired single-wallet interfaces, generated code, symbols and package contents
         run: python Contrib/SingleWallet/audit.py --artifacts .artifacts/packages/${{ matrix.rid }}/MagicalCryptoWallet
+      - name: Retired client Bitcoin Core interfaces, generated bindings and test-only adapters
+        run: dotnet run --project Contrib/Rebrand/AssemblyAudit -c Release -- Contrib/Tests/client-core-policy.json .artifacts/packages/${{ matrix.rid }}/MagicalCryptoWallet
       - name: Removal audit negative fixtures and CLI syntax
         shell: bash
         run: |

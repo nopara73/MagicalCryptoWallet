@@ -979,6 +979,7 @@ public class P2pConnectionManager : IDisposable
 	{
 		if (!_discoveryNeeded || Interlocked.CompareExchange(ref _dnsSeedRunning, 1, 0) != 0) { return; }
 		_lastDnsSeed = DateTimeOffset.UtcNow;
+		Logger.LogInfo("Seeding from DNS...");
 		try
 		{
 			_discoveryCoordinator?.Post(new HarvestedEndpointsMessage(_network.SeedNodes.Select(x => x.Endpoint).ToArray()));

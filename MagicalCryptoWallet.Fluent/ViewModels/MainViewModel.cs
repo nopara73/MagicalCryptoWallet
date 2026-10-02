@@ -186,20 +186,6 @@ public partial class MainViewModel : ViewModelBase
 			.Switch()
 			.BindTo(this, x => x.IsCoinJoinActive);
 
-		UiContext.Services.EventBus.AsObservable<RpcStatusChanged>()
-			.Select(x => x.Status)
-			.Where(x => !x.IsOk)
-			.Take(1)
-			.ObserveOn(RxApp.MainThreadScheduler)
-			.Subscribe(x => NotificationHelpers.ShowError(
-				"Could not connect to Bitcoin RPC",
-				$"\n>>Click here to verify Bitcoin RPC settings.<<",
-				onClick: () =>
-				{
-					SettingsPage.SelectedTab = 1; // Bitcoin Tab
-					_ = SettingsPage.Activate();
-				}));
-
 		Notifications.StartListening();
 
 		if (UiContext.ApplicationSettings.Network != Network.Main)

@@ -1,3 +1,4 @@
+using MagicalCryptoWallet.TestInfrastructure;
 using NBitcoin;
 using System.Threading;
 using System.Threading.Tasks;
@@ -42,8 +43,8 @@ public class SynchronizerReorgTests(ITestOutputHelper output)
 		var fork = Fork.Create();
 		Proof($"RPC  filters={fork.Orphan.ToString()[..8]}…  headers={fork.Winner.ToString()[..8]}…  height={fork.Height}");
 
-		var result = await FilterProviders
-			.CreateBitcoinRpcFilterProvider(new MockRpcClient(), fork.BlockHeaders)
+		var result = await RegTestRpcProviders
+			.CreateFilterProvider(new MockRpcClient(), fork.BlockHeaders)
 			(fork.Height, fork.Orphan, CancellationToken.None);
 
 		Proof($"RPC  got {Describe(result)}  want BestBlockUnknown");
@@ -79,6 +80,35 @@ public class SynchronizerReorgTests(ITestOutputHelper output)
 		Assert.True(assigned);
 		Assert.Equal(fork.Height, next!.StartHeight);
 		Assert.Equal(fork.Winner, next.StopHash);
+	}
+
+	[Fact]
+	public void FilterRequests_WaitForStoreRollbackInsteadOfUsingOrphanedHeaders()
+	{
+		var fork = Fork.Create();
+		var header = Network.RegTest.Consensus.ConsensusFactory.CreateBlockHeader();
+		header.HashPrevBlock = fork.BlockHeaders.Tip.HashBlock;
+		fork.BlockHeaders.SetTip(new ChainedBlock(header, header.GetHash(), fork.BlockHeaders.Tip));
+
+		Assert.False(fork.SyncState.TryAssignHeaderRange(Network.RegTest, out _));
+		Assert.False(fork.SyncState.TryAssignFilterRange(out _));
+		fork.FiltersOnOrphan.RemoveTip();
+		Assert.True(fork.SyncState.TryAssignHeaderRange(Network.RegTest, out var next));
+		Assert.Equal(fork.Height, next!.StartHeight);
+	}
+
+	[Fact]
+	public void HeaderResponse_FromReplacedChainIsRetriedWithoutAcceptingIt()
+	{
+		var fork = Fork.Create();
+		var stale = new RangeRequest(fork.Height, fork.Height, fork.Orphan);
+		Assert.IsType<FilterSynchronizationState.HeaderValidationResult.Stale>(
+			fork.SyncState.ValidateFilterHeaders(stale, [uint256.One], uint256.Zero, Network.RegTest));
+		fork.FiltersOnOrphan.RemoveTip();
+		Assert.True(fork.SyncState.TryAssignHeaderRange(Network.RegTest, out var current));
+		// A wrong commitment on the current chain is still rejected.
+		Assert.IsType<FilterSynchronizationState.HeaderValidationResult.Invalid>(
+			fork.SyncState.ValidateFilterHeaders(current!, [uint256.One], uint256.Zero, Network.RegTest));
 	}
 
 	/// <summary>

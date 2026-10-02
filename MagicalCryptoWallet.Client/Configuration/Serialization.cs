@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-using System.Net;
 using System.Text.Json.Nodes;
 using MagicalCryptoWallet.Helpers;
 using MagicalCryptoWallet.Serialization;
@@ -25,8 +24,6 @@ public static class PersistentConfigEncode
 			("TerminateTorOnExit", Bool(cfg.TerminateTorOnExit)),
 			("TorBridges", Array(cfg.TorBridges.Select(String))),
 			("DownloadNewVersion", Bool(cfg.DownloadNewVersion)),
-			("BitcoinRpcCredentialString", String(cfg.BitcoinRpcCredentialString)),
-			("BitcoinRpcEndPoint", String(cfg.BitcoinRpcUri)),
 			("JsonRpcServerEnabled", Bool(cfg.JsonRpcServerEnabled)),
 			("JsonRpcUser", String(cfg.JsonRpcUser)),
 			("JsonRpcPassword", String(cfg.JsonRpcPassword)),
@@ -60,7 +57,6 @@ public static class PersistentConfigDecode
 	public static Decoder<ValueList<T>> ValueList<T>(Decoder<T> decoder) where T : IEquatable<T> =>
 		Array(decoder).Map(x => new ValueList<T>(x));
 
-	private static IPEndPoint DefaultEndPoint = new (IPAddress.None, 0);
 
 
 	public static readonly Decoder<PersistentConfig> CurrentPersistentConfig =
@@ -77,8 +73,6 @@ public static class PersistentConfigDecode
 					TerminateTorOnExit: get.Required("TerminateTorOnExit", Decode.Bool),
 					TorBridges: get.Required("TorBridges", ValueList(Decode.String)),
 					DownloadNewVersion: get.Required("DownloadNewVersion", Decode.Bool),
-					BitcoinRpcCredentialString: get.Optional("BitcoinRpcCredentialString", Decode.String) ?? "",
-					BitcoinRpcUri: get.Optional("BitcoinRpcEndPoint", Decode.String) ?? "",
 					JsonRpcServerEnabled: get.Required("JsonRpcServerEnabled", Decode.Bool),
 					JsonRpcUser: get.Required("JsonRpcUser", Decode.String),
 					JsonRpcPassword: get.Required("JsonRpcPassword", Decode.String),

@@ -184,6 +184,11 @@ public class CompactFilterBehavior(
 				TrySyncNoLock(node);
 				break;
 
+			case HeaderValidationResult.Stale:
+				_assignedHeaderRange = null;
+				TrySyncNoLock(node);
+				break;
+
 			case HeaderValidationResult.Invalid invalid:
 				Logger.LogWarning($"Validation failed for filter header range {assignment}: {invalid.Reason}");
 				HandleInvalidNoLock(node, "Invalid compact filter headers received");
@@ -193,6 +198,12 @@ public class CompactFilterBehavior(
 
 	private void HandleFilterMessageNoLock(Node node, CompactFilterPayload filterPayload, RangeRequest assignment)
 	{
+		if (!synchronizationState.IsRangeCurrent(assignment))
+		{
+			ReleaseAssignmentsNoLock();
+			return;
+		}
+
 		const int MaxFilterBytes = 1_000_000;
 
 		if (filterPayload.FilterBytes.Length > MaxFilterBytes)

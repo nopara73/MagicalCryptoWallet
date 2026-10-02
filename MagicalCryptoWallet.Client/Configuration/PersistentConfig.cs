@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using NBitcoin;
 using System.Net;
-using MagicalCryptoWallet.BitcoinRpc;
 using MagicalCryptoWallet.Helpers;
 using MagicalCryptoWallet.Logging;
 using MagicalCryptoWallet.Userfacing;
@@ -18,8 +17,6 @@ public record PersistentConfig(
 	bool TerminateTorOnExit,
 	ValueList<string> TorBridges,
 	bool DownloadNewVersion,
-	string BitcoinRpcCredentialString,
-	string BitcoinRpcUri,
 	bool JsonRpcServerEnabled,
 	string JsonRpcUser,
 	string JsonRpcPassword,

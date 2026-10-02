@@ -56,6 +56,7 @@ RegTest is a local network in which users can generate blocks and coins for test
     regtest.softwareexpiry = 0
     regtest.listenonion = 0
     regtest.blockfilterindex = 1
+    regtest.peerblockfilters = 1
     ```
 5. Save it.
 6. Close Bitcoin Core to confirm changes and open it again with: `bitcoin-qt.exe -regtest`.
@@ -129,6 +130,7 @@ Here you will have to build from source, follow [these instructions here](https:
 2. Open the command line and run the MagicalCryptoWallet Client with:
 `dotnet run`
 3. Go to Settings/Bitcoin and set the network to RegTest
+   Clients use the standard P2P endpoint `127.0.0.1:18444`. Core must serve compact filters; no Core RPC endpoint or credentials are configured in the client.
 4. Close MagicalCryptoWallet and restart it with:
 `dotnet run`
 5. Generate a wallet in Magical Crypto Wallet named: R1.

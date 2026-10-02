@@ -1,8 +1,6 @@
 using NBitcoin.Protocol;
 using System.Net;
 using System.Net.Http;
-using System.Net.Sockets;
-using NBitcoin.RPC;
 using MagicalCryptoWallet.BitcoinRpc;
 using MagicalCryptoWallet.Blockchain.Mempool;
 using MagicalCryptoWallet.Blockchain.Transactions;
@@ -21,8 +19,6 @@ using BroadcastingResult = Result<BroadcastOk, BroadcastError>;
 
 public abstract record BroadcastOk
 {
-	public record BroadcastByRpc : BroadcastOk;
-
 	public record BroadcastByNetwork(EndPoint[] Nodes) : BroadcastOk;
 
 	public record BroadcastByExternalParty(string ExternalApiName) : BroadcastOk;
@@ -31,7 +27,6 @@ public abstract record BroadcastOk
 public abstract record BroadcastError
 {
 	public record SpentError : BroadcastError;
-	public record RpcError(string RpcErrorMessage) : BroadcastError;
 	public record Unknown(string Message) : BroadcastError;
 	public record NotEnoughP2pNodes : BroadcastError;
 	public record AggregatedErrors(BroadcastError[] Errors) : BroadcastError;
@@ -42,32 +37,6 @@ public abstract record BroadcastError
 public interface IBroadcaster
 {
 	Task<BroadcastingResult> BroadcastAsync(SmartTransaction tx, CancellationToken cancellationToken);
-}
-
-public class RpcBroadcaster(IRPCClient rpcClient) : IBroadcaster
-{
-	public async Task<BroadcastingResult> BroadcastAsync(SmartTransaction tx, CancellationToken cancellationToken)
-	{
-		Logger.LogInfo($"Trying to broadcast transaction via RPC:{tx.GetHash()}.");
-		try
-		{
-			await rpcClient.SendRawTransactionAsync(tx.Transaction, cancellationToken).ConfigureAwait(false);
-			return BroadcastingResult.Ok(new BroadcastOk.BroadcastByRpc());
-		}
-		catch (RPCException ex)
-		{
-			return BroadcastingResult.Fail(new BroadcastError.RpcError(ex.Message));
-		}
-		catch (SocketException se) when (se.SocketErrorCode == SocketError.ConnectionRefused)
-		{
-			return BroadcastingResult.Fail(
-				new BroadcastError.RpcError("Failed to connect to Bitcoin RPC. Connection refused."));
-		}
-		catch (Exception ex)
-		{
-			return BroadcastingResult.Fail(new BroadcastError.Unknown(ex.Message));
-		}
-	}
 }
 
 public class ExternalTransactionBroadcaster : IBroadcaster
@@ -198,7 +167,10 @@ public class NetworkBroadcaster(MempoolService mempoolService, P2pNodeListProvid
 			if (result.IsOk)
 			{
 
-				var confirmation = await ConfirmPropagationAsync(tx, cancellationToken).ConfigureAwait(false);
+				// Regtest has one relay endpoint. Public networks still require independent propagation.
+				var confirmation = minBroadcastNodes == 1
+					? result
+					: await ConfirmPropagationAsync(tx, cancellationToken).ConfigureAwait(false);
 				foreach (var node in broadcastToNode)
 				{
 					node.DisconnectAsync();
@@ -279,9 +251,6 @@ public class TransactionBroadcaster(IBroadcaster[] broadcasters, MempoolService 
 	{
 		switch (broadcastError)
 		{
-			case BroadcastError.RpcError rpcError:
-				Logger.LogInfo($"Failed to broadcast transaction via RPC. Reason: {rpcError.RpcErrorMessage}.");
-				break;
 			case BroadcastError.Timeout _:
 				Logger.LogWarning("The transaction might have been broadcast but the propagation was not confirmed in time.");
 				break;
@@ -312,9 +281,6 @@ public class TransactionBroadcaster(IBroadcaster[] broadcasters, MempoolService 
 	{
 		switch (ok)
 		{
-			case BroadcastOk.BroadcastByRpc:
-				Logger.LogInfo($"Transaction is successfully broadcast {txId} by local node RPC interface.");
-				break;
 			case BroadcastOk.BroadcastByNetwork n:
 				foreach (var propagator in n.Nodes)
 				{

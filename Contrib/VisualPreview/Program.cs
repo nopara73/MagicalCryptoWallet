@@ -39,6 +39,11 @@ using (Task.Run(() => RxSchedulers.MainThreadScheduler.Schedule(() => callbackOn
 Console.WriteLine("Headless UI scheduler check passed: background callbacks return to the Avalonia dispatcher.");
 string destination = args.FirstOrDefault(x => !x.StartsWith("--", StringComparison.Ordinal)) ?? ".artifacts/rebrand/screenshots";
 Directory.CreateDirectory(destination);
+if (args.Contains("--bitcoin-only"))
+{
+    BitcoinP2pChecks.Render(destination);
+    return;
+}
 if (args.Contains("--recovery-words-only"))
 {
     try { RecoveryWordsChecks.Run(destination); }
@@ -64,6 +69,7 @@ PasswordBoxChecks.Run();
 LurkingWifeModeChecks.Initialize(context, destination);
 SingleWalletChecks.Run(context);
 AutomaticCoinSelectionChecks.Run(context);
+using var bitcoinP2p = new BitcoinP2pChecks(destination);
 SoftwareWalletChecks.Run(context, destination);
 int capturedFrames = 0;
 foreach (var theme in new[] { ThemeVariant.Light, ThemeVariant.Dark })
@@ -117,6 +123,8 @@ foreach (var theme in new[] { ThemeVariant.Light, ThemeVariant.Dark })
         Render("transaction-preview", AutomaticCoinSelectionChecks.CreateTransactionPreview(context), 900, 650);
         Render("wallet-coins", AutomaticCoinSelectionChecks.CreateWalletCoins(context), 900, 650);
         Render("wallet-general-settings", AutomaticCoinSelectionChecks.CreateWalletSettings(context), 900, 650);
+        Render("bitcoin-settings", bitcoinP2p.CreateSettings(), 650, 340);
+        Render("bitcoin-status", bitcoinP2p.CreateStatus(), 360, 560);
         Render("send", SoftwareWalletChecks.CreateSend(context), 900, 650);
         Render("receive", SoftwareWalletChecks.CreateReceive(context), 900, 650);
         Render("recovery", SoftwareWalletChecks.CreateRecovery(context), 900, 650);

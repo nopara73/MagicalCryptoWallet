@@ -1,5 +1,6 @@
 using System.IO;
 using System.Linq;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using NBitcoin;
 using MagicalCryptoWallet.Client;
@@ -53,8 +54,6 @@ public class PersistentConfigManagerTests
 			  "TerminateTorOnExit": false,
 			  "TorBridges": [],
 			  "DownloadNewVersion": true,
-			  "BitcoinRpcCredentialString": "",
-			  "BitcoinRpcEndPoint": "",
 			  "JsonRpcServerEnabled": false,
 			  "JsonRpcUser": "{{jsonRpcUser}}",
 			  "JsonRpcPassword": "{{jsonRpcPassword}}",
@@ -80,5 +79,68 @@ public class PersistentConfigManagerTests
 			=> Assert.Equal(expected.ReplaceLineEndings("\n"), actual.ReplaceLineEndings("\n"));
 	}
 
-	// Test for migration 2.6.0 -> 2.8.0
+	[Theory]
+	[InlineData("Config.json")]
+	[InlineData("Config.TestNet.json")]
+	[InlineData("Config.Signet.json")]
+	[InlineData("Config.RegTest.json")]
+	public async Task VersionFourCoreFieldsAreIgnoredAndNotSavedAsync(string fileName)
+	{
+		var expected = PersistentConfigManager.DefaultMainNetConfig with
+		{
+			CoordinatorUri = "http://coordinator.invalid/",
+			UseTor = "Disabled",
+			DustThreshold = Money.Coins(0.00002m),
+			FeeRateEstimationProvider = "None",
+			JsonRpcServerEnabled = true,
+			JsonRpcUser = "synthetic-user",
+			JsonRpcPassword = "synthetic-password"
+		};
+		var path = Path.Combine(await Common.GetEmptyWorkDirAsync(), fileName);
+		var legacy = JsonNode.Parse(JsonEncoder.ToReadableString(expected, PersistentConfigEncode.PersistentConfig))!;
+		legacy["BitcoinRpcEndPoint"] = "invalid endpoint that must never be parsed";
+		legacy["BitcoinRpcUri"] = new JsonArray(1, 2);
+		legacy["BitcoinRpcCredentialString"] = new JsonObject { ["obsolete"] = "synthetic credential" };
+		File.WriteAllText(path, legacy.ToJsonString());
+
+		var loaded = Assert.IsType<PersistentConfig>(PersistentConfigManager.LoadFile(path));
+		Assert.Equal(expected, loaded);
+		var saved = PersistentConfigManager.ToFile(path, loaded);
+		Assert.DoesNotContain("BitcoinRpc", saved);
+		Assert.Equal(4, JsonNode.Parse(saved)!["ConfigVersion"]!.GetValue<int>());
+		Assert.Equal(expected, PersistentConfigManager.LoadFile(path));
+	}
+
+	[Fact]
+	public void RetiredCoreArgumentsCannotOverrideClientConfiguration()
+	{
+		var config = new Config(PersistentConfigManager.DefaultMainNetConfig,
+			["--bitcoinrpcendpoint=http://127.0.0.1:8332", "--bitcoinrpccredentialstring=synthetic:synthetic"]);
+		Assert.False(config.IsOverridden);
+		Assert.Equal(Network.Main, config.Network);
+		Assert.Equal(PersistentConfigManager.DefaultMainNetConfig.FeeRateEstimationProvider, config.FeeRateEstimationProvider);
+	}
+
+	[Fact]
+	public void RetiredCoreEnvironmentKeysCannotOverrideClientConfiguration()
+	{
+		var keys = new[] { "MAGICALCRYPTOWALLET_BITCOINRPCENDPOINT", "MAGICALCRYPTOWALLET_BITCOINRPCURI", "MAGICALCRYPTOWALLET_BITCOINRPCCREDENTIALSTRING" };
+		var original = keys.Select(key => (Key: key, Exists: Config.EnvironmentVariables.Contains(key), Value: Config.EnvironmentVariables[key])).ToArray();
+		try
+		{
+			foreach (var key in keys) { Config.EnvironmentVariables[key] = "obsolete synthetic value"; }
+			var config = new Config(PersistentConfigManager.DefaultMainNetConfig, []);
+			Assert.False(config.IsOverridden);
+			Assert.Equal(Network.Main, config.Network);
+			Assert.Equal(PersistentConfigManager.DefaultMainNetConfig.FeeRateEstimationProvider, config.FeeRateEstimationProvider);
+		}
+		finally
+		{
+			foreach (var (key, exists, value) in original)
+			{
+				if (exists) { Config.EnvironmentVariables[key] = value; }
+				else { Config.EnvironmentVariables.Remove(key); }
+			}
+		}
+	}
 }

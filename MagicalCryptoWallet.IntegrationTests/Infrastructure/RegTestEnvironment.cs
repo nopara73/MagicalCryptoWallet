@@ -1,3 +1,4 @@
+using MagicalCryptoWallet.TestInfrastructure;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -155,7 +156,7 @@ public sealed class RegTestEnvironment : IAsyncDisposable
 	/// </summary>
 	public BlockProvider CreateBlockProvider()
 	{
-		return BlockProviders.RpcBlockProvider(RpcClient);
+		return RegTestRpcProviders.RpcBlockProvider(RpcClient);
 	}
 
 	/// <summary>
@@ -167,7 +168,7 @@ public sealed class RegTestEnvironment : IAsyncDisposable
 		// Build block header chain from RPC - required for reorg detection
 		var blockHeaderChain = await BuildBlockHeaderChainAsync(cancellationToken).ConfigureAwait(false);
 
-		var filterProvider = FilterProviders.CreateBitcoinRpcFilterProvider(RpcClient, blockHeaderChain);
+		var filterProvider = RegTestRpcProviders.CreateFilterProvider(RpcClient, blockHeaderChain);
 
 		// Use the production Synchronizer's filter generator
 		var filterGenerator = Synchronizer.CreateFilterGenerator(filterProvider, FilterStore, FilterHeaderChain, EventBus);

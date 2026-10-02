@@ -133,7 +133,7 @@ public class SingleWalletCoinJoinTests
 			var rounds = RoundStateUpdaterForTesting.CreateManual(api);
 			var prison = CoinPrison.CreateOrLoadFromFile(root);
 			var manager = new CoinJoinManager(app.Session, new RoundStateProvider(rounds), _ => api,
-				new CoinJoinConfiguration("synthetic", 150m, 1, false), prison, InputVerifiers.NoVerification(), app.Events);
+				new CoinJoinConfiguration("synthetic", 150m, 1, false), prison, app.Events);
 			await manager.StartAsync(CancellationToken.None);
 			return new(app, manager, rounds, prison);
 		}
