@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using MagicalCryptoWallet.Extensions;
 using MagicalCryptoWallet.Helpers;
-using MagicalCryptoWallet.Hwi.Models;
 using MagicalCryptoWallet.Tests.Helpers;
 using MagicalCryptoWallet.Wallets;
 using Xunit;
@@ -67,25 +66,5 @@ public class WalletDirectoriesTests
 		Assert.Null(regtest.ResolveConfiguredWalletFile());
 	}
 
-	[Fact]
-	public void GetFriendlyNameTest()
-	{
-		Assert.Equal("Hardware Wallet", HardwareWalletModels.Unknown.FriendlyName());
-		Assert.Equal("Coldcard", HardwareWalletModels.Coldcard.FriendlyName());
-		Assert.Equal("Coldcard Simulator", HardwareWalletModels.Coldcard_Simulator.FriendlyName());
-		Assert.Equal("BitBox", HardwareWalletModels.DigitalBitBox_01.FriendlyName());
-		Assert.Equal("BitBox Simulator", HardwareWalletModels.DigitalBitBox_01_Simulator.FriendlyName());
-		Assert.Equal("KeepKey", HardwareWalletModels.KeepKey.FriendlyName());
-		Assert.Equal("KeepKey Simulator", HardwareWalletModels.KeepKey_Simulator.FriendlyName());
-		Assert.Equal("Ledger Nano S", HardwareWalletModels.Ledger_Nano_S.FriendlyName());
-		Assert.Equal("Ledger Nano X", HardwareWalletModels.Ledger_Nano_X.FriendlyName());
-		Assert.Equal("Trezor One", HardwareWalletModels.Trezor_1.FriendlyName());
-		Assert.Equal("Trezor One Simulator", HardwareWalletModels.Trezor_1_Simulator.FriendlyName());
-		Assert.Equal("Trezor T", HardwareWalletModels.Trezor_T.FriendlyName());
-		Assert.Equal("Trezor T Simulator", HardwareWalletModels.Trezor_T_Simulator.FriendlyName());
-		Assert.Equal("Trezor Safe 3", HardwareWalletModels.Trezor_Safe_3.FriendlyName());
-		Assert.Equal("BitBox", HardwareWalletModels.BitBox02_BTCOnly.FriendlyName());
-		Assert.Equal("BitBox", HardwareWalletModels.BitBox02_Multi.FriendlyName());
-		Assert.Equal("Jade", HardwareWalletModels.Jade.FriendlyName());
-	}
+
 }

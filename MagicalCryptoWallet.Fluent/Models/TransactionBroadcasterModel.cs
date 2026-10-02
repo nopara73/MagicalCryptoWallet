@@ -20,22 +20,8 @@ public partial class TransactionBroadcasterModel
 		_network = network;
 	}
 
-	public SmartTransaction? Parse(string text)
-	{
-		if (PSBT.TryParse(text, _network, out var signedPsbt))
-		{
-			if (!signedPsbt.IsAllFinalized())
-			{
-				signedPsbt.Finalize();
-			}
-
-			return signedPsbt.ExtractSmartTransaction();
-		}
-		else
-		{
-			return new SmartTransaction(Transaction.Parse(text, _network), Height.Unknown);
-		}
-	}
+	public SmartTransaction Parse(string text) =>
+		new(Transaction.Parse(text.Trim(), _network), Height.Unknown);
 
 	public Task<SmartTransaction> LoadFromFileAsync(string filePath)
 	{

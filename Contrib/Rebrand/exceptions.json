@@ -231,20 +231,6 @@
     "text": "/// <remarks>Context: https://github.com/WalletWasabi/WalletWasabi/issues/7453</remarks>"
   },
   {
-    "path": "MagicalCryptoWallet/Helpers/ImportWalletHelper.cs",
-    "line": 62,
-    "line_sha256": "6cf20c704b383dc28933ddcf013ef24a5093be8e4f3a32f13515786f792de068",
-    "category": "source provenance",
-    "text": "// https://github.com/WalletWasabi/WalletWasabi/pull/1663#issuecomment-508073066"
-  },
-  {
-    "path": "MagicalCryptoWallet/Hwi/Parsers/HwiParser.cs",
-    "line": 318,
-    "line_sha256": "a0365bafd2c10de654346d931b264a0fe8de018169e5bc15440bb8a7dfcd6c2d",
-    "category": "source provenance",
-    "text": "// Order matters! https://github.com/WalletWasabi/WalletWasabi/pull/1905/commits/cecefcc50af140cc06cb93961cda86f9b21db11b"
-  },
-  {
     "path": "MagicalCryptoWallet/ModuleInitializer.cs",
     "line": 9,
     "line_sha256": "3d9c38c6a691182654160a762187b2ae5a920052ce985c2f5492019dedfe11f1",

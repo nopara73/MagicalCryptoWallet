@@ -1,6 +1,6 @@
 # Magical Crypto Wallet
 
-The app manages [one wallet](SingleWallet.md) and uses [automatic coin selection](AutomaticCoinSelection.md). Wallet creation, hardware connection, recovery and explicit file import are available during setup.
+The app manages [one wallet](SingleWallet.md) and uses [automatic coin selection](AutomaticCoinSelection.md). Create, Import and Recover configure an encrypted [software wallet](SoftwareWallet.md) during setup.
 
 ## Build
 
@@ -32,7 +32,7 @@ The application ID is `io.github.nopara73.magicalcryptowallet`. Executables are 
 
 ## Wallet import
 
-The application manages [one wallet](SingleWallet.md). During initial setup, use **Set Up Wallet → Import a wallet** to choose an existing wallet JSON file explicitly. Creation, hardware wallets, and recovery are also available during setup. Existing application data with several wallets adopts one without deleting the other files. Wallet formats and recovery procedures remain compatible.
+The application manages [one wallet](SingleWallet.md). During initial setup, use **Set Up Wallet → Import a wallet** to choose an existing wallet JSON file explicitly. Creation and recovery are also available during setup. Existing application data with several wallets adopts one without deleting the other files. Hardware, watch-only and skeleton files enter recovery without being rewritten or replaced. Software-wallet keys, account paths and recovery derivation remain compatible; see [compatibility](SoftwareWallet.md).
 
 ## Lurking Wife Mode
 

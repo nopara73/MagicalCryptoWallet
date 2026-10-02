@@ -163,7 +163,7 @@ def main():
         shutil.copyfile(ROOT / source, dist / source)
     if not args.rid.startswith("win"):
         for path in dist.rglob("*"):
-            if path.is_file() and (path.name in ("magicalcryptowallet", "magicalcryptowalletd", "magicalcryptowallet-coordinator", "tor", "hwi") or path.suffix in (".so", ".dylib")): path.chmod(0o755)
+            if path.is_file() and (path.name in ("magicalcryptowallet", "magicalcryptowalletd", "magicalcryptowallet-coordinator", "tor") or path.suffix in (".so", ".dylib")): path.chmod(0o755)
     if args.production and args.rid.startswith("win"):
         run("pwsh", "-NoProfile", "-File", ROOT / "Contrib/Signing/sign-windows.ps1", dist)
     if args.rid.startswith("osx"):

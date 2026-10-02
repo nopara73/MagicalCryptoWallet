@@ -1,35 +1,5 @@
 [
   {
-    "path": "Contrib/SingleWallet/negative-fixtures.json",
-    "line": 2,
-    "line_sha256": "b9740f0005db307d67cf76580f244700ede64b5ccd30dfe20d40f5243da07c37",
-    "reason": "One explicitly forbidden negative audit fixture."
-  },
-  {
-    "path": "Contrib/SingleWallet/negative-fixtures.json",
-    "line": 3,
-    "line_sha256": "b8f28ab3fb0145e4d00a4b7515624c4fff0753661805bdc3f4cdea210d361585",
-    "reason": "One explicitly forbidden negative audit fixture."
-  },
-  {
-    "path": "Contrib/SingleWallet/negative-fixtures.json",
-    "line": 4,
-    "line_sha256": "bcfbf535c5115b94ba589878306104fdd2769845d6e63fa52d3592f655c8e57c",
-    "reason": "One explicitly forbidden negative audit fixture."
-  },
-  {
-    "path": "Contrib/SingleWallet/negative-fixtures.json",
-    "line": 5,
-    "line_sha256": "f7fde3139954f80af7c2145e9fd43f5d2fc660ad8f7b8a169fff77db0fe240c1",
-    "reason": "One explicitly forbidden negative audit fixture."
-  },
-  {
-    "path": "Contrib/SingleWallet/negative-fixtures.json",
-    "line": 6,
-    "line_sha256": "0bdba17b1c86d46f0623ffa368c619746684262bbb3ea365830de493b3f4bd87",
-    "reason": "One explicitly forbidden negative audit fixture."
-  },
-  {
     "path": "Contrib/Tests/test-single-wallet-process.py",
     "line": 168,
     "line_sha256": "65095ab5ede43fe5b6d33b7e4ab21727a29a10e940d8e0d7d3bb88870467d304",
@@ -112,5 +82,293 @@
     "line": 35,
     "line_sha256": "536f5e1457c49070be7fe0c4717d681f0eacadfae8a1fa586d75fc43347e0161",
     "reason": "Isolated legacy storage preference reader; not a runtime wallet identity."
+  },
+  {
+    "path": "Contrib/SingleWallet/negative-fixtures.json",
+    "line": 2,
+    "line_sha256": "4007925de7e32a704c0aab7f2b7bd89411ef415a410be58193804e8fa90f7e58",
+    "reason": "Explicit negative fixture must be rejected by the removal scanner."
+  },
+  {
+    "path": "Contrib/SingleWallet/negative-fixtures.json",
+    "line": 3,
+    "line_sha256": "0747e42950601bb208248a95c0c0378db912e0859285ad18dee256ad4eedbd24",
+    "reason": "Explicit negative fixture must be rejected by the removal scanner."
+  },
+  {
+    "path": "Contrib/SingleWallet/negative-fixtures.json",
+    "line": 4,
+    "line_sha256": "ee02f631dcd8fbbf77e69c197db4154387a1d1cf1a73c7644f33ae9e4c4a844a",
+    "reason": "Explicit negative fixture must be rejected by the removal scanner."
+  },
+  {
+    "path": "Contrib/SingleWallet/negative-fixtures.json",
+    "line": 5,
+    "line_sha256": "2cfd754e9c77f060c77096c9bcf8c16498fd86472d91d8d1d0f6c38709d14afc",
+    "reason": "Explicit negative fixture must be rejected by the removal scanner."
+  },
+  {
+    "path": "Contrib/SingleWallet/negative-fixtures.json",
+    "line": 6,
+    "line_sha256": "0229853744ae450687273568963251f85cb77fe69cf080bbe368a5b20416943d",
+    "reason": "Explicit negative fixture must be rejected by the removal scanner."
+  },
+  {
+    "path": "Contrib/SingleWallet/negative-fixtures.json",
+    "line": 7,
+    "line_sha256": "8b3d0697f043ab235b235db2ae4b0fabd07bf21c812f25abe42202568bb372c6",
+    "reason": "Explicit negative fixture must be rejected by the removal scanner."
+  },
+  {
+    "path": "Contrib/SingleWallet/negative-fixtures.json",
+    "line": 8,
+    "line_sha256": "0bf2f66a155bbe349604869fa5ed81facdd1d7481b9498d6fb2bc7a1883cbaac",
+    "reason": "Explicit negative fixture must be rejected by the removal scanner."
+  },
+  {
+    "path": "Contrib/SingleWallet/negative-fixtures.json",
+    "line": 9,
+    "line_sha256": "614d783c8b24b52f2fb85d43e439a0d2ae4635bf70bec3699133bfbe6a6bb3dc",
+    "reason": "Explicit negative fixture must be rejected by the removal scanner."
+  },
+  {
+    "path": "Contrib/SingleWallet/negative-fixtures.json",
+    "line": 10,
+    "line_sha256": "cd77e2e095be82c1a820600f83ae15da93e473ce5061ebcb48a1fd8556192f0a",
+    "reason": "Explicit negative fixture must be rejected by the removal scanner."
+  },
+  {
+    "path": "Contrib/SingleWallet/negative-fixtures.json",
+    "line": 11,
+    "line_sha256": "b72225081bc87a8be98fe81d5e8b31d8af89318aa1b82b78dc4d704e0fe21dd4",
+    "reason": "Explicit negative fixture must be rejected by the removal scanner."
+  },
+  {
+    "path": "Contrib/SingleWallet/negative-fixtures.json",
+    "line": 12,
+    "line_sha256": "f154b262524585fcf5609f4772e2a90c445d8ee8ed1501e513bc5a4b186c2a90",
+    "reason": "Explicit negative fixture must be rejected by the removal scanner."
+  },
+  {
+    "path": "Contrib/SingleWallet/negative-fixtures.json",
+    "line": 13,
+    "line_sha256": "cb42b3895d215386446f6a893bcebf99c30a62494782cce3b9e4cd734dcb4ac2",
+    "reason": "Explicit negative fixture must be rejected by the removal scanner."
+  },
+  {
+    "path": "Contrib/SingleWallet/negative-fixtures.json",
+    "line": 14,
+    "line_sha256": "d447c732dea7bbb3dbe147c449feeb2b8be695135a637dedaa89d9a901090060",
+    "reason": "Explicit negative fixture must be rejected by the removal scanner."
+  },
+  {
+    "path": "Contrib/SingleWallet/negative-fixtures.json",
+    "line": 15,
+    "line_sha256": "f3c14d1884e62b1c2c8aa299f795f471aa0a9a3bb6979685e3451c9651ca7dc5",
+    "reason": "Explicit negative fixture must be rejected by the removal scanner."
+  },
+  {
+    "path": "Contrib/SingleWallet/negative-fixtures.json",
+    "line": 16,
+    "line_sha256": "a76fb6dc44f5f24db2391dd23dedafdb2c40bb816864da76e340b4c76697b615",
+    "reason": "Explicit negative fixture must be rejected by the removal scanner."
+  },
+  {
+    "path": "Contrib/SingleWallet/negative-fixtures.json",
+    "line": 17,
+    "line_sha256": "57f56cf7c1078efb0f4cb0179d3907ec3c85e9c329f4577e940bb77bcc43b059",
+    "reason": "Explicit negative fixture must be rejected by the removal scanner."
+  },
+  {
+    "path": "Contrib/SingleWallet/negative-fixtures.json",
+    "line": 18,
+    "line_sha256": "6079b1b0e585e43b05841c1e601a50e3e7aea0d72c55c48ef9561f70eaf33455",
+    "reason": "Explicit negative fixture must be rejected by the removal scanner."
+  },
+  {
+    "path": "Contrib/SingleWallet/negative-fixtures.json",
+    "line": 19,
+    "line_sha256": "60059ddc117a46ed4b6a26bf02e30bdd22708e53c60678e93c6befae6c9ba42a",
+    "reason": "Explicit negative fixture must be rejected by the removal scanner."
+  },
+  {
+    "path": "Contrib/SingleWallet/negative-fixtures.json",
+    "line": 20,
+    "line_sha256": "532a8058130e0b7216de1c40f97f35726911cf86926fe13a74d2ec3465a8a22b",
+    "reason": "Explicit negative fixture must be rejected by the removal scanner."
+  },
+  {
+    "path": "Contrib/SingleWallet/negative-fixtures.json",
+    "line": 21,
+    "line_sha256": "243765f12096ffbdfd055448d7e76e06211c37329baf8485c07109084602849a",
+    "reason": "Explicit negative fixture must be rejected by the removal scanner."
+  },
+  {
+    "path": "Contrib/SingleWallet/negative-fixtures.json",
+    "line": 22,
+    "line_sha256": "76e0845aa2620dc9c7d7e3e47ef54a6e70005f3f7073c6a9a863f8277a38a577",
+    "reason": "Explicit negative fixture must be rejected by the removal scanner."
+  },
+  {
+    "path": "Contrib/SingleWallet/negative-fixtures.json",
+    "line": 23,
+    "line_sha256": "cc1771595258b8cbe2d06c86dcfe5f578854400220784b273bd4d1e83d08dbbc",
+    "reason": "Explicit negative fixture must be rejected by the removal scanner."
+  },
+  {
+    "path": "Contrib/SingleWallet/negative-fixtures.json",
+    "line": 24,
+    "line_sha256": "0949ac7aefd009d78a92d968855526cd57ad96683c19228786a64b7c7c4802f3",
+    "reason": "Explicit negative fixture must be rejected by the removal scanner."
+  },
+  {
+    "path": "Contrib/SingleWallet/negative-fixtures.json",
+    "line": 25,
+    "line_sha256": "1b55d3f2fb1d0d266cdfe8765d2dca48548e1e0b8619dde8a44448dbfdf96872",
+    "reason": "Explicit negative fixture must be rejected by the removal scanner."
+  },
+  {
+    "path": "Contrib/SingleWallet/negative-fixtures.json",
+    "line": 26,
+    "line_sha256": "bf1d0ffe452cd4b8f1a57e821c2da5e412ba2c9cbb6195a6ed2c22a01518858c",
+    "reason": "Explicit negative fixture must be rejected by the removal scanner."
+  },
+  {
+    "path": "Contrib/SingleWallet/negative-fixtures.json",
+    "line": 27,
+    "line_sha256": "ce733c68735c0d46516bfdee93a5eebbf964ff0ccc52e3d9230ccd90fc7ce602",
+    "reason": "Explicit negative fixture must be rejected by the removal scanner."
+  },
+  {
+    "path": "Contrib/SingleWallet/negative-fixtures.json",
+    "line": 28,
+    "line_sha256": "7c573d6c46a1746699cb2456722ef85a7b2b5e0b4cfad4f358169f51c0f69ded",
+    "reason": "Explicit negative fixture must be rejected by the removal scanner."
+  },
+  {
+    "path": "Contrib/SingleWallet/negative-fixtures.json",
+    "line": 29,
+    "line_sha256": "c882259a050c12680264b01ba40a7e64728297a2cdb008ee6dae7f332d40b6f3",
+    "reason": "Explicit negative fixture must be rejected by the removal scanner."
+  },
+  {
+    "path": "Contrib/SingleWallet/negative-fixtures.json",
+    "line": 30,
+    "line_sha256": "39bbcd02b9ae741944831136630075f7a911715e59856695b4377c41267c132c",
+    "reason": "Explicit negative fixture must be rejected by the removal scanner."
+  },
+  {
+    "path": "Contrib/SingleWallet/negative-fixtures.json",
+    "line": 31,
+    "line_sha256": "62e542089484a29019e8932bb672f58e2979f08ea305caedd8c52036f6c347e7",
+    "reason": "Explicit negative fixture must be rejected by the removal scanner."
+  },
+  {
+    "path": "Contrib/SingleWallet/negative-fixtures.json",
+    "line": 32,
+    "line_sha256": "4e12c385c3b6604295473cd50d9db344a77c47616ea30a9399502251eeff350e",
+    "reason": "Explicit negative fixture must be rejected by the removal scanner."
+  },
+  {
+    "path": "Contrib/SingleWallet/negative-fixtures.json",
+    "line": 33,
+    "line_sha256": "26155c537a996e69b0ebf22fbdf190d05e3023a41182fc5527fcdaa0cc18e760",
+    "reason": "Explicit negative fixture must be rejected by the removal scanner."
+  },
+  {
+    "path": "Contrib/SingleWallet/negative-fixtures.json",
+    "line": 34,
+    "line_sha256": "b47a4c7895fda2b12fa4f687aad89bb760dcfab044377ac4bc531e399ca596e5",
+    "reason": "Explicit negative fixture must be rejected by the removal scanner."
+  },
+  {
+    "path": "Contrib/SingleWallet/negative-fixtures.json",
+    "line": 35,
+    "line_sha256": "11995bd090d09816f3cdeefd1a4225c6eb457f17d26bf78ba7fcab38ea5e8589",
+    "reason": "Explicit negative fixture must be rejected by the removal scanner."
+  },
+  {
+    "path": "Contrib/SingleWallet/negative-fixtures.json",
+    "line": 36,
+    "line_sha256": "def2910e169aaa2ef1ec5e97946ed0d830cd1ea6c77547658f516c9686ab6fcd",
+    "reason": "Explicit negative fixture must be rejected by the removal scanner."
+  },
+  {
+    "path": "Contrib/SingleWallet/negative-fixtures.json",
+    "line": 37,
+    "line_sha256": "1f98e800e87ebcd2c5bdc3583475988fe626d3345437e4f7598758abdac19f86",
+    "reason": "Explicit negative fixture must be rejected by the removal scanner."
+  },
+  {
+    "path": "Contrib/SingleWallet/negative-fixtures.json",
+    "line": 38,
+    "line_sha256": "702377dfc0dbef7e52936f991c7b3d66fabf98b0278a4f017d321f60aad236be",
+    "reason": "Explicit negative fixture must be rejected by the removal scanner."
+  },
+  {
+    "path": "Contrib/SingleWallet/negative-fixtures.json",
+    "line": 39,
+    "line_sha256": "156d3a43bf469df2333356c11ffca131d88904e9078176e343c70017cc989759",
+    "reason": "Explicit negative fixture must be rejected by the removal scanner."
+  },
+  {
+    "path": "Contrib/SingleWallet/negative-fixtures.json",
+    "line": 40,
+    "line_sha256": "b928a0d3a5e38bf547f2406386a8d5ba5fb4ec4d0b4387652c68fa894955a3ec",
+    "reason": "Explicit negative fixture must be rejected by the removal scanner."
+  },
+  {
+    "path": "Contrib/SingleWallet/negative-fixtures.json",
+    "line": 41,
+    "line_sha256": "3f32a4cd39f3a3ef89d94259f98551679bfb6eca37fc6a026b28fb0ccb1e3ba2",
+    "reason": "Explicit negative fixture must be rejected by the removal scanner."
+  },
+  {
+    "path": "Contrib/SingleWallet/negative-fixtures.json",
+    "line": 42,
+    "line_sha256": "2dce03aea2ce77db0d9c4b1b1e977bb98f54f9198cc66008eda339050aad79a6",
+    "reason": "Explicit negative fixture must be rejected by the removal scanner."
+  },
+  {
+    "path": "MagicalCryptoWallet.Tests/UnitTests/SoftwareWalletTests.cs",
+    "line": 125,
+    "line_sha256": "a3e54ca278bebbfd5e08144e5c2c97d3c0a0fbfe3c552bb2840be96858e7950d",
+    "reason": "Synthetic rejection or obsolete-field/API absence regression; no compatibility implementation."
+  },
+  {
+    "path": "MagicalCryptoWallet.Tests/UnitTests/SoftwareWalletTests.cs",
+    "line": 139,
+    "line_sha256": "dc83957ee16633f21caf50ff927c6348324d6b696f90cb77edba27665d622e79",
+    "reason": "Synthetic rejection or obsolete-field/API absence regression; no compatibility implementation."
+  },
+  {
+    "path": "MagicalCryptoWallet.Tests/UnitTests/SoftwareWalletTests.cs",
+    "line": 149,
+    "line_sha256": "0c7f64a64079a69947cc5f8d1fc90a3180fababeda5e356b20910ae6063011ab",
+    "reason": "Synthetic rejection or obsolete-field/API absence regression; no compatibility implementation."
+  },
+  {
+    "path": "MagicalCryptoWallet.Tests/UnitTests/SoftwareWalletTests.cs",
+    "line": 150,
+    "line_sha256": "cd6bddfa1eab8b0072a9a6ae94cea38625f227e880b96cae1610c675654d6cd7",
+    "reason": "Synthetic rejection or obsolete-field/API absence regression; no compatibility implementation."
+  },
+  {
+    "path": "MagicalCryptoWallet.Tests/UnitTests/SoftwareWalletTests.cs",
+    "line": 153,
+    "line_sha256": "7c8a3fa8a1e54ae3fb97ce88eb280c1181a952e2dd9a84a062f6d6115122a937",
+    "reason": "Synthetic rejection or obsolete-field/API absence regression; no compatibility implementation."
+  },
+  {
+    "path": "MagicalCryptoWallet.Documentation/SoftwareWallet.md",
+    "line": 5,
+    "line_sha256": "17d1c40ee652eb9cf00f78783a58cf3b23fcd8050477b54ecf5dee8066269295",
+    "reason": "Migration documentation identifying removed fields and Scheme predicates."
+  },
+  {
+    "path": "MagicalCryptoWallet.Documentation/SoftwareWallet.md",
+    "line": 13,
+    "line_sha256": "e7ade0eb8a3d943e548dddfb34537a8e8600fc5259bbc134fa1c29bd09c4bcb2",
+    "reason": "Migration documentation identifying removed fields and Scheme predicates."
   }
 ]

@@ -25,20 +25,6 @@
 
           <!-- Buttons -->
           <StackPanel HorizontalAlignment="Right" Margin="0 -5 0 0" DockPanel.Dock="Right" Orientation="Horizontal" Spacing="10" TextElement.FontSize="{DynamicResource ControlContentThemeFontSize}">
-            <Button Classes="function"
-                    Command="{Binding BroadcastPsbtCommand}">
-              <Button.IsVisible>
-                <MultiBinding Converter="{x:Static BoolConverters.And}">
-                  <Binding Path="PreferPsbtWorkflow" />
-                  <Binding Path="IsWalletBalanceZero" Converter="{x:Static BoolConverters.Not}" />
-                </MultiBinding>
-              </Button.IsVisible>
-              <StackPanel Orientation="Horizontal">
-                <PathIcon Data="{StaticResource live_regular}" />
-                <TextBlock Text="Broadcast" />
-              </StackPanel>
-            </Button>
-
             <!-- Send button -->
             <Button Classes="function"
                     Command="{Binding SendCommand}"

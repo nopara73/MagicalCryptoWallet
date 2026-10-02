@@ -1,7 +1,6 @@
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
-using System.Threading.Tasks;
 using System.Windows.Input;
 using MagicalCryptoWallet.Blockchain.Analysis.Clustering;
 using MagicalCryptoWallet.Fluent.Extensions;
@@ -23,7 +22,6 @@ public partial class ReceiveAddressViewModel : RoutableViewModel
 		ShortenedAddress = model.ShortenedText;
 		Labels = model.Labels;
 		ScriptType = model.ScriptType;
-		IsHardwareWallet = wallet.IsHardwareWallet;
 		IsAutoCopyEnabled = isAutoCopyEnabled;
 
 		SetupCancel(enableCancel: false, enableCancelOnEscape: true, enableCancelOnPressed: true);
@@ -33,7 +31,6 @@ public partial class ReceiveAddressViewModel : RoutableViewModel
 		CopyAddressCommand = ReactiveCommand.CreateFromTask(() =>
 			UiContext.Clipboard.SetTextAsync(Address));
 
-		ShowOnHwWalletCommand = ReactiveCommand.CreateFromTask(ShowOnHwWalletAsync);
 
 		NextCommand = CancelCommand;
 
@@ -49,7 +46,6 @@ public partial class ReceiveAddressViewModel : RoutableViewModel
 
 	public ICommand CopyAddressCommand { get; }
 
-	public ICommand ShowOnHwWalletCommand { get; }
 
 	public string Address { get; }
 	public string ShortenedAddress { get; }
@@ -59,7 +55,6 @@ public partial class ReceiveAddressViewModel : RoutableViewModel
 
 	public ScriptType ScriptType { get; }
 
-	public bool IsHardwareWallet { get; }
 
 	public IObservable<bool[,]> QrCode { get; }
 
@@ -84,15 +79,5 @@ public partial class ReceiveAddressViewModel : RoutableViewModel
 		base.OnNavigatedTo(isInHistory, disposables);
 	}
 
-	private async Task ShowOnHwWalletAsync()
-	{
-		try
-		{
-			await Model.ShowOnHwWalletAsync();
-		}
-		catch (Exception ex)
-		{
-			await ShowErrorAsync(Title, ex.ToUserFriendlyString(), "Unable to send the address to the device");
-		}
-	}
+
 }

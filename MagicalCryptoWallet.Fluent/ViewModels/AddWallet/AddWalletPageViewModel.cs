@@ -12,11 +12,11 @@ namespace MagicalCryptoWallet.Fluent.ViewModels.AddWallet;
 
 [NavigationMetaData(
 	Title = "Set Up Wallet",
-	Caption = "Create, connect, import or recover",
+	Caption = "Create, import or recover",
 	Order = 2,
 	Category = "General",
 	Keywords = new[]
-		{ "Wallet", "Add", "Create", "New", "Recover", "Import", "Connect", "Hardware", "ColdCard", "Trezor", "Ledger" },
+		{ "Wallet", "Add", "Create", "New", "Recover", "Import" },
 	IconName = "nav_add_circle_24_regular",
 	IconNameFocused = "nav_add_circle_24_filled",
 	NavigationTarget = NavigationTarget.DialogScreen,
@@ -29,7 +29,6 @@ public partial class AddWalletPageViewModel : DialogViewModelBase<Unit>
 	{
 		CreateWalletCommand = ReactiveCommand.Create(OnCreateWallet);
 
-		ConnectHardwareWalletCommand = ReactiveCommand.Create(OnConnectHardwareWallet);
 
 		ImportWalletCommand = ReactiveCommand.CreateFromTask(OnImportWalletAsync);
 
@@ -38,7 +37,6 @@ public partial class AddWalletPageViewModel : DialogViewModelBase<Unit>
 
 	public ICommand CreateWalletCommand { get; }
 
-	public ICommand ConnectHardwareWalletCommand { get; }
 
 	public ICommand ImportWalletCommand { get; }
 
@@ -48,11 +46,6 @@ public partial class AddWalletPageViewModel : DialogViewModelBase<Unit>
 	{
 		var options = new WalletCreationOptions.AddNewWallet().WithNewWalletBackups();
 		Navigate().To().WalletBackupType(options);
-	}
-
-	private void OnConnectHardwareWallet()
-	{
-		Navigate().To().ConnectHardwareWallet(new WalletCreationOptions.ConnectToHardwareWallet());
 	}
 
 	private async Task OnImportWalletAsync()

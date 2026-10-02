@@ -10,7 +10,7 @@ public class ProcessStartInfoFactory
 {
 	/// <summary>
 	/// Creates new <see cref="ProcessStartInfo"/> instance using ArgumentList for proper escaping.
-	/// This is the preferred overload for security-sensitive operations like HWI where user-provided
+	/// This is the preferred overload for security-sensitive operations where user-provided
 	/// data may flow into arguments.
 	/// </summary>
 	/// <param name="processPath">Path to process.</param>
