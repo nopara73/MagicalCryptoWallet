@@ -1,6 +1,8 @@
 using System;
 using System.Buffers;
+using System.Buffers.Binary;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Pipelines;
 using System.Linq;
@@ -18,7 +20,7 @@ using MagicalCryptoWallet.Tor.Control.Messages;
 
 // Non-shipping synthetic managed child. Uses the real host/bridge and production
 // reader, never a managed reference parser or a fake successful service response.
-if (args.Length != 2) { return 2; }
+if (args.Length is < 2 or > 3 || (args.Length == 3 && args[2] != "resources")) { return 2; }
 var report = Path.GetFullPath(args[0]);
 var fixtures = Path.GetFullPath(args[1]);
 using var host = ManagedApplicationHost.Connect();
@@ -26,6 +28,11 @@ using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(120));
 host.BindShutdown(timeout.Cancel);
 var token = timeout.Token;
 var count = 0;
+if (args.Length == 3)
+{
+	await ResourceCheck(host, report, token);
+	return 0;
+}
 
 var vectors = File.ReadLines(fixtures).Where(s => !s.StartsWith('#')).Select(s => s.Split('\t')).ToArray();
 foreach (var vector in vectors)
@@ -63,8 +70,8 @@ foreach (var vector in vectors)
 await coalesced.Reader.CompleteAsync();
 
 // A producer using the normal 64 KiB pipe backpressure must not stall while a
-// multiline reply is still incomplete. Partial input belongs to the adapter's
-// bounded raw-byte staging buffer, rather than the producer's pipe buffer.
+// multiline reply is still incomplete. Partial grammar belongs to Rust, so the
+// producer's pipe can release consumed chunks while waiting for the terminal.
 var pressure = new Pipe();
 var body = Encoding.ASCII.GetBytes("250+data\r\n" + string.Concat(Enumerable.Repeat(new string('a', 1024) + "\r\n", 100)) + ".\r\n250 OK\r\n");
 var producing = Task.Run(async () =>
@@ -192,6 +199,122 @@ File.WriteAllText(report, JsonSerializer.Serialize(new { assertions = count, ora
 return 0;
 
 static Pipe NewPipe() => new(new PipeOptions(pauseWriterThreshold: 0));
+static async Task ResourceCheck(ManagedApplicationHost host, string report, CancellationToken token)
+{
+	const int limit = 524288;
+	const long allocationBudget = 64L * 1024 * 1024;
+	var wire = new List<byte>(limit);
+	wire.AddRange("250+data=\r\n"u8.ToArray());
+	var terminal = ".\r\n250 OK\r\n"u8.ToArray();
+	var body = Encoding.ASCII.GetBytes(new string('x', 32) + "\r\n");
+	var remaining = limit - wire.Count - terminal.Length;
+	var full = remaining / body.Length;
+	var tail = remaining % body.Length;
+	if (tail == 1) { full--; tail += body.Length; }
+	for (var i = 0; i < full; i++) { wire.AddRange(body); }
+	if (tail >= 2) { wire.AddRange(Encoding.ASCII.GetBytes(new string('y', tail - 2) + "\r\n")); }
+	wire.AddRange(terminal);
+	var bytes = wire.ToArray();
+	if (bytes.Length != limit) { throw new Exception("Near-cap fixture size mismatch."); }
+	var reader = new FragmentedReader(bytes, 1, initialVisible: bytes.Length - 2048);
+	using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(token);
+	cancellation.CancelAfter(TimeSpan.FromSeconds(20));
+	var allocated = GC.GetTotalAllocatedBytes(precise: true);
+	var elapsed = Stopwatch.StartNew();
+	var parse = TorControlReplyReader.ReadReplyAsync(reader, cancellation.Token);
+	var heartbeats = 0;
+	long maxHeartbeatMs = 0;
+	string? failure = null;
+	try
+	{
+		while (!parse.IsCompleted)
+		{
+			if (GC.GetTotalAllocatedBytes(precise: false) - allocated > allocationBudget) { failure = "managed allocation budget exceeded"; break; }
+			var heartbeat = Stopwatch.StartNew();
+			await host.GenerateQrAsync("TOR RESOURCE CHECK", cancellationToken: token).WaitAsync(TimeSpan.FromSeconds(2), token);
+			maxHeartbeatMs = Math.Max(maxHeartbeatMs, heartbeat.ElapsedMilliseconds);
+			heartbeats++;
+			if (maxHeartbeatMs > 1000) { failure = "shared host response exceeded measured deadline"; break; }
+			await Task.Delay(1, token);
+		}
+		if (failure is null)
+		{
+			var reply = await parse;
+			if (reply.ResponseLines.Count != full + (tail > 2 ? 1 : 0) + 3 || reader.Consumed != bytes.Length) { throw new Exception("Near-cap reply mismatch."); }
+		}
+	}
+	catch (OperationCanceledException) { failure = "near-cap completion deadline exceeded"; }
+	finally
+	{
+		cancellation.Cancel();
+		try { await parse.WaitAsync(TimeSpan.FromSeconds(3), token); }
+		catch (OperationCanceledException) { }
+	}
+	var used = GC.GetTotalAllocatedBytes(precise: true) - allocated;
+	var completionMs = elapsed.ElapsedMilliseconds;
+	if (used > allocationBudget) { failure ??= "managed allocation budget exceeded"; }
+	var cancellations = 0;
+	long maxCancellationMs = 0;
+	if (failure is null)
+	{
+		// Each cancellation occurs after Rust has consumed a near-cap prefix,
+		// while the real pipe remains open awaiting the data-block terminal.
+		// Repeating past the native 16-reader quota detects abandoned sessions.
+		var prefix = bytes.AsMemory(0, bytes.Length - terminal.Length);
+		for (var attempt = 0; attempt < 33; attempt++)
+		{
+			var pipe = NewPipe();
+			await pipe.Writer.WriteAsync(prefix, token);
+			var observed = new ObservedReader(pipe.Reader, prefix.Length);
+			using var cancel = CancellationTokenSource.CreateLinkedTokenSource(token);
+			var pending = TorControlReplyReader.ReadReplyAsync(observed, cancel.Token);
+			try
+			{
+				await observed.TargetConsumed.WaitAsync(TimeSpan.FromSeconds(3), token);
+				var cancellationTime = Stopwatch.StartNew();
+				cancel.Cancel();
+				try { await pending.WaitAsync(TimeSpan.FromSeconds(3), token); throw new Exception("Near-cap cancellation accepted."); }
+				catch (OperationCanceledException) when (cancel.IsCancellationRequested) { cancellations++; }
+				maxCancellationMs = Math.Max(maxCancellationMs, cancellationTime.ElapsedMilliseconds);
+				await host.GenerateQrAsync("TOR CANCELLATION CHECK", cancellationToken: token).WaitAsync(TimeSpan.FromSeconds(2), token);
+			}
+			finally
+			{
+				cancel.Cancel();
+				try { await pending.WaitAsync(TimeSpan.FromSeconds(3), token); }
+				catch (OperationCanceledException) when (cancel.IsCancellationRequested) { }
+				await observed.CompleteAsync();
+				await pipe.Writer.CompleteAsync();
+			}
+		}
+		// Reserve the entire native quota at once; even one leaked reader makes
+		// this real bridge proof fail. Always close these synthetic handles.
+		var handles = Enumerable.Range(0, 16).Select(i => long.MaxValue - i).ToArray();
+		try
+		{
+			foreach (var id in handles)
+			{
+				var begin = new byte[9];
+				BinaryPrimitives.WriteInt64LittleEndian(begin, id);
+				var ack = await McwApplicationServices.Current.RequestAsync(0x0f02, begin, token);
+				if (ack.Length != 1 || ack[0] != 0) { throw new Exception("Reader quota recovery acknowledgement invalid."); }
+			}
+		}
+		finally
+		{
+			foreach (var id in handles)
+			{
+				var handle = new byte[8];
+				BinaryPrimitives.WriteInt64LittleEndian(handle, id);
+				await McwApplicationServices.Current.RequestAsync(0x0f04, handle, token);
+			}
+		}
+	}
+	File.WriteAllText(report, JsonSerializer.Serialize(new { inputBytes = bytes.Length, tailFragments = 2048, readerReads = reader.Reads,
+		allocatedBytes = used, allocationBudget, elapsedMs = completionMs, totalResourceMs = elapsed.ElapsedMilliseconds, heartbeats, maxHeartbeatMs,
+		cancellations, maxCancellationMs, quotaRecovered = cancellations == 33, failure }));
+	if (failure is not null) { throw new Exception("Near-cap resource check failed: " + failure); }
+}
 static void Equal(TorControlReply reply, int status, string[] lines)
 {
 	if ((int)reply.StatusCode != status || !reply.ResponseLines.SequenceEqual(lines, StringComparer.Ordinal)) { throw new Exception("Tor reply compatibility mismatch."); }
@@ -209,10 +332,41 @@ async Task Error<T>(byte[] bytes, string expected) where T : Exception
 sealed class FaultResponse(byte[] response) : IMcwApplicationServices
 {
 	public CancellationToken Stopped => CancellationToken.None;
-	public Task<byte[]> RequestAsync(ushort operation, ReadOnlyMemory<byte> payload, CancellationToken cancellationToken = default) => Task.FromResult(response);
+	public Task<byte[]> RequestAsync(ushort operation, ReadOnlyMemory<byte> payload, CancellationToken cancellationToken = default)
+		=> Task.FromResult(operation is 0x0f02 or 0x0f04 ? new byte[] { 0 } : response);
 }
 
-sealed class FragmentedReader(byte[] wire, int fragmentSize, bool segmented = false) : PipeReader
+sealed class ObservedReader(PipeReader inner, long target) : PipeReader
+{
+	private readonly TaskCompletionSource _targetConsumed = new(TaskCreationOptions.RunContinuationsAsynchronously);
+	private ReadOnlySequence<byte> _buffer;
+	private long _consumed;
+	public Task TargetConsumed => _targetConsumed.Task;
+	public override async ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
+	{
+		var read = await inner.ReadAsync(cancellationToken);
+		_buffer = read.Buffer;
+		return read;
+	}
+	public override void AdvanceTo(SequencePosition consumed) => AdvanceTo(consumed, consumed);
+	public override void AdvanceTo(SequencePosition consumed, SequencePosition examined)
+	{
+		_consumed += _buffer.Slice(0, consumed).Length;
+		inner.AdvanceTo(consumed, examined);
+		if (_consumed >= target) { _targetConsumed.TrySetResult(); }
+	}
+	public override bool TryRead(out ReadResult result)
+	{
+		if (!inner.TryRead(out result)) { return false; }
+		_buffer = result.Buffer;
+		return true;
+	}
+	public override void CancelPendingRead() => inner.CancelPendingRead();
+	public override void Complete(Exception? exception = null) => inner.Complete(exception);
+	public override ValueTask CompleteAsync(Exception? exception = null) => inner.CompleteAsync(exception);
+}
+
+sealed class FragmentedReader(byte[] wire, int fragmentSize, bool segmented = false, int initialVisible = 0) : PipeReader
 {
 	private int _visible;
 	private bool _reading;
@@ -224,7 +378,7 @@ sealed class FragmentedReader(byte[] wire, int fragmentSize, bool segmented = fa
 	{
 		cancellationToken.ThrowIfCancellationRequested();
 		if (_reading) { throw new InvalidOperationException("Prior read was not advanced."); }
-		_visible = Math.Min(wire.Length, _visible + fragmentSize);
+		_visible = Math.Min(wire.Length, Reads == 0 ? Math.Max(initialVisible, fragmentSize) : _visible + fragmentSize);
 		var memory = wire.AsMemory(Consumed, _visible - Consumed);
 		_buffer = segmented && memory.Length > 1 ? Segments(memory) : new ReadOnlySequence<byte>(memory);
 		_reading = true;

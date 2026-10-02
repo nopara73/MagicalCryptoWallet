@@ -1,13 +1,13 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "scope": "wallet Tor control reply/CRLF codec only",
-  "verification_base": "f965ae7b16fbc936582611070cb4e77813dce52b",
-  "verified_utc": "2026-10-02T12:30:27.7406260Z",
+  "verification_base": "76b5c878cc27f6ae3182f2a77730fb15c163b1c2",
+  "verified_utc": "2026-10-02T13:51:12.206423+00:00",
   "target": "x86_64-pc-windows-msvc",
   "rust": "1.99.0",
   "edition": 2024,
   "dotnet": "10.0",
-  "codec_tests": 8,
+  "codec_tests": 12,
   "independent_reply_fixtures": 24,
   "independent_status_cases": 8000,
   "gui_assertions": 102,
@@ -18,7 +18,7 @@
   "production_integrated": false,
   "old_implementation_retired": false,
   "dependency_removed": false,
-  "host_sha256": "7068105d008d997cc853bfdace8b2835f665d108d86a953f6f09bdae9edee87e",
+  "host_sha256": "89405817fa182b9e471c9340890762adc23a1435b67f9c76cec3925d05ea297c",
   "runtime_imports": [
     "KERNEL32.dll",
     "api-ms-win-core-synch-l1-2-0.dll",
@@ -31,34 +31,40 @@
   "tests": [
     "rustfmt check",
     "codec Clippy warnings/all denied",
+    "12 native codec tests",
     "native Windows shipping-runtime host build/import audit",
     "production core/client/probe build zero warnings/errors",
-    "actual hosted wallet positive tests",
-    "coordinator tests exit 0"
+    "actual hosted wallet GUI 102 assertions",
+    "source-bound near-cap fragmentation/allocation/shared-host response profile in GUI mode",
+    "33 near-cap cancellations and full 16-reader quota recovery in GUI mode",
+    "runtime source and applied hunk identity",
+    "proposed workflow clean apply check only"
   ],
   "unverified": [
     "remote master caller/dispatch activation",
     "incorporated exact-commit CI",
     "packaged real-Tor smoke",
     "Linux x64/ARM64 runtime",
-    "macOS x64/ARM64 runtime"
+    "macOS x64/ARM64 runtime",
+    "saturated shared-queue cancellation/EOF",
+    "late-begin cleanup under overload"
   ],
   "sources": [
     {
       "path": "mcw/src/privacy_service/control_codec/mod.rs",
-      "sha256": "9b3159f8e58cbfd02d7f8f2c7dc13b0b11dc9aea92c07297cb0304aa017b0d61"
+      "sha256": "11fe0e7f53297f371deaab50f28669d0cbff74c42672aa004c76a773135e1bdc"
     },
     {
       "path": "mcw/src/privacy_service/control_codec/service.rs",
-      "sha256": "1a048f92c0ed50cfed8f471e3fce924cacd3bcfa193cd516d91e540710811135"
+      "sha256": "28308a9ecb4028af86ac73da4e3eda4e91038da722ddb081774b70534ba44cc1"
     },
     {
       "path": "MagicalCryptoWallet/Mcw/Privacy/McwTorControlCodec.cs",
-      "sha256": "7eb4e3b76561816575d2288a40da8f88195e50e79c677cc15cc1c4ea7436503c"
+      "sha256": "495f1b80e32df1b64a05ad2f7beda78e54b57fc0fbc32639c52e277122656961"
     },
     {
       "path": "Contrib/McwMigration/PrivacyControlProbe/Program.cs",
-      "sha256": "dbf5bf7f8ad907825086f87d7022ce8ee357cf0b80f4cd0af00057708dc66102"
+      "sha256": "ff617d94b3da8c395a2c5e6e013eb91d27119a451d185029db90ab0f2298135f"
     },
     {
       "path": "Contrib/McwMigration/PrivacyControlProbe/PrivacyControlProbe.csproj",
@@ -71,10 +77,194 @@
     {
       "path": "mcw/tests/privacy_control_fixtures/status.tsv",
       "sha256": "db6c12504b240b6e3d100c0a71d958f66f732a5e136b95f25d1e9f70bc667878"
+    },
+    {
+      "path": "mcw/src/privacy_service/control_codec/stream.rs",
+      "sha256": "8e2505a8e9012c0f5415e6fb955bb136a45510fd51a8eadddebc14f355a1d8fc"
+    },
+    {
+      "path": "mcw/tests/privacy_control.rs",
+      "sha256": "74377c2e31371e1768bec460d2eba33a6892b84f344465282d0dc843002cad9e"
+    },
+    {
+      "path": "mcw/tests/privacy_control_host.py",
+      "sha256": "acd4d637755c77d5e5807784b65cb960ded2c2d8c32d7e600e8b0c9d65abad0c"
+    },
+    {
+      "path": "mcw/tests/privacy_control_verify.ps1",
+      "sha256": "146d76fbbc624b7fc8021308a59cc0628977f5ba9e12ac60e4932a40b772671d"
+    },
+    {
+      "path": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+      "sha256": "c0f7e32276a4b09c7eb91d609909bc787678ef21e33695ea4782cfdff0f86bde"
     }
   ],
   "caller_patch_sha256": "7116a4fa06c30b13f39e3d467383b72ed4d396ce1d00823d77906a8fc93bcdb2",
-  "host_patch_sha256": "22321eb00649298dbe2f152cedb0f658a31b4342cf43e519d2db7ba091502de7",
-  "evidence_root": ".artifacts/mcw-privacy-control-verify-20261002/.artifacts/privacy-control-verification",
-  "source_hash_basis": "UTF-8 text with LF normalized line endings"
+  "host_patch_sha256": "348872920659e14831ba99d719b8dff816e2c96d15c77221866c3fabb41cf97f",
+  "evidence_root": ".artifacts/mcw-privacy-control-gui-verify-20261002/.artifacts/privacy-control-verification",
+  "source_hash_basis": "UTF-8 text with LF normalized line endings",
+  "retained_managed_native_dependency": {
+    "name": "libwabisabi.dll",
+    "status": "retained dependency",
+    "source": "C:\\Users\\user\\OneDrive\\Documents\\ChatGPT\\MagicalCryptoWallet\\ThirdParty\\WabiSabi\\c\\build-win\\libwabisabi.dll",
+    "sha256": "FBC41759C3623E4232930B7E37541DCE41CAE2DAD81C367D0B1E78C92711B3B3",
+    "source_difference_from_current_candidate": [],
+    "parser_probe_native_crypto_execution": false
+  },
+  "runtime_patch_sources": [
+    {
+      "path": "MagicalCryptoWallet/Tor/Control/TorControlReplyReader.cs",
+      "sha256": "bfc2b186cd17ffe86e1eb6d50498ae30123e97e7d4c06dabe03448f419bc5f49"
+    },
+    {
+      "path": "MagicalCryptoWallet/Tor/Control/PipeReaderLineReaderExtension.cs",
+      "sha256": "bcda3a7f68722994e6cf65755c96b19b6f982daa25f432d7e6b2014b3a50efa1"
+    },
+    {
+      "path": "MagicalCryptoWallet.Coordinator/Tor/CoordinatorTorControlReplyReader.cs",
+      "sha256": "e4c3dde64fcabdf2b1c9e44453cd0a5e6824cc573c4ed3b77867e0e15e7b6d50"
+    },
+    {
+      "path": "MagicalCryptoWallet.Coordinator/Tor/CoordinatorTorControlLineReader.cs",
+      "sha256": "bc84912599780af47df44dac7510dbef4fb393f7087875db61c30ca1134a26b8"
+    },
+    {
+      "path": "MagicalCryptoWallet/Tor/Control/TorControlClient.cs",
+      "sha256": "0b8b1d8bdc7ba42f82e6d20e7ef3a6e544c9c5abee64fe503c683e698bb8bb1e"
+    },
+    {
+      "path": "MagicalCryptoWallet/Tor/Control/TorControlClientFactory.cs",
+      "sha256": "a07e5d4106025e14b6b372852c1cf31769bd19f20e450d67cac3bb97c4b89b0a"
+    },
+    {
+      "path": "MagicalCryptoWallet/Tor/TorProcessManager.cs",
+      "sha256": "fc2b5458f170d0da64c27d7ea6c121613147652e459af6a1baa239b7418a1d5f"
+    },
+    {
+      "path": "MagicalCryptoWallet.Coordinator/TorManagerService.cs",
+      "sha256": "69741e2f6993efce0cd9d289c81caeda008697a35474f9e90e5a52bac23e306c"
+    },
+    {
+      "path": "MagicalCryptoWallet.Tests/UnitTests/Tor/Control/TorControlReplyReaderTests.cs",
+      "sha256": "e9d726961630742ebe806fa819afdc08ac4ed5ead6857df1b0fefed22e60be13"
+    },
+    {
+      "path": "MagicalCryptoWallet.Tests/UnitTests/Tor/Control/TorControlClientTests.cs",
+      "sha256": "ade841ba49885bf7e54b11790db986f50cd03e84b2496bb848cf35e0453af1c1"
+    },
+    {
+      "path": "MagicalCryptoWallet.Tests/UnitTests/Tor/Control/TorControlFactoryTests.cs",
+      "sha256": "d5bc6adea317fcfec6e5ef59d115caa72060faab1552d9eb0b9df98ddf773949"
+    },
+    {
+      "path": "MagicalCryptoWallet.Tests/UnitTests/Tor/TorManagerTests.cs",
+      "sha256": "f7f4058ba3aa1203a03779003c573fdee8c76a75b6348d6abe45f66e8df2b4d9"
+    },
+    {
+      "path": "mcw/src/lib.rs",
+      "sha256": "eafb8f207eec84275612286eb6e31e30dadf06da01dca068a42fa65e46d009e6"
+    },
+    {
+      "path": "mcw/src/app.rs",
+      "sha256": "072ebc907e82e2d95c269513463e873c873fc2b99e43c568f7d3a87e0456d2e6"
+    }
+  ],
+  "library_alias_verification": {
+    "base": "76b5c878cc27f6ae3182f2a77730fb15c163b1c2",
+    "exact_alias_hunk_verified": true,
+    "other_registrations_use_verification_base": true
+  },
+  "caller_patch_unchanged_from": "ee4319b1a3ff6e456eda916273f50a12ae2ffdf6",
+  "runtime_hunks_applied_and_executed": true,
+  "workflow_hunk_apply_checked": true,
+  "workflow_hunk_applied_to_tested_checkout": false,
+  "workflow_ci_executed": false,
+  "coordinator_tests_reexecuted_for_incremental_revision": false,
+  "coordinator_contract_unchanged": true,
+  "coordinator_readiness_composition_owner": "socks5",
+  "reader_id_contract": "Client-chosen positive IDs are monotonically increasing within the managed process; native sessions are reset per child lifetime.",
+  "cleanup_contract": "Terminal parse results remove native state; finally attempts idempotent close with an independent one-second token; child lifetime drop clears abandoned reads. Overload delivery is unverified.",
+  "operations": {
+    "single_shot_reply": "0x0F00",
+    "single_shot_line": "0x0F01",
+    "begin": "0x0F02",
+    "feed": "0x0F03",
+    "close": "0x0F04"
+  },
+  "limits": {
+    "consumed_input_bytes_per_read": 524288,
+    "line_bytes": 65536,
+    "projected_lines": 16384,
+    "chunk_bytes": 16384,
+    "active_readers": 16,
+    "decoder_buffer_capacity_bound_x64_bytes": 1048576,
+    "max_encoded_response_bytes": 589840,
+    "bridge_frame_bytes": 1048576
+  },
+  "work_proof": {
+    "examined_input_octets": 524288,
+    "projected_octets_at_most": 524288,
+    "fragment_bytes": 1,
+    "peak_decoder_capacity_bound_verified": true,
+    "capacity_excludes": [
+      "allocator metadata",
+      "session map",
+      "response encoding",
+      "process memory"
+    ],
+    "real_time_deadline_guarantee": false
+  },
+  "resource_guards": {
+    "managed_allocation_bytes": 67108864,
+    "completion_seconds": 20,
+    "cancellation_seconds": 3,
+    "shared_qr_response_seconds": 1,
+    "measurements_are_run_specific": true
+  },
+  "resource_results": {
+    "host_sha256": "89405817fa182b9e471c9340890762adc23a1435b67f9c76cec3925d05ea297c",
+    "gui": {
+      "inputBytes": 524288,
+      "tailFragments": 2048,
+      "readerReads": 2049,
+      "allocatedBytes": 7707328,
+      "allocationBudget": 67108864,
+      "elapsedMs": 413,
+      "totalResourceMs": 803,
+      "heartbeats": 48,
+      "maxHeartbeatMs": 10,
+      "cancellations": 33,
+      "maxCancellationMs": 6,
+      "quotaRecovered": true,
+      "failure": null
+    }
+  },
+  "baseline_resource_results": {
+    "host_sha256": "7068105d008d997cc853bfdace8b2835f665d108d86a953f6f09bdae9edee87e",
+    "gui": {
+      "inputBytes": 524288,
+      "tailFragments": 2048,
+      "readerReads": 43,
+      "allocatedBytes": 68673000,
+      "allocationBudget": 67108864,
+      "elapsedMs": 168,
+      "heartbeats": 20,
+      "maxHeartbeatMs": 4,
+      "failure": "managed allocation budget exceeded"
+    }
+  },
+  "baseline_source_commit": "ee4319b1a3ff6e456eda916273f50a12ae2ffdf6",
+  "fixture_generator_provenance": {
+    "source_commit": "ee4319b1a3ff6e456eda916273f50a12ae2ffdf6",
+    "path": "mcw/tests/privacy_control_fixture.cs",
+    "sha256": "6eccc290173a4b2b40a4b34be9b279550b89a7fbada69396f2f8a262656d20d5",
+    "regenerated_for_incremental_revision": false
+  },
+  "baseline_failure_interpretation": "Repeated managed allocations exceeded the guard; host starvation was not observed.",
+  "previous_codec_checkpoint": {
+    "source_commit": "ee4319b1a3ff6e456eda916273f50a12ae2ffdf6",
+    "codec_tests": 8,
+    "host_sha256": "7068105d008d997cc853bfdace8b2835f665d108d86a953f6f09bdae9edee87e",
+    "coordinator_tests": 34
+  }
 }

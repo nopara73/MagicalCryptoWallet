@@ -261,3 +261,160 @@ fn hostile_small_inputs_are_total_and_diagnostics_redact_payloads() {
     let result = codec::reply(b"250 PRIVATE_SYNTHETIC\r\n", true).unwrap();
     assert!(!format!("{result:?}").contains("PRIVATE_SYNTHETIC"));
 }
+
+#[test]
+fn incremental_decoder_matches_oracle_at_all_boundaries() {
+    use codec::stream::{Decoder, Kind};
+    for (name, wire, expected) in fixtures() {
+        for split in 0..wire.len() {
+            let mut reader = Decoder::new(Kind::Reply);
+            assert_eq!(
+                reader.feed(&wire[..split], false),
+                Ok(Scan::NeedMore),
+                "{name}/{split}"
+            );
+            assert_eq!(
+                reader.feed(&wire[split..], true),
+                Ok(Scan::Complete {
+                    consumed: wire.len() - split,
+                    value: expected.clone()
+                }),
+                "{name}/{split}"
+            );
+            assert_eq!(reader.work().examined, wire.len());
+            assert!(reader.work().projected <= wire.len());
+        }
+    }
+}
+
+#[test]
+fn near_cap_bytewise_input_has_linear_work_and_bounded_buffers() {
+    use codec::stream::{Decoder, Kind, MAX_BUFFER_BYTES};
+    let mut wire = b"250+data=\r\n".to_vec();
+    let terminal = b".\r\n250 OK\r\n";
+    let body = b"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\r\n";
+    while wire.len() + body.len() + terminal.len() <= MAX_INPUT - 2 {
+        wire.extend_from_slice(body);
+    }
+    let tail = MAX_INPUT - wire.len() - terminal.len();
+    wire.extend(std::iter::repeat_n(b'y', tail - 2));
+    wire.extend_from_slice(b"\r\n");
+    wire.extend_from_slice(terminal);
+    assert_eq!(wire.len(), MAX_INPUT);
+    let mut reader = Decoder::new(Kind::Reply);
+    for (i, byte) in wire.iter().enumerate() {
+        let result = reader.feed(std::slice::from_ref(byte), false).unwrap();
+        if i + 1 == wire.len() {
+            let Scan::Complete { consumed: 1, value } = result else {
+                panic!("near-cap reply incomplete")
+            };
+            assert_eq!(value.status, 250);
+            assert_eq!(value.lines[value.lines.len() - 2..], [".", "250 OK"]);
+        } else {
+            assert_eq!(result, Scan::NeedMore);
+        }
+    }
+    let work = reader.work();
+    assert_eq!(work.examined, MAX_INPUT);
+    assert!(work.projected <= MAX_INPUT);
+    assert!(work.peak_buffer_bytes <= MAX_BUFFER_BYTES, "{work:?}");
+}
+
+fn reader_packet(id: u64, mode: u8, bytes: &[u8]) -> Vec<u8> {
+    let mut payload = id.to_le_bytes().to_vec();
+    payload.push(mode);
+    payload.extend_from_slice(bytes);
+    payload
+}
+
+#[test]
+fn incremental_service_quota_close_and_terminal_cleanup() {
+    use codec::service::{BEGIN, CLOSE, FEED, MAX_CHUNK, MAX_READERS, Readers};
+    let mut service = Readers::new();
+    for id in 1..=MAX_READERS as u64 {
+        assert_eq!(
+            service.dispatch(BEGIN, &reader_packet(id, 0, &[])).unwrap(),
+            [0]
+        );
+    }
+    assert_eq!(service.active_count(), MAX_READERS);
+    assert_eq!(
+        service.dispatch(BEGIN, &reader_packet(100, 0, &[])),
+        Err(codec::service::ServiceError::ReaderQuota)
+    );
+    assert_eq!(
+        service.dispatch(FEED, &reader_packet(1, 0, &vec![b'x'; MAX_CHUNK + 1])),
+        Err(codec::service::ServiceError::InvalidRequest)
+    );
+    assert_eq!(
+        service
+            .dispatch(FEED, &reader_packet(1, 0, b"250 par"))
+            .unwrap(),
+        [0]
+    );
+    assert_eq!(service.dispatch(CLOSE, &1_u64.to_le_bytes()).unwrap(), [0]);
+    assert_eq!(service.dispatch(CLOSE, &1_u64.to_le_bytes()).unwrap(), [0]);
+    assert_eq!(service.active_count(), MAX_READERS - 1);
+    assert_eq!(
+        service
+            .dispatch(FEED, &reader_packet(2, 1, b"250 OK\r\nnext\r\n"))
+            .unwrap()[1..5],
+        8_u32.to_le_bytes()
+    );
+    assert_eq!(service.active_count(), MAX_READERS - 2);
+    assert_eq!(
+        service
+            .dispatch(FEED, &reader_packet(3, 1, b"xx OK\r\n"))
+            .unwrap(),
+        [2, 4, b'x', b'x', b' ']
+    );
+    assert_eq!(service.active_count(), MAX_READERS - 3);
+    service.clear();
+    assert_eq!(service.active_count(), 0);
+    for id in 1..=MAX_READERS as u64 {
+        assert_eq!(
+            service.dispatch(BEGIN, &reader_packet(id, 1, &[])).unwrap(),
+            [0]
+        );
+    }
+}
+
+#[test]
+fn incremental_eof_bare_cr_and_child_lifetime_cleanup() {
+    use codec::stream::{Decoder, Kind};
+    let mut line = Decoder::new(Kind::Line);
+    for byte in b"bare\rbody\r" {
+        assert_eq!(line.feed(&[*byte], false), Ok(Scan::NeedMore));
+    }
+    assert_eq!(
+        line.feed(b"\r\ncoalesced", true),
+        Ok(Scan::Complete {
+            consumed: 2,
+            value: Reply {
+                status: 0,
+                lines: vec!["bare\rbody\r".into()]
+            }
+        })
+    );
+    assert_eq!(
+        Decoder::new(Kind::Reply).feed(b"", true),
+        Err(Error::NoReplyLine { incomplete: false })
+    );
+    let mut partial = Decoder::new(Kind::Reply);
+    partial.feed(b"250+body\r\npart", false).unwrap();
+    assert_eq!(partial.feed(b"", true), Err(Error::IncompleteLine));
+    let handle = 777_u64;
+    {
+        let _scope = service::ChildScope::new();
+        service::dispatch(service::BEGIN, &reader_packet(handle, 0, &[])).unwrap();
+        service::dispatch(
+            service::FEED,
+            &reader_packet(handle, 0, b"250+abandoned\r\n"),
+        )
+        .unwrap();
+    }
+    assert_eq!(
+        service::dispatch(service::FEED, &reader_packet(handle, 0, b".\r\n250 OK\r\n")),
+        Err(service::ServiceError::InvalidRequest)
+    );
+}

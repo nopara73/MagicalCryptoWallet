@@ -10,6 +10,7 @@
 #![forbid(unsafe_code)]
 
 pub mod service;
+pub mod stream;
 
 use std::fmt;
 
@@ -73,41 +74,27 @@ impl<T> fmt::Debug for Scan<T> {
     }
 }
 
-fn raw_line(bytes: &[u8], eof: bool) -> Result<Scan<&[u8]>, Error> {
-    let bounded = &bytes[..bytes.len().min(MAX_LINE + 2)];
-    if let Some(end) = bounded.windows(2).position(|pair| pair == b"\r\n") {
-        return Ok(Scan::Complete {
-            consumed: end + 2,
-            value: &bounded[..end],
-        });
-    }
-    if bytes.len() >= MAX_LINE + 2 {
-        return Err(Error::Limit);
-    }
-    if eof {
-        return Err(if bytes.is_empty() {
-            Error::NoMoreData
-        } else {
-            Error::IncompleteLine
-        });
-    }
-    Ok(Scan::NeedMore)
-}
 fn ascii(bytes: &[u8]) -> String {
-    bytes
-        .iter()
-        .map(|&byte| if byte.is_ascii() { byte as char } else { '?' })
-        .collect()
+    let mut text = String::with_capacity(bytes.len());
+    for &byte in bytes {
+        text.push(if byte.is_ascii() { byte as char } else { '?' });
+    }
+    text
 }
 
 pub fn line(bytes: &[u8], eof: bool) -> Result<Scan<String>, Error> {
-    match raw_line(bytes, eof)? {
-        Scan::NeedMore => Ok(Scan::NeedMore),
-        Scan::Complete { consumed, value } => Ok(Scan::Complete {
-            consumed,
-            value: ascii(value),
-        }),
-    }
+    stream::Decoder::new(stream::Kind::Line)
+        .feed(bytes, eof)
+        .map(|scan| match scan {
+            Scan::NeedMore => Scan::NeedMore,
+            Scan::Complete {
+                consumed,
+                mut value,
+            } => Scan::Complete {
+                consumed,
+                value: value.lines.remove(0),
+            },
+        })
 }
 
 /// Mirrors .NET Integer status parsing on the first three ASCII octets, including
@@ -144,113 +131,8 @@ fn status(bytes: &[u8; 3]) -> Option<i32> {
     Some(sign * text.iter().fold(0, |n, &b| n * 10 + i32::from(b - b'0')))
 }
 
-fn push(lines: &mut Vec<String>, line: String) -> Result<(), Error> {
-    if lines.len() == MAX_LINES {
-        return Err(Error::Limit);
-    }
-    lines.push(line);
-    Ok(())
-}
-
-/// Stateless prefix scan. The owner stages incomplete raw bytes in a bounded
-/// buffer; consumed bytes never include a coalesced subsequent reply.
+/// Single-shot convenience over the same incremental grammar. Managed streams
+/// use a retained Decoder and feed only new chunks through the bounded service.
 pub fn reply(bytes: &[u8], eof: bool) -> Result<Scan<Reply>, Error> {
-    let prefix = &bytes[..bytes.len().min(MAX_INPUT)];
-    let prefix_eof = eof && bytes.len() <= MAX_INPUT;
-    let (mut consumed, first) = match raw_line(prefix, prefix_eof) {
-        Ok(Scan::NeedMore) => {
-            return if prefix.len() == MAX_INPUT {
-                Err(Error::Limit)
-            } else {
-                Ok(Scan::NeedMore)
-            };
-        }
-        Ok(Scan::Complete { consumed, value }) => (consumed, ascii(value)),
-        Err(Error::NoMoreData) => return Err(Error::NoReplyLine { incomplete: false }),
-        Err(Error::IncompleteLine) => return Err(Error::NoReplyLine { incomplete: true }),
-        Err(error) => return Err(error),
-    };
-    if first.len() < 3 {
-        return Err(Error::MissingStatus);
-    }
-    let status_bytes = first.as_bytes()[..3].try_into().unwrap();
-    let status = status(&status_bytes).ok_or(Error::InvalidStatus(status_bytes))?;
-    let tail = &first[3..];
-    let mut lines = Vec::new();
-    let Some(&separator) = tail.as_bytes().first() else {
-        lines.push(String::new());
-        return Ok(Scan::Complete {
-            consumed,
-            value: Reply { status, lines },
-        });
-    };
-    if !matches!(separator, b'+' | b'-') {
-        lines.push(if separator == b' ' {
-            tail[1..].to_owned()
-        } else {
-            tail.to_owned()
-        });
-        return Ok(Scan::Complete {
-            consumed,
-            value: Reply { status, lines },
-        });
-    }
-    push(&mut lines, tail[1..].to_owned())?;
-    loop {
-        let current = match raw_line(&prefix[consumed..], prefix_eof)? {
-            Scan::NeedMore => {
-                return if prefix.len() == MAX_INPUT {
-                    Err(Error::Limit)
-                } else {
-                    Ok(Scan::NeedMore)
-                };
-            }
-            Scan::Complete {
-                consumed: used,
-                value,
-            } => {
-                consumed += used;
-                ascii(value)
-            }
-        };
-        if current.is_empty() {
-            continue;
-        }
-        if separator == b'-' && current.len() > 3 && current.as_bytes()[3] == b' ' {
-            push(&mut lines, current)?;
-            return Ok(Scan::Complete {
-                consumed,
-                value: Reply { status, lines },
-            });
-        }
-        let current = if separator != b'+' && current.len() > 3 {
-            current[4..].to_owned()
-        } else {
-            current
-        };
-        let dot = separator == b'+' && current == ".";
-        push(&mut lines, current)?;
-        if dot {
-            match raw_line(&prefix[consumed..], prefix_eof)? {
-                Scan::NeedMore => {
-                    return if prefix.len() == MAX_INPUT {
-                        Err(Error::Limit)
-                    } else {
-                        Ok(Scan::NeedMore)
-                    };
-                }
-                Scan::Complete {
-                    consumed: used,
-                    value,
-                } => {
-                    consumed += used;
-                    push(&mut lines, ascii(value))?;
-                }
-            }
-            return Ok(Scan::Complete {
-                consumed,
-                value: Reply { status, lines },
-            });
-        }
-    }
+    stream::Decoder::new(stream::Kind::Reply).feed(bytes, eof)
 }

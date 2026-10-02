@@ -26,8 +26,9 @@ try {
     [IO.Directory]::CreateDirectory($taskOutput) | Out-Null
     $taskModule=Join-Path $taskScope 'mcw/src/privacy_service/control_codec/mod.rs'
     $taskService=Join-Path $taskScope 'mcw/src/privacy_service/control_codec/service.rs'
+    $taskStream=Join-Path $taskScope 'mcw/src/privacy_service/control_codec/stream.rs'
     $taskTest=Join-Path $PSScriptRoot 'privacy_control.rs'
-    & (Join-Path $RustBin 'rustfmt.exe') --edition 2024 --check $taskModule $taskService $taskTest
+    & (Join-Path $RustBin 'rustfmt.exe') --edition 2024 --check $taskModule $taskService $taskStream $taskTest
     if ($LASTEXITCODE) { throw 'Formatting failed.' }
     & (Join-Path $RustBin 'clippy-driver.exe') --edition=2024 --crate-type=lib --emit=metadata -Dwarnings -Dclippy::all $taskModule -o (Join-Path $taskOutput 'control-clippy.rmeta')
     if ($LASTEXITCODE) { throw 'Codec Clippy failed.' }
@@ -40,7 +41,7 @@ try {
         scope='bounded Tor control reply/CRLF codec'
         rust=$taskVersion
         target='x86_64-pc-windows-msvc'
-        tests=8
+        tests=12
         oracle_replies=24
         dotnet_status_oracle_cases=8000
         verified_utc=[DateTime]::UtcNow.ToString('O')

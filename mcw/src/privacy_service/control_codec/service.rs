@@ -1,16 +1,27 @@
 //! Binary operation payloads for the existing application bridge; no framing or
 //! transport dependency. Rust/native callers use `reply` and `line` directly.
 
-use super::{Error, MAX_INPUT, Scan};
+use super::{Error, MAX_INPUT, Scan, stream};
+use std::{
+    collections::BTreeMap,
+    sync::{Mutex, OnceLock},
+};
 
 pub const PARSE_REPLY: u16 = 0x0f00;
 pub const PARSE_LINE: u16 = 0x0f01;
+pub const BEGIN: u16 = 0x0f02;
+pub const FEED: u16 = 0x0f03;
+pub const CLOSE: u16 = 0x0f04;
+pub const MAX_CHUNK: usize = 16_384;
+pub const MAX_READERS: usize = 16;
 pub const MAX_RESPONSE: usize = MAX_INPUT + 4 * super::MAX_LINES + 16;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum ServiceError {
     UnsupportedOperation,
     InvalidRequest,
+    ReaderQuota,
+    Unavailable,
 }
 impl std::fmt::Display for ServiceError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -25,6 +36,12 @@ impl std::error::Error for ServiceError {}
 /// adds three status octets).
 /// Parser errors are structured normal responses, not arbitrary diagnostic text.
 pub fn dispatch(operation: u16, payload: &[u8]) -> Result<Vec<u8>, ServiceError> {
+    if matches!(operation, BEGIN | FEED | CLOSE) {
+        return readers()
+            .lock()
+            .map_err(|_| ServiceError::Unavailable)?
+            .dispatch(operation, payload);
+    }
     if !matches!(operation, PARSE_REPLY | PARSE_LINE) {
         return Err(ServiceError::UnsupportedOperation);
     }
@@ -48,7 +65,11 @@ pub fn dispatch(operation: u16, payload: &[u8]) -> Result<Vec<u8>, ServiceError>
             },
         })
     };
-    Ok(match result {
+    Ok(encode(result))
+}
+
+fn encode(result: Result<Scan<super::Reply>, Error>) -> Vec<u8> {
+    match result {
         Ok(Scan::NeedMore) => vec![0],
         Ok(Scan::Complete { consumed, value }) => {
             let mut result =
@@ -83,5 +104,114 @@ pub fn dispatch(operation: u16, payload: &[u8]) -> Result<Vec<u8>, ServiceError>
             }
             result
         }
-    })
+    }
+}
+
+/// Per-read Rust state. IDs are chosen before the client's begin request, so a
+/// canceled/late begin can always be closed. There is no replayed prefix payload.
+pub struct Readers {
+    active: BTreeMap<u64, stream::Decoder>,
+}
+
+impl Default for Readers {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl Readers {
+    pub fn new() -> Self {
+        Self {
+            active: BTreeMap::new(),
+        }
+    }
+    pub fn active_count(&self) -> usize {
+        self.active.len()
+    }
+    pub fn clear(&mut self) {
+        self.active.clear();
+    }
+
+    pub fn dispatch(&mut self, operation: u16, payload: &[u8]) -> Result<Vec<u8>, ServiceError> {
+        if !matches!(operation, BEGIN | FEED | CLOSE) {
+            return Err(ServiceError::UnsupportedOperation);
+        }
+        if payload.len() < 8 {
+            return Err(ServiceError::InvalidRequest);
+        }
+        let id = u64::from_le_bytes(payload[..8].try_into().unwrap());
+        if id == 0 || id > i64::MAX as u64 {
+            return Err(ServiceError::InvalidRequest);
+        }
+        match operation {
+            BEGIN => {
+                if payload.len() != 9 || payload[8] > 1 || self.active.contains_key(&id) {
+                    return Err(ServiceError::InvalidRequest);
+                }
+                if self.active.len() == MAX_READERS {
+                    return Err(ServiceError::ReaderQuota);
+                }
+                let kind = if payload[8] == 0 {
+                    stream::Kind::Reply
+                } else {
+                    stream::Kind::Line
+                };
+                self.active.insert(id, stream::Decoder::new(kind));
+                Ok(vec![0])
+            }
+            CLOSE => {
+                if payload.len() != 8 {
+                    return Err(ServiceError::InvalidRequest);
+                }
+                self.active.remove(&id);
+                Ok(vec![0])
+            }
+            _ => {
+                if payload.len() < 9 || payload.len() > 9 + MAX_CHUNK || payload[8] > 1 {
+                    return Err(ServiceError::InvalidRequest);
+                }
+                let reader = self
+                    .active
+                    .get_mut(&id)
+                    .ok_or(ServiceError::InvalidRequest)?;
+                let result = reader.feed(&payload[9..], payload[8] == 1);
+                if !matches!(result, Ok(Scan::NeedMore)) {
+                    self.active.remove(&id);
+                }
+                Ok(encode(result))
+            }
+        }
+    }
+}
+
+static READERS: OnceLock<Mutex<Readers>> = OnceLock::new();
+fn readers() -> &'static Mutex<Readers> {
+    READERS.get_or_init(|| Mutex::new(Readers::new()))
+}
+fn discard_readers() {
+    readers()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner)
+        .clear();
+    readers().clear_poison();
+}
+
+/// The host owns this guard for one managed-child lifetime. Every exit/restart,
+/// including pipe failure, drops all abandoned readers without another process.
+pub struct ChildScope;
+impl Default for ChildScope {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+impl ChildScope {
+    pub fn new() -> Self {
+        discard_readers();
+        Self
+    }
+}
+impl Drop for ChildScope {
+    fn drop(&mut self) {
+        discard_readers();
+    }
 }

@@ -18,10 +18,15 @@ public static class McwTorControlCodec
 {
 	private const ushort ReplyOperation = 0x0f00;
 	private const ushort LineOperation = 0x0f01;
+	private const ushort BeginOperation = 0x0f02;
+	private const ushort FeedOperation = 0x0f03;
+	private const ushort CloseOperation = 0x0f04;
+	private const int MaxChunk = 16384;
 	private const int MaxInput = 524288;
 	private const int MaxLine = 65536;
 	private const int MaxLines = 16384;
 	private const int MaxResponse = MaxInput + 4 * MaxLines + 16;
+	private static long _nextReaderId;
 
 	public static async Task<TorControlReply> ReadReplyAsync(PipeReader reader, CancellationToken cancellationToken)
 	{
@@ -43,42 +48,63 @@ public static class McwTorControlCodec
 		cancellationToken.ThrowIfCancellationRequested();
 		var service = McwApplicationServices.Current;
 		using var stop = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, service.Stopped);
-		var pending = new ArrayBufferWriter<byte>();
-		while (true)
+		var id = Interlocked.Increment(ref _nextReaderId);
+		if (id <= 0) { throw new IOException("Tor control reader ID limit exceeded."); }
+		var handle = new byte[8];
+		BinaryPrimitives.WriteInt64LittleEndian(handle, id);
+		try
 		{
-			var read = await reader.ReadAsync(stop.Token).ConfigureAwait(false);
-			var buffer = read.Buffer;
-			var consumed = buffer.Start;
-			var examined = buffer.End;
-			try
+			var begin = new byte[9];
+			handle.CopyTo(begin, 0);
+			begin[8] = operation == LineOperation ? (byte)1 : (byte)0;
+			var acknowledgement = await service.RequestAsync(BeginOperation, begin, stop.Token).ConfigureAwait(false);
+			if (acknowledgement.Length != 1 || acknowledgement[0] != 0) { throw InvalidResponse(); }
+			while (true)
 			{
-				if (read.IsCanceled) { throw new OperationCanceledException(stop.Token); }
-				var length = (int)Math.Min(buffer.Length, MaxInput - pending.WrittenCount);
-				var total = pending.WrittenCount + length;
-				var eof = read.IsCompleted && buffer.Length == length;
-				var payload = new byte[total + 1];
-				payload[0] = eof ? (byte)1 : (byte)0;
-				pending.WrittenSpan.CopyTo(payload.AsSpan(1));
-				buffer.Slice(0, length).CopyTo(payload.AsSpan(1 + pending.WrittenCount));
-				var response = await service.RequestAsync(operation, payload, stop.Token).ConfigureAwait(false);
-				stop.Token.ThrowIfCancellationRequested();
-				var result = Decode(response, operation, total);
-				if (result is not null)
+				var read = await reader.ReadAsync(stop.Token).ConfigureAwait(false);
+				var buffer = read.Buffer;
+				var consumed = buffer.Start;
+				var examined = buffer.End;
+				try
 				{
-					if (result.Consumed <= pending.WrittenCount) { throw InvalidResponse(); }
-					consumed = buffer.GetPosition(result.Consumed - pending.WrittenCount);
+					if (read.IsCanceled) { throw new OperationCanceledException(stop.Token); }
+					var length = (int)Math.Min(buffer.Length, MaxChunk);
+					var eof = read.IsCompleted && buffer.Length == length;
+					var payload = new byte[length + 9];
+					handle.CopyTo(payload, 0);
+					payload[8] = eof ? (byte)1 : (byte)0;
+					buffer.Slice(0, length).CopyTo(payload.AsSpan(9));
+					var response = await service.RequestAsync(FeedOperation, payload, stop.Token).ConfigureAwait(false);
+					stop.Token.ThrowIfCancellationRequested();
+					var result = Decode(response, operation, length);
+					if (result is not null)
+					{
+						consumed = buffer.GetPosition(result.Consumed);
+						examined = consumed;
+						return result;
+					}
+					if (eof) { throw InvalidResponse(); }
+					// Rust consumed this chunk and retains the incomplete grammar state.
+					// If more bytes were already buffered, leave them unexamined so the
+					// next ReadAsync cannot wait for data the pipe has already supplied.
+					consumed = buffer.GetPosition(length);
 					examined = consumed;
-					return result;
 				}
-				if (eof || total == MaxInput) { throw InvalidResponse(); }
-				// Release incomplete bytes to avoid producer backpressure deadlock.
-				// This buffer holds raw bytes only; the Rust result owns all grammar.
-				pending.Write(payload.AsSpan(1 + pending.WrittenCount, length));
-				consumed = buffer.GetPosition(length);
+				finally
+				{
+					reader.AdvanceTo(consumed, examined);
+				}
 			}
-			finally
+		}
+		finally
+		{
+			// The ID is known before begin, so even a canceled/late begin can close.
+			// Completion/error also auto-removes native state; close is idempotent.
+			if (!service.Stopped.IsCancellationRequested)
 			{
-				reader.AdvanceTo(consumed, examined);
+				using var cleanup = new CancellationTokenSource(TimeSpan.FromSeconds(1));
+				try { await service.RequestAsync(CloseOperation, handle, cleanup.Token).ConfigureAwait(false); }
+				catch (Exception e) when (e is IOException or OperationCanceledException or ObjectDisposedException) { }
 			}
 		}
 	}

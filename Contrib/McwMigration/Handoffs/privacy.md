@@ -1,124 +1,150 @@
 # Tor control codec handoff
 
 Worker: `01a0fc5c-d23b-7400-8819-68134acaf062`.
-Operation reservation: `0x0F00–0x0FFF`; implemented reply/line operations:
-`0x0F00` / `0x0F01`.
+Reservation: `0x0F00Ã¢â‚¬â€œ0x0FFF`. The wallet uses incremental operations
+`0x0F02` (begin), `0x0F03` (feed), `0x0F04` (close). Single-shot reply/line
+operations `0x0F00` / `0x0F01` retain their existing packet contracts.
 
 The authorized responsibility is the wallet's **Tor control reply and CRLF-line
 parser**, under `mcw/src/privacy_service/control_codec/`, with its typed adapter
 under `MagicalCryptoWallet/Mcw/Privacy/`. Full Tor/backend expansion remains
 stopped by the human correction. Existing protocol drafts are preserved.
 
-This handoff publishes the implemented codec, adapter, independent fixtures,
-runtime probe and **exact caller/host integration patches**. The patches have
-been applied and verified in an isolated checkout. They are not activated on
-`master`: the active QR integrator owns the shared host/CI changes. The coordinator
-must queue incorporation until that task is idle. Neither production cutover nor
-a dependency removal is claimed by this source publication.
+This publishes the codec, adapter, fixtures, probes and exact integration patches.
+The caller and runtime host hunks were applied and executed in an isolated
+checkout. The workflow hunk was checked for clean applicability, but was **not
+applied to that checkout or executed in CI**. These patches are not activated on
+`master`; the active QR integrator owns shared host/CI edits. The coordinator
+must queue incorporation until that task is idle. Production integration,
+retirement of the current parser and dependency removal remain unverified.
 
 ## Exact integration
 
 Apply these together, reconciling concurrent hunks without replacing whole files:
 
-- `privacy-control-callers.patch`: replaces the wallet's
-  `TorControlReplyReader.cs` and `PipeReaderLineReaderExtension.cs` with typed
-  Rust-service calls. Threads an explicit reply-reader delegate through
-  `TorControlClient`, its factory and `TorProcessManager`. Their default reader is
-  Rust; there is no service-availability check or managed fallback.
-- The same patch retains the existing managed reader exclusively in the
-  **external coordinator** project. `TorManagerService` explicitly supplies it.
-  Existing unhosted Tor tests explicitly test that coordinator role. No `mcw`
-  hosting requirement is added to the external coordinator.
-- `privacy-control-host.patch`: registers only the small `tor_control` module
-  alias in the shared library, routes its two operations through the existing
-  dispatcher and adds the synthetic host probe to each CI platform. Keep the
-  existing framing, cancellation and lifecycle behavior.
+- `privacy-control-callers.patch` replaces the wallet's reply/CRLF readers with
+  typed Rust-service calls. It threads an explicit reader delegate through
+  `TorControlClient`, its factory and `TorProcessManager`. Constructors are public
+  and source compatible; the optional delegate defaults to Rust. There is no
+  service-availability check or managed fallback. This patch is byte-identical
+  to the prior `ee4319b1a3ff6e456eda916273f50a12ae2ffdf6` handoff.
+- That patch retains the original managed reply parser exclusively in the
+  external coordinator project and explicitly supplies it at construction.
+  **Compose the SOCKS owner's coordinator-only readiness override** when applying
+  the combined cutover. Privacy does not change `IsTorRunningAsync`; its public
+  constructor, readonly delegate and `InitTorControlAsync` contract are preserved.
+  Coordinator readiness must remain usable without a wallet host.
+- `privacy-control-host.patch` registers the small `tor_control` module alias,
+  routes all five operations through the existing dispatcher, and adds a
+  `ChildScope` guard for each managed-child lifetime. The guard removes abandoned
+  native reads on every return/restart, including broken pipes. The two proposed
+  CI steps run the compatibility and resource profiles; both remain unexecuted.
 
-The exact base is `f965ae7b16fbc936582611070cb4e77813dce52b`. The constructor and
-factory hunks in `TorProcessManager` do not touch `IsTorRunningAsync`; that
-readiness leaf belongs to the separately coordinated SOCKS worker. Neither patch
-changes routing, control authentication, daemon/transport lifecycle or wallet
-state. Do not publish caller activation without its matching dispatcher.
+Wallet automation removal `18f0619221` is preserved. The probe is GUI-only;
+no retired managed executable or host mode is restored.
 
-## Compatibility and admission
+The tested base is `76b5c878cc27f6ae3182f2a77730fb15c163b1c2` with the exact runtime
+hunks and owned source additions applied. Do not mix this incremental adapter
+with the former two-operation dispatcher. Preserve other workers' registrations,
+framing, cancellation, lifecycle handling and readiness composition hunks.
 
-The Rust codec preserves the existing application representation, rather than
-silently imposing a new semantic interpretation:
+## Compatibility and resources
 
-- Terminal `250 OK` lines and data-block `.` lines remain in multiline replies.
-- Blank continuation lines are skipped; literal backslashes and stuffed dots
-  remain literal. High bytes become ASCII `?`, as with the former decoder.
-- Historical first-status handling survives, including unknown enum values,
-  ASCII whitespace/signs and .NET's trailing-NUL behavior. Subsequent status
-  prefixes/separators are projected exactly as before.
-- A complete result reports its exact consumed-byte count; coalesced subsequent
-  replies remain in the pipe. The adapter stages incomplete raw bytes in a bounded
-  buffer, releasing producer backpressure. It contains no Tor grammar.
-- EOF classifications/messages and cancellation are preserved. Both caller
-  cancellation and bridge shutdown release a pending pipe read. Missing service
-  binding and malformed Rust responses fail visibly; they do not parse locally.
-- Exact CRLF scanning fixes the former reader's first-bare-CR positioning bug,
-  including CR/LF across sequence segments.
+Rust owns a retained decoder for each active read. The adapter sends **only new
+chunks**, up to 16 KiB each, then releases their pipe bytes; completed replies
+report consumption relative to the current chunk. Coalesced subsequent replies
+remain in the pipe. No managed Tor grammar or raw-prefix staging remains.
 
-Local resource admission is 512 KiB buffered input, 64 KiB per line and 16,384
-projected lines. These are explicit application limits, not limits mandated by
-the [Tor message specification](https://spec.torproject.org/control-spec/message-format.html).
-The request is EOF flag plus raw bytes. The response is typed need-more,
-consumed/status/length-prefixed ASCII lines, or a structured parse rejection.
-Maximum response is 589,840 bytes, within bridge v1's existing 1 MiB frame limit.
-No payload is put in arguments or new diagnostic logs.
+The compatibility projection preserves terminal `250 OK` and data-block `.`
+lines, skips blank continuation lines, keeps backslashes/stuffed dots literal,
+maps high bytes to ASCII `?`, and retains historical .NET first-status handling
+including unknown enum values, whitespace/signs and trailing NULs. EOF error
+classifications/messages, caller cancellation, bridge shutdown, typed errors,
+no-service rejection and malformed-response rejection are covered. Exact CRLF
+scanning fixes the former bare-CR position bug, including split delimiters.
+
+Admission is 512 KiB **total consumed input per read**, 64 KiB per line, 16,384
+projected lines and 16 simultaneous native reads. These are local application
+limits, not Tor-specified limits. A client-chosen positive ID is known before
+begin; `finally` attempts close with an independent one-second cleanup token,
+including canceled/late begin. Delivery under overload is not guaranteed.
+Completion and parse rejection also remove the session. Close is idempotent.
+The ordered session map requires no randomized hashing or extra runtime import.
+
+Native counters verify each input byte is examined once and each completed line
+is projected once. Tracked decoder buffer capacities are bounded by
+`MAX_INPUT + 2 * MAX_LINE + MAX_LINES * size_of::<String>()` (1 MiB on x64).
+This excludes allocator metadata, the bounded session map, response encoding and
+process memory. The maximum encoded response is 589,840 bytes, inside the existing
+1 MiB bridge frame. Begin/feed/close packets are bounded and typed; no payload is
+placed in arguments or added diagnostic logs. Work/capacity bounds do not promise
+a CPU deadline or real-time scheduling.
 
 ## Verification evidence
 
-Verified on native Windows x64, Rust 1.99.0/edition 2024, .NET 10:
+Verified on native Windows x64, Rust 1.99.0/edition 2024 and .NET 10:
 
-- Eight Rust tests passed, none ignored: 24 reply fixtures generated by the
-  original C# reader, 8,000 independent .NET status-prefix cases, every fixture
-  prefix/EOF, coalesced replies, CRLF/bare-CR, exact limits, invalid requests and
-  2,048 deterministic hostile-input lengths. Strict codec Clippy and formatting
-  passed.
-- The full production core/client/probe compiled with zero warnings/errors.
-  The **actual shipping Rust host**, with the integration patches applied,
-  passed 102 assertions in GUI mode. This covers
-  byte-by-byte fragments, segmented/coalesced pipes, normal pipe backpressure,
-  exact replies/errors, event/synchronous routing, cancellation, bridge shutdown,
-  no-service rejection and malformed-response rejection.
-- The 34 retained coordinator/Tor unit tests passed. Their successful process
-  exit was verified. The hosted wallet and external coordinator use explicit
-  separate readers; a mocked parser is not used for the wallet positive tests.
-- The Windows release build and `Contrib/Mcw/audit.py` import audit passed with
-  only native Windows system libraries, no VC++ Redistributable import. The
-  audited host SHA256 is
-  `7068105d008d997cc853bfdace8b2835f665d108d86a953f6f09bdae9edee87e`.
-  The application Cargo dependency graph remains one package with no external
-  normal/build/test crates.
+- **12 Rust tests**, none ignored: 24 independent original-reader fixtures,
+  8,000 independent .NET status-prefix cases, every fragment/EOF boundary,
+  coalescing, exact limits, CRLF/bare-CR, invalid requests, 2,048 deterministic
+  hostile lengths, one-byte feeds across a full 512 KiB reply, bounded work/buffers,
+  quota/terminal cleanup and child-lifetime cleanup. Strict Clippy and formatting
+  pass. The previous eight-test codec and historical broader checkpoint counts
+  are distinct; the current codec count is 12.
+- The full production core/client/probe builds with **zero warnings/errors**.
+  The actual native shipping-runtime Rust host passes **102 GUI assertions**,
+  with the real production readers and bridge.
+  These cover normal producer backpressure, exact replies/errors, async events,
+  synchronous responses, cancellation and negative transport cases.
+- A source-bound GUI resource profile completes a 512 KiB reply with 2,048
+  tail fragments: 2,049 pipe reads, 7,707,328 managed allocated bytes
+  and 413 ms completion. Concurrent QR requests remain responsive (maximum
+  10 ms). It cancels **33 near-cap reads** after Rust has consumed their
+  prefixes, with maximum cancellation 6 ms, then reserves all 16 native
+  reader slots successfully. These are measurements from this run; the guards
+  are 64 MiB allocations, 20 s completion, 3 s cancellation and 1 s QR response.
+- The pinned original `ee4319` adapter fails the same fragmentation/allocation
+  guard after 43 reads: 68,673,000 allocated bytes in 168 ms, with maximum QR
+  response 4 ms. This demonstrates repeated allocation, not observed host
+  starvation. The incremental decoder removes prefix replay/rescanning.
+- The Windows release build and first-party import audit pass with only Windows
+  system libraries and no VC++ Redistributable import. Audited host SHA256:
+  `89405817fa182b9e471c9340890762adc23a1435b67f9c76cec3925d05ea297c`.
+  Cargo remains one package with zero external normal/build/test crates.
+- The retained coordinator/Tor tests previously passed 34 checks with exit 0.
+  They were not rerun for this correction; their exact caller patch is unchanged.
+  The SOCKS owner separately verifies the combined coordinator readiness role.
 
-Reproduce the codec with `mcw/tests/privacy_control_verify.ps1`, or Cargo's
-`privacy_control` integration test. After applying both exact patches, build the
-host using the existing first-party runtime build and run
-`python mcw/tests/privacy_control_host.py --binary <mcw-path>`. Hold one exclusive
-shared build slot, use one build job and require at least 2 GiB free memory.
-The probe uses synthetic identities/data and an ephemeral loopback TCP server.
-It is not packaged. Source hashes and results are in
-`privacy-control-evidence.json`; detailed ignored logs are under
-`.artifacts/mcw-privacy-control-verify-20261002/.artifacts/privacy-control-verification`.
+Reproduce native codec checks with `mcw/tests/privacy_control_verify.ps1` or
+Cargo's `privacy_control` integration test. After applying the matching runtime
+patches, build the host with the existing first-party runtime build and run:
 
-Still unverified: activation on remote `master`, packaged production Tor smoke,
-the incorporated exact-commit CI and Linux x64/ARM64 plus macOS x64/ARM64 runtime
-execution. QR's earlier failed CI is not evidence for this codec. The added CI
-step must actually pass after incorporation; a proposed step is not verification.
+```text
+python mcw/tests/privacy_control_host.py --binary <mcw-path>
+python mcw/tests/privacy_control_host.py --resources --binary <mcw-path>
+```
+
+Hold one exclusive shared build slot, use one build job and require 2 GiB free
+memory. The probe uses synthetic data and an ephemeral loopback TCP server; it
+does not ship. Exact normalized source hashes, runtime patch hashes, baseline and
+current measurements are in `privacy-control-evidence.json`. Ignored detailed
+logs are under `.artifacts/mcw-privacy-control-gui-verify-20261002/.artifacts/privacy-control-verification`.
+
+Still unverified: activation on remote `master`, packaged real-Tor smoke,
+incorporated exact-commit CI, Linux x64/ARM64 and macOS x64/ARM64 execution,
+saturated shared-queue cancellation/EOF and late-begin cleanup under overload.
+Runtime patch execution is verified; the workflow hunk is proposed only.
 
 ## Retained dependencies and earlier checkpoint
 
-Tor, its managed daemon/controller/transport, OpenSSL, Libevent, zlib and the
-bundled Linux C++ runtime remain. The external coordinator intentionally retains
-its managed parser. No shared package or native dependency is marked removed.
-Tor state/files, guards, isolation and SOCKS policy retain their existing owner.
+Tor, the managed daemon/controller/transport, OpenSSL, Libevent, zlib and the
+bundled Linux C++ runtime remain. The external coordinator retains its managed
+parser. No shared package/native dependency is marked removed. Tor state, guards,
+isolation, SOCKS policy and readiness keep their existing owners.
 
-The prior protocol-only checkpoint is
-`5d7d2c06de698ff3f5122b3c9e916c220f934135`; its scope correction handoff is
-`875e929193d11106766603767a939d1985a431cf`. Their 14 tests and native inventory
-remain preserved. They are not a Tor backend, release or authorization to resume
-Tor/circuit/consensus/TLS/curve/storage/UI/CoinJoin rewrites. The small public
-`privacy_service::crypto::hash::keccak_f1600(&mut [u64;25])` API remains unchanged
+The broad protocol-only checkpoint `5d7d2c06de698ff3f5122b3c9e916c220f934135`
+and scope correction `875e929193d11106766603767a939d1985a431cf` remain preserved.
+Their 14 tests/inventory are not a Tor backend or release and do not authorize
+resuming Tor/circuit/consensus/TLS/curve/storage/UI/CoinJoin rewrites. The small
+`privacy_service::crypto::hash::keccak_f1600(&mut [u64;25])` API is unchanged
 for the separately authorized round-hash worker; no second permutation is added.
