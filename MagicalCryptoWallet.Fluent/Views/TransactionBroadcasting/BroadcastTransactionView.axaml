@@ -15,34 +15,10 @@
                      Content="{Binding BroadcastInfo.TransactionId, FallbackValue=ab550cbedcacc9e4d1d6d37b1dc54eee0cax7b70c4e0beeac2d0915353b70ae0}" />
       <Separator />
       <PreviewItem Icon="{StaticResource btc_logo}"
-                     Label="Input amount">
-        <StackPanel>
-          <TextBlock IsVisible="{Binding Path=BroadcastInfo.InputAmount, Converter={x:Static ObjectConverters.IsNull}}"
-                     Text="Unknown" />
-          <AmountControl IsVisible="{Binding Path=BroadcastInfo.InputAmount, Converter={x:Static ObjectConverters.IsNotNull}}"
-                         Classes="WithUsd"
-                         Amount="{Binding BroadcastInfo.InputAmount}"/>
-        </StackPanel>
+                     Label="Total amount"
+                     ToolTip.Tip="Includes change returned to the sender.">
+        <AmountControl Classes="WithUsd" Amount="{Binding BroadcastInfo.TotalAmount}" />
       </PreviewItem>
-      <Separator />
-      <PreviewItem Icon="{StaticResource btc_logo}"
-                     Label="Output amount">
-        <StackPanel>
-          <TextBlock IsVisible="{Binding Path=BroadcastInfo.OutputAmount, Converter={x:Static ObjectConverters.IsNull}}"
-                     Text="Unknown" />
-          <AmountControl IsVisible="{Binding Path=BroadcastInfo.OutputAmount, Converter={x:Static ObjectConverters.IsNotNull}}"
-                         Classes="WithUsd"
-                         Amount="{Binding BroadcastInfo.OutputAmount}"/>
-        </StackPanel>
-      </PreviewItem>
-      <Separator />
-      <PreviewItem Icon="{StaticResource arrow_down_right_circle_regular}"
-                     Label="Input count"
-                     Content="{Binding BroadcastInfo.InputCount, FallbackValue=1}" />
-      <Separator />
-      <PreviewItem Icon="{StaticResource arrow_up_right_circle_regular}"
-                     Label="Output count"
-                     Content="{Binding BroadcastInfo.OutputCount, FallbackValue=1}" />
       <Separator />
       <PreviewItem Icon="{StaticResource paper_cash_regular}"
                    Label="Fee">

@@ -6,8 +6,6 @@ using MagicalCryptoWallet.Blockchain.TransactionBuilding;
 using MagicalCryptoWallet.Fluent.Extensions;
 using MagicalCryptoWallet.Fluent.Helpers;
 using MagicalCryptoWallet.Fluent.Models.Wallets;
-using MagicalCryptoWallet.Fluent.ViewModels.Wallets.Transactions.Inputs;
-using MagicalCryptoWallet.Fluent.ViewModels.Wallets.Transactions.Outputs;
 
 namespace MagicalCryptoWallet.Fluent.ViewModels.Wallets.Send;
 
@@ -28,8 +26,6 @@ public partial class TransactionSummaryViewModel : ViewModelBase
 	[AutoNotify] private FeeRate? _feeRate;
 	[AutoNotify] private double? _amountDiff;
 	[AutoNotify] private double? _feeDiff;
-	[AutoNotify] private InputsCoinListViewModel? _inputList;
-	[AutoNotify] private OutputsCoinListViewModel? _outputList;
 	[AutoNotify] private IReadOnlyList<RecipientSummaryViewModel> _recipients = Array.Empty<RecipientSummaryViewModel>();
 
 	public TransactionSummaryViewModel(UiContext uiContext, TransactionPreviewViewModel parent, IWalletModel wallet, TransactionInfo info, bool isPreview = false) : base(uiContext)
@@ -90,34 +86,9 @@ public partial class TransactionSummaryViewModel : ViewModelBase
 			destinationAmount = _transaction.CalculateDestinationAmount(info.Destination);
 		}
 
-		// Collect all destination scriptPubKeys (single or multiple recipients) so the outputs
-		// list can distinguish actual destinations from change. Previously this was a single Script
-		// matched against the primary destination only, which caused additional recipients' outputs
-		// to be incorrectly labeled as "change".
-		var destinationScripts = info.AllRecipients
-			.Select(r => r.Destination.GetScriptPubKey())
-			.ToHashSet();
-
 		Amount = UiContext.AmountProvider.Create(destinationAmount);
 		Fee = UiContext.AmountProvider.Create(_transaction.Fee);
 		FeeRate = info.FeeRate;
-
-		InputList = new InputsCoinListViewModel(
-			UiContext,
-			transactionResult.Transaction.WalletInputs,
-			_wallet.Network,
-			transactionResult.Transaction.WalletInputs.Count + transactionResult.Transaction.ForeignInputs.Count,
-			Parent.CurrentTransactionSummary.InputList?.TreeDataGridSource.Items.First().IsExpanded,
-			!IsPreview ? null : Parent.CurrentTransactionSummary.InputList?.TreeDataGridSource.Items.First().Children.Count);
-
-		OutputList = new OutputsCoinListViewModel(
-			UiContext,
-			transactionResult.Transaction.WalletOutputs.Select(x => x.TxOut).ToList(),
-			transactionResult.Transaction.ForeignOutputs.Select(x => x.TxOut).ToList(),
-			_wallet.Network,
-			destinationScripts,
-			Parent.CurrentTransactionSummary.OutputList?.TreeDataGridSource.Items.First().IsExpanded,
-			!IsPreview ? null : Parent.CurrentTransactionSummary.OutputList?.TreeDataGridSource.Items.First().Children.Count);
 
 		Recipient = info.Recipient;
 		IsCustomFeeUsed = info.IsCustomFeeUsed;
