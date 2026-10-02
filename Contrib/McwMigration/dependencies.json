@@ -7245,6 +7245,12 @@
       "handoff": "Contrib/McwMigration/Handoffs/bitcoin-block.md"
     },
     {
+      "name": "bitcoin_block_service",
+      "path": "mcw/src/bitcoin_block_service.rs",
+      "status": "implementation present; production caller integration pending",
+      "handoff": null
+    },
+    {
       "name": "bitcoin_encoding",
       "path": "mcw/src/bitcoin_encoding.rs",
       "status": "implementation present; production caller integration pending",
@@ -7333,6 +7339,12 @@
       "path": "mcw/src/script_service/mod.rs",
       "status": "implementation present; production caller integration pending",
       "handoff": "Contrib/McwMigration/Handoffs/bitcoin-script.md"
+    },
+    {
+      "name": "script_text",
+      "path": "mcw/src/script_text.rs",
+      "status": "implementation present; production caller integration pending",
+      "handoff": "Contrib/McwMigration/Handoffs/script-text.md"
     },
     {
       "name": "socks5",
