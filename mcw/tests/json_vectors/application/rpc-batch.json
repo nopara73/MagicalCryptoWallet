@@ -1,0 +1,1 @@
+[{"jsonrpc":"2.0","id":"request-\u0061","method":"getstatus","params":[]},{"jsonrpc":"2.0","id":null,"method":"getbalance","params":["synthetic"]},{"jsonrpc":"2.0","method":"notification","params":{}}]

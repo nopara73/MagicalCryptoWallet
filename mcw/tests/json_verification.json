@@ -1,0 +1,80 @@
+{
+  "scope": "JSON component; no production integration or package removal claim",
+  "rust": "rustc 1.99.0 (b940084d7 2026-09-28)",
+  "source_sha256": {
+    "mcw/src/json.rs": "f87d1f755346749b06d2999ca4ece0db67f1a7bff531d9e0b4012737523034a5",
+    "mcw/src/json/compat.rs": "2b75ebd50ffab4f66b23ec6564618b775eb4e6963337db2ce977c1c1a9c8387b",
+    "mcw/tests/json_conformance.rs": "ae9c355cd6cd80da8eeebdceca3e1f5198ec50d72585fd8727a044817ff3919e",
+    "mcw/tests/json_managed_reference.cs": "8c6a11ca00687bd75ff5dd66aa394ce95cc12d6a1742b42950815d4d5a40de2a",
+    "mcw/tests/json_verify.py": "5f4b9bb113366f6a8b81ca4a79a255fe3182e62f650459fb39cc64ee0a8806e7",
+    "mcw/tests/json_vectors.sha256": "ff63a217f8171760abfa9d2dc4c79aaceddecef6120e8b2f840fbfa698a4c279"
+  },
+  "fixture_files": 333,
+  "rust_tests_passed": 29,
+  "json_testsuite": {
+    "required_accept": 95,
+    "required_reject": 188,
+    "optional_accept": 10,
+    "optional_reject": 25
+  },
+  "exact_decimal_differential_cases": 10055,
+  "managed_reference": {
+    "payloads": 12,
+    "engines": [
+      "Newtonsoft.Json (Decimal/DateParseHandling.None)",
+      "System.Text.Json (comments skip)"
+    ],
+    "newtonsoft_sha256": "a28c251dfe36d881e9e2462e171441b8b0ec156fe3f452602c9149b1b9efe05b",
+    "behaviors": {
+      "runtime": "10.0.12",
+      "newtonsoft_assembly": "13.0.0.0",
+      "default_date_token": "Date",
+      "explicit_date_none_token": "String",
+      "duplicate_count": 1,
+      "duplicate_value": 2,
+      "newtonsoft_single_quotes": true,
+      "newtonsoft_unquoted_keys": true,
+      "newtonsoft_comments": true,
+      "newtonsoft_trailing_comma": true,
+      "managed_comments": true,
+      "managed_trailing_comma": false,
+      "managed_trailing_comma_opt_in": true,
+      "legacy_double_integer": 9007199254740992,
+      "exact_decimal_integer": "9007199254740993"
+    }
+  },
+  "target_metadata": {
+    "x86_64-pc-windows-msvc": "metadata/typecheck passed; native execution only for host test target",
+    "x86_64-unknown-linux-gnu": "not installed; target compile/execution unverified",
+    "aarch64-unknown-linux-gnu": "not installed; target compile/execution unverified",
+    "x86_64-apple-darwin": "not installed; target compile/execution unverified",
+    "aarch64-apple-darwin": "not installed; target compile/execution unverified"
+  },
+  "module_runtime_dependencies": [
+    "Rust standard library"
+  ],
+  "elapsed_seconds": 14.952,
+  "host_dependency_audit": {
+    "scope": "read-only current QR-owner host source snapshot; not JSON integration evidence",
+    "packages": [
+      {
+        "name": "mcw",
+        "version": "0.1.0",
+        "source": null,
+        "dependencies": []
+      }
+    ],
+    "manifest_sha256": "b85dff5d66b164528e31e4fa4a009ac25ed73ea42b7ad3aae05bbf029b66e4c9",
+    "lock_sha256": "f8ffe397a2a9658af984f6488d19076a7de682c37b62d04fdb0eed3029b2d542"
+  },
+  "clippy": "actual JSON source passed clippy::all with -D warnings, edition 2024",
+  "verification_log_sha256": {
+    "managed-build.txt": "de9edd2d038b9279a270b7611fd11b1c7391751da8e77c7e45761bc5d77d6beb",
+    "managed-run.txt": "cec9603a93540a456502ca1f301a956456ee7576bce96742613eba46ac40c273",
+    "metadata-x86_64-pc-windows-msvc.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "number-differential.txt": "94c5c95aca0760e4f563353b82f85a6a4e10949aafb1d384c25566faddecd074",
+    "probe-build.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "rust-build.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "rust-tests.txt": "ac42314fff0c3c11ca4fa57d512a492e75b331f02ca2be6b8289251ac6808c6f"
+  }
+}
