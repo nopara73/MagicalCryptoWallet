@@ -22,7 +22,7 @@ def main():
     commit = git("rev-parse", args.ref).decode().strip()
     paths = git("ls-tree", "-r", "--name-only", commit).decode().splitlines()
     mapped = {
-        "MagicalCryptoWallet/Crypto/OwnershipIdentifier.cs": "HMAC-SHA256 over exact script bytes with 32-byte identification key; full MAC comparison should replace SequenceEqual in integration",
+        "MagicalCryptoWallet/Crypto/OwnershipIdentifier.cs": "Assigned bounded HMAC-SHA256 over exact script bytes with 32-byte identification key; full MAC and existing comparison/state ownership stay intact",
         "MagicalCryptoWallet/Crypto/Slip21Node.cs": "HMAC-SHA512 seed and 0x00-prefixed label bytes; retained Key return/type ownership stays managed",
         "MagicalCryptoWallet/Wallets/ShamirSecretSharing/Slip39.cs": "HMAC-SHA256 share digest truncated to 4 bytes; PBKDF2-HMAC-SHA256 Feistel rounds over step-prefixed UTF-8 passphrase and extension-dependent salt",
         "MagicalCryptoWallet/Tor/Control/TorControlClientFactory.cs": "System HMACSHA256 over SAFECOOKIE transcript; transport/handshake/logging policies remain with their owners",

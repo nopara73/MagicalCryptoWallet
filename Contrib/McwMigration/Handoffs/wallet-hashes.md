@@ -45,17 +45,18 @@ any bounded follow-up from those preserved drafts.
   lengths, salts, keys, or digests. The source forbids unsafe and has no IPC, C#,
   UI, OS handle, crypto DLL, process or file dependency.
 
-Proposed bridge allocation (integrator controls the actual secret policy):
+Assigned bounded bridge allocation (see `wallet-hmac.md`):
 
-| Operation | Proposed ID |
+| Operation | ID |
 |---|---|
-| RIPEMD160 / SHA512 / HASH160 | `0x0A00` / `0x0A01` / `0x0A02` |
-| HMAC-SHA256 / HMAC-SHA512 | `0x0A10` / `0x0A11` |
-| Verify full HMAC-SHA256 / HMAC-SHA512 | `0x0A12` / `0x0A13` |
-| PBKDF2-HMAC-SHA256 / PBKDF2-HMAC-SHA512 | `0x0A20` / `0x0A21` |
+| OwnershipIdentifier HMAC-SHA256 | `0x0A10` |
+| Slip21Node seed HMAC-SHA512 | `0x0A11` |
+| Slip21Node child HMAC-SHA512 | `0x0A12` |
 
-No bridge dispatcher is implemented here. Avoid exposing arbitrary secret-bearing
-operations, CLI arguments, logging, diagnostic payloads or persistent debug buffers.
+The earlier generic operation suggestions are superseded. Other hash/PBKDF2
+operations are not assigned public host routes. The bounded handler is published
+separately; its actual host dispatcher and caller activation remain incorporation
+gates. Avoid secret CLI arguments, logs or persistent diagnostic payloads.
 
 ## Admission and secret handling
 
@@ -122,12 +123,12 @@ shipping executables or shipping-runtime-removal evidence.
 ## Retained caller/package mapping and acceptance work
 
 `wallet_hashes_callers.json` records audited master revision
-`875e929193d11106766603767a939d1985a431cf`, source hashes, eight retained caller
+`a7d07f383ab75a7b7b7fbd9493000b46eb38ad0a`, source hashes, eight retained caller
 files, nine direct hash call sites and six NBitcoin/Secp package references.
 Retained callers include:
 
-- OwnershipIdentifier HMAC-SHA256 over key/script bytes; existing SequenceEqual
-  comparison requires deliberate full-MAC verification migration.
+- OwnershipIdentifier HMAC-SHA256 over key/script bytes; existing full-MAC
+  comparison and state ownership remain intact in the bounded replacement.
 - Slip21Node HMAC-SHA512 over seed and 0x00-prefixed label bytes. Managed Key and
   secret ownership still exist.
 - SLIP39 share HMAC-SHA256 (explicit four-byte truncation) and Feistel
@@ -150,16 +151,15 @@ hash module has zero external Cargo/runtime/library/companion dependencies.
 The smallest candidate integrations are the HMAC-SHA256 computation in
 `OwnershipIdentifier.cs` and the seed/child HMAC-SHA512 computations in
 `Slip21Node.cs`. They preserve existing Key/Script/data ownership and need no curve
-implementation. These are proposed leaves, not a completed production cutover.
-SLIP39 share HMAC is another possible leaf; Feistel PBKDF2 remains separate because
-of the exponent compatibility issue above.
+implementation. These leaves are the assigned bounded scope, not a completed
+production cutover. SLIP39 HMAC/PBKDF2/recovery stays outside the assignment.
 
-Remaining bounded acceptance work: agree precise caller ownership; register the
-actual handler and typed adapter through QR's host incorporation; verify
-secret-bearing request/response lifetimes, disconnect/error behavior and exact
-SLIP19/SLIP21 caller outputs with synthetic inputs; retire only the replaced hash
-calls; and record actual target/runtime evidence. QR's host/service boundary is
-currently unpublished, so an adapter or primitive harness alone does not prove
-production caller replacement. The broader key/recovery engine stays retained.
+Remaining bounded acceptance work: incorporate the exact handler, caller and
+transport lifetime patches through QR's host; bind regular tests to the actual
+host; retire only the three replaced hash calls; and record actual target/runtime
+evidence. The host foundation is published in `989cf2a2df22d23837c1aa328e29abfd33c9b9c8`
+and later repairs, while bounded HMAC incorporation remains pending. Staged actual
+caller/transport evidence is recorded in `wallet-hmac.md`; it does not prove a
+published production cutover. The broader key/recovery engine stays retained.
 NBitcoin and Secp remain dependencies until every relevant caller and packaged
 reference disappears. QR/coordinator control incorporation dispatch.

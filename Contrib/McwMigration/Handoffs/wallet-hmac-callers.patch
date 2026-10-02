@@ -1,0 +1,66 @@
+diff --git a/MagicalCryptoWallet/Crypto/OwnershipIdentifier.cs b/MagicalCryptoWallet/Crypto/OwnershipIdentifier.cs
+index b58eb00d19..651e593771 100644
+--- a/MagicalCryptoWallet/Crypto/OwnershipIdentifier.cs
++++ b/MagicalCryptoWallet/Crypto/OwnershipIdentifier.cs
+@@ -1,6 +1,6 @@
+ using NBitcoin;
+-using NBitcoin.Crypto;
+ using System.Linq;
++using MagicalCryptoWallet.Mcw.Crypto;
+ 
+ namespace MagicalCryptoWallet.Crypto;
+ 
+@@ -10,8 +10,16 @@ public class OwnershipIdentifier : IBitcoinSerializable, IEquatable<OwnershipIde
+ 	private byte[] _bytes;
+ 
+ 	public OwnershipIdentifier(Key identificationKey, Script scriptPubKey)
+-		: this(Hashes.HMACSHA256(identificationKey.ToBytes(), scriptPubKey.ToBytes()))
+ 	{
++		var keyBytes = identificationKey.ToBytes();
++		try
++		{
++			_bytes = WalletHmac.ComputeOwnershipIdentifier(keyBytes, scriptPubKey.ToBytes());
++		}
++		finally
++		{
++			Array.Clear(keyBytes);
++		}
+ 	}
+ 
+ 	public OwnershipIdentifier(byte[] bytes)
+diff --git a/MagicalCryptoWallet/Crypto/Slip21Node.cs b/MagicalCryptoWallet/Crypto/Slip21Node.cs
+index 6dacf64ee6..8c2a7c5b39 100644
+--- a/MagicalCryptoWallet/Crypto/Slip21Node.cs
++++ b/MagicalCryptoWallet/Crypto/Slip21Node.cs
+@@ -1,7 +1,6 @@
+-using System.Linq;
+ using System.Text;
+ using NBitcoin;
+-using static NBitcoin.Crypto.Hashes;
++using MagicalCryptoWallet.Mcw.Crypto;
+ 
+ namespace MagicalCryptoWallet.Crypto;
+ 
+@@ -19,12 +18,18 @@ public class Slip21Node
+ 
+ 	public Key Key => new(_data[KEY_SIZE..]);
+ 
+-	public static Slip21Node FromSeed(byte[] seed) =>
+-		new(HMACSHA512(Encoding.ASCII.GetBytes("Symmetric key seed"), seed));
++	public static Slip21Node FromSeed(byte[] seed)
++	{
++		ArgumentNullException.ThrowIfNull(seed);
++		return new(WalletHmac.DeriveSlip21Seed(seed));
++	}
+ 
+ 	public Slip21Node DeriveChild(string label) =>
+ 		DeriveChild(Encoding.ASCII.GetBytes(label));
+ 
+-	public Slip21Node DeriveChild(byte[] label) =>
+-		new(HMACSHA512(_data[..KEY_SIZE], label.Prepend((byte)0x00).ToArray()));
++	public Slip21Node DeriveChild(byte[] label)
++	{
++		ArgumentNullException.ThrowIfNull(label);
++		return new(WalletHmac.DeriveSlip21Child(_data.AsSpan(0, KEY_SIZE), label));
++	}
+ }

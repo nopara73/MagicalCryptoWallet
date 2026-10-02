@@ -1,8 +1,11 @@
 #![forbid(unsafe_code)]
-use mcw::{
-    bitcoin_encoding::hex_decode,
-    wallet_hash_service::{self as service, Error, MAX_REQUEST_BYTES, Response},
-};
+use mcw::bitcoin_encoding::hex_decode;
+pub use mcw::wallet_hashes;
+// A component checkpoint also compiles before the host owner registers it.
+// Include the exact production source, never a test implementation or fallback.
+#[path = "../src/wallet_hash_service.rs"]
+mod service;
+use service::{Error, MAX_REQUEST_BYTES, Response};
 
 fn bytes(hex: &str) -> Vec<u8> {
     hex_decode(hex).unwrap()

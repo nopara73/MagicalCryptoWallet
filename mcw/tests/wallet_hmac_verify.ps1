@@ -1,4 +1,4 @@
-param([string]$SharedRoot='C:\Users\user\OneDrive\Documents\ChatGPT\MagicalCryptoWallet')
+param([string]$SharedRoot='C:\Users\user\OneDrive\Documents\ChatGPT\MagicalCryptoWallet', [IO.FileStream]$ExistingBuildSlot)
 $ErrorActionPreference='Stop'
 $root=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
 $evidence=Join-Path $root '.artifacts/wallet-hmac-evidence'
@@ -13,9 +13,15 @@ $canonical=[Text.Encoding]::UTF8.GetBytes([IO.File]::ReadAllText($baseline).Repl
 $canonicalHash=[Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($canonical)).ToLowerInvariant()
 if ($canonicalHash -ne '752aec6cb51d2603f9c447f12e4c043425bb31129c5b2a473bd63b78eeeeb4a2') { throw 'Published hash checkpoint source changed; stop incorporation' }
 if ((Get-CimInstance Win32_OperatingSystem).FreePhysicalMemory -lt 2097152) { Write-Output 'BUILD_DEFERRED'; exit 3 }
-$handle=$null
-foreach ($slot in 1,2) {
- try { $handle=[IO.File]::Open((Join-Path $SharedRoot ".artifacts/mcw-coordination/build-slot-$slot.lock"),[IO.FileMode]::OpenOrCreate,[IO.FileAccess]::ReadWrite,[IO.FileShare]::None); break } catch [IO.IOException] {}
+$handle=$ExistingBuildSlot
+$ownsHandle=$null -eq $ExistingBuildSlot
+if ($ExistingBuildSlot) {
+ $validNames=@(1,2 | ForEach-Object {[IO.Path]::GetFullPath((Join-Path $SharedRoot ".artifacts/mcw-coordination/build-slot-$_.lock"))})
+ if (-not $ExistingBuildSlot.CanRead -or -not $ExistingBuildSlot.CanWrite -or $ExistingBuildSlot.Name -notin $validNames) { throw 'Existing build slot is invalid' }
+} else {
+ foreach ($slot in 1,2) {
+  try { $handle=[IO.File]::Open((Join-Path $SharedRoot ".artifacts/mcw-coordination/build-slot-$slot.lock"),[IO.FileMode]::OpenOrCreate,[IO.FileAccess]::ReadWrite,[IO.FileShare]::None); break } catch [IO.IOException] {}
+ }
 }
 if (-not $handle) { Write-Output 'BUILD_SLOTS_BUSY'; exit 3 }
 $oldPath=$env:PATH; $oldLib=$env:LIB; $oldJobs=$env:CARGO_BUILD_JOBS
@@ -24,7 +30,7 @@ try {
  if ($LASTEXITCODE -ne 0 -or $compiler -notlike 'rustc 1.99.0 *') { throw 'Rust 1.99 required' }
  $sources=@('mcw/src/bitcoin_encoding.rs','mcw/src/wallet_hashes.rs','mcw/src/wallet_hash_service.rs')
  $harness="extern crate self as mcw;`n"
- foreach ($pair in @(@('bitcoin_encoding',$sources[0]),@('wallet_hashes',$sources[1]),@('wallet_hash_service',$sources[2]),@('hash_tests','mcw/tests/wallet_hashes_conformance.rs'),@('service_tests','mcw/tests/wallet_hmac_conformance.rs'))) {
+ foreach ($pair in @(@('bitcoin_encoding',$sources[0]),@('wallet_hashes',$sources[1]),@('hash_tests','mcw/tests/wallet_hashes_conformance.rs'),@('service_tests','mcw/tests/wallet_hmac_conformance.rs'))) {
   $harness+='#[path="'+(Join-Path $root $pair[1]).Replace('\','/')+'"] pub mod '+$pair[0]+";`n"
  }
  $harnessPath=Join-Path $evidence 'actual-source-tests.rs'; [IO.File]::WriteAllText($harnessPath,$harness)
@@ -54,4 +60,4 @@ try {
  $result=@{compiler=$compiler;verified_at_utc=[DateTime]::UtcNow.ToString('o');source_hashes=$hashes;published_hash_checkpoint_sha256_lf=$canonicalHash;runs=$runs;independent_cases=$manifest.cases;primary_hash_vectors=569;production_caller_incorporation=$false;note='Ignored actual-source executables only; host/managed caller incorporation verified separately'}
  $result | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $evidence 'verification.json') -Encoding utf8NoBOM
  $result | ConvertTo-Json -Depth 8 -Compress | Write-Output
-} finally { $env:PATH=$oldPath; $env:LIB=$oldLib; $env:CARGO_BUILD_JOBS=$oldJobs; $handle.Dispose() }
+} finally { $env:PATH=$oldPath; $env:LIB=$oldLib; $env:CARGO_BUILD_JOBS=$oldJobs; if ($ownsHandle) { $handle.Dispose() } }

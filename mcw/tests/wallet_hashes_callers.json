@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "audited_commit": "875e929193d11106766603767a939d1985a431cf",
+  "audited_commit": "a7d07f383ab75a7b7b7fbd9493000b46eb38ad0a",
   "retained_callers": [
     {
       "path": "MagicalCryptoWallet/Crypto/OwnershipIdentifier.cs",
-      "role": "HMAC-SHA256 over exact script bytes with 32-byte identification key; full MAC comparison should replace SequenceEqual in integration",
+      "role": "Assigned bounded HMAC-SHA256 over exact script bytes with 32-byte identification key; full MAC and existing comparison/state ownership stay intact",
       "sha256_git_blob": "025973c0c33e1b4409adcff40572fca520c24ced48d6abcb9bda4e16358e67ea",
       "hits": [
         {
@@ -120,15 +120,15 @@
     }
   ],
   "direct_hash_call_sites": [
-    "875e929193d11106766603767a939d1985a431cf:MagicalCryptoWallet.Tests/Helpers/AnalyzedTransaction/AnalyzedTransaction.cs:29:\t\t\treturn new Key(Hashes.DoubleSHA256(Encoders.ASCII.DecodeData(label)).ToBytes());",
-    "875e929193d11106766603767a939d1985a431cf:MagicalCryptoWallet.Tests/Helpers/WabiSabiFactory.cs:46:\t\t\tnew OutPoint(Hashes.DoubleSHA256(key.PubKey.ToBytes().Concat(BitConverter.GetBytes(amount)).ToArray()), 0),",
-    "875e929193d11106766603767a939d1985a431cf:MagicalCryptoWallet/Crypto/OwnershipIdentifier.cs:13:\t\t: this(Hashes.HMACSHA256(identificationKey.ToBytes(), scriptPubKey.ToBytes()))",
-    "875e929193d11106766603767a939d1985a431cf:MagicalCryptoWallet/Crypto/ProofBody.cs:51:\t\tnew(Hashes.SHA256(this.ToBytes().Concat(ProofFooter(scriptPubKey, commitmentData)).ToArray()));",
-    "875e929193d11106766603767a939d1985a431cf:MagicalCryptoWallet/Crypto/Slip21Node.cs:23:\t\tnew(HMACSHA512(Encoding.ASCII.GetBytes(\"Symmetric key seed\"), seed));",
-    "875e929193d11106766603767a939d1985a431cf:MagicalCryptoWallet/Crypto/Slip21Node.cs:29:\t\tnew(HMACSHA512(_data[..KEY_SIZE], label.Prepend((byte)0x00).ToArray()));",
-    "875e929193d11106766603767a939d1985a431cf:MagicalCryptoWallet/Tor/Control/TorControlClientFactory.cs:103:\t\tusing HMACSHA256 hmacSha256 = new(ClientHmacKey);",
-    "875e929193d11106766603767a939d1985a431cf:MagicalCryptoWallet/Wallets/ShamirSecretSharing/Slip39.cs:335:\t\tusing var hmac = new HMACSHA256(random);",
-    "875e929193d11106766603767a939d1985a431cf:MagicalCryptoWallet/Wallets/ShamirSecretSharing/Slip39.cs:441:\t\tvar pbkdf2 =  Rfc2898DeriveBytes.Pbkdf2(key, salt, iters, HashAlgorithmName.SHA256, block.Length);"
+    "a7d07f383ab75a7b7b7fbd9493000b46eb38ad0a:MagicalCryptoWallet.Tests/Helpers/AnalyzedTransaction/AnalyzedTransaction.cs:29:\t\t\treturn new Key(Hashes.DoubleSHA256(Encoders.ASCII.DecodeData(label)).ToBytes());",
+    "a7d07f383ab75a7b7b7fbd9493000b46eb38ad0a:MagicalCryptoWallet.Tests/Helpers/WabiSabiFactory.cs:46:\t\t\tnew OutPoint(Hashes.DoubleSHA256(key.PubKey.ToBytes().Concat(BitConverter.GetBytes(amount)).ToArray()), 0),",
+    "a7d07f383ab75a7b7b7fbd9493000b46eb38ad0a:MagicalCryptoWallet/Crypto/OwnershipIdentifier.cs:13:\t\t: this(Hashes.HMACSHA256(identificationKey.ToBytes(), scriptPubKey.ToBytes()))",
+    "a7d07f383ab75a7b7b7fbd9493000b46eb38ad0a:MagicalCryptoWallet/Crypto/ProofBody.cs:51:\t\tnew(Hashes.SHA256(this.ToBytes().Concat(ProofFooter(scriptPubKey, commitmentData)).ToArray()));",
+    "a7d07f383ab75a7b7b7fbd9493000b46eb38ad0a:MagicalCryptoWallet/Crypto/Slip21Node.cs:23:\t\tnew(HMACSHA512(Encoding.ASCII.GetBytes(\"Symmetric key seed\"), seed));",
+    "a7d07f383ab75a7b7b7fbd9493000b46eb38ad0a:MagicalCryptoWallet/Crypto/Slip21Node.cs:29:\t\tnew(HMACSHA512(_data[..KEY_SIZE], label.Prepend((byte)0x00).ToArray()));",
+    "a7d07f383ab75a7b7b7fbd9493000b46eb38ad0a:MagicalCryptoWallet/Tor/Control/TorControlClientFactory.cs:103:\t\tusing HMACSHA256 hmacSha256 = new(ClientHmacKey);",
+    "a7d07f383ab75a7b7b7fbd9493000b46eb38ad0a:MagicalCryptoWallet/Wallets/ShamirSecretSharing/Slip39.cs:335:\t\tusing var hmac = new HMACSHA256(random);",
+    "a7d07f383ab75a7b7b7fbd9493000b46eb38ad0a:MagicalCryptoWallet/Wallets/ShamirSecretSharing/Slip39.cs:441:\t\tvar pbkdf2 =  Rfc2898DeriveBytes.Pbkdf2(key, salt, iters, HashAlgorithmName.SHA256, block.Length);"
   ],
   "retained_package_references": [
     {

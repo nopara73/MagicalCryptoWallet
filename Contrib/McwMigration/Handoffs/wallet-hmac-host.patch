@@ -1,0 +1,260 @@
+diff --git a/mcw/src/app.rs b/mcw/src/app.rs
+--- a/mcw/src/app.rs
++++ b/mcw/src/app.rs
+@@ -263,6 +263,12 @@
+             frame.reply(Vec::new()).write(output)
+         }
+         bridge::QR => bridge::encode_qr(frame).write(output),
++        operation if crate::wallet_hash_service::handles(operation) => {
++            match crate::wallet_hash_service::execute(operation, &frame.payload) {
++                Ok(response) => frame.reply(response.as_bytes().to_vec()).write(output),
++                Err(error) => frame.error(error.code(), error.message()).write(output),
++            }
++        }
+         bridge::RESTART | bridge::CRASH | bridge::UPDATE => {
+             let args = match bridge::strings(&frame.payload) {
+                 Ok(args) => args,
+diff --git a/mcw/src/bridge.rs b/mcw/src/bridge.rs
+--- a/mcw/src/bridge.rs
++++ b/mcw/src/bridge.rs
+@@ -1,7 +1,11 @@
+ //! The temporary transport adapter. Application services never depend on frames.
+ #![forbid(unsafe_code)]
+ use crate::qr::{self, Ecc};
+-use std::io::{self, Read, Write};
++use std::{
++    fmt,
++    hint::black_box,
++    io::{self, Read, Write},
++};
+ 
+ pub const VERSION: u16 = 1;
+ pub const MAX_FRAME: usize = 1_048_576;
+@@ -17,12 +21,30 @@
+ pub const UPDATE: u16 = 4;
+ pub const CRASH: u16 = 5;
+ 
+-#[derive(Clone, Debug, PartialEq, Eq)]
++#[derive(Clone, PartialEq, Eq)]
+ pub struct Frame {
+     pub kind: u8,
+     pub id: u64,
+     pub operation: u16,
+     pub payload: Vec<u8>,
++}
++impl fmt::Debug for Frame {
++    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
++        f.write_str("BridgeFrame([REDACTED])")
++    }
++}
++impl Drop for Frame {
++    fn drop(&mut self) {
++        self.payload.fill(0);
++        black_box(&mut self.payload);
++    }
++}
++struct ReadBuffer(Vec<u8>);
++impl Drop for ReadBuffer {
++    fn drop(&mut self) {
++        self.0.fill(0);
++        black_box(&mut self.0);
++    }
+ }
+ impl Frame {
+     pub fn read(reader: &mut impl Read) -> io::Result<Option<Self>> {
+@@ -37,8 +59,9 @@
+         if !(HEADER..=MAX_FRAME).contains(&length) {
+             return Err(invalid("invalid bridge frame length"));
+         }
+-        let mut bytes = vec![0; length];
+-        reader.read_exact(&mut bytes)?;
++        let mut scratch = ReadBuffer(vec![0; length]);
++        reader.read_exact(&mut scratch.0)?;
++        let bytes = &scratch.0;
+         if u16::from_le_bytes([bytes[0], bytes[1]]) != VERSION {
+             return Err(invalid("bridge protocol version mismatch"));
+         }
+diff --git a/MagicalCryptoWallet.Client/Application/ManagedApplicationHost.cs b/MagicalCryptoWallet.Client/Application/ManagedApplicationHost.cs
+--- a/MagicalCryptoWallet.Client/Application/ManagedApplicationHost.cs
++++ b/MagicalCryptoWallet.Client/Application/ManagedApplicationHost.cs
+@@ -149,27 +149,41 @@
+ 
+     private async Task<byte[]> RequestAsync(ushort operation, byte[] payload, CancellationToken cancellationToken)
+     {
+-        cancellationToken.ThrowIfCancellationRequested();
+-        _stop.Token.ThrowIfCancellationRequested();
+-        if (!_requestSlots.Wait(0, cancellationToken)) { throw new IOException("Too many outstanding application requests."); }
+-        var id = (ulong)Interlocked.Increment(ref _nextId);
+-        var source = new TaskCompletionSource<byte[]>(TaskCreationOptions.RunContinuationsAsynchronously);
+-        if (!_pending.TryAdd(id, new Pending(operation, source)))
+-        { _requestSlots.Release(); throw new IOException("Duplicate application request."); }
+         try
+         {
+-            await WriteAsync(3, id, operation, payload, cancellationToken).ConfigureAwait(false);
+-            return await source.Task.WaitAsync(TimeSpan.FromSeconds(30), cancellationToken).ConfigureAwait(false);
+-        }
+-        finally
+-        {
+-            if (_pending.TryRemove(id, out _) && (operation == QrOperation || operation >= 0x0100) && !_stop.IsCancellationRequested)
+-            {
+-                // The caller stops waiting immediately; the reader still drains late replies.
+-                _ = CancelAsync(id, operation);
+-            }
+-            _requestSlots.Release();
+-        }
++            cancellationToken.ThrowIfCancellationRequested();
++            _stop.Token.ThrowIfCancellationRequested();
++            if (!_requestSlots.Wait(0, cancellationToken)) { throw new IOException("Too many outstanding application requests."); }
++            var id = (ulong)Interlocked.Increment(ref _nextId);
++            var source = new TaskCompletionSource<byte[]>(TaskCreationOptions.RunContinuationsAsynchronously);
++            if (!_pending.TryAdd(id, new Pending(operation, source)))
++            { _requestSlots.Release(); throw new IOException("Duplicate application request."); }
++            try
++            {
++                await WriteAsync(3, id, operation, payload, cancellationToken).ConfigureAwait(false);
++                return await source.Task.WaitAsync(TimeSpan.FromSeconds(30), cancellationToken).ConfigureAwait(false);
++            }
++            catch
++            {
++                // The reader may have removed the pending entry just before cancellation.
++                // Clear that orphaned result whenever it arrives, including this race.
++                _ = source.Task.ContinueWith(completed =>
++                {
++                    if (completed.IsCompletedSuccessfully) { Array.Clear(completed.Result); }
++                }, CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
++                throw;
++            }
++            finally
++            {
++                if (_pending.TryRemove(id, out _) && (operation == QrOperation || operation >= 0x0100) && !_stop.IsCancellationRequested)
++                {
++                    // The caller stops waiting immediately; the reader still drains late replies.
++                    _ = CancelAsync(id, operation);
++                }
++                _requestSlots.Release();
++            }
++        }
++        finally { Array.Clear(payload); }
+     }
+ 
+     private async Task CancelAsync(ulong id, ushort operation)
+@@ -188,15 +202,19 @@
+         BinaryPrimitives.WriteUInt64LittleEndian(bytes.AsSpan(8), id);
+         BinaryPrimitives.WriteUInt16LittleEndian(bytes.AsSpan(16), operation);
+         payload.CopyTo(bytes, 20);
+-        await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+         try
+         {
+-            // Cancellation must not leave a partial frame in the persistent stream.
+-            await _output.WriteAsync(bytes, _stop.Token).ConfigureAwait(false);
+-            await _output.FlushAsync(_stop.Token).ConfigureAwait(false);
+-        }
+-        catch (Exception error) { Fail(error); throw; }
+-        finally { _writeLock.Release(); }
++            await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
++            try
++            {
++                // Cancellation must not leave a partial frame in the persistent stream.
++                await _output.WriteAsync(bytes, _stop.Token).ConfigureAwait(false);
++                await _output.FlushAsync(_stop.Token).ConfigureAwait(false);
++            }
++            catch (Exception error) { Fail(error); throw; }
++            finally { _writeLock.Release(); }
++        }
++        finally { Array.Clear(bytes); }
+     }
+ 
+     private async Task ReadLoopAsync()
+@@ -210,45 +228,57 @@
+                 var length = BinaryPrimitives.ReadInt32LittleEndian(prefix);
+                 if (length is < HeaderSize or > MaxFrame) { throw new IOException("Invalid application frame length."); }
+                 var frame = new byte[length];
+-                await _input.ReadExactlyAsync(frame, _stop.Token).ConfigureAwait(false);
+-                if (BinaryPrimitives.ReadUInt16LittleEndian(frame) != 1 || frame[3] != 0 || frame[14] != 0 || frame[15] != 0)
++                byte[]? payload = null;
++                var transferred = false;
++                try
+                 {
+-                    throw new IOException("Application protocol mismatch.");
++                    await _input.ReadExactlyAsync(frame, _stop.Token).ConfigureAwait(false);
++                    if (BinaryPrimitives.ReadUInt16LittleEndian(frame) != 1 || frame[3] != 0 || frame[14] != 0 || frame[15] != 0)
++                    {
++                        throw new IOException("Application protocol mismatch.");
++                    }
++                    var kind = frame[2];
++                    var id = BinaryPrimitives.ReadUInt64LittleEndian(frame.AsSpan(4));
++                    var operation = BinaryPrimitives.ReadUInt16LittleEndian(frame.AsSpan(12));
++                    payload = frame[HeaderSize..];
++                    if (kind == 2 && id == 0 && operation == 0 && !_handshake.Task.IsCompleted)
++                    {
++                        transferred = _handshake.TrySetResult(payload);
++                    }
++                    else if (kind == 3 && id == 0 && operation == ShutdownOperation && payload.Length == 0)
++                    {
++                        Fail(new IOException("The application host requested shutdown."));
++                        return;
++                    }
++                    else if (kind is 2 or 4 && id != 0)
++                    {
++                        IOException? serviceError = null;
++                        if (kind == 4)
++                        {
++                            if (payload.Length < 2) { throw new IOException("Invalid application error."); }
++                            var code = BinaryPrimitives.ReadUInt16LittleEndian(payload);
++                            if (code == 0) { throw new IOException("Invalid application error code."); }
++                            // Validate before removing the pending request, so malformed UTF-8
++                            // also fails that caller immediately through the disconnect path.
++                            try { _ = Utf8.GetCharCount(payload, 2, payload.Length - 2); }
++                            catch (DecoderFallbackException) { throw new IOException("Invalid application error encoding."); }
++                            serviceError = new IOException($"mcw service error {code}.");
++                        }
++                        if (_pending.TryRemove(id, out var pending))
++                        {
++                            if (operation != pending.Operation) { pending.Completion.TrySetException(new IOException("Application operation mismatch.")); throw new IOException("Application operation mismatch."); }
++                            if (kind == 2) { transferred = pending.Completion.TrySetResult(payload); }
++                            else { pending.Completion.TrySetException(serviceError!); }
++                        }
++                        // A canceled caller has released this ID; its response is drained.
++                    }
++                    else { throw new IOException("Unexpected application message."); }
+                 }
+-                var kind = frame[2];
+-                var id = BinaryPrimitives.ReadUInt64LittleEndian(frame.AsSpan(4));
+-                var operation = BinaryPrimitives.ReadUInt16LittleEndian(frame.AsSpan(12));
+-                var payload = frame[HeaderSize..];
+-                if (kind == 2 && id == 0 && operation == 0 && !_handshake.Task.IsCompleted)
++                finally
+                 {
+-                    _handshake.TrySetResult(payload);
++                    Array.Clear(frame);
++                    if (!transferred && payload is not null) { Array.Clear(payload); }
+                 }
+-                else if (kind == 3 && id == 0 && operation == ShutdownOperation && payload.Length == 0)
+-                {
+-                    Fail(new IOException("The application host requested shutdown."));
+-                    return;
+-                }
+-                else if (kind is 2 or 4 && id != 0)
+-                {
+-                    IOException? serviceError = null;
+-                    if (kind == 4)
+-                    {
+-                        if (payload.Length < 2) { throw new IOException("Invalid application error."); }
+-                        var code = BinaryPrimitives.ReadUInt16LittleEndian(payload);
+-                        if (code == 0) { throw new IOException("Invalid application error code."); }
+-                        // Validate before removing the pending request, so malformed UTF-8
+-                        // also fails that caller immediately through the disconnect path.
+-                        serviceError = new IOException($"mcw service error {code}: {Utf8.GetString(payload, 2, payload.Length - 2)}");
+-                    }
+-                    if (_pending.TryRemove(id, out var pending))
+-                    {
+-                        if (operation != pending.Operation) { pending.Completion.TrySetException(new IOException("Application operation mismatch.")); throw new IOException("Application operation mismatch."); }
+-                        if (kind == 2) { pending.Completion.TrySetResult(payload); }
+-                        else { pending.Completion.TrySetException(serviceError!); }
+-                    }
+-                    // A canceled caller has released this ID; its response is drained.
+-                }
+-                else { throw new IOException("Unexpected application message."); }
+             }
+         }
+         catch (Exception error) { if (!_disposed) { Fail(error); } }
