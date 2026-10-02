@@ -90,6 +90,12 @@ Counts and lengths use checked arithmetic and are tested before allocating from 
 
 ## Reserved bridge proposal
 
+The following historical codec-only proposal was never incorporated. The current
+bounded live metadata assignment supersedes these proposed meanings; the exact
+`0x0600-0x0606` typed operations and session transfer are documented in
+[psbt-metadata.md](psbt-metadata.md). It preserves the existing 1 MiB bridge
+ceiling and retains the managed builder and signer.
+
 The reserved range is `0x0600-0x06FF`. This worker implements no bridge or shipping executable. Suggested operations for the host owner:
 
 | Operation | Responsibility |
