@@ -1,0 +1,3 @@
+# Reference content digests must survive Windows checkouts unchanged.
+reference.tsv text eol=lf
+manifest.json text eol=lf
