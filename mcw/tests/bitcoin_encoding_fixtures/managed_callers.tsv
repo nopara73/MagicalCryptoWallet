@@ -1,0 +1,675 @@
+# snapshot_revision=82127991068522210cdcf77080dc9b819502e486
+# category	path	line	source
+package	Contrib/Releases/Publisher/MagicalCryptoWallet.ReleaseTools.csproj	9	<PackageReference Include="NBitcoin" />
+direct_nbitcoin	Contrib/Releases/Publisher/Program.cs	3	using NBitcoin;
+direct_nbitcoin	Contrib/Releases/Publisher/Program.cs	4	using NBitcoin.Crypto;
+package_lock	Contrib/Releases/Publisher/packages.lock.json	5	"NBitcoin": {
+package_lock	Contrib/Releases/Publisher/packages.lock.json	23	"NBitcoin.Secp256k1": "3.1.6",
+package_lock	Contrib/Releases/Publisher/packages.lock.json	55	"NBitcoin.Secp256k1": {
+direct_nbitcoin	Contrib/Tests/RegTestRpcProviders.cs	7	using NBitcoin;
+direct_nbitcoin	Contrib/Tests/RegTestRpcProviders.cs	8	using NBitcoin.RPC;
+direct_nbitcoin	Contrib/Utils/GenerateCheckpoint.cs	2	#:package NBitcoin
+direct_nbitcoin	Contrib/Utils/GenerateCheckpoint.cs	10	using NBitcoin;
+direct_nbitcoin	Contrib/Utils/GenerateCheckpoint.cs	11	using NBitcoin.Protocol;
+direct_nbitcoin	Contrib/Utils/GenerateCheckpoint.cs	12	using NBitcoin.Protocol.Behaviors;
+direct_nbitcoin	Contrib/VisualPreview/AutomaticCoinSelectionChecks.cs	13	using NBitcoin;
+direct_nbitcoin	Contrib/VisualPreview/BitcoinP2pChecks.cs	12	using NBitcoin;
+direct_nbitcoin	Contrib/VisualPreview/BitcoinP2pChecks.cs	13	using NBitcoin.Protocol;
+direct_nbitcoin	Contrib/VisualPreview/FeeDisplayChecks.cs	12	using NBitcoin;
+address_codec	Contrib/VisualPreview/FeeDisplayChecks.cs	105	SetBackingField(regular, nameof(regular.DestinationAddresses), Array.Empty<BitcoinAddress>());
+direct_nbitcoin	Contrib/VisualPreview/HistoryDateChecks.cs	15	using NBitcoin;
+address_codec	Contrib/VisualPreview/HistoryDateChecks.cs	145	SetBackingField(details, nameof(details.DestinationAddresses), Array.Empty<BitcoinAddress>());
+direct_nbitcoin	Contrib/VisualPreview/RecoveryWordsChecks.cs	13	using NBitcoin;
+direct_nbitcoin	Contrib/VisualPreview/SoftwareWalletChecks.cs	13	using NBitcoin;
+package_lock	Contrib/VisualPreview/packages.lock.json	487	"NBitcoin": "[10.0.13, )",
+package_lock	Contrib/VisualPreview/packages.lock.json	521	"NBitcoin.Secp256k1": "[3.1.6, )"
+package_lock	Contrib/VisualPreview/packages.lock.json	665	"NBitcoin": {
+package_lock	Contrib/VisualPreview/packages.lock.json	675	"NBitcoin.Secp256k1": {
+package_lock	Contrib/VisualPreview/packages.lock.json	695	"NBitcoin.Secp256k1": "3.1.6",
+package	Directory.Packages.props	31	<PackageVersion Include="NBitcoin.Secp256k1" Version="3.1.6" />
+package	Directory.Packages.props	32	<PackageVersion Include="NBitcoin" Version="10.0.13" />
+direct_nbitcoin	MagicalCryptoWallet.Backend/Config/Config.cs	3	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Backend/Startup.cs	7	using NBitcoin.RPC;
+direct_nbitcoin	MagicalCryptoWallet.Backend/Startup.cs	15	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Backend/StartupTask.cs	2	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Client/Bootstrap.cs	8	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Client/Bootstrap.cs	9	using NBitcoin.JsonConverters;
+address_codec	MagicalCryptoWallet.Client/Bootstrap.cs	58	RegisterNativeFunction<Script>("script->address", s => s.GetDestinationAddress(global.Network)!);
+address_codec	MagicalCryptoWallet.Client/Bootstrap.cs	250	new BitcoinAddressJsonConverter(),
+address_codec	MagicalCryptoWallet.Client/Bootstrap.cs	273	BitcoinAddress addr => addr,
+direct_nbitcoin	MagicalCryptoWallet.Client/Configuration/Config.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Client/Configuration/PersistentConfig.cs	3	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Client/Configuration/PersistentConfigManager.cs	4	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Client/Configuration/Serialization.cs	8	using Network = NBitcoin.Network;
+direct_nbitcoin	MagicalCryptoWallet.Client/DesktopActivation.cs	8	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Client/Global.cs	11	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Client/Global.cs	12	using NBitcoin.Protocol;
+direct_nbitcoin	MagicalCryptoWallet.Client/MagicalCryptoWalletApplication.cs	5	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Client/MagicalCryptoWalletLibGenerator.cs	4	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Client/Rpc/MagicalCryptoWalletJsonRpcService.cs	8	using NBitcoin;
+address_codec	MagicalCryptoWallet.Client/Rpc/MagicalCryptoWalletJsonRpcService.cs	276	public string PayInCoinJoin(BitcoinAddress address, Money amount, string? password = null)
+address_codec	MagicalCryptoWallet.Client/Rpc/MagicalCryptoWalletJsonRpcService.cs	345	if (x.Destination.ScriptPubKey.GetDestinationAddress(activeWallet.Network) is { } address)
+direct_nbitcoin	MagicalCryptoWallet.Client/StartupLaunch.cs	5	using NBitcoin;
+package_lock	MagicalCryptoWallet.Client/packages.lock.json	208	"NBitcoin": "[10.0.13, )",
+package_lock	MagicalCryptoWallet.Client/packages.lock.json	216	"NBitcoin.Secp256k1": "[3.1.6, )"
+package_lock	MagicalCryptoWallet.Client/packages.lock.json	281	"NBitcoin": {
+package_lock	MagicalCryptoWallet.Client/packages.lock.json	291	"NBitcoin.Secp256k1": {
+package_lock	MagicalCryptoWallet.Client/packages.lock.json	311	"NBitcoin.Secp256k1": "3.1.6",
+direct_nbitcoin	MagicalCryptoWallet.Coordinator/Controllers/WabiSabiController.cs	5	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Coordinator/Startup.cs	13	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Coordinator/Startup.cs	14	using NBitcoin.RPC;
+direct_nbitcoin	MagicalCryptoWallet.Coordinator/StartupTask.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Coordinator/StartupTask.cs	2	using NBitcoin.RPC;
+address_codec	MagicalCryptoWallet.Coordinator/StartupTask.cs	69	BitcoinAddress address = key.GetAddress(ScriptPubKeyType.Segwit, Network.RegTest);
+direct_nbitcoin	MagicalCryptoWallet.Coordinator/WabiSabi/Arena.Partial.cs	4	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Coordinator/WabiSabi/Arena.cs	8	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Coordinator/WabiSabi/Arena.cs	9	using NBitcoin.RPC;
+package_lock	MagicalCryptoWallet.Coordinator/packages.lock.json	67	"NBitcoin": "[10.0.13, )",
+package_lock	MagicalCryptoWallet.Coordinator/packages.lock.json	75	"NBitcoin.Secp256k1": "[3.1.6, )"
+package_lock	MagicalCryptoWallet.Coordinator/packages.lock.json	95	"NBitcoin": {
+package_lock	MagicalCryptoWallet.Coordinator/packages.lock.json	104	"NBitcoin.Secp256k1": {
+package_lock	MagicalCryptoWallet.Coordinator/packages.lock.json	124	"NBitcoin.Secp256k1": "3.1.6",
+direct_nbitcoin	MagicalCryptoWallet.Daemon/Program.cs	32	// Source of this exception is NBitcoin library.
+direct_nbitcoin	MagicalCryptoWallet.Daemon/Program.cs	34	// Until https://github.com/MetacoSA/NBitcoin/pull/1089 is resolved.
+package_lock	MagicalCryptoWallet.Daemon/packages.lock.json	189	"NBitcoin": "[10.0.13, )",
+package_lock	MagicalCryptoWallet.Daemon/packages.lock.json	205	"NBitcoin.Secp256k1": "[3.1.6, )"
+package_lock	MagicalCryptoWallet.Daemon/packages.lock.json	283	"NBitcoin": {
+package_lock	MagicalCryptoWallet.Daemon/packages.lock.json	293	"NBitcoin.Secp256k1": {
+package_lock	MagicalCryptoWallet.Daemon/packages.lock.json	313	"NBitcoin.Secp256k1": "3.1.6",
+direct_nbitcoin	MagicalCryptoWallet.Fluent.Desktop/Program.cs	145	// Source of this exception is NBitcoin library.
+direct_nbitcoin	MagicalCryptoWallet.Fluent.Desktop/Program.cs	147	// Until https://github.com/MetacoSA/NBitcoin/pull/1089 is resolved.
+package_lock	MagicalCryptoWallet.Fluent.Desktop/packages.lock.json	548	"NBitcoin": "[10.0.13, )",
+package_lock	MagicalCryptoWallet.Fluent.Desktop/packages.lock.json	582	"NBitcoin.Secp256k1": "[3.1.6, )"
+package_lock	MagicalCryptoWallet.Fluent.Desktop/packages.lock.json	726	"NBitcoin": {
+package_lock	MagicalCryptoWallet.Fluent.Desktop/packages.lock.json	736	"NBitcoin.Secp256k1": {
+package_lock	MagicalCryptoWallet.Fluent.Desktop/packages.lock.json	756	"NBitcoin.Secp256k1": "3.1.6",
+direct_nbitcoin	MagicalCryptoWallet.Fluent/App.axaml.cs	11	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/Behaviors/HistoryItemTypeClassBehavior.cs	6	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/Controls/AmountControl.axaml.cs	3	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/Controls/CurrencyEntryBox.axaml.cs	10	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/Controls/DualCurrencyEntryBox.axaml.cs	13	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/Converters/MoneyConverters.cs	3	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/Converters/PreferredScriptPubKeyTypeConverter.cs	2	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/Extensions/CurrencyExtensions.cs	3	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/Helpers/NotificationHelpers.cs	7	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/Helpers/TextHelpers.cs	5	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/Helpers/TransactionFeeHelper.cs	4	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/Helpers/TransactionHelpers.cs	5	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/IServices.cs	5	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/Infrastructure/ClipboardObserver.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/Models/DataLegend.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/Models/Pocket.cs	2	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/Models/TransactionBroadcasterModel.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/Models/Transactions/PrivacySuggestion.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/Models/Transactions/PrivacySuggestionsModel.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/Models/Transactions/RecipientInfo.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/Models/Transactions/SendFlowModel.cs	2	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/Models/UI/ApplicationSettings.cs	4	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/Models/WalletBackup.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/Models/WalletCreationOptions.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/Models/Wallets/Address.cs	1	using NBitcoin;
+address_codec	MagicalCryptoWallet.Fluent/Models/Wallets/Address.cs	18	BitcoinAddress = HdPubKey.GetAddress(Network);
+address_codec	MagicalCryptoWallet.Fluent/Models/Wallets/Address.cs	25	public BitcoinAddress BitcoinAddress { get; }
+address_codec	MagicalCryptoWallet.Fluent/Models/Wallets/Address.cs	29	public string Text => BitcoinAddress.ToString();
+address_codec	MagicalCryptoWallet.Fluent/Models/Wallets/Address.cs	30	public string ShortenedText => ShortenAddress(BitcoinAddress.ToString());
+address_codec	MagicalCryptoWallet.Fluent/Models/Wallets/Address.cs	31	public ScriptType ScriptType => ScriptType.FromEnum(BitcoinAddress.ScriptPubKey.GetScriptType());
+direct_nbitcoin	MagicalCryptoWallet.Fluent/Models/Wallets/AddressesModel.cs	6	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/Models/Wallets/Amount.cs	3	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/Models/Wallets/AmountProvider.cs	2	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/Models/Wallets/CoinModel.cs	3	using NBitcoin;
+address_codec	MagicalCryptoWallet.Fluent/Models/Wallets/CoinModel.cs	31	BtcAddress = coin.ScriptPubKey.GetDestinationAddress(network)?.ToString();
+direct_nbitcoin	MagicalCryptoWallet.Fluent/Models/Wallets/RegularTransactionModel.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/Models/Wallets/ScriptType.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/Models/Wallets/ScriptType.cs	36	public static ScriptType FromEnum(NBitcoin.ScriptType type)
+direct_nbitcoin	MagicalCryptoWallet.Fluent/Models/Wallets/ScriptType.cs	40	NBitcoin.ScriptType.Witness => Unknown,
+direct_nbitcoin	MagicalCryptoWallet.Fluent/Models/Wallets/ScriptType.cs	41	NBitcoin.ScriptType.P2PKH => Unknown,
+direct_nbitcoin	MagicalCryptoWallet.Fluent/Models/Wallets/ScriptType.cs	42	NBitcoin.ScriptType.P2SH => Unknown,
+direct_nbitcoin	MagicalCryptoWallet.Fluent/Models/Wallets/ScriptType.cs	43	NBitcoin.ScriptType.P2PK => Unknown,
+direct_nbitcoin	MagicalCryptoWallet.Fluent/Models/Wallets/ScriptType.cs	44	NBitcoin.ScriptType.MultiSig => Unknown,
+direct_nbitcoin	MagicalCryptoWallet.Fluent/Models/Wallets/ScriptType.cs	45	NBitcoin.ScriptType.P2WSH => SegWit,
+direct_nbitcoin	MagicalCryptoWallet.Fluent/Models/Wallets/ScriptType.cs	46	NBitcoin.ScriptType.P2WPKH => SegWit,
+direct_nbitcoin	MagicalCryptoWallet.Fluent/Models/Wallets/ScriptType.cs	47	NBitcoin.ScriptType.Taproot => Taproot,
+direct_nbitcoin	MagicalCryptoWallet.Fluent/Models/Wallets/SingleTransactionModel.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/Models/Wallets/TransactionModel.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/Models/Wallets/TransactionTreeBuilder.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/Models/Wallets/WalletInfoModel.cs	1	using NBitcoin.WalletPolicies;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/Models/Wallets/WalletModel.cs	7	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/Models/Wallets/WalletModelExtensions.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/Models/Wallets/WalletSettingsModel.cs	3	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/Models/Wallets/WalletSetupService.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/Models/Wallets/WalletTransactionsModel.cs	10	using NBitcoin;
+address_codec	MagicalCryptoWallet.Fluent/Models/Wallets/WalletTransactionsModel.cs	150	public IEnumerable<BitcoinAddress> GetDestinationAddresses(uint256 id)
+address_codec	MagicalCryptoWallet.Fluent/Models/Wallets/WalletTransactionsModel.cs	160	return GetDestinationAddresses(inputs, outputs);
+address_codec	MagicalCryptoWallet.Fluent/Models/Wallets/WalletTransactionsModel.cs	163	private IEnumerable<BitcoinAddress> GetDestinationAddresses(ICollection<IInput> inputs, ICollection<Output> outputs)
+direct_nbitcoin	MagicalCryptoWallet.Fluent/Services.cs	6	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/ViewModels/AddWallet/Create/ConfirmMultiShareViewModel.cs	338	IsSkipEnabled = UiContext.Services.GetNetwork() != NBitcoin.Network.Main || System.Diagnostics.Debugger.IsAttached;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/ViewModels/AddWallet/Create/ConfirmRecoveryWordsViewModel.cs	228	IsSkipEnabled = UiContext.Services.GetNetwork() != NBitcoin.Network.Main || System.Diagnostics.Debugger.IsAttached;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/ViewModels/AddWallet/Create/RecoveryWordsViewModel.cs	3	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/ViewModels/AddWallet/RecoverWalletViewModel.cs	8	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/ViewModels/Dialogs/ShowQrCameraDialogViewModel.cs	3	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/ViewModels/MainViewModel.cs	6	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/ViewModels/Navigation/FluentNavigate.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/ViewModels/SearchBar/Sources/TransactionsSearchSource.cs	8	using NBitcoin;
+address_codec	MagicalCryptoWallet.Fluent/ViewModels/SearchBar/Sources/TransactionsSearchSource.cs	110	.Where(tuple => TryParseBitcoinAddress(tuple.Item1.WalletModel.Network, queryStr, out var address) ?
+address_codec	MagicalCryptoWallet.Fluent/ViewModels/SearchBar/Sources/TransactionsSearchSource.cs	115	private static bool ContainsDestinationAddress(WalletViewModel walletViewModel, HistoryItemViewModelBase historyItem, BitcoinAddress address)
+address_codec	MagicalCryptoWallet.Fluent/ViewModels/SearchBar/Sources/TransactionsSearchSource.cs	118	return walletViewModel.WalletModel.Transactions.GetDestinationAddresses(txid).Contains(address);
+address_codec	MagicalCryptoWallet.Fluent/ViewModels/SearchBar/Sources/TransactionsSearchSource.cs	121	private bool TryParseBitcoinAddress(Network network, string queryStr, [NotNullWhen(true)] out BitcoinAddress? address)
+address_codec	MagicalCryptoWallet.Fluent/ViewModels/SearchBar/Sources/TransactionsSearchSource.cs	126	address = BitcoinAddress.Create(queryStr, network);
+direct_nbitcoin	MagicalCryptoWallet.Fluent/ViewModels/Settings/BitcoinTabSettingsViewModel.cs	2	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/ViewModels/Settings/ConnectionsSettingsTabViewModel.cs	3	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/ViewModels/Wallets/CoinJoinPayment/AddCoinJoinPaymentViewModel.cs	6	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/ViewModels/Wallets/CoinJoinPayment/CoinJoinPaymentViewModel.cs	1	using NBitcoin;
+address_codec	MagicalCryptoWallet.Fluent/ViewModels/Wallets/CoinJoinPayment/CoinJoinPaymentViewModel.cs	26	public string Address => _payment.Destination.ScriptPubKey.GetDestinationAddress(_network)?.ToString() ?? "Unknown";
+direct_nbitcoin	MagicalCryptoWallet.Fluent/ViewModels/Wallets/Coinjoins/CoinjoinCostsViewModel.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/ViewModels/Wallets/Coins/CoinListItem.cs	5	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/ViewModels/Wallets/Home/History/Details/CoinJoinDetailsViewModel.cs	4	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/ViewModels/Wallets/Home/History/Details/CoinJoinsDetailsViewModel.cs	6	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/ViewModels/Wallets/Home/History/Details/TransactionDetailsViewModel.cs	6	using NBitcoin;
+address_codec	MagicalCryptoWallet.Fluent/ViewModels/Wallets/Home/History/Details/TransactionDetailsViewModel.cs	36	DestinationAddresses = wallet.Transactions.GetDestinationAddresses(model.Id).ToArray();
+address_codec	MagicalCryptoWallet.Fluent/ViewModels/Wallets/Home/History/Details/TransactionDetailsViewModel.cs	44	public BitcoinAddress? SingleAddress { get; set; }
+address_codec	MagicalCryptoWallet.Fluent/ViewModels/Wallets/Home/History/Details/TransactionDetailsViewModel.cs	50	public ICollection<BitcoinAddress> DestinationAddresses { get; }
+direct_nbitcoin	MagicalCryptoWallet.Fluent/ViewModels/Wallets/Home/History/HistoryViewModel.cs	10	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/ViewModels/Wallets/Home/Tiles/PrivacyControlTileViewModel.cs	8	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/ViewModels/Wallets/Home/Tiles/PrivacyRing/PrivacyBarViewModel.cs	2	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/ViewModels/Wallets/Home/Tiles/PrivacyRing/PrivacyRingItemViewModel.cs	3	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/ViewModels/Wallets/Home/Tiles/PrivacyRing/PrivacyRingViewModel.cs	2	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/ViewModels/Wallets/IWalletViewModel.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/ViewModels/Wallets/Send/RecipientRowViewModel.cs	6	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/ViewModels/Wallets/Send/SendViewModel.cs	10	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/ViewModels/Wallets/Send/TransactionInfo.cs	4	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/ViewModels/Wallets/Send/TransactionPreviewViewModel.cs	10	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/ViewModels/Wallets/Send/TransactionPreviewViewModel.cs	11	using NBitcoin.Policy;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/ViewModels/Wallets/Send/TransactionSummaryViewModel.cs	3	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/ViewModels/Wallets/Settings/WalletCoinJoinSettingsViewModel.cs	4	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/ViewModels/Wallets/Settings/WalletSettingsViewModel.cs	6	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/ViewModels/Wallets/Settings/WalletVerifyRecoveryWordsViewModel.cs	7	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/ViewModels/Wallets/WalletViewModel.cs	10	using NBitcoin;
+package_lock	MagicalCryptoWallet.Fluent/packages.lock.json	602	"NBitcoin": "[10.0.13, )",
+package_lock	MagicalCryptoWallet.Fluent/packages.lock.json	618	"NBitcoin.Secp256k1": "[3.1.6, )"
+package_lock	MagicalCryptoWallet.Fluent/packages.lock.json	696	"NBitcoin": {
+package_lock	MagicalCryptoWallet.Fluent/packages.lock.json	706	"NBitcoin.Secp256k1": {
+package_lock	MagicalCryptoWallet.Fluent/packages.lock.json	726	"NBitcoin.Secp256k1": "3.1.6",
+direct_nbitcoin	MagicalCryptoWallet.IntegrationTests/BitcoinCore/Configuration/CoreConfigTranslator.cs	2	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.IntegrationTests/BitcoinCore/Configuration/NetworkTranslator.cs	2	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.IntegrationTests/BitcoinCore/Configuration/Whitening/WhiteBind.cs	2	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.IntegrationTests/BitcoinCore/Configuration/Whitening/WhiteEntry.cs	4	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.IntegrationTests/BitcoinCore/CoreNode.cs	7	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.IntegrationTests/BitcoinCore/CoreNode.cs	8	using NBitcoin.DataEncoders;
+direct_nbitcoin	MagicalCryptoWallet.IntegrationTests/BitcoinCore/CoreNode.cs	9	using NBitcoin.Protocol;
+direct_nbitcoin	MagicalCryptoWallet.IntegrationTests/BitcoinCore/CoreNode.cs	10	using NBitcoin.RPC;
+address_codec	MagicalCryptoWallet.IntegrationTests/BitcoinCore/CoreNode.cs	75	rpcUser ??= Encoders.Hex.EncodeData(RandomUtils.GetBytes(21));
+address_codec	MagicalCryptoWallet.IntegrationTests/BitcoinCore/CoreNode.cs	76	rpcPassword ??= Encoders.Hex.EncodeData(RandomUtils.GetBytes(21));
+direct_nbitcoin	MagicalCryptoWallet.IntegrationTests/BitcoinCore/CoreNodeParams.cs	2	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.IntegrationTests/BitcoinCore/Endpointing/EndPointStrategy.cs	2	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.IntegrationTests/BitcoinCore/Endpointing/PortFinder.cs	4	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.IntegrationTests/BitcoinCore/Processes/BitcoindRpcProcessBridge.cs	6	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.IntegrationTests/BitcoinCore/Tests/ConfigTranslatorTests.cs	2	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.IntegrationTests/BitcoinCore/Tests/NodeBuildingTests.cs	2	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.IntegrationTests/BitcoinCore/Tests/P2pBasedTests.cs	8	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.IntegrationTests/BitcoinCore/Tests/RpcBasedTests.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.IntegrationTests/BitcoinCore/Tests/RpcBasedTests.cs	2	using NBitcoin.RPC;
+address_codec	MagicalCryptoWallet.IntegrationTests/BitcoinCore/Tests/RpcBasedTests.cs	120	private static BitcoinAddress CreateRandomAddress(Network network)
+direct_nbitcoin	MagicalCryptoWallet.IntegrationTests/Infrastructure/RegTestEnvironment.cs	8	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.IntegrationTests/Infrastructure/RegTestEnvironment.cs	9	using NBitcoin.Protocol;
+direct_nbitcoin	MagicalCryptoWallet.IntegrationTests/Infrastructure/RegTestEnvironment.cs	10	using NBitcoin.Protocol.Behaviors;
+direct_nbitcoin	MagicalCryptoWallet.IntegrationTests/Infrastructure/RegTestEnvironment.cs	11	using NBitcoin.RPC;
+address_codec	MagicalCryptoWallet.IntegrationTests/Infrastructure/RegTestEnvironment.cs	320	public async Task<uint256> FundAddressAsync(BitcoinAddress address, Money amount, int confirmations = 1)
+direct_nbitcoin	MagicalCryptoWallet.IntegrationTests/Infrastructure/TestNodeBuilder.cs	7	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.IntegrationTests/SyncTests/ReorgTests.cs	6	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.IntegrationTests/WalletTests/WalletReceiveTests.cs	4	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.IntegrationTests/WalletTests/WalletSendTests.cs	6	using NBitcoin;
+package_lock	MagicalCryptoWallet.IntegrationTests/packages.lock.json	335	"NBitcoin": "[10.0.13, )",
+package_lock	MagicalCryptoWallet.IntegrationTests/packages.lock.json	343	"NBitcoin.Secp256k1": "[3.1.6, )"
+package_lock	MagicalCryptoWallet.IntegrationTests/packages.lock.json	408	"NBitcoin": {
+package_lock	MagicalCryptoWallet.IntegrationTests/packages.lock.json	418	"NBitcoin.Secp256k1": {
+package_lock	MagicalCryptoWallet.IntegrationTests/packages.lock.json	438	"NBitcoin.Secp256k1": "3.1.6",
+direct_nbitcoin	MagicalCryptoWallet.Tests/Helpers/AnalyzedTransaction/AnalyzedTransaction.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/Helpers/AnalyzedTransaction/AnalyzedTransaction.cs	6	using NBitcoin.Crypto;
+direct_nbitcoin	MagicalCryptoWallet.Tests/Helpers/AnalyzedTransaction/AnalyzedTransaction.cs	7	using NBitcoin.DataEncoders;
+direct_nbitcoin	MagicalCryptoWallet.Tests/Helpers/AnalyzedTransaction/ForeignOutput.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/Helpers/AnalyzedTransaction/WalletOutput.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/Helpers/BitcoinFactory.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/Helpers/BitcoinFactory.cs	2	using NBitcoin.RPC;
+direct_nbitcoin	MagicalCryptoWallet.Tests/Helpers/ServiceFactory.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/Helpers/SyntheticKeyChain.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/Helpers/TransactionParametersBuilder.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/Helpers/WabiSabiFactory.cs	2	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/Helpers/WabiSabiFactory.cs	3	using NBitcoin.Crypto;
+direct_nbitcoin	MagicalCryptoWallet.Tests/Helpers/WabiSabiFactory.cs	4	using NBitcoin.RPC;
+direct_nbitcoin	MagicalCryptoWallet.Tests/IntegrationTests/BlockDownloadTests.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/IntegrationTests/BlockDownloadTests.cs	5	using NBitcoin.Protocol;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/AutomaticCoinSelectionTests.cs	6	using NBitcoin;
+address_codec	MagicalCryptoWallet.Tests/UnitTests/AutomaticCoinSelectionTests.cs	102	Assert.Contains(transaction.Outputs, output => output.ScriptPubKey == BitcoinAddress.Create(address, Network.RegTest).ScriptPubKey && output.Value == Money.Coins(0.005m));
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/Blockchain/Blocks/FilterHeaderChainTests.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/Blockchain/Keys/WpkhOutputDescriptorHelperTests.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/Blockchain/TransactionBuilding/ChangelessTransactionCoinSelectorTests.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/Blockchain/TransactionOutputs/CoinsRegistryTests.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/BlockchainAnalysis/CoinJoinAnonscoreTests.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/BlockchainAnalysis/PubKeyReuseAnonScoreTests.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/BlockchainAnalysis/ReceiveAnonScoreTests.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/BlockchainAnalysis/SelfSpendAnonScoreTests.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/Cache/IdempotencyRequestCacheTests.cs	2	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/Cache/IdempotencyRequestCacheTests.cs	3	using NBitcoin.RPC;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/Client/Configuration/PersistentConfigManagerTests.cs	5	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/Client/Configuration/TorPublicDataConfigTests.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/CoinJoinPolicyTests.cs	5	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/Crypto/Bip322SignatureTest.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/Crypto/Bip322SignatureTest.cs	2	using NBitcoin.DataEncoders;
+address_codec	MagicalCryptoWallet.Tests/UnitTests/Crypto/Bip322SignatureTest.cs	16	using var key = new Key(Encoders.Hex.DecodeData("3460814214450E864EC722FF1F84F96C41746CD6BBE2F1C09B33972761032E9F"));
+address_codec	MagicalCryptoWallet.Tests/UnitTests/Crypto/Bip322SignatureTest.cs	17	var message = new uint256(Encoders.Hex.DecodeData("BB06B6D65C9F4A1D245F203EB039A735D94D3ECA3E19B04DA59956413F5D5C8F"), false);
+address_codec	MagicalCryptoWallet.Tests/UnitTests/Crypto/Bip322SignatureTest.cs	20	var bip322SignatureBytes = Encoders.Hex.DecodeData("0002473044022006806E4B84C490372AD4728435DBF505FA39B4257E5A5B4A343A1C34A2D4390602205321627EF5933E8D2A589552ABE07D1EEE6F6C8C716DD5BA7F99C9F324694E230121032EF68318C8F6AAA0ADEC0199C69901F0DB7D3485EB38D9AD235221DC3D61154B");
+address_codec	MagicalCryptoWallet.Tests/UnitTests/Crypto/Bip322SignatureTest.cs	31	using var key = new Key(Encoders.Hex.DecodeData("3460814214450E864EC722FF1F84F96C41746CD6BBE2F1C09B33972761032E9F"));
+address_codec	MagicalCryptoWallet.Tests/UnitTests/Crypto/Bip322SignatureTest.cs	32	var message = new uint256(Encoders.Hex.DecodeData("BB06B6D65C9F4A1D245F203EB039A735D94D3ECA3E19B04DA59956413F5D5C8F"), false);
+address_codec	MagicalCryptoWallet.Tests/UnitTests/Crypto/Bip322SignatureTest.cs	73	using var key = new Key(Encoders.Hex.DecodeData("E4E13C6ACF002C94D5EE25E89F419531A52A39F93B00B71349C4889E046BBA3C"));
+address_codec	MagicalCryptoWallet.Tests/UnitTests/Crypto/Bip322SignatureTest.cs	74	var message = new uint256(Encoders.Hex.DecodeData("BB06B6D65C9F4A1D245F203EB039A735D94D3ECA3E19B04DA59956413F5D5C8F"), false);
+address_codec	MagicalCryptoWallet.Tests/UnitTests/Crypto/Bip322SignatureTest.cs	77	var bip322SignatureBytes = Encoders.Hex.DecodeData("000140671520C782E52D070309579BA1FEE3889EB32D2E812A32B4899193233E5856E824014C17F68AB354BC4964AABBC957FE33AC557E2B3386923F3ED7A019DCC0C6");
+address_codec	MagicalCryptoWallet.Tests/UnitTests/Crypto/Bip322SignatureTest.cs	88	using var key = new Key(Encoders.Hex.DecodeData("E4E13C6ACF002C94D5EE25E89F419531A52A39F93B00B71349C4889E046BBA3C"));
+address_codec	MagicalCryptoWallet.Tests/UnitTests/Crypto/Bip322SignatureTest.cs	89	var message = new uint256(Encoders.Hex.DecodeData("BB06B6D65C9F4A1D245F203EB039A735D94D3ECA3E19B04DA59956413F5D5C8F"), false);
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/Crypto/OwnershipProofTest.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/Crypto/OwnershipProofTest.cs	2	using NBitcoin.DataEncoders;
+address_codec	MagicalCryptoWallet.Tests/UnitTests/Crypto/OwnershipProofTest.cs	20	using var key = new Key(Encoders.Hex.DecodeData("3460814214450E864EC722FF1F84F96C41746CD6BBE2F1C09B33972761032E9F"));
+address_codec	MagicalCryptoWallet.Tests/UnitTests/Crypto/OwnershipProofTest.cs	23	var ownershipIdentifierBytes = Encoders.Hex.DecodeData("A122407EFC198211C81AF4450F40B235D54775EFD934D16B9E31C6CE9BAD5707");
+address_codec	MagicalCryptoWallet.Tests/UnitTests/Crypto/OwnershipProofTest.cs	29	var ownershipProofBytes = Encoders.Hex.DecodeData("534C00190001A122407EFC198211C81AF4450F40B235D54775EFD934D16B9E31C6CE9BAD57070002483045022100C0DC28BB563FC5FEA76CACFF75DBA9CB4122412FAAE01937CDEBCCFB065F9A7002202E980BFBD8A434A7FC4CD2CA49DA476CE98CA097437F8159B1A386B41FCDFAC50121032EF68318C8F6AAA0ADEC0199C69901F0DB7D3485EB38D9AD235221DC3D61154B");
+address_codec	MagicalCryptoWallet.Tests/UnitTests/Crypto/OwnershipProofTest.cs	45	commitmentData = Encoders.Hex.DecodeData("");
+address_codec	MagicalCryptoWallet.Tests/UnitTests/Crypto/OwnershipProofTest.cs	47	var ownershipProofBytes = Encoders.Hex.DecodeData("534C00190001A122407EFC198211C81AF4450F40B235D54775EFD934D16B9E31C6CE9BAD57070002483045022100C0DC28BB563FC5FEA76CACFF75DBA9CB4122412FAAE01937CDEBCCFB065F9A7002202E980BFBD8A434A7FC4CD2CA49DA476CE98CA097437F8159B1A386B41FCDFAC50121032EF68318C8F6AAA0ADEC0199C69901F0DB7D3485EB38D9AD235221DC3D61154B");
+address_codec	MagicalCryptoWallet.Tests/UnitTests/Crypto/OwnershipProofTest.cs	52	using var key = new Key(Encoders.Hex.DecodeData("3460814214450E864EC722FF1F84F96C41746CD6BBE2F1C09B33972761032E9F"));
+address_codec	MagicalCryptoWallet.Tests/UnitTests/Crypto/OwnershipProofTest.cs	53	var ownershipIdentifier = new OwnershipIdentifier(Encoders.Hex.DecodeData("A122407EFC198211C81AF4450F40B235D54775EFD934D16B9E31C6CE9BAD5707"));
+address_codec	MagicalCryptoWallet.Tests/UnitTests/Crypto/OwnershipProofTest.cs	54	commitmentData = Encoders.Hex.DecodeData("A42E38EF564D4B05B65575D22553BB1F264332D77F8A61159ABF3E6179B0317C");
+address_codec	MagicalCryptoWallet.Tests/UnitTests/Crypto/OwnershipProofTest.cs	75	using var invalidKey = new Key(Encoders.Hex.DecodeData("7B041DD735E7202D3C1B9592147894ED24DA6355F0CD66573C273C0DF1AFA78A"));
+address_codec	MagicalCryptoWallet.Tests/UnitTests/Crypto/OwnershipProofTest.cs	110	using var key = new Key(Encoders.Hex.DecodeData("E4E13C6ACF002C94D5EE25E89F419531A52A39F93B00B71349C4889E046BBA3C"));
+address_codec	MagicalCryptoWallet.Tests/UnitTests/Crypto/OwnershipProofTest.cs	113	var ownershipIdentifierBytes = Encoders.Hex.DecodeData("DC18066224B9E30E306303436DC18AB881C7266C13790350A3FE415E438135EC");
+address_codec	MagicalCryptoWallet.Tests/UnitTests/Crypto/OwnershipProofTest.cs	118	var ownershipProofBytes = Encoders.Hex.DecodeData("534C00190001DC18066224B9E30E306303436DC18AB881C7266C13790350A3FE415E438135EC000140647D6AF883107A870417E808ABE424882BD28EE04A28BA85A7E99400E1B9485075733695964C2A0FA02D4439AB80830E9566CCBD10F2597F5513EFF9F03A0497");
+address_codec	MagicalCryptoWallet.Tests/UnitTests/Crypto/OwnershipProofTest.cs	134	commitmentData = Encoders.Hex.DecodeData("");
+address_codec	MagicalCryptoWallet.Tests/UnitTests/Crypto/OwnershipProofTest.cs	136	var ownershipProofBytes = Encoders.Hex.DecodeData("534C00190001DC18066224B9E30E306303436DC18AB881C7266C13790350A3FE415E438135EC0001401B553E5B9CC787B531BBC78417AEA901272B4EA905136A2BABC4D6CA471549743B5E0E39DDC14E620B254E42FAA7F6D5BD953E97AA231D764D21BC5A58E8B7D9");
+address_codec	MagicalCryptoWallet.Tests/UnitTests/Crypto/OwnershipProofTest.cs	141	using var key = new Key(Encoders.Hex.DecodeData("E4E13C6ACF002C94D5EE25E89F419531A52A39F93B00B71349C4889E046BBA3C"));
+address_codec	MagicalCryptoWallet.Tests/UnitTests/Crypto/OwnershipProofTest.cs	142	var ownershipIdentifier = new OwnershipIdentifier(Encoders.Hex.DecodeData("DC18066224B9E30E306303436DC18AB881C7266C13790350A3FE415E438135EC"));
+address_codec	MagicalCryptoWallet.Tests/UnitTests/Crypto/OwnershipProofTest.cs	143	commitmentData = Encoders.Hex.DecodeData("A42E38EF564D4B05B65575D22553BB1F264332D77F8A61159ABF3E6179B0317C");
+address_codec	MagicalCryptoWallet.Tests/UnitTests/Crypto/OwnershipProofTest.cs	164	using var invalidKey = new Key(Encoders.Hex.DecodeData("7B041DD735E7202D3C1B9592147894ED24DA6355F0CD66573C273C0DF1AFA78A"));
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/Crypto/Slip21NodeTests.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/DesktopActivationTests.cs	3	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/Extensions/HistoryDateFormattingTests.cs	2	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/FeeRateEstimation/ExternalFeeRateProviderTests.cs	6	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/FeeRateEstimationsTests.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/FeeRateEstimationsTests.cs	2	using NBitcoin.RPC;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/Helpers/TransactionFeeHelperTests.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/InvalidTxExceptionTests.cs	2	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/InvalidTxExceptionTests.cs	3	using NBitcoin.Policy;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/JsonConverters/DestinationJsonConverterTests.cs	1	using NBitcoin;
+address_codec	MagicalCryptoWallet.Tests/UnitTests/JsonConverters/DestinationJsonConverterTests.cs	19	Assert.Equal(BitcoinAddress.Create(address, Network.Main).ScriptPubKey, destination.ScriptPubKey);
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/KeyManagerTests.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/Mocks/MockRpcClient.cs	4	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/Mocks/MockRpcClient.cs	5	using NBitcoin.RPC;
+address_codec	MagicalCryptoWallet.Tests/UnitTests/Mocks/MockRpcClient.cs	26	public Func<int, BitcoinAddress, Task<uint256[]>>? OnGenerateToAddressAsync { get; set; }
+address_codec	MagicalCryptoWallet.Tests/UnitTests/Mocks/MockRpcClient.cs	83	public Task<BitcoinAddress> GetNewAddressAsync(CancellationToken cancellationToken = default)
+address_codec	MagicalCryptoWallet.Tests/UnitTests/Mocks/MockRpcClient.cs	156	public Task<uint256> SendToAddressAsync(BitcoinAddress address, Money amount, bool replaceable = false, CancellationToken cancellationToken = default)
+address_codec	MagicalCryptoWallet.Tests/UnitTests/Mocks/MockRpcClient.cs	191	public Task<uint256[]> GenerateToAddressAsync(int nBlocks, BitcoinAddress address, CancellationToken cancellationToken = default)
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/NBitcoinTests.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/RebrandIdentityTests.cs	5	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/RpcTests.cs	3	using NBitcoin;
+address_codec	MagicalCryptoWallet.Tests/UnitTests/RpcTests.cs	118	Sendto = new Destination(BitcoinAddress.Create("bc1q7zqqsmqx5ymhd7qn73lm96w5yqdkrmx7fdevah", Network.Main).ScriptPubKey),
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/Services/CompactFilterBehaviorTests.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/Services/CompactFilterBehaviorTests.cs	2	using NBitcoin.Protocol;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/Services/CpfpInfoProviderTests.cs	5	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/Services/CpfpTrafficTests.cs	5	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/Services/FilterProvidersTests.cs	2	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/Services/FilterProvidersTests.cs	3	using NBitcoin.RPC;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/Services/PeerDiscoveryTests.cs	6	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/Services/PeerDiscoveryTests.cs	7	using NBitcoin.Protocol;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/Services/ReleaseDownloaderTests.cs	5	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/Services/SynchronizerReorgTests.cs	2	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/Services/TestReleaseAuthor.cs	1	using NBitcoin.Secp256k1;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/Services/UpdateManagerTests.cs	6	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/Services/UpdateSignatureTests.cs	5	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/SingleWalletCoinJoinTests.cs	16	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/SingleWalletTests.cs	11	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/SmartCoinTests.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/SmartHeaderTests.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/SoftwareWalletTests.cs	10	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/StartMagicalCryptoWalletOnSystemStartupTests.cs	10	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/Stores/BlockFilterSqliteStorageTests.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/Stores/FilterStoreTests.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/TestWallet.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/TestWallet.cs	2	using NBitcoin.DataEncoders;
+address_codec	MagicalCryptoWallet.Tests/UnitTests/TestWallet.cs	20	ExtKey = new ExtKey(Encoders.Hex.EncodeData(Encoding.UTF8.GetBytes(name)));
+address_codec	MagicalCryptoWallet.Tests/UnitTests/TestWallet.cs	41	public BitcoinAddress CreateNewAddress(bool isInternal = false)
+address_codec	MagicalCryptoWallet.Tests/UnitTests/TestWallet.cs	46	return scriptPubKey.GetDestinationAddress(Rpc.Network)!;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/Transactions/AllTransactionStoreTests.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/Transactions/SmartTransactionTests.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/Transactions/TransactionFactoryTests.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/Transactions/TransactionFactoryTests.cs	593	/// Tests that we throw <see cref="TransactionSizeException"/> when NBitcoin returns a coin selection whose sum is lower than the desired one.
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/Transactions/TransactionProcessorTests.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/Transactions/TransactionSqliteStorageTests.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/UserInterfaceTest/PocketSelectionTests.cs	4	using NBitcoin;
+address_codec	MagicalCryptoWallet.Tests/UnitTests/UserInterfaceTest/PocketSelectionTests.cs	27	var address = BitcoinAddress.Create("bc1q7v7qfhwx55erxkc66nsv39x4azwufvy6zq8ya4", Network.Main);
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/Userfacing/AddressParserTests.cs	1	using NBitcoin;
+address_codec	MagicalCryptoWallet.Tests/UnitTests/Userfacing/AddressParserTests.cs	29	public void OptionalExtensionsUseOnlyTheBitcoinAddress(string query)
+address_codec	MagicalCryptoWallet.Tests/UnitTests/Userfacing/AddressParserTests.cs	50	public void TryParse_BitcoinAddressTests()
+address_codec	MagicalCryptoWallet.Tests/UnitTests/Userfacing/AddressParserTests.cs	73	var parsedBitcoinAddress = Assert.IsType<Address.Bitcoin>(parsingResult);
+address_codec	MagicalCryptoWallet.Tests/UnitTests/Userfacing/AddressParserTests.cs	74	Assert.Equal(address, parsedBitcoinAddress.ToWif(network));
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/Userfacing/Bip21/Bip21UriParserTests.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/Userfacing/PasswordTests.cs	8	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/ViewModels/CoinjoinCostsViewModelTests.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/ViewModels/ConfirmRecoveryWordsViewModelTests.cs	7	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Backend/CoordinatorOutputTests.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Backend/OffenderSerializationTests.cs	2	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Backend/PhaseStepping/StepOutputRegistrationTests.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Backend/PhaseStepping/StepTransactionSigningTests.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Backend/PhaseStepping/StepTransactionSigningTests.cs	2	using NBitcoin.RPC;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Backend/PostRequests/ConfirmConnectionTests.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Backend/PostRequests/ReadyToSignRequestRequestTests.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Backend/PostRequests/RegisterInputFailureTests.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Backend/PostRequests/RegisterInputFailureTests.cs	228	new NBitcoin.RPC.GetTxOutResponse { Confirmations = 0 };
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Backend/PostRequests/RegisterInputFailureTests.cs	252	var ret = new NBitcoin.RPC.GetTxOutResponse { Confirmations = callCounter, IsCoinBase = true };
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Backend/PostRequests/RegisterInputSuccessTests.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Backend/PostRequests/RegisterInputToBlameRoundTests.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Backend/PostRequests/RegisterOutputTests.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Backend/PostRequests/RemoveInputTests.cs	4	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Backend/PostRequests/SignTransactionTests.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Backend/PrisonTests.cs	2	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Backend/Rounds/MultipartyTransactionStateTests.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Backend/UtxoPrisonWardenTests.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Client/AmountDecomposerTests.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Client/ArenaClientTests.cs	2	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Client/ArenaClientTests.cs	3	using NBitcoin.RPC;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Client/BobClientTests.cs	2	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Client/CoinJoinClientTests.cs	8	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Client/CoinJoinCoinSelectionTests.cs	2	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Client/CoinjoinCostsTests.cs	3	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Client/KeyChainTests.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Client/PaymentAwareOutputProviderTests.cs	1	using NBitcoin;
+address_codec	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Client/PaymentAwareOutputProviderTests.cs	131	private static BitcoinAddress GetNewSegwitAddress()
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Client/PaymentBatchTests.cs	2	using NBitcoin;
+address_codec	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Client/PaymentBatchTests.cs	259	private static BitcoinAddress GetNewSegwitAddress()
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Client/WalletInputValidationTests.cs	6	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Crypto/CredentialRequesting/RealCredentialsRequestTests.cs	1	using NBitcoin.Secp256k1;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Crypto/CredentialRequesting/ZeroCredentialsRequestTests.cs	1	using NBitcoin.Secp256k1;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Crypto/OwnershipProofTests.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Integration/IWebHostBuilderExtensions.cs	6	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Integration/Participant.cs	4	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Integration/Startup.cs	8	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Integration/WabiSabiApiApplicationFactory.cs	11	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Integration/WabiSabiHttpApiIntegrationTests.cs	2	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/ConnectionConfirmationRequestTests.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/ConnectionConfirmationRequestTests.cs	2	using NBitcoin.Secp256k1;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/ConstructionStateTests.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/InputRegistrationRequestTests.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/InputRegistrationRequestTests.cs	2	using NBitcoin.Secp256k1;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/InputsRemovalRequestTests.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/MultipartyTransactionTests.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/OutputRegistrationRequestTests.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/OutputRegistrationRequestTests.cs	2	using NBitcoin.Secp256k1;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/RoundStateUpdaterTests.cs	6	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/SerializationTests.cs	4	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/SerializationTests.cs	5	using NBitcoin.Secp256k1;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/TransactionSignaturesRequestTests.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/SerializationTests.cs	5	using NBitcoin.Secp256k1;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/Wallet/FileSystemBlockRepositoryTests.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/Wallet/FilterProcessor/BlockDownloadServiceTests.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/Wallet/FilterProcessor/BlockFilterIteratorTests.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/Wallet/SmartCoinSelectorTests.cs	3	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/WalletDirectoriesTests.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/WalletOperationAuthorizationTests.cs	5	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Tests/UnitTests/Wallets/LockTimeSelectorTests.cs	1	using NBitcoin;
+package_lock	MagicalCryptoWallet.Tests/packages.lock.json	813	"NBitcoin": "[10.0.13, )",
+package_lock	MagicalCryptoWallet.Tests/packages.lock.json	856	"NBitcoin": "[10.0.13, )",
+package_lock	MagicalCryptoWallet.Tests/packages.lock.json	863	"NBitcoin.Secp256k1": "[3.1.6, )"
+package_lock	MagicalCryptoWallet.Tests/packages.lock.json	1013	"NBitcoin": {
+package_lock	MagicalCryptoWallet.Tests/packages.lock.json	1023	"NBitcoin.Secp256k1": {
+package_lock	MagicalCryptoWallet.Tests/packages.lock.json	1043	"NBitcoin.Secp256k1": "3.1.6",
+direct_nbitcoin	MagicalCryptoWallet/Backend/Models/FilterModel.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/BitcoinP2p/BlockHeadersChainBehavior.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/BitcoinP2p/BlockHeadersChainBehavior.cs	2	using NBitcoin.Protocol;
+direct_nbitcoin	MagicalCryptoWallet/BitcoinP2p/BlockHeadersChainBehavior.cs	3	using NBitcoin.Protocol.Behaviors;
+direct_nbitcoin	MagicalCryptoWallet/BitcoinP2p/CompactFilterBehavior.cs	1	using NBitcoin.Protocol;
+direct_nbitcoin	MagicalCryptoWallet/BitcoinP2p/CompactFilterBehavior.cs	2	using NBitcoin.Protocol.Behaviors;
+direct_nbitcoin	MagicalCryptoWallet/BitcoinP2p/P2pBehavior.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/BitcoinP2p/P2pBehavior.cs	2	using NBitcoin.Protocol;
+direct_nbitcoin	MagicalCryptoWallet/BitcoinP2p/P2pBehavior.cs	3	using NBitcoin.Protocol.Behaviors;
+direct_nbitcoin	MagicalCryptoWallet/BitcoinRpc/CachedRpcClient.cs	3	using NBitcoin.RPC;
+direct_nbitcoin	MagicalCryptoWallet/BitcoinRpc/IRPCClient.cs	1	using NBitcoin.RPC;
+address_codec	MagicalCryptoWallet/BitcoinRpc/IRPCClient.cs	42	Task<uint256> SendToAddressAsync(BitcoinAddress address, Money amount, bool replaceable = false, CancellationToken cancellationToken = default);
+address_codec	MagicalCryptoWallet/BitcoinRpc/IRPCClient.cs	56	Task<BitcoinAddress> GetNewAddressAsync(CancellationToken cancellationToken = default);
+address_codec	MagicalCryptoWallet/BitcoinRpc/IRPCClient.cs	68	Task<uint256[]> GenerateToAddressAsync(int nBlocks, BitcoinAddress address, CancellationToken cancellationToken = default);
+direct_nbitcoin	MagicalCryptoWallet/BitcoinRpc/RpcClientBase.cs	2	using NBitcoin.RPC;
+address_codec	MagicalCryptoWallet/BitcoinRpc/RpcClientBase.cs	159	public virtual async Task<uint256[]> GenerateToAddressAsync(int nBlocks, BitcoinAddress address, CancellationToken cancellationToken = default)
+address_codec	MagicalCryptoWallet/BitcoinRpc/RpcClientBase.cs	166	public virtual async Task<uint256> SendToAddressAsync(BitcoinAddress address, Money amount, bool replaceable = false, CancellationToken cancellationToken = default)
+address_codec	MagicalCryptoWallet/BitcoinRpc/RpcClientBase.cs	225	public virtual async Task<BitcoinAddress> GetNewAddressAsync(CancellationToken cancellationToken = default)
+direct_nbitcoin	MagicalCryptoWallet/Blockchain/Keys/BlockchainState.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Blockchain/Keys/HdPubKey.cs	1	using NBitcoin.Secp256k1;
+address_codec	MagicalCryptoWallet/Blockchain/Keys/HdPubKey.cs	108	public BitcoinWitPubKeyAddress GetP2wpkhAddress(Network network) => (BitcoinWitPubKeyAddress)PubKey.GetAddress(ScriptPubKeyType.Segwit, network);
+direct_nbitcoin	MagicalCryptoWallet/Blockchain/Keys/HdPubKeyInfo.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Blockchain/Keys/KeyManager.cs	1	using NBitcoin.Secp256k1;
+direct_nbitcoin	MagicalCryptoWallet/Blockchain/Keys/KeyManager.cs	2	using NBitcoin.WalletPolicies;
+direct_nbitcoin	MagicalCryptoWallet/Blockchain/Keys/KeyManager.cs	20	using Network = NBitcoin.Network;
+direct_nbitcoin	MagicalCryptoWallet/Blockchain/Keys/KeyManager.cs	21	using OutPoint = NBitcoin.OutPoint;
+address_codec	MagicalCryptoWallet/Blockchain/Keys/KeyManager.cs	681	public static BitcoinAddress GetAddress(this HdPubKey me, Network network) =>
+direct_nbitcoin	MagicalCryptoWallet/Blockchain/Keys/WalletGenerator.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Blockchain/Keys/WpkhOutputDescriptorHelper.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Blockchain/Keys/WpkhOutputDescriptorHelper.cs	2	using NBitcoin.WalletPolicies;
+direct_nbitcoin	MagicalCryptoWallet/Blockchain/Mempool/MempoolService.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Blockchain/TransactionBroadcasting/TransactionBroadcaster.cs	1	using NBitcoin.Protocol;
+direct_nbitcoin	MagicalCryptoWallet/Blockchain/TransactionBuilding/BuildTransactionResult.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Blockchain/TransactionBuilding/ChangelessTransactionCoinSelector.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Blockchain/TransactionBuilding/DestinationRequest.cs	1	using NBitcoin;
+address_codec	MagicalCryptoWallet/Blockchain/TransactionBuilding/DestinationRequest.cs	8	public static implicit operator Destination(BitcoinAddress address) => new(address.ScriptPubKey);
+address_codec	MagicalCryptoWallet/Blockchain/TransactionBuilding/DestinationRequest.cs	12	ScriptPubKey.GetDestinationAddress(network)?.ToString()
+direct_nbitcoin	MagicalCryptoWallet/Blockchain/TransactionBuilding/FeeStrategy.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Blockchain/TransactionBuilding/MoneyRequest.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Blockchain/TransactionBuilding/PaymentIntent.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Blockchain/TransactionBuilding/SmartCoinSelector.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Blockchain/TransactionBuilding/SmartCoinSelector.cs	23	/// <param name="suggestion">We use this to detect if NBitcoin tries to suggest something different and indicate the error.</param>
+direct_nbitcoin	MagicalCryptoWallet/Blockchain/TransactionBuilding/TransactionBuilderWalletExtensions.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Blockchain/TransactionBuilding/TransactionModifierWalletExtensions.cs	1	using NBitcoin;
+address_codec	MagicalCryptoWallet/Blockchain/TransactionBuilding/TransactionModifierWalletExtensions.cs	41	var destination = ownOutput?.Coin.ScriptPubKey.GetDestinationAddress(network) ?? keyManager.GetNextChangeKey().GetAssumedScriptPubKey().GetDestinationAddress(network);
+address_codec	MagicalCryptoWallet/Blockchain/TransactionBuilding/TransactionModifierWalletExtensions.cs	288	var destination = keyManager.GetNextChangeKey().GetAssumedScriptPubKey().GetDestinationAddress(network);
+direct_nbitcoin	MagicalCryptoWallet/Blockchain/TransactionOutputs/CoinsRegistry.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Blockchain/TransactionOutputs/CoinsView.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Blockchain/TransactionOutputs/ForeignVirtualOutput.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Blockchain/TransactionOutputs/ICoinsView.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Blockchain/TransactionOutputs/WalletVirtualOutput.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Blockchain/TransactionProcessing/ProcessedResult.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Blockchain/Transactions/AllTransactionStore.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Blockchain/Transactions/EmptyTransactionStore.cs	2	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Blockchain/Transactions/ITransactionStore.cs	2	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Blockchain/Transactions/SmartTransactionExtensions.cs	1	using NBitcoin;
+address_codec	MagicalCryptoWallet/Blockchain/Transactions/SmartTransactionExtensions.cs	14	var address = coin.TxOut.ScriptPubKey.GetDestinationAddress(network)!;
+address_codec	MagicalCryptoWallet/Blockchain/Transactions/SmartTransactionExtensions.cs	20	var address = coin.TxOut.ScriptPubKey.GetDestinationAddress(network)!;
+direct_nbitcoin	MagicalCryptoWallet/Blockchain/Transactions/Summary/ForeignInput.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Blockchain/Transactions/Summary/ForeignOutput.cs	1	using NBitcoin;
+address_codec	MagicalCryptoWallet/Blockchain/Transactions/Summary/ForeignOutput.cs	7	public ForeignOutput(Money amount, BitcoinAddress destinationAddress) : base(amount, destinationAddress)
+direct_nbitcoin	MagicalCryptoWallet/Blockchain/Transactions/Summary/IInput.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Blockchain/Transactions/Summary/KnownInput.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Blockchain/Transactions/Summary/Output.cs	1	using NBitcoin;
+address_codec	MagicalCryptoWallet/Blockchain/Transactions/Summary/Output.cs	7	protected Output(Money amount, BitcoinAddress destinationAddress)
+address_codec	MagicalCryptoWallet/Blockchain/Transactions/Summary/Output.cs	15	public BitcoinAddress DestinationAddress { get; }
+direct_nbitcoin	MagicalCryptoWallet/Blockchain/Transactions/Summary/OwnOutput.cs	1	using NBitcoin;
+address_codec	MagicalCryptoWallet/Blockchain/Transactions/Summary/OwnOutput.cs	7	public OwnOutput(Money amount, BitcoinAddress destinationAddress, bool isInternal) : base(amount, destinationAddress)
+direct_nbitcoin	MagicalCryptoWallet/Blockchain/Transactions/TransactionBroadcastEntry.cs	6	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Blockchain/Transactions/TransactionDependencyNode.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Blockchain/Transactions/TransactionFactory.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Blockchain/Transactions/TransactionFactory.cs	149	// For sub-1 sat/vB fee rates, NBitcoin's FeeRate truncates because _FeePerK is a long
+direct_nbitcoin	MagicalCryptoWallet/Blockchain/Transactions/TransactionParameters.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Blockchain/Transactions/TransactionStore.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Blockchain/Transactions/TransactionSummary.cs	3	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Crypto/Bip322Signature.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Crypto/CoinJoinInputCommitmentData.cs	3	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Crypto/CoinJoinInputCommitmentData.cs	4	using NBitcoin.Protocol;
+direct_nbitcoin	MagicalCryptoWallet/Crypto/OwnershipIdentifier.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Crypto/OwnershipIdentifier.cs	2	using NBitcoin.Crypto;
+direct_nbitcoin	MagicalCryptoWallet/Crypto/OwnershipProof.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Crypto/ProofBody.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Crypto/ProofBody.cs	2	using NBitcoin.Crypto;
+direct_nbitcoin	MagicalCryptoWallet/Crypto/ProofBody.cs	3	using NBitcoin.Protocol;
+direct_nbitcoin	MagicalCryptoWallet/Crypto/Slip21Node.cs	3	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Crypto/Slip21Node.cs	4	using static NBitcoin.Crypto.Hashes;
+direct_nbitcoin	MagicalCryptoWallet/Crypto/StrobeProtocol/StrobeHasherExtensions.cs	3	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Discoverability/AnnouncerConfig.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Discoverability/AnnouncerConfig.cs	2	using NBitcoin.Secp256k1;
+direct_nbitcoin	MagicalCryptoWallet/Discoverability/CoordinatorAnnouncer.cs	5	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Discoverability/CoordinatorConnectionString.cs	4	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Exceptions/InsufficientBalanceException.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Exceptions/InvalidTxException.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Exceptions/InvalidTxException.cs	2	using NBitcoin.Policy;
+direct_nbitcoin	MagicalCryptoWallet/Exceptions/NotSupportedNetworkException.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Exceptions/TransactionSizeException.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Exceptions/UnknownRoundEndingException.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	2	using NBitcoin.DataEncoders;
+direct_nbitcoin	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	3	using NBitcoin.Protocol;
+address_codec	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	99	return Encoders.Base58Check.EncodeData(version.Concat(data).ToArray());
+address_codec	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	142	public static BitcoinWitPubKeyAddress TransformToNetwork(this BitcoinWitPubKeyAddress me, Network desiredNetwork)
+address_codec	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	151	var newAddress = new BitcoinWitPubKeyAddress(me.Hash, desiredNetwork);
+direct_nbitcoin	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	441	/// <remarks>NBitcoin does not provide a try-parse method.</remarks>
+address_codec	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	442	public static bool TryParseBitcoinAddressForNetwork(string address, Network network, [NotNullWhen(true)] out BitcoinAddress? bitcoinAddress)
+address_codec	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	446	bitcoinAddress = Network.Parse<BitcoinAddress>(address, network);
+direct_nbitcoin	MagicalCryptoWallet/Extensions/RPCClientExtensions.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Extensions/RPCClientExtensions.cs	2	using NBitcoin.RPC;
+direct_nbitcoin	MagicalCryptoWallet/Extensions/RPCClientExtensions.cs	11	using FeeRateByConfirmationTarget = System.Collections.Generic.Dictionary<int, NBitcoin.FeeRate>;
+direct_nbitcoin	MagicalCryptoWallet/Extensions/SystemNetExtensions.cs	3	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Helpers/Constants.cs	2	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Helpers/NBitcoinHelpers.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Helpers/TxOutEqualityComparer.cs	2	using NBitcoin;
+package	MagicalCryptoWallet/MagicalCryptoWallet.csproj	32	<PackageReference Include="NBitcoin" />
+direct_nbitcoin	MagicalCryptoWallet/Models/CpfpInfo.cs	2	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Models/PreferredScriptPubKeyType.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Models/ServiceConfiguration.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Rpc/JsonConverters/BitcoinAddressJsonConverter.cs	1	using NBitcoin;
+address_codec	MagicalCryptoWallet/Rpc/JsonConverters/BitcoinAddressJsonConverter.cs	7	public class BitcoinAddressJsonConverter : JsonConverter<BitcoinAddress>
+address_codec	MagicalCryptoWallet/Rpc/JsonConverters/BitcoinAddressJsonConverter.cs	10	public override BitcoinAddress? ReadJson(JsonReader reader, Type objectType, BitcoinAddress? existingValue, bool hasExistingValue, JsonSerializer serializer)
+address_codec	MagicalCryptoWallet/Rpc/JsonConverters/BitcoinAddressJsonConverter.cs	19	return BetterParseBitcoinAddress(bitcoinAddressString);
+address_codec	MagicalCryptoWallet/Rpc/JsonConverters/BitcoinAddressJsonConverter.cs	24	public override void WriteJson(JsonWriter writer, BitcoinAddress? value, JsonSerializer serializer)
+address_codec	MagicalCryptoWallet/Rpc/JsonConverters/BitcoinAddressJsonConverter.cs	30	private BitcoinAddress BetterParseBitcoinAddress(string bitcoinAddressString)
+address_codec	MagicalCryptoWallet/Rpc/JsonConverters/BitcoinAddressJsonConverter.cs	34	BitcoinAddress ba;
+address_codec	MagicalCryptoWallet/Rpc/JsonConverters/BitcoinAddressJsonConverter.cs	37	ba = BitcoinAddress.Create(bitcoinAddressString, Network.Main);
+address_codec	MagicalCryptoWallet/Rpc/JsonConverters/BitcoinAddressJsonConverter.cs	43	ba = BitcoinAddress.Create(bitcoinAddressString, Network.TestNet);
+address_codec	MagicalCryptoWallet/Rpc/JsonConverters/BitcoinAddressJsonConverter.cs	47	ba = BitcoinAddress.Create(bitcoinAddressString, Network.RegTest);
+direct_nbitcoin	MagicalCryptoWallet/Rpc/JsonConverters/DestinationJsonConverter.cs	1	using NBitcoin;
+address_codec	MagicalCryptoWallet/Rpc/JsonConverters/DestinationJsonConverter.cs	10	writer.WriteValue(value?.ScriptPubKey.GetDestinationAddress(network)?.ToString());
+address_codec	MagicalCryptoWallet/Rpc/JsonConverters/DestinationJsonConverter.cs	17	return BitcoinAddress.Create(address, network);
+direct_nbitcoin	MagicalCryptoWallet/Rpc/JsonConverters/OutPointAsTxoRefJsonConverter.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Rpc/JsonConverters/SmartTransactionJsonConverter.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Rpc/JsonConverters/Uint256JsonConverter.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Rpc/JsonRpcRequestHandler.cs	6	using NBitcoin;
+address_codec	MagicalCryptoWallet/Rpc/JsonRpcRequestHandler.cs	39	new BitcoinAddressJsonConverter(),
+direct_nbitcoin	MagicalCryptoWallet/Rpc/JsonRpcRequestHandler.cs	43	NBitcoin.JsonConverters.Serializer.RegisterFrontConverters(_defaultSettings, network);
+direct_nbitcoin	MagicalCryptoWallet/Rpc/PaymentInfo.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Serialization/Bitcoin.cs	2	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Serialization/Bitcoin.cs	3	using NBitcoin.DataEncoders;
+direct_nbitcoin	MagicalCryptoWallet/Serialization/Bitcoin.cs	73	var network = NBitcoin.Network.GetNetwork(name);
+address_codec	MagicalCryptoWallet/Serialization/Bitcoin.cs	80	String.Map(Encoders.Hex.DecodeData).Catch();
+direct_nbitcoin	MagicalCryptoWallet/Serialization/Client.cs	4	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Serialization/Client.cs	5	using NBitcoin.Secp256k1;
+direct_nbitcoin	MagicalCryptoWallet/Serialization/Client.cs	86	PreferredScriptPubKeyType.Specified {ScriptType: NBitcoin.ScriptPubKeyType.Segwit} => String("Segwit"),
+direct_nbitcoin	MagicalCryptoWallet/Serialization/Client.cs	87	PreferredScriptPubKeyType.Specified {ScriptType: NBitcoin.ScriptPubKeyType.TaprootBIP86} => String("Taproot"),
+direct_nbitcoin	MagicalCryptoWallet/Serialization/Client.cs	95	NBitcoin.ScriptPubKeyType.Segwit => "Segwit",
+direct_nbitcoin	MagicalCryptoWallet/Serialization/Client.cs	96	NBitcoin.ScriptPubKeyType.TaprootBIP86 => "Taproot",
+direct_nbitcoin	MagicalCryptoWallet/Serialization/Client.cs	133	String.Map(NBitcoin.HDFingerprint.Parse);
+direct_nbitcoin	MagicalCryptoWallet/Serialization/Client.cs	139	String.Map(NBitcoin.KeyPath.Parse);
+direct_nbitcoin	MagicalCryptoWallet/Serialization/Client.cs	145	ByteArray.Map(a => NBitcoin.Secp256k1.ECPubKey.Create(a));
+direct_nbitcoin	MagicalCryptoWallet/Serialization/Client.cs	177	String.Map(s => new BitcoinEncryptedSecretNoEC(s, NBitcoin.Network.Main));
+direct_nbitcoin	MagicalCryptoWallet/Serialization/Client.cs	182	"Segwit" => new PreferredScriptPubKeyType.Specified(NBitcoin.ScriptPubKeyType.Segwit),
+direct_nbitcoin	MagicalCryptoWallet/Serialization/Client.cs	183	"Taproot" => new PreferredScriptPubKeyType.Specified(NBitcoin.ScriptPubKeyType.TaprootBIP86),
+direct_nbitcoin	MagicalCryptoWallet/Serialization/Client.cs	191	"Segwit" => NBitcoin.ScriptPubKeyType.Segwit,
+direct_nbitcoin	MagicalCryptoWallet/Serialization/Client.cs	192	"Taproot" => NBitcoin.ScriptPubKeyType.TaprootBIP86,
+direct_nbitcoin	MagicalCryptoWallet/Serialization/Config.cs	4	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Serialization/Config.cs	15	public static JsonNode ExtPubKey(ExtPubKey k) => String(k.GetWif(NBitcoin.Network.Main).ToWif());
+direct_nbitcoin	MagicalCryptoWallet/Serialization/Config.cs	96	String.Map(s => NBitcoin.ExtPubKey.Parse(s, NBitcoin.Network.Main)).Catch();
+direct_nbitcoin	MagicalCryptoWallet/Serialization/Coordination.cs	7	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Serialization/Coordination.cs	406	Int.AndThen(n => n <= (int)NBitcoin.ScriptType.Taproot
+direct_nbitcoin	MagicalCryptoWallet/Serialization/WabiSabi.cs	3	using NBitcoin.Secp256k1;
+direct_nbitcoin	MagicalCryptoWallet/Services/EventBus.cs	11	using NBitcoin.Protocol;
+direct_nbitcoin	MagicalCryptoWallet/Services/NodesManagement/P2pConnectionManager.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Services/NodesManagement/P2pConnectionManager.cs	2	using NBitcoin.Protocol;
+direct_nbitcoin	MagicalCryptoWallet/Services/NodesManagement/P2pConnectionManager.cs	3	using NBitcoin.Protocol.Behaviors;
+direct_nbitcoin	MagicalCryptoWallet/Services/NodesManagement/PeerAddressCache.cs	6	using NBitcoin.Protocol;
+direct_nbitcoin	MagicalCryptoWallet/Services/NodesManagement/PeerInfo.cs	3	using NBitcoin.Protocol;
+direct_nbitcoin	MagicalCryptoWallet/Services/UpdateManager.cs	6	using NBitcoin.Crypto;
+direct_nbitcoin	MagicalCryptoWallet/Stores/BlockFilterSqliteStorage.cs	2	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Stores/TransactionSqliteStorage.cs	2	using NBitcoin;
+address_codec	MagicalCryptoWallet/Userfacing/AddressParser.cs	11	public record Bitcoin(BitcoinAddress Address) : Address;
+address_codec	MagicalCryptoWallet/Userfacing/AddressParser.cs	63	return ParseBitcoinAddress(text, expectedNetwork);
+address_codec	MagicalCryptoWallet/Userfacing/AddressParser.cs	79	public static AddressParsingResult ParseBitcoinAddress(string text, Network expectedNetwork)
+address_codec	MagicalCryptoWallet/Userfacing/AddressParser.cs	81	if (NBitcoinExtensions.TryParseBitcoinAddressForNetwork(text, expectedNetwork, out BitcoinAddress? address))
+direct_nbitcoin	MagicalCryptoWallet/Userfacing/Bip21/Bip21UriParser.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Userfacing/Bip21/Bip21UriParser.cs	2	using NBitcoin.Payment;
+direct_nbitcoin	MagicalCryptoWallet/Userfacing/Bip21/Bip21UriParser.cs	15	/// <seealso cref="BitcoinUrlBuilder">Inspired by NBitcoin's implementation.</seealso>
+address_codec	MagicalCryptoWallet/Userfacing/Bip21/Bip21UriParser.cs	65	var addressParsingResult = AddressParser.ParseBitcoinAddress(addressString, network);
+direct_nbitcoin	MagicalCryptoWallet/Userfacing/PasswordHelper.cs	3	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/WabiSabi/Coordinator/Models/Alice.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/WabiSabi/Coordinator/Rounds/RoundParameters.cs	1	using NBitcoin.Policy;
+direct_nbitcoin	MagicalCryptoWallet/WabiSabi/Coordinator/Rounds/RoundParameters.cs	80	// (MAX_STANDARD_TX_WEIGHT = 400000); but NBitcoin still enforces it as before.
+direct_nbitcoin	MagicalCryptoWallet/WabiSabi/Crypto/RoundHasher.cs	2	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/WabiSabi/GlobalUsings.cs	6	global using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/WabiSabi/Models/HumanMonitorRoundResponse.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Wallets/BlockProviders.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Wallets/CpfpInfoProvider.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Wallets/FileSystemBlockRepository.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Wallets/LockTimeSelector.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Wallets/Wallet.cs	2	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Wallets/WalletAuthorization.cs	1	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Wallets/WalletFilterProcessor.cs	2	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet/Wallets/WalletSession.cs	1	using NBitcoin;
+package_lock	MagicalCryptoWallet/packages.lock.json	73	"NBitcoin": {
+package_lock	MagicalCryptoWallet/packages.lock.json	91	"NBitcoin.Secp256k1": "3.1.6",
+package_lock	MagicalCryptoWallet/packages.lock.json	275	"NBitcoin.Secp256k1": "[3.1.6, )"
+package_lock	MagicalCryptoWallet/packages.lock.json	278	"NBitcoin.Secp256k1": {
+direct_nbitcoin	ThirdParty/WabiSabi/csharp/WabiSabi.Tests/Crypto/CredentialIssuerKeyTests.cs	2	using NBitcoin.Secp256k1;
+direct_nbitcoin	ThirdParty/WabiSabi/csharp/WabiSabi.Tests/Crypto/GroupElements/GeneralTests.cs	1	using NBitcoin.Secp256k1;
+direct_nbitcoin	ThirdParty/WabiSabi/csharp/WabiSabi.Tests/Crypto/GroupElements/GeneratorTests.cs	1	using NBitcoin.Secp256k1;
+direct_nbitcoin	ThirdParty/WabiSabi/csharp/WabiSabi.Tests/Crypto/GroupElements/OperationTests.cs	1	using NBitcoin.Secp256k1;
+direct_nbitcoin	ThirdParty/WabiSabi/csharp/WabiSabi.Tests/Crypto/MacTests.cs	1	using NBitcoin.Secp256k1;
+direct_nbitcoin	ThirdParty/WabiSabi/csharp/WabiSabi.Tests/Crypto/ProofSystemHelpers.cs	2	using NBitcoin.Secp256k1;
+direct_nbitcoin	ThirdParty/WabiSabi/csharp/WabiSabi.Tests/Crypto/ProofSystemTests.cs	2	using NBitcoin.Secp256k1;
+direct_nbitcoin	ThirdParty/WabiSabi/csharp/WabiSabi.Tests/Crypto/ScalarTests.cs	1	using NBitcoin.Secp256k1;
+direct_nbitcoin	ThirdParty/WabiSabi/csharp/WabiSabi.Tests/Crypto/TestTranscript.cs	1	using NBitcoin.Secp256k1;
+direct_nbitcoin	ThirdParty/WabiSabi/csharp/WabiSabi.Tests/Crypto/TranscriptTests.cs	2	using NBitcoin.Secp256k1;
+direct_nbitcoin	ThirdParty/WabiSabi/csharp/WabiSabi.Tests/Crypto/ZeroKnowledge/KnowledgeOfDlogTests.cs	2	using NBitcoin.Secp256k1;
+direct_nbitcoin	ThirdParty/WabiSabi/csharp/WabiSabi.Tests/Crypto/ZeroKnowledge/KnowledgeOfRepTests.cs	2	using NBitcoin.Secp256k1;
+direct_nbitcoin	ThirdParty/WabiSabi/csharp/WabiSabi.Tests/Crypto/ZeroKnowledge/LinearRelationTests.cs	1	using NBitcoin.Secp256k1;
+direct_nbitcoin	ThirdParty/WabiSabi/csharp/WabiSabi.Tests/CryptoHelpers.cs	1	using NBitcoin.Secp256k1;
+package_lock	ThirdParty/WabiSabi/csharp/WabiSabi.Tests/packages.lock.json	163	"NBitcoin.Secp256k1": "[3.1.6, )"
+package_lock	ThirdParty/WabiSabi/csharp/WabiSabi.Tests/packages.lock.json	166	"NBitcoin.Secp256k1": {
+direct_nbitcoin	ThirdParty/WabiSabi/csharp/WabiSabi/CredentialIssuer.cs	9	using NBitcoin.Secp256k1;
+direct_nbitcoin	ThirdParty/WabiSabi/csharp/WabiSabi/Crypto/CredentialIssuerSecretKey.cs	3	using NBitcoin.Secp256k1;
+direct_nbitcoin	ThirdParty/WabiSabi/csharp/WabiSabi/Crypto/Extensions.cs	3	using NBitcoin.Secp256k1;
+direct_nbitcoin	ThirdParty/WabiSabi/csharp/WabiSabi/Crypto/Extensions.cs	4	using NBitcoin;
+direct_nbitcoin	ThirdParty/WabiSabi/csharp/WabiSabi/Crypto/Groups/Generators.cs	3	using NBitcoin.Secp256k1;
+direct_nbitcoin	ThirdParty/WabiSabi/csharp/WabiSabi/Crypto/Groups/GroupElement.cs	1	using NBitcoin.Secp256k1;
+direct_nbitcoin	ThirdParty/WabiSabi/csharp/WabiSabi/Crypto/Mac.cs	3	using NBitcoin.Secp256k1;
+direct_nbitcoin	ThirdParty/WabiSabi/csharp/WabiSabi/Crypto/Randomness/WalletRandom.cs	1	using NBitcoin;
+direct_nbitcoin	ThirdParty/WabiSabi/csharp/WabiSabi/Crypto/Randomness/WalletRandom.cs	2	using NBitcoin.Secp256k1;
+direct_nbitcoin	ThirdParty/WabiSabi/csharp/WabiSabi/Crypto/ScalarVector.cs	6	using NBitcoin.Secp256k1;
+direct_nbitcoin	ThirdParty/WabiSabi/csharp/WabiSabi/Crypto/ZeroKnowledge/Credential.cs	3	using NBitcoin.Secp256k1;
+direct_nbitcoin	ThirdParty/WabiSabi/csharp/WabiSabi/Crypto/ZeroKnowledge/LinearRelation/Equation.cs	1	using NBitcoin.Secp256k1;
+direct_nbitcoin	ThirdParty/WabiSabi/csharp/WabiSabi/Crypto/ZeroKnowledge/LinearRelation/Knowledge.cs	3	using NBitcoin.Secp256k1;
+direct_nbitcoin	ThirdParty/WabiSabi/csharp/WabiSabi/Crypto/ZeroKnowledge/LinearRelation/Statement.cs	3	using NBitcoin.Secp256k1;
+direct_nbitcoin	ThirdParty/WabiSabi/csharp/WabiSabi/Crypto/ZeroKnowledge/ProofSystem.cs	5	using NBitcoin.Secp256k1;
+direct_nbitcoin	ThirdParty/WabiSabi/csharp/WabiSabi/Crypto/ZeroKnowledge/SyntheticSecretNonceProvider.cs	3	using NBitcoin.Secp256k1;
+direct_nbitcoin	ThirdParty/WabiSabi/csharp/WabiSabi/Crypto/ZeroKnowledge/Transcript.cs	3	using NBitcoin.Secp256k1;
+direct_nbitcoin	ThirdParty/WabiSabi/csharp/WabiSabi/Helpers/Guard.cs	3	using NBitcoin.Secp256k1;
+direct_nbitcoin	ThirdParty/WabiSabi/csharp/WabiSabi/IssuanceValidationData.cs	3	using NBitcoin.Secp256k1;
+direct_nbitcoin	ThirdParty/WabiSabi/csharp/WabiSabi/Native/OwnershipProof.cs	7	/// of NBitcoin so the WabiSabi package carries no NBitcoin dependency; a caller
+direct_nbitcoin	ThirdParty/WabiSabi/csharp/WabiSabi/Native/OwnershipProof.cs	8	/// that has NBitcoin maps its own <c>ScriptPubKeyType</c> onto these values.
+direct_nbitcoin	ThirdParty/WabiSabi/csharp/WabiSabi/Native/WabiSabiClient.cs	7	using NBitcoin.Secp256k1;
+direct_nbitcoin	ThirdParty/WabiSabi/csharp/WabiSabi/Native/WireFormat.cs	4	using NBitcoin.Secp256k1;
+package	ThirdParty/WabiSabi/csharp/WabiSabi/WabiSabi.csproj	13	<PackageReference Include="NBitcoin.Secp256k1" />
+direct_nbitcoin	ThirdParty/WabiSabi/csharp/WabiSabi/WabiSabiClient.cs	7	using NBitcoin.Secp256k1;
+package_lock	ThirdParty/WabiSabi/csharp/WabiSabi/packages.lock.json	5	"NBitcoin.Secp256k1": {
+direct_nbitcoin	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/OwnershipProofInteropTests.cs	2	using NBitcoin;
+direct_nbitcoin	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/Reference/Bip322Signature.cs	3	using NBitcoin;
+direct_nbitcoin	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/Reference/CoinJoinInputCommitmentData.cs	5	using NBitcoin;
+direct_nbitcoin	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/Reference/CoinJoinInputCommitmentData.cs	6	using NBitcoin.Protocol;
+direct_nbitcoin	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/Reference/OwnershipIdentifier.cs	2	// (MagicalCryptoWallet @ NBitcoin 10.0.7). Kept here so the interop suite can assert
+direct_nbitcoin	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/Reference/OwnershipIdentifier.cs	5	using NBitcoin;
+direct_nbitcoin	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/Reference/OwnershipIdentifier.cs	6	using NBitcoin.Crypto;
+direct_nbitcoin	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/Reference/OwnershipProof.cs	3	using NBitcoin;
+direct_nbitcoin	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/Reference/ProofBody.cs	3	using NBitcoin;
+direct_nbitcoin	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/Reference/ProofBody.cs	4	using NBitcoin.Crypto;
+direct_nbitcoin	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/Reference/ProofBody.cs	5	using NBitcoin.Protocol;
+direct_nbitcoin	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/Reference/ReferenceExtensions.cs	5	using NBitcoin;
+package	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/WabiSabiInterop.Tests.csproj	13	<PackageReference Include="NBitcoin" />
+package_lock	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/packages.lock.json	5	"NBitcoin": {
+package_lock	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/packages.lock.json	150	"NBitcoin.Secp256k1": "[3.1.6, )"
+package_lock	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/packages.lock.json	153	"NBitcoin.Secp256k1": {
+package_lock	ThirdParty/WabiSabi/interop/packages.lock.json	8	"NBitcoin.Secp256k1": "[3.1.6, )"
+package_lock	ThirdParty/WabiSabi/interop/packages.lock.json	11	"NBitcoin.Secp256k1": {
