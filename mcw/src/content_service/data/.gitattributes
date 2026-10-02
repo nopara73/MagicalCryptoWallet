@@ -1,0 +1,3 @@
+# Normative bytes include CRLF pairs but no NUL in Git's initial probe window.
+# Preserve the exact RFC dictionary; text auto-detection would corrupt it.
+dictionary.bin binary

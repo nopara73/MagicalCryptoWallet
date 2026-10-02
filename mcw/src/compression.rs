@@ -68,13 +68,21 @@ pub enum GzipMembers {
     First,
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy)]
 pub enum Dictionary<'a> {
     Reject,
     /// Raw DEFLATE uses the dictionary immediately. Zlib uses it only when
     /// FDICT is set and the full dictionary's Adler-32 matches DICTID. Only its
     /// final window is retained. Gzip rejects this policy (it has no DICTID).
     Use(&'a [u8]),
+}
+impl fmt::Debug for Dictionary<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Reject => f.write_str("Reject"),
+            Self::Use(bytes) => f.debug_struct("Use").field("length", &bytes.len()).finish(),
+        }
+    }
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -201,12 +209,20 @@ pub struct Progress {
     pub status: Status,
 }
 
-#[derive(Debug)]
 pub struct Decoded {
     pub bytes: Vec<u8>,
     pub consumed: usize,
     /// Gzip member count, or one for raw DEFLATE/zlib.
     pub members: u32,
+}
+impl fmt::Debug for Decoded {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("Decoded")
+            .field("output_len", &self.bytes.len())
+            .field("consumed", &self.consumed)
+            .field("members", &self.members)
+            .finish()
+    }
 }
 
 /// Incremental IEEE CRC-32 (reflected polynomial 0xedb88320).

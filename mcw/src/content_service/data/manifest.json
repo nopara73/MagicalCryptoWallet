@@ -1,0 +1,17 @@
+{
+  "source_url": "https://www.rfc-editor.org/rfc/rfc7932.txt",
+  "source_sha256": "394abd1879e016f4eac89512c2acaf92f7b2d67feb8ab58b6b118c213be07146",
+  "dictionary_bytes": 122784,
+  "dictionary_sha256": "20e42eb1b511c21806d4d227d07e5dd06877d8ce7b3a817f378f313653f35c70",
+  "dictionary_crc32": "5136cb04",
+  "tables_sha256": "4183894f3d7fbeb4061d349cfbe1d15098deb297f30b8fe8973ac60d93cfa8ef",
+  "transform_count": 121,
+  "transform_bytes": 648,
+  "transform_crc32": "3d965f81",
+  "lookup_crc32": [
+    "8e91efb7",
+    "d01a32f4",
+    "0dd7a0d6"
+  ],
+  "implementation_code_copied": false
+}

@@ -13,6 +13,7 @@ $tests = Join-Path $repoRoot 'mcw/tests/compression_conformance.rs'
 $reference = Join-Path $repoRoot 'mcw/tests/compression_reference.py'
 function Source-Hash([string]$Path) { (Get-FileHash -LiteralPath $Path -Algorithm SHA256).Hash.ToLowerInvariant() }
 $hashes = @{ implementation = Source-Hash $source; conformance = Source-Hash $tests; reference = Source-Hash $reference }
+$verifierHash = Source-Hash $PSCommandPath
 $buildHandle = $null
 $previousPath = $env:PATH
 $previousLib = $env:LIB
@@ -26,6 +27,7 @@ try {
         } catch [IO.IOException] { }
     }
     if (-not $buildHandle) { throw 'Build deferred: both compiler slots occupied' }
+    Write-Output ('BUILD SLOT '+$slot+'; verifier PID '+$PID+'; existing compression regression verification')
     $version = & $Rustc --version
     if ($LASTEXITCODE -ne 0 -or $version -notlike 'rustc 1.99.0 *') { throw 'Rust 1.99.0 required' }
     $linker = Get-ChildItem -Path 'C:\Program Files\Microsoft Visual Studio\*\*\VC\Tools\MSVC\*\bin\Hostx64\x64\link.exe' |
@@ -107,8 +109,8 @@ fn main() {
     & $Python $reference --driver $driverExe --evidence $evidenceRoot
     if ($LASTEXITCODE -ne 0) { throw 'Independent differential verification failed' }
     if ((Source-Hash $source) -ne $hashes.implementation -or (Source-Hash $tests) -ne $hashes.conformance -or
-        (Source-Hash $reference) -ne $hashes.reference) { throw 'Sources changed during verification' }
-    $evidence = @{ compiler=$version; edition=2024; platform='x86_64-pc-windows-msvc'; sources=$hashes; runs=$runs;
+        (Source-Hash $reference) -ne $hashes.reference -or (Source-Hash $PSCommandPath) -ne $verifierHash) { throw 'Sources changed during verification' }
+    $evidence = @{ compiler=$version; edition=2024; platform='x86_64-pc-windows-msvc'; sources=$hashes; verifier_sha256=$verifierHash; runs=$runs;
         differential=(Get-Content -LiteralPath (Join-Path $evidenceRoot 'differential.json') -Raw | ConvertFrom-Json);
         driver_source=$driverSource; driver_sha256=(Source-Hash $driverSource); production_integrated=$false;
         note='Actual-source ignored test harness only. No Cargo package, shipping executable, native compression library or production adapter added.' }
@@ -117,5 +119,5 @@ fn main() {
 } finally {
     $env:PATH = $previousPath
     $env:LIB = $previousLib
-    if ($buildHandle) { $buildHandle.Dispose() }
+    if ($buildHandle) { $buildHandle.Dispose();Write-Output ('BUILD SLOT '+$slot+' released; verifier PID '+$PID) }
 }
