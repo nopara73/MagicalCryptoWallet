@@ -2,10 +2,11 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using MagicalCryptoWallet.Mcw.Network;
 
 namespace MagicalCryptoWallet.Tests.UnitTests.Mocks;
 
-public class MockHttpClientFactory : IHttpClientFactory
+public class MockHttpClientFactory : IMcwHttpClientFactory
 {
 	public Func<string, HttpClient>? OnCreateClient { get; set; }
 	public HttpClient CreateClient(string name) =>

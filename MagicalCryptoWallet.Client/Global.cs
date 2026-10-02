@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using NBitcoin;
 using NBitcoin.Protocol;
 using Nito.AsyncEx;
+using MagicalCryptoWallet.Mcw.Network;
 using MagicalCryptoWallet.BitcoinP2p;
 using MagicalCryptoWallet.Blockchain.BlockFilters;
 using MagicalCryptoWallet.Blockchain.Blocks;
@@ -151,8 +152,8 @@ public class Global
 	public FilterHeaderChain FilterHeaders { get; }
 	public FilterStore FilterStore { get; }
 	public AllTransactionStore TransactionStore { get; }
-	public IHttpClientFactory ExternalSourcesHttpClientFactory { get; }
-	public IHttpClientFactory PublicSourcesHttpClientFactory { get; }
+	public IMcwHttpClientFactory ExternalSourcesHttpClientFactory { get; }
+	public IMcwHttpClientFactory PublicSourcesHttpClientFactory { get; }
 	public Config Config { get; }
 	public WalletSession WalletSession { get; }
 	public TransactionBroadcaster TransactionBroadcaster { get; }
