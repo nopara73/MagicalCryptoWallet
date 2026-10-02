@@ -1,0 +1,129 @@
+{
+  "schema_version": 1,
+  "verification": {
+    "checks": 31,
+    "adapterChecks": 13,
+    "productionRustBoundaryChecks": 18,
+    "actualProductionCaller": "TorProcessManager.IsTorRunningAsync",
+    "noTorLaunched": true,
+    "noWalletData": true,
+    "nativeDispatchBudgetMs": 250,
+    "exactDeadlineTimingProven": false,
+    "bridgeQueueBudgetMs": null,
+    "walletControlReader": "TorControlReplyReader.ReadReplyAsync",
+    "combined_privacy_control": {
+      "daemon": {
+        "assertions": 102,
+        "oracleReplies": 24,
+        "productionRustBridge": true,
+        "coordinatorExcluded": true
+      },
+      "gui": {
+        "assertions": 102,
+        "oracleReplies": 24,
+        "productionRustBridge": true,
+        "coordinatorExcluded": true
+      }
+    },
+    "unhosted_coordinator": {
+      "checks": 15,
+      "applicationHostBindingAbsent": true,
+      "walletRequiresRust": true,
+      "explicitCoordinatorReadinessAndParser": true,
+      "noTorLaunched": true,
+      "noWalletData": true
+    },
+    "native_binary_sha256": "9248f939e1221e94147c9d3a33f8707ed658b7d4abd7f210ea8e08f06e06a8b4",
+    "verified_utc": "2026-10-02T13:06:38.2921379Z",
+    "pinned_base": "52957dbc28e0f8f9b6acc65f6b6773415866988b"
+  },
+  "rust_tests": {
+    "wire": 16,
+    "transport": 29,
+    "probe_service": 4,
+    "total": 49,
+    "failed": 0,
+    "ignored": 0
+  },
+  "formatting": "passed",
+  "clippy": "warnings and all denied; passed",
+  "managed_builds": "core, wallet readiness fixture, client, unchanged privacy probe, external coordinator and role fixture: zero warnings/errors",
+  "privacy_source_commit": "ee4319b1a3ff6e456eda916273f50a12ae2ffdf6",
+  "privacy_canonical_patch_sha256": {
+    "callers": "7116a4fa06c30b13f39e3d467383b72ed4d396ce1d00823d77906a8fc93bcdb2",
+    "host": "22321eb00649298dbe2f152cedb0f658a31b4342cf43e519d2db7ba091502de7"
+  },
+  "privacy_ctor_fields_and_init_byte_preserved": true,
+  "privacy_future_incremental_revision_verified": false,
+  "runtime_imports": [
+    "kernel32.dll",
+    "shell32.dll",
+    "kernelbase.dll",
+    "api-ms-win-core-synch-l1-2-0.dll",
+    "ntdll.dll",
+    "WS2_32.dll"
+  ],
+  "external_cargo_dependencies": 0,
+  "shipping_executables_added": 0,
+  "production_integrated": false,
+  "verified_targets": [
+    "x86_64-pc-windows-msvc"
+  ],
+  "unverified_targets": [
+    "x86_64-unknown-linux-gnu",
+    "aarch64-unknown-linux-gnu",
+    "x86_64-apple-darwin",
+    "aarch64-apple-darwin"
+  ],
+  "source_sha256_tested_raw": {
+    "mcw/src/privacy_service/control_codec/service.rs": "71629d6476760a81947380d3c41d48fab894ab79763c28d8a67b3e706101d355",
+    "MagicalCryptoWallet.Coordinator/Tor/CoordinatorTorProcessManager.cs": "1cf87a7fc6ed3370a7d219cfae4582e3c0afe58ad6c42eef52d23763f68db175",
+    "mcw/src/app.rs": "7de1b85f0688ab4592b34b8d488dacf46ffec29ae2587abab20467073ee661a0",
+    "MagicalCryptoWallet/Mcw/Network/McwSocksProbe.cs": "76c568995b5fa52789df0f7a1b7f5df3184ac3ba10fd37192fb44976bc7c8e1e",
+    "mcw/tests/socks5_probe_coordinator_test.cs": "72ff1f750db2e92d2a298f89247df53a22c5d994357edb823526f3a25c04b635",
+    "MagicalCryptoWallet.Coordinator/TorManagerService.cs": "a4e164b90b823e58298444b1f29bc9d06ea38c2a3bcaba23116610e7bb1b0b4a",
+    "MagicalCryptoWallet/Tor/Control/TorControlClient.cs": "2c76729e3077a372461ab02d81fce5745f818efc2a9c45960d0165de4f9ed0c0",
+    "mcw/src/socks5.rs": "8e7e1acc44f6ad52bef8a1a8510f27003e336d35471287b647011895171d2683",
+    "MagicalCryptoWallet/Tor/Control/PipeReaderLineReaderExtension.cs": "bcda3a7f68722994e6cf65755c96b19b6f982daa25f432d7e6b2014b3a50efa1",
+    "mcw/tests/socks5_probe_coordinator.cs": "1cf87a7fc6ed3370a7d219cfae4582e3c0afe58ad6c42eef52d23763f68db175",
+    "MagicalCryptoWallet/Tor/Control/TorControlClientFactory.cs": "a07e5d4106025e14b6b372852c1cf31769bd19f20e450d67cac3bb97c4b89b0a",
+    "mcw/src/socks5/probe_service.rs": "a74c97ab8d7012ae0c65e9830414df0edac88ee5860fe8616de60e1b70147714",
+    "mcw/tests/socks5_probe_prepare.py": "2b80d6034338e89ab820f754f345dafb9c6bcc49a644f06142b151cf86f210fc",
+    "MagicalCryptoWallet.Client/Application/ManagedApplicationHost.cs": "19ac5fe2e7bf2f5a8cc0f694132e346e59748d210b48087487c0c429090de086",
+    "MagicalCryptoWallet/Mcw/Privacy/McwTorControlCodec.cs": "7eb4e3b76561816575d2288a40da8f88195e50e79c677cc15cc1c4ea7436503c",
+    "Contrib/McwMigration/PrivacyControlProbe/Program.cs": "dbf5bf7f8ad907825086f87d7022ce8ee357cf0b80f4cd0af00057708dc66102",
+    "mcw/tests/socks5_probe_verify.ps1": "06154d1ee7fb9e8c9cfcda963cbcafd96bcf7544254e6f73ce6872889ed7f8af",
+    "mcw/tests/socks5_probe_caller.patch": "4b37e974ed376624e5e7d90180d24230efb0548f1523a83103d630aaabde3182",
+    "MagicalCryptoWallet/Tor/TorProcessManager.cs": "72a20fbd57e0385623c63fd37929c579938d4d749a7098a5b447b9d204ffc489",
+    "mcw/tests/socks5_probe_caller.cs": "dd05d5f6361d38d8f798e3f7ac735089b4b6af2bff437bfa5c604cb7ec780224",
+    "MagicalCryptoWallet/Tor/Control/TorControlReplyReader.cs": "bfc2b186cd17ffe86e1eb6d50498ae30123e97e7d4c06dabe03448f419bc5f49",
+    "mcw/src/lib.rs": "95b48b92fa66cdabeb2262739b255a16f88d99af1067728246de81d0a887f40a",
+    "mcw/src/privacy_service/control_codec/mod.rs": "a6d62fd05731239cae9322376a61c5ebab773d4ae8df260b39c11aef68d503fb"
+  },
+  "source_sha256_canonical_lf": {
+    "mcw/src/privacy_service/control_codec/service.rs": "1a048f92c0ed50cfed8f471e3fce924cacd3bcfa193cd516d91e540710811135",
+    "MagicalCryptoWallet.Coordinator/Tor/CoordinatorTorProcessManager.cs": "1cf87a7fc6ed3370a7d219cfae4582e3c0afe58ad6c42eef52d23763f68db175",
+    "mcw/src/app.rs": "7de1b85f0688ab4592b34b8d488dacf46ffec29ae2587abab20467073ee661a0",
+    "MagicalCryptoWallet/Mcw/Network/McwSocksProbe.cs": "76c568995b5fa52789df0f7a1b7f5df3184ac3ba10fd37192fb44976bc7c8e1e",
+    "mcw/tests/socks5_probe_coordinator_test.cs": "72ff1f750db2e92d2a298f89247df53a22c5d994357edb823526f3a25c04b635",
+    "MagicalCryptoWallet.Coordinator/TorManagerService.cs": "a4e164b90b823e58298444b1f29bc9d06ea38c2a3bcaba23116610e7bb1b0b4a",
+    "MagicalCryptoWallet/Tor/Control/TorControlClient.cs": "2c76729e3077a372461ab02d81fce5745f818efc2a9c45960d0165de4f9ed0c0",
+    "mcw/src/socks5.rs": "89efabe8e4e49903e0790b7a24c0a62bd140ed176699217952a78eac15d234ed",
+    "MagicalCryptoWallet/Tor/Control/PipeReaderLineReaderExtension.cs": "bcda3a7f68722994e6cf65755c96b19b6f982daa25f432d7e6b2014b3a50efa1",
+    "mcw/tests/socks5_probe_coordinator.cs": "1cf87a7fc6ed3370a7d219cfae4582e3c0afe58ad6c42eef52d23763f68db175",
+    "MagicalCryptoWallet/Tor/Control/TorControlClientFactory.cs": "a07e5d4106025e14b6b372852c1cf31769bd19f20e450d67cac3bb97c4b89b0a",
+    "mcw/src/socks5/probe_service.rs": "6a89e2ed0ca9a75dbaefb4f3a4a773c6ce92537b20b122a6eab51d45fb544e13",
+    "mcw/tests/socks5_probe_prepare.py": "2b80d6034338e89ab820f754f345dafb9c6bcc49a644f06142b151cf86f210fc",
+    "MagicalCryptoWallet.Client/Application/ManagedApplicationHost.cs": "19ac5fe2e7bf2f5a8cc0f694132e346e59748d210b48087487c0c429090de086",
+    "MagicalCryptoWallet/Mcw/Privacy/McwTorControlCodec.cs": "7eb4e3b76561816575d2288a40da8f88195e50e79c677cc15cc1c4ea7436503c",
+    "Contrib/McwMigration/PrivacyControlProbe/Program.cs": "dbf5bf7f8ad907825086f87d7022ce8ee357cf0b80f4cd0af00057708dc66102",
+    "mcw/tests/socks5_probe_verify.ps1": "7aadabaedf5907703a3ebf3017d0d55ed76b1b65d41df4489b702e4fbd0e666b",
+    "mcw/tests/socks5_probe_caller.patch": "4b37e974ed376624e5e7d90180d24230efb0548f1523a83103d630aaabde3182",
+    "MagicalCryptoWallet/Tor/TorProcessManager.cs": "72a20fbd57e0385623c63fd37929c579938d4d749a7098a5b447b9d204ffc489",
+    "mcw/tests/socks5_probe_caller.cs": "dd05d5f6361d38d8f798e3f7ac735089b4b6af2bff437bfa5c604cb7ec780224",
+    "MagicalCryptoWallet/Tor/Control/TorControlReplyReader.cs": "bfc2b186cd17ffe86e1eb6d50498ae30123e97e7d4c06dabe03448f419bc5f49",
+    "mcw/src/lib.rs": "11eed57726204002d8915290194bb143897cbd5d58718a215d0e26d9ede94966",
+    "mcw/src/privacy_service/control_codec/mod.rs": "9b3159f8e58cbfd02d7f8f2c7dc13b0b11dc9aea92c07297cb0304aa017b0d61"
+  },
+  "detailed_evidence": ".artifacts/mcw-socks5-privacy-check/.artifacts/socks5-probe/"
+}

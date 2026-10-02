@@ -41,7 +41,9 @@ path = "MagicalCryptoWallet/Tor/TorProcessManager.cs"
 before = (root / path).read_text(encoding="utf-8")
 after = before.replace("using System.Net.Sockets;\n", "using MagicalCryptoWallet.Mcw.Network;\n")
 start = after.index("\tprivate static readonly byte[] NoAuthHandshakeMsg")
-end = after.index("\tpublic TorProcessManager", start)
+end = after.index("\n\t];", start) + len("\n\t];")
+assert after[end:end + 2] == "\n\n"
+end += 2
 after = after[:start] + after[end:]
 start = after.index("\tpublic virtual async Task<bool> IsTorRunningAsync")
 end = after.index("\n\t/// <summary>", start)
@@ -67,6 +69,16 @@ method = '''\tpublic virtual async Task<bool> IsTorRunningAsync(CancellationToke
 '''
 after = after[:start] + method + after[end:]
 change(path, before, after)
+
+path = "MagicalCryptoWallet.Coordinator/Tor/CoordinatorTorProcessManager.cs"
+assert not (root / path).exists()
+change(path, "", (root / "mcw/tests/socks5_probe_coordinator.cs").read_text(encoding="utf-8"))
+
+path = "MagicalCryptoWallet.Coordinator/TorManagerService.cs"
+before = (root / path).read_text(encoding="utf-8")
+construction = "new TorProcessManager(torSettings, new EventBus(), CoordinatorTorControlReplyReader.ReadReplyAsync)"
+assert before.count(construction) == 1, "Apply the pinned privacy caller patch first."
+change(path, before, before.replace(construction, "new CoordinatorTorProcessManager(torSettings, new EventBus())"))
 
 parts = []
 for path, before, after in changes:

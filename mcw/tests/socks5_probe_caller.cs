@@ -12,6 +12,7 @@ using MagicalCryptoWallet.Mcw;
 using MagicalCryptoWallet.Mcw.Network;
 using MagicalCryptoWallet.Services;
 using MagicalCryptoWallet.Tor;
+using MagicalCryptoWallet.Tor.Control;
 
 if (args.Length != 2 || args[0] != "socks-probe-tests") { return 2; }
 var report = Path.GetFullPath(args[1]);
@@ -35,6 +36,7 @@ using (var binding = McwApplicationServices.Bind(new FakeService([1, 1, 0])))
         catch (InvalidOperationException) { checks++; }
     }
 }
+var adapterChecks = checks;
 using var host = ManagedApplicationHost.Connect();
 using var stop = new CancellationTokenSource();
 host.BindShutdown(stop.Cancel);
@@ -66,7 +68,7 @@ var events = new List<bool>();
 var bus = new EventBus();
 using var subscription = bus.Subscribe<TorConnectionStateChanged>(item => events.Add(item.IsTorRunning));
 var settings = new TorSettings(syntheticRoot, syntheticRoot, false, socksPort: port, log: false);
-var manager = new TorProcessManager(settings, bus);
+var manager = new TorProcessManager(settings, bus, readReply: TorControlReplyReader.ReadReplyAsync);
 using (var cancellation = new CancellationTokenSource())
 {
     var pending = manager.IsTorRunningAsync(cancellation.Token);
@@ -74,7 +76,7 @@ using (var cancellation = new CancellationTokenSource())
     var elapsed = Stopwatch.StartNew();
     cancellation.Cancel();
     try { await pending; throw new Exception("Cancellation ignored."); } catch (OperationCanceledException) { }
-    if (elapsed.Elapsed > TimeSpan.FromSeconds(1)) { throw new Exception("Managed cancellation was not prompt."); }
+    if (elapsed.Elapsed > TimeSpan.FromSeconds(1)) { throw new Exception("Managed cancellation sanity bound exceeded."); }
     if (events.Count != 0) { throw new Exception("Cancellation published readiness."); }
 }
 await server;
@@ -95,7 +97,7 @@ var failedBus = new EventBus();
 var failureEvents = 0;
 using (failedBus.Subscribe<TorConnectionStateChanged>(item => { if (item.IsTorRunning) { throw new Exception("Refusal published ready."); } failureEvents++; }))
 {
-    var failed = new TorProcessManager(new TorSettings(syntheticRoot, syntheticRoot, false, socksPort: unavailablePort, log: false), failedBus);
+    var failed = new TorProcessManager(new TorSettings(syntheticRoot, syntheticRoot, false, socksPort: unavailablePort, log: false), failedBus, readReply: TorControlReplyReader.ReadReplyAsync);
     if (await failed.IsTorRunningAsync(CancellationToken.None) || failureEvents != 1) { throw new Exception("Refusal result mismatch."); }
     checks++;
 }
@@ -106,7 +108,10 @@ foreach (var invalid in new byte[][] { [], [0, 1, 127, 0, 0, 1, 0, 1], [1, 3, 1]
 }
 await RunAsync([5, 0], true);
 checks++;
-File.WriteAllText(report, JsonSerializer.Serialize(new { checks, actualProductionCaller = "TorProcessManager.IsTorRunningAsync", noTorLaunched = true, noWalletData = true, nativeProbeDeadlineMs = 250 }));
+File.WriteAllText(report, JsonSerializer.Serialize(new { checks, adapterChecks, productionRustBoundaryChecks = checks - adapterChecks,
+    actualProductionCaller = "TorProcessManager.IsTorRunningAsync", noTorLaunched = true, noWalletData = true,
+    nativeDispatchBudgetMs = 250, exactDeadlineTimingProven = false, bridgeQueueBudgetMs = (int?)null,
+    walletControlReader = "TorControlReplyReader.ReadReplyAsync" }));
 return 0;
 
 async Task RunAsync(byte[]? reply, bool expected)
@@ -132,11 +137,11 @@ async Task RunAsync(byte[]? reply, bool expected)
     var localBus = new EventBus();
     var changes = new List<bool>();
     using var change = localBus.Subscribe<TorConnectionStateChanged>(item => changes.Add(item.IsTorRunning));
-    var localManager = new TorProcessManager(new TorSettings(syntheticRoot, syntheticRoot, false, socksPort: proxyPort, log: false), localBus);
+    var localManager = new TorProcessManager(new TorSettings(syntheticRoot, syntheticRoot, false, socksPort: proxyPort, log: false), localBus, readReply: TorControlReplyReader.ReadReplyAsync);
     var elapsed = Stopwatch.StartNew();
     if (await localManager.IsTorRunningAsync(CancellationToken.None) != expected) { throw new Exception("Readiness result mismatch."); }
     if (changes.Count != 1 || changes[0] != expected) { throw new Exception("Readiness event mismatch."); }
-    if (elapsed.Elapsed > TimeSpan.FromSeconds(2)) { throw new Exception("Probe deadline exceeded."); }
+    if (elapsed.Elapsed > TimeSpan.FromSeconds(2)) { throw new Exception("Probe responsiveness sanity bound exceeded."); }
     await proxyTask;
     proxy.Stop();
 }
