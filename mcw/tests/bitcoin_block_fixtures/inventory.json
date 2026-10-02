@@ -1,0 +1,23 @@
+{
+  "revision": "748a961c78980c42bba293ff7ad1b9ca696566ec",
+  "counts": {
+    "block_header_merkle": {
+      "lines": 145,
+      "files": 27
+    },
+    "nbitcoin_import": {
+      "lines": 451,
+      "files": 381
+    },
+    "nbitcoin_package": {
+      "lines": 62,
+      "files": 19
+    }
+  },
+  "direct_partial_merkle_callers": 0,
+  "remaining_packages": [
+    "NBitcoin 10.0.13",
+    "NBitcoin.Secp256k1 3.1.6"
+  ],
+  "note": "Mechanical source snapshot, including coordinator/tool roles. Implicit/global imports and all package usages remain; codec migration alone removes no package."
+}

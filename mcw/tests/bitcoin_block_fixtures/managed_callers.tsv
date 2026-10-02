@@ -1,0 +1,660 @@
+# immutable_git_revision=748a961c78980c42bba293ff7ad1b9ca696566ec
+kind	role	path	line	source
+block_header_merkle	test_or_tool	Contrib/Tests/RegTestRpcProviders.cs	29	public static FilterProvider CreateFilterProvider(IRPCClient rpcClient, ConcurrentChain blockHeaderChain) =>
+block_header_merkle	test_or_tool	Contrib/Tests/RegTestRpcProviders.cs	48	ConcurrentChain blockHeaderChain, uint256 fromHash, uint fromHeight, CancellationToken cancellationToken)
+block_header_merkle	test_or_tool	Contrib/Tests/RegTestRpcProviders.cs	117	private static bool IsOrphanedFilterTip(ConcurrentChain blockHeaderChain, uint fromHeight, uint256 fromHash)
+block_header_merkle	test_or_tool	Contrib/Tests/RegTestRpcProviders.cs	129	private static async Task<FilterFetchingResult> GetFiltersFromBitcoinRpcAsync(IRPCClient bitcoinRpcClient, ConcurrentChain blockHeaderChain, uint256 fromHash, uint fromHeight, CancellationToken cancellationToken)
+block_header_merkle	test_or_tool	Contrib/Tests/RegTestRpcProviders.cs	174	catch (RPCException e) when (e.RPCCode == RPCErrorCode.RPC_INVALID_PARAMETER) // Block height out of range
+block_header_merkle	test_or_tool	Contrib/Utils/GenerateCheckpoint.cs	22	--height <uint>              Block height
+block_header_merkle	test_or_tool	Contrib/Utils/GenerateCheckpoint.cs	23	--hash   <hex>               Block hash (64 hex chars)
+block_header_merkle	test_or_tool	Contrib/Utils/GenerateCheckpoint.cs	75	var blockHashStr = data.Block.GetHash().ToString();
+block_header_merkle	test_or_tool	Contrib/Utils/GenerateCheckpoint.cs	76	var blockTime = data.Block.Header.BlockTime.ToUnixTimeSeconds();
+block_header_merkle	test_or_tool	Contrib/Utils/GenerateCheckpoint.cs	88	Console.WriteLine($"Block hash:               {blockHashStr}");
+block_header_merkle	test_or_tool	Contrib/Utils/GenerateCheckpoint.cs	89	Console.WriteLine($"Block filter header hash: {actualCompactFilterHeader}");
+block_header_merkle	test_or_tool	Contrib/Utils/GenerateCheckpoint.cs	90	Console.WriteLine($"Block height              {blockHeight}");
+block_header_merkle	test_or_tool	Contrib/Utils/GenerateCheckpoint.cs	91	Console.WriteLine($"Block time:               {blockTime}");
+block_header_merkle	test_or_tool	Contrib/Utils/GenerateCheckpoint.cs	92	Console.WriteLine($"Block filter:             {blockFilter[..Math.Min(100, blockFilter.Length)]}...");
+block_header_merkle	test_or_tool	Contrib/Utils/GenerateCheckpoint.cs	98	// Block {blockHeight}
+block_header_merkle	test_or_tool	Contrib/Utils/GenerateCheckpoint.cs	200	Block block;
+block_header_merkle	test_or_tool	Contrib/Utils/GenerateCheckpoint.cs	208	if (!block.CheckMerkleRoot())
+block_header_merkle	test_or_tool	Contrib/Utils/GenerateCheckpoint.cs	209	throw new Exception("Block merkle root check failed");
+block_header_merkle	test_or_tool	Contrib/Utils/GenerateCheckpoint.cs	263	Block Block);
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet.Client/Global.cs	141	private readonly ConcurrentChain _blockHeaders;
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet.Client/Global.cs	184	private ConcurrentChain ConfigureBlockHeaderChain(string p2PDataDir)
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet.Client/Global.cs	191	return new ConcurrentChain(Network);
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet.Client/Global.cs	199	[] => new ConcurrentChain(Network),
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet.Client/Global.cs	200	_ => new ConcurrentChain(bytes, Network)
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet.Client/Global.cs	202	_ => new ConcurrentChain(Network));
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet.Client/Global.cs	752	Logger.LogInfo("Block headers saved.");
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet.Fluent/Models/Wallets/WalletSyncProgress.cs	115	// Block headers are synced for the whole chain, not only for the range the wallet is scanned in.
+block_header_merkle	test_or_tool	MagicalCryptoWallet.IntegrationTests/BitcoinCore/Tests/RpcBasedTests.cs	57	Assert.NotNull(response.Block);
+block_header_merkle	test_or_tool	MagicalCryptoWallet.IntegrationTests/Infrastructure/RegTestEnvironment.cs	226	var blockHeaderChain = new ConcurrentChain(Network);
+block_header_merkle	test_or_tool	MagicalCryptoWallet.IntegrationTests/Infrastructure/RegTestEnvironment.cs	259	$"Block headers did not sync to target height {targetHeight} within {headerSyncTimeout.TotalSeconds}s. " +
+block_header_merkle	test_or_tool	MagicalCryptoWallet.IntegrationTests/Infrastructure/RegTestEnvironment.cs	296	private async Task<ConcurrentChain> BuildBlockHeaderChainAsync(CancellationToken cancellationToken)
+block_header_merkle	test_or_tool	MagicalCryptoWallet.IntegrationTests/Infrastructure/RegTestEnvironment.cs	298	// ConcurrentChain(Network) already includes the genesis block
+block_header_merkle	test_or_tool	MagicalCryptoWallet.IntegrationTests/Infrastructure/RegTestEnvironment.cs	299	var chain = new ConcurrentChain(Network);
+block_header_merkle	test_or_tool	MagicalCryptoWallet.IntegrationTests/Infrastructure/RegTestEnvironment.cs	307	chain.SetTip(new ChainedBlock(blockHeader, blockHash, chain.Tip));
+block_header_merkle	test_or_tool	MagicalCryptoWallet.Tests/IntegrationTests/BlockDownloadTests.cs	49	var tasks = new List<Task<Block?>>();
+block_header_merkle	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Mocks/MockRpcClient.cs	14	public Func<uint256, Task<Block>>? OnGetBlockAsync { get; set; }
+block_header_merkle	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Mocks/MockRpcClient.cs	16	public Func<uint256, Task<BlockHeader>>? OnGetBlockHeaderAsync { get; set; }
+block_header_merkle	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Mocks/MockRpcClient.cs	32	public List<Block> Blockchain { get; set; } = new();
+block_header_merkle	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Mocks/MockRpcClient.cs	43	public Task<Block> GetBlockAsync(uint256 blockId, CancellationToken cancellationToken = default)
+block_header_merkle	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Mocks/MockRpcClient.cs	45	return OnGetBlockAsync?.Invoke(blockId) ?? NotImplementedTask<Block>(nameof(GetBlockAsync));
+block_header_merkle	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Mocks/MockRpcClient.cs	48	public Task<Block> GetBlockAsync(uint blockHeight, CancellationToken cancellationToken = default)
+block_header_merkle	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Mocks/MockRpcClient.cs	68	public Task<BlockHeader> GetBlockHeaderAsync(uint256 blockHash, CancellationToken cancellationToken = default)
+block_header_merkle	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Mocks/MockRpcClient.cs	70	return OnGetBlockHeaderAsync?.Invoke(blockHash) ?? NotImplementedTask<BlockHeader>(nameof(GetBlockHeaderAsync));
+block_header_merkle	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Services/CompactFilterBehaviorTests.cs	17	var blockHeaderChain = new ConcurrentChain(network);
+block_header_merkle	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Services/CompactFilterBehaviorTests.cs	21	var canonicalBlock = new ChainedBlock(header, header.GetHash(), blockHeaderChain.Tip);
+block_header_merkle	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Services/FilterProvidersTests.cs	29	var provider = RegTestRpcProviders.CreateFilterProvider(rpc, new ConcurrentChain(Network.RegTest));
+block_header_merkle	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Services/FilterProvidersTests.cs	64	var provider = RegTestRpcProviders.CreateFilterProvider(rpc, new ConcurrentChain(Network.Main));
+block_header_merkle	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Services/FilterProvidersTests.cs	95	new RPCException(RPCErrorCode.RPC_INVALID_PARAMETER, "Block height out of range", null));
+block_header_merkle	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Services/FilterProvidersTests.cs	104	var provider = RegTestRpcProviders.CreateFilterProvider(rpc, new ConcurrentChain(Network.Main));
+block_header_merkle	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Services/FilterProvidersTests.cs	146	var newBlockAtHeight100 = new ChainedBlock(header100, header100.GetHash(), blockAtHeight99);
+block_header_merkle	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Services/FilterProvidersTests.cs	149	output.WriteLine($"Block at height 99:      {blockAtHeight99.HashBlock}");
+block_header_merkle	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Services/FilterProvidersTests.cs	164	/// Reorg of the block at the height 100 representing the tip of the blockchain. Inferred from an RPC call, not from <see cref="ConcurrentChain"/>.
+block_header_merkle	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Services/FilterProvidersTests.cs	197	var newBlockAtHeight100 = new ChainedBlock(header100, header100.GetHash(), blockAtHeight99);
+block_header_merkle	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Services/FilterProvidersTests.cs	201	var newBlockAtHeight101 = new ChainedBlock(header101, header101.GetHash(), newBlockAtHeight100);
+block_header_merkle	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Services/FilterProvidersTests.cs	254	ChainedBlock reorgTip;
+block_header_merkle	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Services/FilterProvidersTests.cs	257	var newBlockAtHeight99 = new ChainedBlock(header99, header99.GetHash(), blockAtHeight98);
+block_header_merkle	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Services/FilterProvidersTests.cs	261	output.WriteLine($"Block at height 99  (orphaned): {originalBlockAtHeight99.HashBlock}  ");
+block_header_merkle	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Services/FilterProvidersTests.cs	262	output.WriteLine($"Block at height 100 (orphaned): {originalBlockAtHeight100.HashBlock} (chain work: {originalBlockAtHeight100.GetChainWork(false)})");
+block_header_merkle	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Services/FilterProvidersTests.cs	263	output.WriteLine($"Block at height 99  (new):      {newBlockAtHeight99.HashBlock} (chain work: {newBlockAtHeight99.GetChainWork(false)})");
+block_header_merkle	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Services/FilterProvidersTests.cs	286	/// Blockchain with the best height 100. The RPC client reports the best new height 105. Block hash for height 103 is missing from the RPC client.
+block_header_merkle	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Services/FilterProvidersTests.cs	334	throw new RPCException(RPCErrorCode.RPC_INVALID_PARAMETER, "Block with height 103 cannot be found.", result: null);
+block_header_merkle	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Services/FilterProvidersTests.cs	362	private static ConcurrentChain InitializeBlockchain(Network network)
+block_header_merkle	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Services/FilterProvidersTests.cs	366	var blockchain = new ConcurrentChain(network);
+block_header_merkle	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Services/FilterProvidersTests.cs	373	lastLocalTip = new ChainedBlock(header, header.GetHash(), lastLocalTip);
+block_header_merkle	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Services/FilterProvidersTests.cs	383	private static MockRpcClient CreateRpcMock(Network network, ConcurrentChain blockchain)
+block_header_merkle	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Services/FilterProvidersTests.cs	393	throw new InvalidOperationException($"Block with height {height} is not present.");
+block_header_merkle	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Services/FilterProvidersTests.cs	400	private static BlockHeader CreateNewBlockHeader(Network network, ChainedBlock tip, int height, bool forkBranch = false)
+block_header_merkle	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Services/SynchronizerReorgTests.cs	27	var blockHeaders = new ConcurrentChain(Network.Main);
+block_header_merkle	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Services/SynchronizerReorgTests.cs	91	fork.BlockHeaders.SetTip(new ChainedBlock(header, header.GetHash(), fork.BlockHeaders.Tip));
+block_header_merkle	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Services/SynchronizerReorgTests.cs	126	public required ConcurrentChain BlockHeaders { get; init; }
+block_header_merkle	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Services/SynchronizerReorgTests.cs	135	var blockHeaders = new ConcurrentChain(Network.RegTest);
+block_header_merkle	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Services/SynchronizerReorgTests.cs	145	blockHeaders.SetTip(new ChainedBlock(winnerHeader, winnerHeader.GetHash(), blockHeaders.Tip.Previous));
+block_header_merkle	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Services/SynchronizerReorgTests.cs	165	private static void Mine(ConcurrentChain chain)
+block_header_merkle	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Services/SynchronizerReorgTests.cs	169	chain.SetTip(new ChainedBlock(header, header.GetHash(), chain.Tip));
+block_header_merkle	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Wallet/FilterProcessor/BlockDownloadServiceTests.cs	25	Block block1 = Network.Main.Consensus.ConsensusFactory.CreateBlock();
+block_header_merkle	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Wallet/FilterProcessor/BlockDownloadServiceTests.cs	26	Block block2 = Network.Main.Consensus.ConsensusFactory.CreateBlock();
+block_header_merkle	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Wallet/FilterProcessor/BlockDownloadServiceTests.cs	27	Block block3 = Network.Main.Consensus.ConsensusFactory.CreateBlock();
+block_header_merkle	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Wallet/FilterProcessor/BlockDownloadServiceTests.cs	28	Block block4 = Network.Main.Consensus.ConsensusFactory.CreateBlock();
+block_header_merkle	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Wallet/FilterProcessor/BlockDownloadServiceTests.cs	109	Task<Block?>[] tasks = [task1, task2, task3, task4];
+block_header_merkle	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Wallet/FilterProcessor/BlockDownloadServiceTests.cs	118	Block? actualBlock2 = await fullNodeBlockProvider(blockHash2, testCts.Token);
+block_header_merkle	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Wallet/FilterProcessor/BlockDownloadServiceTests.cs	135	Block block1 = Network.Main.Consensus.ConsensusFactory.CreateBlock();
+block_header_merkle	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Wallet/FilterProcessor/BlockDownloadServiceTests.cs	136	Block block2 = Network.Main.Consensus.ConsensusFactory.CreateBlock();
+block_header_merkle	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Wallet/FilterProcessor/BlockDownloadServiceTests.cs	137	Block block3 = Network.Main.Consensus.ConsensusFactory.CreateBlock();
+block_header_merkle	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Wallet/FilterProcessor/BlockDownloadServiceTests.cs	138	Block block4 = Network.Main.Consensus.ConsensusFactory.CreateBlock();
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet/BitcoinP2p/BlockHeadersChainBehavior.cs	10	ConcurrentChain blockHeaderChain,
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet/BitcoinP2p/BlockHeadersChainBehavior.cs	48	if (message.Message.Payload is HeadersPayload)
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet/BitcoinP2p/CompactFilterBehavior.cs	12	ConcurrentChain blockHeaderChain,
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet/BitcoinP2p/CompactFilterBehavior.cs	318	Logger.LogWarning($"Block header not available for height {height}");
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet/BitcoinP2p/FilterSynchronizationState.cs	20	private readonly ConcurrentChain _blockHeaderChain;
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet/BitcoinP2p/FilterSynchronizationState.cs	32	public FilterSynchronizationState(ConcurrentChain blockHeaderChain, FilterHeaderChain filterHeaderChain, ChainHeight tipHeight,
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet/BitcoinP2p/FilterSynchronizationState.cs	163	var reason = $"Block header not found at height {height}, aborting batch validation";
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet/BitcoinP2p/FilterSynchronizationState.cs	440	return MarkReorg($"Block {fromHash} at height {fromHeight} not found or mismatched in block header chain. Reorg detected.");
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet/BitcoinP2p/FilterSynchronizationState.cs	465	return MarkReorg($"Hash mismatch at height {h}. Filter={filterHeader.BlockHash}, Block={block.HashBlock}. Reorg detected.");
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet/BitcoinRpc/CachedRpcClient.cs	53	public override async Task<Block> GetBlockAsync(uint256 blockHash, CancellationToken cancellationToken = default)
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet/BitcoinRpc/CachedRpcClient.cs	64	public override async Task<Block> GetBlockAsync(uint blockHeight, CancellationToken cancellationToken = default)
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet/BitcoinRpc/CachedRpcClient.cs	86	public override async Task<BlockHeader> GetBlockHeaderAsync(uint256 blockHash, CancellationToken cancellationToken = default)
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet/BitcoinRpc/IRPCClient.cs	12	Task<Block> GetBlockAsync(uint256 blockId, CancellationToken cancellationToken = default);
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet/BitcoinRpc/IRPCClient.cs	14	Task<Block> GetBlockAsync(uint blockHeight, CancellationToken cancellationToken = default);
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet/BitcoinRpc/IRPCClient.cs	16	Task<BlockHeader> GetBlockHeaderAsync(uint256 blockHash, CancellationToken cancellationToken = default);
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet/BitcoinRpc/RpcClientBase.cs	25	public virtual async Task<Block> GetBlockAsync(uint256 blockHash, CancellationToken cancellationToken = default)
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet/BitcoinRpc/RpcClientBase.cs	30	public virtual async Task<Block> GetBlockAsync(uint blockHeight, CancellationToken cancellationToken = default)
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet/BitcoinRpc/RpcClientBase.cs	35	public virtual async Task<BlockHeader> GetBlockHeaderAsync(uint256 blockHash, CancellationToken cancellationToken = default)
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet/Blockchain/BlockFilters/FilterCheckpoints.cs	13	// Block 481824
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet/Blockchain/BlockFilters/FilterCheckpoints.cs	22	// Block 500000
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet/Blockchain/BlockFilters/FilterCheckpoints.cs	31	// Block 550000
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet/Blockchain/BlockFilters/FilterCheckpoints.cs	40	// Block 600000
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet/Blockchain/BlockFilters/FilterCheckpoints.cs	49	// Block 650000
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet/Blockchain/BlockFilters/FilterCheckpoints.cs	58	// Block 700000
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet/Blockchain/BlockFilters/FilterCheckpoints.cs	67	// Block 750000
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet/Blockchain/BlockFilters/FilterCheckpoints.cs	76	// Block 800000
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet/Blockchain/BlockFilters/FilterCheckpoints.cs	85	// Block 830000
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet/Blockchain/BlockFilters/FilterCheckpoints.cs	94	// Block 840000
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet/Blockchain/BlockFilters/FilterCheckpoints.cs	103	// Block 850000
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet/Blockchain/BlockFilters/FilterCheckpoints.cs	112	// Block 860000
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet/Blockchain/BlockFilters/FilterCheckpoints.cs	121	// Block 870000
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet/Blockchain/BlockFilters/FilterCheckpoints.cs	130	// Block 880000
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet/Blockchain/BlockFilters/FilterCheckpoints.cs	139	// Block 890000
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet/Blockchain/BlockFilters/FilterCheckpoints.cs	148	// Block 900000
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet/Blockchain/BlockFilters/FilterCheckpoints.cs	156	// Block 910000
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet/Blockchain/BlockFilters/FilterCheckpoints.cs	165	// Block 920000
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet/Blockchain/BlockFilters/FilterCheckpoints.cs	174	// Block 930000
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet/Blockchain/BlockFilters/FilterCheckpoints.cs	183	// Block 940000
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet/Blockchain/BlockFilters/FilterCheckpoints.cs	192	// Block 950000
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet/Blockchain/BlockFilters/FilterCheckpoints.cs	201	// Block 960000
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet/Blockchain/BlockFilters/FilterCheckpoints.cs	214	// Block 0
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet/Blockchain/BlockFilters/FilterCheckpoints.cs	226	// Block 0
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet/Blockchain/BlockFilters/FilterCheckpoints.cs	238	// Block 0
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	21	public static async Task<Block?> DownloadBlockAsync(this Node node, uint256 hash, CancellationToken cancellationToken)
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	43	if (message.Message.Payload is BlockPayload b && b.Object?.GetHash() == hash)
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet/FeeRateEstimation/FeeRateProviders.cs	29	cancellationToken => GetFeeRateEstimationsAsync("Block.xyz",
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet/Services/NodesManagement/P2pConnectionManager.cs	27	public async Task<Block?> GetBlockAsync(uint256 blockHash, CancellationToken cancellationToken)
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet/Services/NodesManagement/P2pConnectionManager.cs	47	Logger.LogInfo($"Block ({block.GetCoinbaseHeight()}) downloaded: {block.GetHash()}.");
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet/Services/Synchronizer.cs	28	public static FilterProvider CreateBitcoinP2pFilterProvider(FilterHeaderChain filterHeadersChain, ConcurrentChain blockHeadersChain, FilterSynchronizationState synchronizationState) =>
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet/Services/Synchronizer.cs	33	ConcurrentChain blockHeadersChain,
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet/Services/Synchronizer.cs	48	// Block headers are synchronized from scratch. Filter headers are synchronized from an appropriate checkpoint.
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet/Services/Synchronizer.cs	51	Logger.LogTrace($"Block headers chain is not synchronized yet ({blockHeadersChain.Height} < {filterHeadersChain.TipHeight}). Retrying in {WaitForBlockHeadersToCatchUp.TotalSeconds} seconds.");
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet/Services/Synchronizer.cs	164	Logger.LogInfo($"REORG Invalid Block: {reorgedFilter.Header.BlockHash}  Height {reorgedFilter.Header.Height}.");
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet/Services/Synchronizer.cs	221	$"    Block Hash: {firstFilter.Header.BlockHash}",
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet/Wallets/BlockProviders.cs	10	public delegate Task<Block?> BlockProvider(uint256 blockHash, CancellationToken cancellationToken);
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet/Wallets/FileSystemBlockRepository.cs	61	public async Task<Block?> TryGetBlockAsync(uint256 hash, CancellationToken cancellationToken)
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet/Wallets/FileSystemBlockRepository.cs	75	var block = Block.Load(blockBytes, _network);
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet/Wallets/FileSystemBlockRepository.cs	83	Logger.LogInfo($"Block {hash} file corrupted, deleting file and block will be re-downloaded. Deleting...");
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet/Wallets/FileSystemBlockRepository.cs	103	public async Task SaveAsync(Block block, CancellationToken cancellationToken)
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet/Wallets/FilterProcessor/BlockFilterIterator.cs	42	throw new UnreachableException($"Block filter for height {height} was not found.");
+block_header_merkle	application_or_coordinator	MagicalCryptoWallet/Wallets/WalletFilterProcessor.cs	181	throw new IOException($"Block {filter.Header.BlockHash} is unavailable; synchronization will retry.");
+nbitcoin_import	test_or_tool	Contrib/Releases/Publisher/Program.cs	3	using NBitcoin;
+nbitcoin_import	test_or_tool	Contrib/Releases/Publisher/Program.cs	4	using NBitcoin.Crypto;
+nbitcoin_import	test_or_tool	Contrib/Tests/RegTestRpcProviders.cs	7	using NBitcoin;
+nbitcoin_import	test_or_tool	Contrib/Tests/RegTestRpcProviders.cs	8	using NBitcoin.RPC;
+nbitcoin_import	test_or_tool	Contrib/Utils/GenerateCheckpoint.cs	10	using NBitcoin;
+nbitcoin_import	test_or_tool	Contrib/Utils/GenerateCheckpoint.cs	11	using NBitcoin.Protocol;
+nbitcoin_import	test_or_tool	Contrib/Utils/GenerateCheckpoint.cs	12	using NBitcoin.Protocol.Behaviors;
+nbitcoin_import	test_or_tool	Contrib/VisualPreview/AutomaticCoinSelectionChecks.cs	13	using NBitcoin;
+nbitcoin_import	test_or_tool	Contrib/VisualPreview/BitcoinP2pChecks.cs	12	using NBitcoin;
+nbitcoin_import	test_or_tool	Contrib/VisualPreview/BitcoinP2pChecks.cs	13	using NBitcoin.Protocol;
+nbitcoin_import	test_or_tool	Contrib/VisualPreview/FeeDisplayChecks.cs	12	using NBitcoin;
+nbitcoin_import	test_or_tool	Contrib/VisualPreview/HistoryDateChecks.cs	15	using NBitcoin;
+nbitcoin_import	test_or_tool	Contrib/VisualPreview/RecoveryWordsChecks.cs	13	using NBitcoin;
+nbitcoin_import	test_or_tool	Contrib/VisualPreview/SoftwareWalletChecks.cs	13	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Backend/Config/Config.cs	3	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Backend/Startup.cs	7	using NBitcoin.RPC;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Backend/Startup.cs	15	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Backend/StartupTask.cs	2	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Client/Bootstrap.cs	8	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Client/Bootstrap.cs	9	using NBitcoin.JsonConverters;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Client/Configuration/Config.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Client/Configuration/PersistentConfig.cs	3	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Client/Configuration/PersistentConfigManager.cs	4	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Client/DesktopActivation.cs	8	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Client/Global.cs	11	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Client/Global.cs	12	using NBitcoin.Protocol;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Client/MagicalCryptoWalletApplication.cs	5	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Client/MagicalCryptoWalletLibGenerator.cs	4	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Client/Rpc/MagicalCryptoWalletJsonRpcService.cs	8	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Client/StartupLaunch.cs	5	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Coordinator/Controllers/WabiSabiController.cs	5	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Coordinator/Startup.cs	13	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Coordinator/Startup.cs	14	using NBitcoin.RPC;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Coordinator/StartupTask.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Coordinator/StartupTask.cs	2	using NBitcoin.RPC;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Coordinator/WabiSabi/Arena.Partial.cs	4	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Coordinator/WabiSabi/Arena.cs	8	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Coordinator/WabiSabi/Arena.cs	9	using NBitcoin.RPC;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/App.axaml.cs	11	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/Behaviors/HistoryItemTypeClassBehavior.cs	6	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/Controls/AmountControl.axaml.cs	3	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/Controls/CurrencyEntryBox.axaml.cs	10	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/Controls/DualCurrencyEntryBox.axaml.cs	13	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/Converters/MoneyConverters.cs	3	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/Converters/PreferredScriptPubKeyTypeConverter.cs	2	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/Extensions/CurrencyExtensions.cs	3	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/Helpers/NotificationHelpers.cs	7	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/Helpers/TextHelpers.cs	5	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/Helpers/TransactionFeeHelper.cs	4	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/Helpers/TransactionHelpers.cs	5	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/IServices.cs	5	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/Infrastructure/ClipboardObserver.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/Models/DataLegend.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/Models/Pocket.cs	2	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/Models/TransactionBroadcasterModel.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/Models/Transactions/PrivacySuggestion.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/Models/Transactions/PrivacySuggestionsModel.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/Models/Transactions/RecipientInfo.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/Models/Transactions/SendFlowModel.cs	2	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/Models/UI/ApplicationSettings.cs	4	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/Models/WalletBackup.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/Models/WalletCreationOptions.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/Models/Wallets/Address.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/Models/Wallets/AddressesModel.cs	6	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/Models/Wallets/Amount.cs	3	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/Models/Wallets/AmountProvider.cs	2	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/Models/Wallets/CoinModel.cs	3	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/Models/Wallets/RegularTransactionModel.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/Models/Wallets/ScriptType.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/Models/Wallets/SingleTransactionModel.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/Models/Wallets/TransactionModel.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/Models/Wallets/TransactionTreeBuilder.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/Models/Wallets/WalletInfoModel.cs	1	using NBitcoin.WalletPolicies;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/Models/Wallets/WalletModel.cs	7	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/Models/Wallets/WalletModelExtensions.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/Models/Wallets/WalletSettingsModel.cs	3	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/Models/Wallets/WalletSetupService.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/Models/Wallets/WalletTransactionsModel.cs	10	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/Services.cs	6	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/ViewModels/AddWallet/Create/RecoveryWordsViewModel.cs	3	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/ViewModels/AddWallet/RecoverWalletViewModel.cs	8	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/ViewModels/Dialogs/ShowQrCameraDialogViewModel.cs	3	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/ViewModels/MainViewModel.cs	6	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/ViewModels/Navigation/FluentNavigate.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/ViewModels/SearchBar/Sources/TransactionsSearchSource.cs	8	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/ViewModels/Settings/BitcoinTabSettingsViewModel.cs	2	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/ViewModels/Settings/ConnectionsSettingsTabViewModel.cs	3	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/ViewModels/Wallets/CoinJoinPayment/AddCoinJoinPaymentViewModel.cs	6	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/ViewModels/Wallets/CoinJoinPayment/CoinJoinPaymentViewModel.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/ViewModels/Wallets/Coinjoins/CoinjoinCostsViewModel.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/ViewModels/Wallets/Coins/CoinListItem.cs	5	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/ViewModels/Wallets/Home/History/Details/CoinJoinDetailsViewModel.cs	4	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/ViewModels/Wallets/Home/History/Details/CoinJoinsDetailsViewModel.cs	6	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/ViewModels/Wallets/Home/History/Details/TransactionDetailsViewModel.cs	6	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/ViewModels/Wallets/Home/History/HistoryViewModel.cs	10	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/ViewModels/Wallets/Home/Tiles/PrivacyControlTileViewModel.cs	8	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/ViewModels/Wallets/Home/Tiles/PrivacyRing/PrivacyBarViewModel.cs	2	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/ViewModels/Wallets/Home/Tiles/PrivacyRing/PrivacyRingItemViewModel.cs	3	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/ViewModels/Wallets/Home/Tiles/PrivacyRing/PrivacyRingViewModel.cs	2	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/ViewModels/Wallets/IWalletViewModel.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/ViewModels/Wallets/Send/RecipientRowViewModel.cs	6	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/ViewModels/Wallets/Send/SendViewModel.cs	10	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/ViewModels/Wallets/Send/TransactionInfo.cs	4	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/ViewModels/Wallets/Send/TransactionPreviewViewModel.cs	10	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/ViewModels/Wallets/Send/TransactionPreviewViewModel.cs	11	using NBitcoin.Policy;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/ViewModels/Wallets/Send/TransactionSummaryViewModel.cs	3	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/ViewModels/Wallets/Settings/WalletCoinJoinSettingsViewModel.cs	4	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/ViewModels/Wallets/Settings/WalletSettingsViewModel.cs	6	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/ViewModels/Wallets/Settings/WalletVerifyRecoveryWordsViewModel.cs	7	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet.Fluent/ViewModels/Wallets/WalletViewModel.cs	10	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.IntegrationTests/BitcoinCore/Configuration/CoreConfigTranslator.cs	2	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.IntegrationTests/BitcoinCore/Configuration/NetworkTranslator.cs	2	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.IntegrationTests/BitcoinCore/Configuration/Whitening/WhiteBind.cs	2	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.IntegrationTests/BitcoinCore/Configuration/Whitening/WhiteEntry.cs	4	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.IntegrationTests/BitcoinCore/CoreNode.cs	7	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.IntegrationTests/BitcoinCore/CoreNode.cs	8	using NBitcoin.DataEncoders;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.IntegrationTests/BitcoinCore/CoreNode.cs	9	using NBitcoin.Protocol;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.IntegrationTests/BitcoinCore/CoreNode.cs	10	using NBitcoin.RPC;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.IntegrationTests/BitcoinCore/CoreNodeParams.cs	2	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.IntegrationTests/BitcoinCore/Endpointing/EndPointStrategy.cs	2	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.IntegrationTests/BitcoinCore/Endpointing/PortFinder.cs	4	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.IntegrationTests/BitcoinCore/Processes/BitcoindRpcProcessBridge.cs	6	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.IntegrationTests/BitcoinCore/Tests/ConfigTranslatorTests.cs	2	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.IntegrationTests/BitcoinCore/Tests/NodeBuildingTests.cs	2	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.IntegrationTests/BitcoinCore/Tests/P2pBasedTests.cs	8	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.IntegrationTests/BitcoinCore/Tests/RpcBasedTests.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.IntegrationTests/BitcoinCore/Tests/RpcBasedTests.cs	2	using NBitcoin.RPC;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.IntegrationTests/Infrastructure/RegTestEnvironment.cs	8	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.IntegrationTests/Infrastructure/RegTestEnvironment.cs	9	using NBitcoin.Protocol;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.IntegrationTests/Infrastructure/RegTestEnvironment.cs	10	using NBitcoin.Protocol.Behaviors;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.IntegrationTests/Infrastructure/RegTestEnvironment.cs	11	using NBitcoin.RPC;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.IntegrationTests/Infrastructure/TestNodeBuilder.cs	7	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.IntegrationTests/SyncTests/PublicPeerTrafficTests.cs	6	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.IntegrationTests/SyncTests/PublicPeerTrafficTests.cs	7	using NBitcoin.Protocol;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.IntegrationTests/SyncTests/ReorgTests.cs	6	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.IntegrationTests/WalletTests/WalletReceiveTests.cs	4	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.IntegrationTests/WalletTests/WalletSendTests.cs	6	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/Helpers/AnalyzedTransaction/AnalyzedTransaction.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/Helpers/AnalyzedTransaction/AnalyzedTransaction.cs	6	using NBitcoin.Crypto;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/Helpers/AnalyzedTransaction/AnalyzedTransaction.cs	7	using NBitcoin.DataEncoders;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/Helpers/AnalyzedTransaction/ForeignOutput.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/Helpers/AnalyzedTransaction/WalletOutput.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/Helpers/BitcoinFactory.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/Helpers/BitcoinFactory.cs	2	using NBitcoin.RPC;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/Helpers/ServiceFactory.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/Helpers/SyntheticKeyChain.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/Helpers/TransactionParametersBuilder.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/Helpers/WabiSabiFactory.cs	2	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/Helpers/WabiSabiFactory.cs	3	using NBitcoin.Crypto;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/Helpers/WabiSabiFactory.cs	4	using NBitcoin.RPC;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/IntegrationTests/BlockDownloadTests.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/IntegrationTests/BlockDownloadTests.cs	5	using NBitcoin.Protocol;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/AutomaticCoinSelectionTests.cs	6	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Blockchain/Blocks/FilterHeaderChainTests.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Blockchain/Keys/WpkhOutputDescriptorHelperTests.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Blockchain/TransactionBuilding/ChangelessTransactionCoinSelectorTests.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Blockchain/TransactionOutputs/CoinsRegistryTests.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/BlockchainAnalysis/CoinJoinAnonscoreTests.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/BlockchainAnalysis/PubKeyReuseAnonScoreTests.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/BlockchainAnalysis/ReceiveAnonScoreTests.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/BlockchainAnalysis/SelfSpendAnonScoreTests.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Cache/IdempotencyRequestCacheTests.cs	2	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Cache/IdempotencyRequestCacheTests.cs	3	using NBitcoin.RPC;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Client/Configuration/PersistentConfigManagerTests.cs	5	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Client/Configuration/PublicNetworkRoutingTests.cs	4	using NBitcoin.Protocol.Behaviors;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/CoinJoinPolicyTests.cs	5	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Crypto/Bip322SignatureTest.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Crypto/Bip322SignatureTest.cs	2	using NBitcoin.DataEncoders;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Crypto/OwnershipProofTest.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Crypto/OwnershipProofTest.cs	2	using NBitcoin.DataEncoders;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Crypto/Slip21NodeTests.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/DesktopActivationTests.cs	3	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Extensions/HistoryDateFormattingTests.cs	2	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/FeeRateEstimation/ExternalFeeRateProviderTests.cs	6	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/FeeRateEstimationsTests.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/FeeRateEstimationsTests.cs	2	using NBitcoin.RPC;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Helpers/TransactionFeeHelperTests.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/InvalidTxExceptionTests.cs	2	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/InvalidTxExceptionTests.cs	3	using NBitcoin.Policy;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/JsonConverters/DestinationJsonConverterTests.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/KeyManagerTests.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Mocks/MockRpcClient.cs	4	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Mocks/MockRpcClient.cs	5	using NBitcoin.RPC;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/NBitcoinTests.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/RebrandIdentityTests.cs	5	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/RpcTests.cs	3	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Services/CompactFilterBehaviorTests.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Services/CompactFilterBehaviorTests.cs	2	using NBitcoin.Protocol;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Services/CpfpInfoProviderTests.cs	5	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Services/CpfpTrafficTests.cs	5	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Services/FilterProvidersTests.cs	2	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Services/FilterProvidersTests.cs	3	using NBitcoin.RPC;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Services/MempoolTrafficTests.cs	5	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Services/MempoolTrafficTests.cs	6	using NBitcoin.Protocol;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Services/PeerDiscoveryTests.cs	6	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Services/PeerDiscoveryTests.cs	7	using NBitcoin.Protocol;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Services/ReleaseDownloaderTests.cs	5	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Services/SynchronizerReorgTests.cs	2	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Services/TestReleaseAuthor.cs	1	using NBitcoin.Secp256k1;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Services/UpdateManagerTests.cs	6	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Services/UpdateSignatureTests.cs	5	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/SingleWalletCoinJoinTests.cs	16	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/SingleWalletTests.cs	11	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/SmartCoinTests.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/SmartHeaderTests.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/SoftwareWalletTests.cs	10	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/StartMagicalCryptoWalletOnSystemStartupTests.cs	10	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Stores/BlockFilterSqliteStorageTests.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Stores/FilterStoreTests.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/TestWallet.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/TestWallet.cs	2	using NBitcoin.DataEncoders;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Transactions/AllTransactionStoreTests.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Transactions/SmartTransactionTests.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Transactions/TransactionFactoryTests.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Transactions/TransactionProcessorTests.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Transactions/TransactionSqliteStorageTests.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/UserInterfaceTest/PocketSelectionTests.cs	4	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Userfacing/AddressParserTests.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Userfacing/Bip21/Bip21UriParserTests.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Userfacing/PasswordTests.cs	8	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/ViewModels/CoinjoinCostsViewModelTests.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/ViewModels/ConfirmRecoveryWordsViewModelTests.cs	7	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Backend/CoordinatorOutputTests.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Backend/OffenderSerializationTests.cs	2	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Backend/PhaseStepping/StepOutputRegistrationTests.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Backend/PhaseStepping/StepTransactionSigningTests.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Backend/PhaseStepping/StepTransactionSigningTests.cs	2	using NBitcoin.RPC;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Backend/PostRequests/ConfirmConnectionTests.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Backend/PostRequests/ReadyToSignRequestRequestTests.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Backend/PostRequests/RegisterInputFailureTests.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Backend/PostRequests/RegisterInputSuccessTests.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Backend/PostRequests/RegisterInputToBlameRoundTests.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Backend/PostRequests/RegisterOutputTests.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Backend/PostRequests/RemoveInputTests.cs	4	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Backend/PostRequests/SignTransactionTests.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Backend/PrisonTests.cs	2	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Backend/Rounds/MultipartyTransactionStateTests.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Backend/UtxoPrisonWardenTests.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Client/AmountDecomposerTests.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Client/ArenaClientTests.cs	2	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Client/ArenaClientTests.cs	3	using NBitcoin.RPC;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Client/BobClientTests.cs	2	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Client/CoinJoinClientTests.cs	8	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Client/CoinJoinCoinSelectionTests.cs	2	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Client/CoinjoinCostsTests.cs	3	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Client/KeyChainTests.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Client/PaymentAwareOutputProviderTests.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Client/PaymentBatchTests.cs	2	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Client/WalletInputValidationTests.cs	6	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Crypto/CredentialRequesting/RealCredentialsRequestTests.cs	1	using NBitcoin.Secp256k1;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Crypto/CredentialRequesting/ZeroCredentialsRequestTests.cs	1	using NBitcoin.Secp256k1;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Crypto/OwnershipProofTests.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Integration/IWebHostBuilderExtensions.cs	6	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Integration/Participant.cs	4	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Integration/Startup.cs	8	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Integration/WabiSabiApiApplicationFactory.cs	11	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Integration/WabiSabiHttpApiIntegrationTests.cs	2	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/ConnectionConfirmationRequestTests.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/ConnectionConfirmationRequestTests.cs	2	using NBitcoin.Secp256k1;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/ConstructionStateTests.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/InputRegistrationRequestTests.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/InputRegistrationRequestTests.cs	2	using NBitcoin.Secp256k1;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/InputsRemovalRequestTests.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/MultipartyTransactionTests.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/OutputRegistrationRequestTests.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/OutputRegistrationRequestTests.cs	2	using NBitcoin.Secp256k1;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/RoundStateUpdaterTests.cs	6	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/SerializationTests.cs	4	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/SerializationTests.cs	5	using NBitcoin.Secp256k1;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/TransactionSignaturesRequestTests.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/SerializationTests.cs	5	using NBitcoin.Secp256k1;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Wallet/FileSystemBlockRepositoryTests.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Wallet/FilterProcessor/BlockDownloadServiceTests.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Wallet/FilterProcessor/BlockFilterIteratorTests.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Wallet/SmartCoinSelectorTests.cs	3	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/WalletDirectoriesTests.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/WalletOperationAuthorizationTests.cs	5	using NBitcoin;
+nbitcoin_import	test_or_tool	MagicalCryptoWallet.Tests/UnitTests/Wallets/LockTimeSelectorTests.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Backend/Models/FilterModel.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/BitcoinP2p/BlockHeadersChainBehavior.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/BitcoinP2p/BlockHeadersChainBehavior.cs	2	using NBitcoin.Protocol;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/BitcoinP2p/BlockHeadersChainBehavior.cs	3	using NBitcoin.Protocol.Behaviors;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/BitcoinP2p/CompactFilterBehavior.cs	1	using NBitcoin.Protocol;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/BitcoinP2p/CompactFilterBehavior.cs	2	using NBitcoin.Protocol.Behaviors;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/BitcoinP2p/P2pBehavior.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/BitcoinP2p/P2pBehavior.cs	2	using NBitcoin.Protocol;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/BitcoinP2p/P2pBehavior.cs	3	using NBitcoin.Protocol.Behaviors;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/BitcoinRpc/CachedRpcClient.cs	3	using NBitcoin.RPC;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/BitcoinRpc/IRPCClient.cs	1	using NBitcoin.RPC;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/BitcoinRpc/RpcClientBase.cs	2	using NBitcoin.RPC;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Blockchain/Keys/BlockchainState.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Blockchain/Keys/HdPubKey.cs	1	using NBitcoin.Secp256k1;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Blockchain/Keys/HdPubKeyInfo.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Blockchain/Keys/KeyManager.cs	1	using NBitcoin.Secp256k1;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Blockchain/Keys/KeyManager.cs	2	using NBitcoin.WalletPolicies;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Blockchain/Keys/WalletGenerator.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Blockchain/Keys/WpkhOutputDescriptorHelper.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Blockchain/Keys/WpkhOutputDescriptorHelper.cs	2	using NBitcoin.WalletPolicies;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Blockchain/Mempool/MempoolService.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Blockchain/Mempool/TransactionRequestTracker.cs	4	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Blockchain/TransactionBroadcasting/TransactionBroadcaster.cs	1	using NBitcoin.Protocol;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Blockchain/TransactionBuilding/BuildTransactionResult.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Blockchain/TransactionBuilding/ChangelessTransactionCoinSelector.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Blockchain/TransactionBuilding/DestinationRequest.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Blockchain/TransactionBuilding/FeeStrategy.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Blockchain/TransactionBuilding/MoneyRequest.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Blockchain/TransactionBuilding/PaymentIntent.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Blockchain/TransactionBuilding/SmartCoinSelector.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Blockchain/TransactionBuilding/TransactionBuilderWalletExtensions.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Blockchain/TransactionBuilding/TransactionModifierWalletExtensions.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Blockchain/TransactionOutputs/CoinsRegistry.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Blockchain/TransactionOutputs/CoinsView.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Blockchain/TransactionOutputs/ForeignVirtualOutput.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Blockchain/TransactionOutputs/ICoinsView.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Blockchain/TransactionOutputs/WalletVirtualOutput.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Blockchain/TransactionProcessing/ProcessedResult.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Blockchain/Transactions/AllTransactionStore.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Blockchain/Transactions/EmptyTransactionStore.cs	2	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Blockchain/Transactions/ITransactionStore.cs	2	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Blockchain/Transactions/SmartTransactionExtensions.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Blockchain/Transactions/Summary/ForeignInput.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Blockchain/Transactions/Summary/ForeignOutput.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Blockchain/Transactions/Summary/IInput.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Blockchain/Transactions/Summary/KnownInput.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Blockchain/Transactions/Summary/Output.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Blockchain/Transactions/Summary/OwnOutput.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Blockchain/Transactions/TransactionBroadcastEntry.cs	6	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Blockchain/Transactions/TransactionDependencyNode.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Blockchain/Transactions/TransactionFactory.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Blockchain/Transactions/TransactionParameters.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Blockchain/Transactions/TransactionStore.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Blockchain/Transactions/TransactionSummary.cs	3	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Crypto/Bip322Signature.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Crypto/CoinJoinInputCommitmentData.cs	3	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Crypto/CoinJoinInputCommitmentData.cs	4	using NBitcoin.Protocol;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Crypto/OwnershipIdentifier.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Crypto/OwnershipIdentifier.cs	2	using NBitcoin.Crypto;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Crypto/OwnershipProof.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Crypto/ProofBody.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Crypto/ProofBody.cs	2	using NBitcoin.Crypto;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Crypto/ProofBody.cs	3	using NBitcoin.Protocol;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Crypto/Slip21Node.cs	3	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Crypto/StrobeProtocol/StrobeHasherExtensions.cs	3	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Discoverability/AnnouncerConfig.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Discoverability/AnnouncerConfig.cs	2	using NBitcoin.Secp256k1;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Discoverability/CoordinatorAnnouncer.cs	5	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Discoverability/CoordinatorConnectionString.cs	4	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Exceptions/InsufficientBalanceException.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Exceptions/InvalidTxException.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Exceptions/InvalidTxException.cs	2	using NBitcoin.Policy;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Exceptions/NotSupportedNetworkException.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Exceptions/TransactionSizeException.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Exceptions/UnknownRoundEndingException.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	2	using NBitcoin.DataEncoders;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	3	using NBitcoin.Protocol;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Extensions/RPCClientExtensions.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Extensions/RPCClientExtensions.cs	2	using NBitcoin.RPC;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Extensions/SystemNetExtensions.cs	3	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Helpers/Constants.cs	2	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Helpers/NBitcoinHelpers.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Helpers/TxOutEqualityComparer.cs	2	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Models/CpfpInfo.cs	2	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Models/PreferredScriptPubKeyType.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Models/ServiceConfiguration.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Rpc/JsonConverters/BitcoinAddressJsonConverter.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Rpc/JsonConverters/DestinationJsonConverter.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Rpc/JsonConverters/OutPointAsTxoRefJsonConverter.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Rpc/JsonConverters/SmartTransactionJsonConverter.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Rpc/JsonConverters/Uint256JsonConverter.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Rpc/JsonRpcRequestHandler.cs	6	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Rpc/PaymentInfo.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Serialization/Bitcoin.cs	2	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Serialization/Bitcoin.cs	3	using NBitcoin.DataEncoders;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Serialization/Client.cs	4	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Serialization/Client.cs	5	using NBitcoin.Secp256k1;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Serialization/Config.cs	4	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Serialization/Coordination.cs	7	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Serialization/WabiSabi.cs	3	using NBitcoin.Secp256k1;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Services/EventBus.cs	11	using NBitcoin.Protocol;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Services/NodesManagement/P2pConnectionManager.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Services/NodesManagement/P2pConnectionManager.cs	2	using NBitcoin.Protocol;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Services/NodesManagement/P2pConnectionManager.cs	3	using NBitcoin.Protocol.Behaviors;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Services/NodesManagement/PeerAddressCache.cs	6	using NBitcoin.Protocol;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Services/NodesManagement/PeerInfo.cs	3	using NBitcoin.Protocol;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Services/UpdateManager.cs	6	using NBitcoin.Crypto;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Stores/BlockFilterSqliteStorage.cs	2	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Stores/TransactionSqliteStorage.cs	2	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Userfacing/Bip21/Bip21UriParser.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Userfacing/Bip21/Bip21UriParser.cs	2	using NBitcoin.Payment;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Userfacing/PasswordHelper.cs	3	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/WabiSabi/Coordinator/Models/Alice.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/WabiSabi/Coordinator/Rounds/RoundParameters.cs	1	using NBitcoin.Policy;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/WabiSabi/Crypto/RoundHasher.cs	2	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/WabiSabi/GlobalUsings.cs	6	global using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/WabiSabi/Models/HumanMonitorRoundResponse.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Wallets/BlockProviders.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Wallets/CpfpInfoProvider.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Wallets/FileSystemBlockRepository.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Wallets/LockTimeSelector.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Wallets/Wallet.cs	2	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Wallets/WalletAuthorization.cs	1	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Wallets/WalletFilterProcessor.cs	2	using NBitcoin;
+nbitcoin_import	application_or_coordinator	MagicalCryptoWallet/Wallets/WalletSession.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	ThirdParty/WabiSabi/csharp/WabiSabi.Tests/Crypto/CredentialIssuerKeyTests.cs	2	using NBitcoin.Secp256k1;
+nbitcoin_import	test_or_tool	ThirdParty/WabiSabi/csharp/WabiSabi.Tests/Crypto/GroupElements/GeneralTests.cs	1	using NBitcoin.Secp256k1;
+nbitcoin_import	test_or_tool	ThirdParty/WabiSabi/csharp/WabiSabi.Tests/Crypto/GroupElements/GeneratorTests.cs	1	using NBitcoin.Secp256k1;
+nbitcoin_import	test_or_tool	ThirdParty/WabiSabi/csharp/WabiSabi.Tests/Crypto/GroupElements/OperationTests.cs	1	using NBitcoin.Secp256k1;
+nbitcoin_import	test_or_tool	ThirdParty/WabiSabi/csharp/WabiSabi.Tests/Crypto/MacTests.cs	1	using NBitcoin.Secp256k1;
+nbitcoin_import	test_or_tool	ThirdParty/WabiSabi/csharp/WabiSabi.Tests/Crypto/ProofSystemHelpers.cs	2	using NBitcoin.Secp256k1;
+nbitcoin_import	test_or_tool	ThirdParty/WabiSabi/csharp/WabiSabi.Tests/Crypto/ProofSystemTests.cs	2	using NBitcoin.Secp256k1;
+nbitcoin_import	test_or_tool	ThirdParty/WabiSabi/csharp/WabiSabi.Tests/Crypto/ScalarTests.cs	1	using NBitcoin.Secp256k1;
+nbitcoin_import	test_or_tool	ThirdParty/WabiSabi/csharp/WabiSabi.Tests/Crypto/TestTranscript.cs	1	using NBitcoin.Secp256k1;
+nbitcoin_import	test_or_tool	ThirdParty/WabiSabi/csharp/WabiSabi.Tests/Crypto/TranscriptTests.cs	2	using NBitcoin.Secp256k1;
+nbitcoin_import	test_or_tool	ThirdParty/WabiSabi/csharp/WabiSabi.Tests/Crypto/ZeroKnowledge/KnowledgeOfDlogTests.cs	2	using NBitcoin.Secp256k1;
+nbitcoin_import	test_or_tool	ThirdParty/WabiSabi/csharp/WabiSabi.Tests/Crypto/ZeroKnowledge/KnowledgeOfRepTests.cs	2	using NBitcoin.Secp256k1;
+nbitcoin_import	test_or_tool	ThirdParty/WabiSabi/csharp/WabiSabi.Tests/Crypto/ZeroKnowledge/LinearRelationTests.cs	1	using NBitcoin.Secp256k1;
+nbitcoin_import	test_or_tool	ThirdParty/WabiSabi/csharp/WabiSabi.Tests/CryptoHelpers.cs	1	using NBitcoin.Secp256k1;
+nbitcoin_import	test_or_tool	ThirdParty/WabiSabi/csharp/WabiSabi/CredentialIssuer.cs	9	using NBitcoin.Secp256k1;
+nbitcoin_import	test_or_tool	ThirdParty/WabiSabi/csharp/WabiSabi/Crypto/CredentialIssuerSecretKey.cs	3	using NBitcoin.Secp256k1;
+nbitcoin_import	test_or_tool	ThirdParty/WabiSabi/csharp/WabiSabi/Crypto/Extensions.cs	3	using NBitcoin.Secp256k1;
+nbitcoin_import	test_or_tool	ThirdParty/WabiSabi/csharp/WabiSabi/Crypto/Extensions.cs	4	using NBitcoin;
+nbitcoin_import	test_or_tool	ThirdParty/WabiSabi/csharp/WabiSabi/Crypto/Groups/Generators.cs	3	using NBitcoin.Secp256k1;
+nbitcoin_import	test_or_tool	ThirdParty/WabiSabi/csharp/WabiSabi/Crypto/Groups/GroupElement.cs	1	using NBitcoin.Secp256k1;
+nbitcoin_import	test_or_tool	ThirdParty/WabiSabi/csharp/WabiSabi/Crypto/Mac.cs	3	using NBitcoin.Secp256k1;
+nbitcoin_import	test_or_tool	ThirdParty/WabiSabi/csharp/WabiSabi/Crypto/Randomness/WalletRandom.cs	1	using NBitcoin;
+nbitcoin_import	test_or_tool	ThirdParty/WabiSabi/csharp/WabiSabi/Crypto/Randomness/WalletRandom.cs	2	using NBitcoin.Secp256k1;
+nbitcoin_import	test_or_tool	ThirdParty/WabiSabi/csharp/WabiSabi/Crypto/ScalarVector.cs	6	using NBitcoin.Secp256k1;
+nbitcoin_import	test_or_tool	ThirdParty/WabiSabi/csharp/WabiSabi/Crypto/ZeroKnowledge/Credential.cs	3	using NBitcoin.Secp256k1;
+nbitcoin_import	test_or_tool	ThirdParty/WabiSabi/csharp/WabiSabi/Crypto/ZeroKnowledge/LinearRelation/Equation.cs	1	using NBitcoin.Secp256k1;
+nbitcoin_import	test_or_tool	ThirdParty/WabiSabi/csharp/WabiSabi/Crypto/ZeroKnowledge/LinearRelation/Knowledge.cs	3	using NBitcoin.Secp256k1;
+nbitcoin_import	test_or_tool	ThirdParty/WabiSabi/csharp/WabiSabi/Crypto/ZeroKnowledge/LinearRelation/Statement.cs	3	using NBitcoin.Secp256k1;
+nbitcoin_import	test_or_tool	ThirdParty/WabiSabi/csharp/WabiSabi/Crypto/ZeroKnowledge/ProofSystem.cs	5	using NBitcoin.Secp256k1;
+nbitcoin_import	test_or_tool	ThirdParty/WabiSabi/csharp/WabiSabi/Crypto/ZeroKnowledge/SyntheticSecretNonceProvider.cs	3	using NBitcoin.Secp256k1;
+nbitcoin_import	test_or_tool	ThirdParty/WabiSabi/csharp/WabiSabi/Crypto/ZeroKnowledge/Transcript.cs	3	using NBitcoin.Secp256k1;
+nbitcoin_import	test_or_tool	ThirdParty/WabiSabi/csharp/WabiSabi/Helpers/Guard.cs	3	using NBitcoin.Secp256k1;
+nbitcoin_import	test_or_tool	ThirdParty/WabiSabi/csharp/WabiSabi/IssuanceValidationData.cs	3	using NBitcoin.Secp256k1;
+nbitcoin_import	test_or_tool	ThirdParty/WabiSabi/csharp/WabiSabi/Native/WabiSabiClient.cs	7	using NBitcoin.Secp256k1;
+nbitcoin_import	test_or_tool	ThirdParty/WabiSabi/csharp/WabiSabi/Native/WireFormat.cs	4	using NBitcoin.Secp256k1;
+nbitcoin_import	test_or_tool	ThirdParty/WabiSabi/csharp/WabiSabi/WabiSabiClient.cs	7	using NBitcoin.Secp256k1;
+nbitcoin_import	test_or_tool	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/OwnershipProofInteropTests.cs	2	using NBitcoin;
+nbitcoin_import	test_or_tool	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/Reference/Bip322Signature.cs	3	using NBitcoin;
+nbitcoin_import	test_or_tool	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/Reference/CoinJoinInputCommitmentData.cs	5	using NBitcoin;
+nbitcoin_import	test_or_tool	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/Reference/CoinJoinInputCommitmentData.cs	6	using NBitcoin.Protocol;
+nbitcoin_import	test_or_tool	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/Reference/OwnershipIdentifier.cs	5	using NBitcoin;
+nbitcoin_import	test_or_tool	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/Reference/OwnershipIdentifier.cs	6	using NBitcoin.Crypto;
+nbitcoin_import	test_or_tool	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/Reference/OwnershipProof.cs	3	using NBitcoin;
+nbitcoin_import	test_or_tool	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/Reference/ProofBody.cs	3	using NBitcoin;
+nbitcoin_import	test_or_tool	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/Reference/ProofBody.cs	4	using NBitcoin.Crypto;
+nbitcoin_import	test_or_tool	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/Reference/ProofBody.cs	5	using NBitcoin.Protocol;
+nbitcoin_import	test_or_tool	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/Reference/ReferenceExtensions.cs	5	using NBitcoin;
+nbitcoin_package	test_or_tool	Contrib/Releases/Publisher/MagicalCryptoWallet.ReleaseTools.csproj	9	<PackageReference Include="NBitcoin" />
+nbitcoin_package	test_or_tool	Contrib/Releases/Publisher/packages.lock.json	5	"NBitcoin": {
+nbitcoin_package	test_or_tool	Contrib/Releases/Publisher/packages.lock.json	23	"NBitcoin.Secp256k1": "3.1.6",
+nbitcoin_package	test_or_tool	Contrib/Releases/Publisher/packages.lock.json	55	"NBitcoin.Secp256k1": {
+nbitcoin_package	test_or_tool	Contrib/VisualPreview/packages.lock.json	487	"NBitcoin": "[10.0.13, )",
+nbitcoin_package	test_or_tool	Contrib/VisualPreview/packages.lock.json	521	"NBitcoin.Secp256k1": "[3.1.6, )"
+nbitcoin_package	test_or_tool	Contrib/VisualPreview/packages.lock.json	665	"NBitcoin": {
+nbitcoin_package	test_or_tool	Contrib/VisualPreview/packages.lock.json	675	"NBitcoin.Secp256k1": {
+nbitcoin_package	test_or_tool	Contrib/VisualPreview/packages.lock.json	695	"NBitcoin.Secp256k1": "3.1.6",
+nbitcoin_package	application_or_coordinator	Directory.Packages.props	31	<PackageVersion Include="NBitcoin.Secp256k1" Version="3.1.6" />
+nbitcoin_package	application_or_coordinator	Directory.Packages.props	32	<PackageVersion Include="NBitcoin" Version="10.0.13" />
+nbitcoin_package	application_or_coordinator	MagicalCryptoWallet.Client/packages.lock.json	208	"NBitcoin": "[10.0.13, )",
+nbitcoin_package	application_or_coordinator	MagicalCryptoWallet.Client/packages.lock.json	216	"NBitcoin.Secp256k1": "[3.1.6, )"
+nbitcoin_package	application_or_coordinator	MagicalCryptoWallet.Client/packages.lock.json	281	"NBitcoin": {
+nbitcoin_package	application_or_coordinator	MagicalCryptoWallet.Client/packages.lock.json	291	"NBitcoin.Secp256k1": {
+nbitcoin_package	application_or_coordinator	MagicalCryptoWallet.Client/packages.lock.json	311	"NBitcoin.Secp256k1": "3.1.6",
+nbitcoin_package	application_or_coordinator	MagicalCryptoWallet.Coordinator/packages.lock.json	67	"NBitcoin": "[10.0.13, )",
+nbitcoin_package	application_or_coordinator	MagicalCryptoWallet.Coordinator/packages.lock.json	75	"NBitcoin.Secp256k1": "[3.1.6, )"
+nbitcoin_package	application_or_coordinator	MagicalCryptoWallet.Coordinator/packages.lock.json	95	"NBitcoin": {
+nbitcoin_package	application_or_coordinator	MagicalCryptoWallet.Coordinator/packages.lock.json	104	"NBitcoin.Secp256k1": {
+nbitcoin_package	application_or_coordinator	MagicalCryptoWallet.Coordinator/packages.lock.json	124	"NBitcoin.Secp256k1": "3.1.6",
+nbitcoin_package	application_or_coordinator	MagicalCryptoWallet.Daemon/packages.lock.json	189	"NBitcoin": "[10.0.13, )",
+nbitcoin_package	application_or_coordinator	MagicalCryptoWallet.Daemon/packages.lock.json	205	"NBitcoin.Secp256k1": "[3.1.6, )"
+nbitcoin_package	application_or_coordinator	MagicalCryptoWallet.Daemon/packages.lock.json	283	"NBitcoin": {
+nbitcoin_package	application_or_coordinator	MagicalCryptoWallet.Daemon/packages.lock.json	293	"NBitcoin.Secp256k1": {
+nbitcoin_package	application_or_coordinator	MagicalCryptoWallet.Daemon/packages.lock.json	313	"NBitcoin.Secp256k1": "3.1.6",
+nbitcoin_package	application_or_coordinator	MagicalCryptoWallet.Fluent.Desktop/packages.lock.json	548	"NBitcoin": "[10.0.13, )",
+nbitcoin_package	application_or_coordinator	MagicalCryptoWallet.Fluent.Desktop/packages.lock.json	582	"NBitcoin.Secp256k1": "[3.1.6, )"
+nbitcoin_package	application_or_coordinator	MagicalCryptoWallet.Fluent.Desktop/packages.lock.json	726	"NBitcoin": {
+nbitcoin_package	application_or_coordinator	MagicalCryptoWallet.Fluent.Desktop/packages.lock.json	736	"NBitcoin.Secp256k1": {
+nbitcoin_package	application_or_coordinator	MagicalCryptoWallet.Fluent.Desktop/packages.lock.json	756	"NBitcoin.Secp256k1": "3.1.6",
+nbitcoin_package	application_or_coordinator	MagicalCryptoWallet.Fluent/packages.lock.json	602	"NBitcoin": "[10.0.13, )",
+nbitcoin_package	application_or_coordinator	MagicalCryptoWallet.Fluent/packages.lock.json	618	"NBitcoin.Secp256k1": "[3.1.6, )"
+nbitcoin_package	application_or_coordinator	MagicalCryptoWallet.Fluent/packages.lock.json	696	"NBitcoin": {
+nbitcoin_package	application_or_coordinator	MagicalCryptoWallet.Fluent/packages.lock.json	706	"NBitcoin.Secp256k1": {
+nbitcoin_package	application_or_coordinator	MagicalCryptoWallet.Fluent/packages.lock.json	726	"NBitcoin.Secp256k1": "3.1.6",
+nbitcoin_package	test_or_tool	MagicalCryptoWallet.IntegrationTests/packages.lock.json	335	"NBitcoin": "[10.0.13, )",
+nbitcoin_package	test_or_tool	MagicalCryptoWallet.IntegrationTests/packages.lock.json	343	"NBitcoin.Secp256k1": "[3.1.6, )"
+nbitcoin_package	test_or_tool	MagicalCryptoWallet.IntegrationTests/packages.lock.json	408	"NBitcoin": {
+nbitcoin_package	test_or_tool	MagicalCryptoWallet.IntegrationTests/packages.lock.json	418	"NBitcoin.Secp256k1": {
+nbitcoin_package	test_or_tool	MagicalCryptoWallet.IntegrationTests/packages.lock.json	438	"NBitcoin.Secp256k1": "3.1.6",
+nbitcoin_package	test_or_tool	MagicalCryptoWallet.Tests/packages.lock.json	813	"NBitcoin": "[10.0.13, )",
+nbitcoin_package	test_or_tool	MagicalCryptoWallet.Tests/packages.lock.json	856	"NBitcoin": "[10.0.13, )",
+nbitcoin_package	test_or_tool	MagicalCryptoWallet.Tests/packages.lock.json	863	"NBitcoin.Secp256k1": "[3.1.6, )"
+nbitcoin_package	test_or_tool	MagicalCryptoWallet.Tests/packages.lock.json	1013	"NBitcoin": {
+nbitcoin_package	test_or_tool	MagicalCryptoWallet.Tests/packages.lock.json	1023	"NBitcoin.Secp256k1": {
+nbitcoin_package	test_or_tool	MagicalCryptoWallet.Tests/packages.lock.json	1043	"NBitcoin.Secp256k1": "3.1.6",
+nbitcoin_package	application_or_coordinator	MagicalCryptoWallet/MagicalCryptoWallet.csproj	32	<PackageReference Include="NBitcoin" />
+nbitcoin_package	application_or_coordinator	MagicalCryptoWallet/packages.lock.json	73	"NBitcoin": {
+nbitcoin_package	application_or_coordinator	MagicalCryptoWallet/packages.lock.json	91	"NBitcoin.Secp256k1": "3.1.6",
+nbitcoin_package	application_or_coordinator	MagicalCryptoWallet/packages.lock.json	275	"NBitcoin.Secp256k1": "[3.1.6, )"
+nbitcoin_package	application_or_coordinator	MagicalCryptoWallet/packages.lock.json	278	"NBitcoin.Secp256k1": {
+nbitcoin_package	test_or_tool	ThirdParty/WabiSabi/csharp/WabiSabi.Tests/packages.lock.json	163	"NBitcoin.Secp256k1": "[3.1.6, )"
+nbitcoin_package	test_or_tool	ThirdParty/WabiSabi/csharp/WabiSabi.Tests/packages.lock.json	166	"NBitcoin.Secp256k1": {
+nbitcoin_package	test_or_tool	ThirdParty/WabiSabi/csharp/WabiSabi/WabiSabi.csproj	13	<PackageReference Include="NBitcoin.Secp256k1" />
+nbitcoin_package	test_or_tool	ThirdParty/WabiSabi/csharp/WabiSabi/packages.lock.json	5	"NBitcoin.Secp256k1": {
+nbitcoin_package	test_or_tool	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/WabiSabiInterop.Tests.csproj	13	<PackageReference Include="NBitcoin" />
+nbitcoin_package	test_or_tool	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/packages.lock.json	5	"NBitcoin": {
+nbitcoin_package	test_or_tool	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/packages.lock.json	150	"NBitcoin.Secp256k1": "[3.1.6, )"
+nbitcoin_package	test_or_tool	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/packages.lock.json	153	"NBitcoin.Secp256k1": {
+nbitcoin_package	test_or_tool	ThirdParty/WabiSabi/interop/packages.lock.json	8	"NBitcoin.Secp256k1": "[3.1.6, )"
+nbitcoin_package	test_or_tool	ThirdParty/WabiSabi/interop/packages.lock.json	11	"NBitcoin.Secp256k1": {
