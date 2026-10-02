@@ -1,0 +1,423 @@
+{
+  "schema": 1,
+  "recorded_at_utc": "2026-10-02T14:06:47.030755+00:00",
+  "scope": "Evidence preservation and qualification only; no unchanged builds or new dependency scope",
+  "gui_source_basis": "76b5c878cc27f6ae3182f2a77730fb15c163b1c2",
+  "gui_proof_publication_commit": "5b7651c2a283e8f06aed11c03eb17ffc3effb069",
+  "source_pinned_directory": "C:\\Users\\user\\OneDrive\\Documents\\ChatGPT\\MagicalCryptoWallet\\.artifacts\\mcw-wallet-hash-callers\\.artifacts\\wallet-hmac-evidence\\source-pinned-gui-76b5c878cc-5b7651c2a2",
+  "pinned_files": {
+    "outputs/caller-verification.json": {
+      "sha256": "6930b5f0a22b5730d7fee2cfcbeb2fd99cbda3cbf81e5fdaad837a5a6de95601",
+      "bytes": 9223
+    },
+    "outputs/caller-results.json": {
+      "sha256": "5a0d03cc89e9a8cad9967681560a93b3177c4f27665a3f639b8a555ae7cfe0d0",
+      "bytes": 226
+    },
+    "outputs/managed-build.txt": {
+      "sha256": "d8eee3f5bba3b3b86e8189991bbbb26953ac59affbf643c51700b1d0222f5705",
+      "bytes": 749
+    },
+    "outputs/caller-stdout.bin": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "outputs/caller-stderr.txt": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "manifests/wallet-hmac-evidence.json": {
+      "sha256": "8820293a438aa4d4479e1f997328ebe5794770354f7cf8c477962f9f0c5a580f",
+      "bytes": 17063
+    },
+    "manifests/wallet-hmac-gui-evidence.json": {
+      "sha256": "b34a948f09853fbc7f9daafa8b0608053eb4d1b9b5ab0efbf6041e46dfde267b",
+      "bytes": 20911
+    },
+    "outputs/reviewed-snapshot-basis.json": {
+      "sha256": "0458cddadb9ff67bb21ef3592e5665021dffbc00eda496170616038e252348b6",
+      "bytes": 852
+    },
+    "binaries/mcw.exe": {
+      "sha256": "1444cf8c4254510d02c62dca77dedb0c5ecd005cb3e2bf6fb10747ef5cb02214",
+      "bytes": 452096
+    },
+    "binaries/HmacProbe.dll": {
+      "sha256": "e3ec8fe903e470f5ddf2efe2bcd1df0cf0fa240f9d65b46e42bf57a6df820560",
+      "bytes": 50688
+    },
+    "binaries/MagicalCryptoWallet.dll": {
+      "sha256": "2bf13834ee4c62c4fe6f4d4edd15fd37443eaff69c5e1964feeb0d33f16bd1c4",
+      "bytes": 3715584
+    },
+    "binaries/libwabisabi.dll": {
+      "sha256": "fbc41759c3623e4232930b7e37541dce41cae2dad81c367d0b1e78c92711b3b3",
+      "bytes": 1416371
+    },
+    "sources/rust/app/inbox.rs": {
+      "sha256": "f7e4d1d87453ac3938c7fb3fd2d95e2f2babf2addd052ec3dbd0b15eeed271c0",
+      "bytes": 7870
+    },
+    "sources/rust/app.rs": {
+      "sha256": "c013a6d30be29c51ee6bb74bf688e835e09367810d3fa2d962193a8216623024",
+      "bytes": 10259
+    },
+    "sources/rust/bitcoin_block.rs": {
+      "sha256": "61d420624642fdddca37508d486bf8308de10b058a7f14ffdc18b4db3e4ff5a3",
+      "bytes": 47492
+    },
+    "sources/rust/bitcoin_block_service.rs": {
+      "sha256": "384248097ff87fad57ee88c589f0ea3768afb0f7a39fbfbf02b922bb7685a821",
+      "bytes": 554
+    },
+    "sources/rust/bitcoin_encoding/address_service.rs": {
+      "sha256": "8922e6eef1da1c9706ff9fc87f053d647cb10dfc25972fed16d159dda805a92a",
+      "bytes": 4096
+    },
+    "sources/rust/bitcoin_encoding.rs": {
+      "sha256": "55f2002f3e2e91a8e0567523a5b1c8df778d95ffef71604ed87241af71ab13c2",
+      "bytes": 27351
+    },
+    "sources/rust/bitcoin_script.rs": {
+      "sha256": "8ee521cd95caf4d32992d97298b20ed1d76045b1efdeb5699015f604b7b221da",
+      "bytes": 48446
+    },
+    "sources/rust/bitcoin_wire.rs": {
+      "sha256": "47f8f0285e3bb73c46a793efb502a2ac0f0623d3eafea200977578b24cce29af",
+      "bytes": 26966
+    },
+    "sources/rust/bridge.rs": {
+      "sha256": "7662e3cfc65aa2f871c96d6af4c820207c9ef8a147f31fa7cf48261f02268b9c",
+      "bytes": 7625
+    },
+    "sources/rust/command.rs": {
+      "sha256": "81e3145b6ecbccaaeaf007c9a611f3b4245c69b228035903e5383327e03f913b",
+      "bytes": 2887
+    },
+    "sources/rust/compact_filters.rs": {
+      "sha256": "3e18466c62b346720fd36d383bdb59ab8d65651fc002056418b67ad5cd84638a",
+      "bytes": 23680
+    },
+    "sources/rust/compression.rs": {
+      "sha256": "0d65ceaea520ab932c67dc3cb529f6505c76b21380b8cac764cff50028ddee82",
+      "bytes": 52975
+    },
+    "sources/rust/content_service/adapter.rs": {
+      "sha256": "4c5126578c3f32ee7b08d91872a0faa29017869ee6a9c88afdcf002b12ab8a7c",
+      "bytes": 11712
+    },
+    "sources/rust/content_service/brotli.rs": {
+      "sha256": "541f10f493055beeaec50d84920588ec12b6a10fc9e684f25f9c4b22d3e2769d",
+      "bytes": 29794
+    },
+    "sources/rust/content_service/data/tables.rs": {
+      "sha256": "99021277d7ce4d9ff2c41a3de261aef2f57046520f324471b95a2541f3a70dc8",
+      "bytes": 11855
+    },
+    "sources/rust/content_service/mod.rs": {
+      "sha256": "9105294da26627d533d7e44320a8aac6086e2bbf5991158240057c6f866fe2b2",
+      "bytes": 15716
+    },
+    "sources/rust/http1.rs": {
+      "sha256": "d2314b0ea24d795ecac5a4a8dec3a1fcc031c2263d64d0d8bb8e9bacf8b86450",
+      "bytes": 52453
+    },
+    "sources/rust/json/compat.rs": {
+      "sha256": "2938b7856c8388f0f397ce3e6e39746c03e65b34c1e3f610f41727b483de3f8d",
+      "bytes": 6753
+    },
+    "sources/rust/json.rs": {
+      "sha256": "7143038c52abf2cc0ae93138ec4719d6ec9aa84cc0a7952eccc8e804bf1c2b12",
+      "bytes": 40004
+    },
+    "sources/rust/lib.rs": {
+      "sha256": "1bc0244440ff0114b51a13576e69d7844865873e6b369089cb0ef1a20327c04b",
+      "bytes": 734
+    },
+    "sources/rust/main.rs": {
+      "sha256": "7e81de3cf3f3eecf614d05389a732d72e7619b32bf0a71fb024cba8822254d29",
+      "bytes": 314
+    },
+    "sources/rust/markdown/inline.rs": {
+      "sha256": "a6cdbc70f6b9cf6c82001b4e212d0a8b11217de73e9b3910c39199b72a1779c3",
+      "bytes": 16986
+    },
+    "sources/rust/markdown/mod.rs": {
+      "sha256": "666dad8e080849590e24009b9a399373b6eb76945ae7484f521939a24b6b5e09",
+      "bytes": 16392
+    },
+    "sources/rust/nostr_event_id.rs": {
+      "sha256": "7ebcf16eb6fa83c9130f055dd3c5277c6cf9919624d6d75aa3d1215dcd70943b",
+      "bytes": 5086
+    },
+    "sources/rust/payment_uri/service.rs": {
+      "sha256": "f6bbe768e8b00987779b999568de09c4a76b9993778e44b3b628f1bdc9fb5e99",
+      "bytes": 12275
+    },
+    "sources/rust/payment_uri.rs": {
+      "sha256": "110aab20821ecb5ec9d8158720cd1550e3c79c5e3597b0427f7f939d4d28d31a",
+      "bytes": 23536
+    },
+    "sources/rust/platform/safe_file/mod.rs": {
+      "sha256": "3f176e7fd177a3d49018e3f55cccec992f2c2a3239beee170983dd07d1cc3c44",
+      "bytes": 4467
+    },
+    "sources/rust/platform/safe_file/unix.rs": {
+      "sha256": "4d89874f5f4690651e2e364abd235a2cd55264c82d6496ed25314320d900c00c",
+      "bytes": 5892
+    },
+    "sources/rust/platform/safe_file/windows.rs": {
+      "sha256": "9f46d7084bcad7ee3cbf906c86c5f00de6ee3e67008184f172ef19cd5645cedb",
+      "bytes": 4108
+    },
+    "sources/rust/platform/unix.rs": {
+      "sha256": "e0820e6278a0dc5920dc9cf45358e530ca4e29f6b7c8a61c13c07576b1d9a7d1",
+      "bytes": 1207
+    },
+    "sources/rust/platform/windows.rs": {
+      "sha256": "861c35af12e496bdb20b70d77cb60bb8a2993e1bf3a185e87d6c65d844e2cf20",
+      "bytes": 4735
+    },
+    "sources/rust/platform/windows_runtime.rs": {
+      "sha256": "fbdd8f2aafc4a5aa08bb40700bc8270394b52a1ca68fe247952415a6f370d32a",
+      "bytes": 9766
+    },
+    "sources/rust/platform.rs": {
+      "sha256": "d9dc97e76ab0d19f03373e7e58040667e73dee01746054942cd4b90507525c0e",
+      "bytes": 651
+    },
+    "sources/rust/png/decode.rs": {
+      "sha256": "a6ffaef4c589ad93c2e24350317293550e5ac78e85943428be48806aece07610",
+      "bytes": 23924
+    },
+    "sources/rust/png.rs": {
+      "sha256": "4eacb66cf2061409e59c518832e35083ea880832c50f5edb0a256a3d90c04a23",
+      "bytes": 19615
+    },
+    "sources/rust/privacy_service/cell.rs": {
+      "sha256": "abd98ba27905f5e0db6eab5f58fab9836bc295523977b24dc5e962e1ae1e28e2",
+      "bytes": 9628
+    },
+    "sources/rust/privacy_service/control_codec/mod.rs": {
+      "sha256": "a6d62fd05731239cae9322376a61c5ebab773d4ae8df260b39c11aef68d503fb",
+      "bytes": 8476
+    },
+    "sources/rust/privacy_service/control_codec/service.rs": {
+      "sha256": "71629d6476760a81947380d3c41d48fab894ab79763c28d8a67b3e706101d355",
+      "bytes": 3413
+    },
+    "sources/rust/privacy_service/crypto/aes.rs": {
+      "sha256": "15bcdf8449c36232a94218aa98510e1943106464de90c1dca0cbb512edf68b7f",
+      "bytes": 2009
+    },
+    "sources/rust/privacy_service/crypto/hash.rs": {
+      "sha256": "7b07f752f066716fc7ce77843bbc1abca36240fbdc04930be83d54a869c61b1a",
+      "bytes": 4107
+    },
+    "sources/rust/privacy_service/crypto/mod.rs": {
+      "sha256": "7f6ad7ae9f0401f724425a052bc03001af1905b3fc3be97db17f3e4a3b909b97",
+      "bytes": 351
+    },
+    "sources/rust/privacy_service/mod.rs": {
+      "sha256": "cb7359d61680f3fa54a7a2cf31dd6d0adbf0f5e5d70506cf094cf4258c96d092",
+      "bytes": 1073
+    },
+    "sources/rust/privacy_service/onion.rs": {
+      "sha256": "778a5d66275f2b85be2a5d02986e6a23fba4ea59975840fe38cb86a37f4f6732",
+      "bytes": 2713
+    },
+    "sources/rust/privacy_service/relay.rs": {
+      "sha256": "3f1dc63a3a0d2c09a5adcafd6ce7eb1b46c364953ab69bb4cdb8d4b8cef19ff0",
+      "bytes": 7630
+    },
+    "sources/rust/psbt.rs": {
+      "sha256": "fc787c87f2fd32a969ed44fcf398c4aeef064bcb56d078a90f7cf055ad39ce8f",
+      "bytes": 48424
+    },
+    "sources/rust/psbt_metadata.rs": {
+      "sha256": "ec139dc8a4a62cb3d9ce8fb302ba0e60095967ac390a5462229049842364f946",
+      "bytes": 15956
+    },
+    "sources/rust/psbt_metadata_service.rs": {
+      "sha256": "a6004ada0c31ba0ba38bd5efef6c3d40f13610db47c061ba66fe6c272c5a0d0d",
+      "bytes": 13711
+    },
+    "sources/rust/qr/tables.rs": {
+      "sha256": "2c7cc781bb69ed8a45c86744193d6ec2eb6d79b52b0962fe53e00e18ea7b6edb",
+      "bytes": 1663
+    },
+    "sources/rust/qr.rs": {
+      "sha256": "c3957fb8257ae6fc9e667ffbf3315fd87d64b37499dc7009fdcbfe17f7337bdd",
+      "bytes": 18054
+    },
+    "sources/rust/round_hash/mod.rs": {
+      "sha256": "da872a2f5b9d4ba8c0137be22e5f99fc39ce529d10e2ea0c3abc24a3d56f4548",
+      "bytes": 9102
+    },
+    "sources/rust/round_hash/strobe.rs": {
+      "sha256": "7c2310e82ac0f6a6dc31c2c55ed59d5e73bfe97c40f28c4a4f47ff183d578f16",
+      "bytes": 3829
+    },
+    "sources/rust/safe_file_service/mod.rs": {
+      "sha256": "ea3cbf88d3123d15b5d17bd6b8068f8f5bc58f0a92604e10ab180f678e983561",
+      "bytes": 11806
+    },
+    "sources/rust/safe_file_service/payload.rs": {
+      "sha256": "ab4dff1d752b5b7a441405349e5c3c6dba4cdfdd3e29e433b5ca56eb2d2cf69f",
+      "bytes": 7972
+    },
+    "sources/rust/scan_service/charset_data.rs": {
+      "sha256": "815dc4f8014f79709006c6a6a1d847c0a579b9c105778fa9edcc0423f9317b91",
+      "bytes": 624378
+    },
+    "sources/rust/scan_service/decoder.rs": {
+      "sha256": "75c9f2c39a7ae6156f47a58395f473f8a8de98feff6a77ef0f358f8cabbc3025",
+      "bytes": 5466
+    },
+    "sources/rust/scan_service/matrix.rs": {
+      "sha256": "fd159393b1df0c4127388baebc3b16e15d52e5391aab23edb0782d88955dc8b2",
+      "bytes": 19382
+    },
+    "sources/rust/scan_service/mod.rs": {
+      "sha256": "973e2e99101c406b828e3e5a0fd9f104a65cdfffdb7f9d194663eea57d7d7a98",
+      "bytes": 2114
+    },
+    "sources/rust/scan_service/payload.rs": {
+      "sha256": "be6eb64162fe5322df5c3f2fde1a6a10088ccbf446985ce6c353849def2c1b58",
+      "bytes": 8693
+    },
+    "sources/rust/scan_service/raster.rs": {
+      "sha256": "eaa4569b46c9023a10a2661fefa6b7391458f8790de9947f71e4244c00b56d3e",
+      "bytes": 23009
+    },
+    "sources/rust/scan_service/text.rs": {
+      "sha256": "92d18f5e9edc6f51db59fc7c634849f95d4bc77538c78df0ce5151613ab881bd",
+      "bytes": 8260
+    },
+    "sources/rust/scan_service/wire.rs": {
+      "sha256": "cfd16510c70e133a5034e8173eae96314a655a354503452017d895fd3adfe568",
+      "bytes": 9249
+    },
+    "sources/rust/script_service/mod.rs": {
+      "sha256": "83c818d643b543557a0892ff17538208653d9afd472c7fbfb064d606d831bd54",
+      "bytes": 500
+    },
+    "sources/rust/script_service/sighash.rs": {
+      "sha256": "a54e27f0a97d7144043a0e8c6080b929ff91ecb236c97e55285e9e5c426457b6",
+      "bytes": 20555
+    },
+    "sources/rust/script_text.rs": {
+      "sha256": "7a990306d9dd9062a4f758f7e07175957b0461ee49092f03d8ecc8e61c3d3e62",
+      "bytes": 4528
+    },
+    "sources/rust/socks5/probe_service.rs": {
+      "sha256": "a74c97ab8d7012ae0c65e9830414df0edac88ee5860fe8616de60e1b70147714",
+      "bytes": 4035
+    },
+    "sources/rust/socks5.rs": {
+      "sha256": "b0c9b99e87f54ba880e174c1cd039d2afa46c544d65a84ba5448cd39382794b9",
+      "bytes": 44424
+    },
+    "sources/rust/wallet_hash_service.rs": {
+      "sha256": "f6dc782a933b6afa10001fbeffab35c0ccde6d182d967af3d2d74f4cbce9b165",
+      "bytes": 4366
+    },
+    "sources/rust/wallet_hashes.rs": {
+      "sha256": "659296021e1703b93dd55ef1b1521b5360334d67c3190d3cd09078f3298f8ede",
+      "bytes": 32333
+    },
+    "sources/rust/websocket.rs": {
+      "sha256": "46c9d56e76e7f1cca9af25866c9fa38a1ebb0739ef53e1184bf31308361b2978",
+      "bytes": 44140
+    },
+    "sources/MagicalCryptoWallet/Crypto/OwnershipIdentifier.cs": {
+      "sha256": "b34cc5eb8547c3862b2e51d7d30f08d8c33db605c0988c06e2c830663f4c6347",
+      "bytes": 1531
+    },
+    "sources/MagicalCryptoWallet/Crypto/Slip21Node.cs": {
+      "sha256": "3b0badce86ce7c3084c501cf0fcc81a974a2712e2701314661b77c169e8a1563",
+      "bytes": 837
+    },
+    "sources/MagicalCryptoWallet/Mcw/Crypto/WalletHmac.cs": {
+      "sha256": "d4d39864424c41c03fa2cfae30095c909be2aaf783cf992fb352c03ca6df0a99",
+      "bytes": 2896
+    },
+    "sources/Contrib/Mcw/HmacProbe/Program.cs": {
+      "sha256": "d52e5f49fa355588efa54cfb27e5e2c54a1356411e403f81b5712c1147ff0aa9",
+      "bytes": 9445
+    },
+    "sources/Contrib/Mcw/HmacProbe/TransportFaults.cs": {
+      "sha256": "0796eba6cab4817b7509c03c4cca1c64d4340d0c75dc9195cf42b2cc59271d90",
+      "bytes": 9632
+    },
+    "sources/Contrib/Mcw/HmacProbe/HmacProbe.csproj.inc": {
+      "sha256": "9df22897fd5358b320685b39af009d5c9d0370fa91f619d6f9e894de13b90b2e",
+      "bytes": 615
+    },
+    "sources/Contrib/Mcw/HmacProbe/packages.lock.json.inc": {
+      "sha256": "a6039d0fe62955a1b70b230a5ea5ba35918c9e815cd99c4d699e37218c885c7d",
+      "bytes": 13210
+    },
+    "sources/Contrib/Mcw/HmacProbe/verify.ps1": {
+      "sha256": "8e654d5431186e829cb18f1071c581b8eb9529aaf879e06969cb44af57234a54",
+      "bytes": 6895
+    },
+    "sources/Contrib/Mcw/HmacProbe/verify.py": {
+      "sha256": "63b34d1c9251f85b9c334cb4f6f53c9cafa249923399ac3083664e96fac8c138",
+      "bytes": 3268
+    },
+    "sources/ManagedApplicationHost.cs": {
+      "sha256": "b9fcf5260d9ae48018a448499b2a512a32b7a6606a09a2a3830842ba25be576a",
+      "bytes": 16577
+    },
+    "sources/generated/HmacProbe.csproj": {
+      "sha256": "9df22897fd5358b320685b39af009d5c9d0370fa91f619d6f9e894de13b90b2e",
+      "bytes": 615
+    },
+    "sources/generated/packages.lock.json": {
+      "sha256": "a6039d0fe62955a1b70b230a5ea5ba35918c9e815cd99c4d699e37218c885c7d",
+      "bytes": 13210
+    },
+    "historical-backup-search.json": {
+      "sha256": "2976cc961a58be0af3281e0a0201c76bf4b841a65a75a06fdede33cc353491d9",
+      "bytes": 5377
+    }
+  },
+  "historical_published_manifest": {
+    "path": "Contrib/McwMigration/Handoffs/wallet-hmac-evidence.json",
+    "sha256_git_lf": "8820293a438aa4d4479e1f997328ebe5794770354f7cf8c477962f9f0c5a580f",
+    "unchanged": true
+  },
+  "gui_published_manifest": {
+    "path": "Contrib/McwMigration/Handoffs/wallet-hmac-gui-evidence.json",
+    "sha256_git_lf": "b34a948f09853fbc7f9daafa8b0608053eb4d1b9b5ab0efbf6041e46dfde267b",
+    "unchanged": true
+  },
+  "historical_mutable_output": {
+    "path": ".artifacts/wallet-hmac-evidence/caller-probe/caller-verification.json",
+    "expected_historical_sha256": "1d663ae512d1d29105112a601809635d0e4b5c3d5686e9e47a579b8c541d7bcc",
+    "current_sha256": "6930b5f0a22b5730d7fee2cfcbeb2fd99cbda3cbf81e5fdaad837a5a6de95601",
+    "status": "superseded; original referenced raw output unavailable in audited existing artifacts",
+    "original_backup_search": "Existing JSON/BAK files within owned wallet-hmac-evidence, at most2MB",
+    "original_backup_matches": [],
+    "reconstructed": false
+  },
+  "current_gui_output": {
+    "sha256": "6930b5f0a22b5730d7fee2cfcbeb2fd99cbda3cbf81e5fdaad837a5a6de95601",
+    "matches_immutable_gui_manifest": true,
+    "pinned_copy": "outputs/caller-verification.json"
+  },
+  "check_roles": {
+    "441_independent_fixtures_and_462_successful_domain_calls": "Actual OwnershipIdentifier/Slip21Node classes through the real Rust host/HMAC handler",
+    "2_malformed_and_1_canceled_request": "Actual Rust dispatcher and real connection; subsequent valid calls remain usable",
+    "37_transport_checks": "Actual managed transport with scripted dummy reply buffers, including5 fault/ownership modes and32 delivery/cancellation races; not37 Rust HMAC output checks",
+    "6_adapter_checks": "2 direct pre-cancel/unbound admission checks and4 fault-service modes; no HMAC computation",
+    "3_caller_boundary_checks": "Actual domain classes calling a fault service to prove host delegation; no HMAC output computation"
+  },
+  "published_documents_and_manifests_edited": false,
+  "historical_execution_log_reconstructed": false,
+  "new_builds": 0,
+  "production_integrated": false,
+  "regular_suite_binding_verified": false,
+  "five_native_target_acceptance": false
+}
