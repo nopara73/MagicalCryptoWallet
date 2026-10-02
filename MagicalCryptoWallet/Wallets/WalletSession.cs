@@ -106,8 +106,10 @@ public sealed class WalletSession
 			}
 		}
 	}
-	public Wallet Configure(KeyManager keyManager)
+	public Wallet Configure(KeyManager keyManager, string? password = null)
 	{
+		EnsureCanConfigure();
+		using var authorization = password is null ? null : WalletAuthorization.Create(keyManager, password);
 		Wallet wallet;
 		WalletSessionSnapshot configured;
 		lock (_gate)
@@ -123,6 +125,7 @@ public sealed class WalletSession
 			{
 				WalletDirectories.Commit(keyManager);
 				_wallet = wallet;
+				_coinJoinAuthorization = authorization?.Retain();
 				_missingPublicMetadata = keyManager.TaprootExtPubKey is null;
 				configured = new(WalletSessionState.Loading, false, null, null, RequiresCoinJoinAuthorization(), _missingPublicMetadata);
 			}
@@ -137,6 +140,7 @@ public sealed class WalletSession
 		WalletConfigured.SafeInvoke(this, wallet);
 		Publish(configured);
 		StartIfReady();
+		if (authorization is not null) { OperationAuthorized.SafeInvoke(this, EventArgs.Empty); }
 		return wallet;
 	}
 	/// <summary>Starts after local stores initialize. Does not wait for network synchronization.</summary>

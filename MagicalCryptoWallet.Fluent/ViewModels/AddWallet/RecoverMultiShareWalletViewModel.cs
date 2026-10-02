@@ -159,7 +159,7 @@ public partial class RecoverMultiShareWalletViewModel : RoutableViewModel
 				var filterMinHeight = UiContext.Services.GetMinimumBlockHeight();
 				if (filterMinHeight is { } minHeight && BirthHeight < minHeight)
 				{
-					UiContext.WalletSetupService.Commit(walletSettings);
+					await UiContext.WalletSetupService.CommitAsync(walletSettings, password);
 					UiContext.Services.UiConfig.ToFile();
 
 					await ShowErrorAsync(

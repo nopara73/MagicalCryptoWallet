@@ -288,6 +288,42 @@ public class SingleWalletTests
 		Assert.True(restarted.Session.Snapshot.CoinJoinRequiresAuthorization);
 	}
 	[Fact]
+	public async Task SetupRejectsWrongPasswordBeforeWritingAndRetainsTheCorrectAuthorizationAsync()
+	{
+		await using var app = new SyntheticApplication(await Common.GetEmptyWorkDirAsync());
+		var keys = app.NewKeys("secret");
+		Assert.Throws<SecurityException>(() => app.Session.Configure(keys, "wrong"));
+		Assert.Equal(WalletSessionState.Unconfigured, app.Session.Snapshot.State);
+		Assert.False(File.Exists(app.Session.WalletDirectories.NewWalletFilePath));
+		app.Session.Configure(keys, "secret");
+		Assert.False(app.Session.Snapshot.CoinJoinRequiresAuthorization);
+		Assert.NotNull(app.Session.CoinJoinKeyChain);
+		Assert.Throws<SecurityException>(() => WalletAuthorization.Create(keys, "wrong"));
+		await app.InitializeAsync();
+		await WaitForAsync(() => app.Session.Snapshot.IsSynchronized);
+	}
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public async Task RpcSetupPasswordAuthorizesCoinJoinOnlyForTheCurrentRunAsync(bool recover)
+	{
+		string root = await Common.GetEmptyWorkDirAsync();
+		await using (var app = new SyntheticApplication(root))
+		{
+			var service = new MagicalCryptoWalletJsonRpcService(app.Global);
+			if (recover) { service.RecoverWallet(SyntheticMnemonic, "secret"); }
+			else { service.CreateWallet("secret"); }
+			Assert.False(app.Session.Snapshot.CoinJoinRequiresAuthorization);
+			Assert.NotNull(app.Session.CoinJoinKeyChain);
+			Assert.Throws<SecurityException>(() => WalletAuthorization.Create(app.Session.GetWallet()!.KeyManager, "wrong"));
+			await app.InitializeAsync();
+			await WaitForAsync(() => app.Session.Snapshot.IsSynchronized);
+		}
+		await using var restarted = new SyntheticApplication(root);
+		Assert.Null(restarted.Session.CoinJoinKeyChain);
+		Assert.True(restarted.Session.Snapshot.CoinJoinRequiresAuthorization);
+	}
+	[Fact]
 	public async Task RpcStatusWorksBeforeSetupAndRetiredCommandsFailExplicitlyAsync()
 	{
 		await using var app = new SyntheticApplication(await Common.GetEmptyWorkDirAsync());

@@ -55,9 +55,10 @@ public partial class WalletSetupService : ReactiveObject, IDisposable
 		};
 	}
 
-	public IWalletModel Commit(WalletSetupDraft draft)
+	public async Task<IWalletModel> CommitAsync(WalletSetupDraft draft, string? password = null)
 	{
-		PublishWallet(_services.WalletSession.Configure(draft.Keys));
+		var wallet = await Task.Run(() => _services.WalletSession.Configure(draft.Keys, password));
+		PublishWallet(wallet);
 		var result = Wallet ?? throw new InvalidOperationException("The configured wallet model is unavailable.");
 		return result;
 	}
