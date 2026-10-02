@@ -1,0 +1,184 @@
+{
+  "schema_version": 1,
+  "audited_commit": "1228c2c589333a49a9af894da9876518739fab76",
+  "retained_callers": [
+    {
+      "path": "MagicalCryptoWallet/Crypto/OwnershipIdentifier.cs",
+      "role": "HMAC-SHA256 over exact script bytes with 32-byte identification key; full MAC comparison should replace SequenceEqual in integration",
+      "sha256_git_blob": "025973c0c33e1b4409adcff40572fca520c24ced48d6abcb9bda4e16358e67ea",
+      "hits": [
+        {
+          "line": 13,
+          "source": ": this(Hashes.HMACSHA256(identificationKey.ToBytes(), scriptPubKey.ToBytes()))"
+        },
+        {
+          "line": 57,
+          "source": "return other is not null && other.Bytes.SequenceEqual(Bytes);"
+        }
+      ]
+    },
+    {
+      "path": "MagicalCryptoWallet/Crypto/Slip21Node.cs",
+      "role": "HMAC-SHA512 seed and 0x00-prefixed label bytes; retained Key return/type ownership stays managed",
+      "sha256_git_blob": "2b6f282563227e99609b0819353d4093e24e1bd7d32bcfdd6f82725764a4bfc7",
+      "hits": [
+        {
+          "line": 23,
+          "source": "new(HMACSHA512(Encoding.ASCII.GetBytes(\"Symmetric key seed\"), seed));"
+        },
+        {
+          "line": 29,
+          "source": "new(HMACSHA512(_data[..KEY_SIZE], label.Prepend((byte)0x00).ToArray()));"
+        }
+      ]
+    },
+    {
+      "path": "MagicalCryptoWallet/Wallets/ShamirSecretSharing/Slip39.cs",
+      "role": "HMAC-SHA256 share digest truncated to 4 bytes; PBKDF2-HMAC-SHA256 Feistel rounds over step-prefixed UTF-8 passphrase and extension-dependent salt",
+      "sha256_git_blob": "b81ccfcfbdf0f947c7e930bf3979d8f1fee7c947eb9d36cf11e9f5a82e2fc28f",
+      "hits": [
+        {
+          "line": 335,
+          "source": "using var hmac = new HMACSHA256(random);"
+        },
+        {
+          "line": 441,
+          "source": "var pbkdf2 =  Rfc2898DeriveBytes.Pbkdf2(key, salt, iters, HashAlgorithmName.SHA256, block.Length);"
+        }
+      ]
+    },
+    {
+      "path": "MagicalCryptoWallet/Tor/Control/TorControlClientFactory.cs",
+      "role": "System HMACSHA256 over SAFECOOKIE transcript; transport/handshake/logging policies remain with their owners",
+      "sha256_git_blob": "1208c1f3545f0ea923658c695336668a44eafc9e1c79ad55193c30544fdda9da",
+      "hits": [
+        {
+          "line": 103,
+          "source": "using HMACSHA256 hmacSha256 = new(ClientHmacKey);"
+        }
+      ]
+    },
+    {
+      "path": "MagicalCryptoWallet/Crypto/ProofBody.cs",
+      "role": "SHA256 via actual bitcoin_encoding sibling; retained serialization/signature handling stays managed",
+      "sha256_git_blob": "d8684b6eb3678ae81280c52bdbff15bea4ebcec561e9e74350df6b45accd2d4d",
+      "hits": [
+        {
+          "line": 51,
+          "source": "new(Hashes.SHA256(this.ToBytes().Concat(ProofFooter(scriptPubKey, commitmentData)).ToArray()));"
+        }
+      ]
+    },
+    {
+      "path": "MagicalCryptoWallet/Blockchain/Keys/KeyManager.cs",
+      "role": "NBitcoin Mnemonic/ExtKey callers; SHA512/HMAC/PBKDF2 primitives do not replace curve derivation, NFKD or mnemonic ownership",
+      "sha256_git_blob": "aa8cb6b91f45e02ab6b651db6f2cf751a50ddd1586ccf6b7e01f9dbb3f43dacd",
+      "hits": [
+        {
+          "line": 156,
+          "source": "public static KeyManager CreateNew(out Mnemonic mnemonic, string password, Network network, string? filePath = null)"
+        },
+        {
+          "line": 158,
+          "source": "mnemonic = new Mnemonic(Wordlist.English, WordCount.Twelve);"
+        },
+        {
+          "line": 162,
+          "source": "public static KeyManager CreateNew(Mnemonic mnemonic, string password, Network network, string? filePath = null)"
+        },
+        {
+          "line": 193,
+          "source": "public static KeyManager Recover(Mnemonic mnemonic, string password, Network network, KeyPath swAccountKeyPath, KeyPath? trAccountKeyPath = null, string? filePath = null, int minGapLimit = AbsoluteMinGapLimit, ChainHeight? birthHeight = null)"
+        }
+      ]
+    },
+    {
+      "path": "MagicalCryptoWallet.Tests/UnitTests/Crypto/OwnershipProofTest.cs",
+      "role": "Existing public SLIP19 identifier vectors remain managed test references",
+      "sha256_git_blob": "1cbad30d1fb3cfbf390b3ce4e2e721a8df84c57ad1b20a2aa4599809b45dfd07",
+      "hits": [
+        {
+          "line": 17,
+          "source": "var allMnemonic = new Mnemonic(\"all all all all all all all all all all all all\");"
+        },
+        {
+          "line": 107,
+          "source": "var allMnemonic = new Mnemonic(\"all all all all all all all all all all all all\");"
+        }
+      ]
+    },
+    {
+      "path": "MagicalCryptoWallet.Tests/UnitTests/Crypto/Slip21NodeTests.cs",
+      "role": "Existing public SLIP21 expected node slices remain managed test references",
+      "sha256_git_blob": "52c8b7f979b6ae0a012b522a579ab8003935eb4c8d54416bc18f0e6b54f5f8ec",
+      "hits": [
+        {
+          "line": 12,
+          "source": "var allMnemonic = new Mnemonic(\"all all all all all all all all all all all all\");"
+        }
+      ]
+    }
+  ],
+  "direct_hash_call_sites": [
+    "1228c2c589333a49a9af894da9876518739fab76:MagicalCryptoWallet.Tests/Helpers/AnalyzedTransaction/AnalyzedTransaction.cs:29:\t\t\treturn new Key(Hashes.DoubleSHA256(Encoders.ASCII.DecodeData(label)).ToBytes());",
+    "1228c2c589333a49a9af894da9876518739fab76:MagicalCryptoWallet.Tests/Helpers/WabiSabiFactory.cs:46:\t\t\tnew OutPoint(Hashes.DoubleSHA256(key.PubKey.ToBytes().Concat(BitConverter.GetBytes(amount)).ToArray()), 0),",
+    "1228c2c589333a49a9af894da9876518739fab76:MagicalCryptoWallet/Crypto/OwnershipIdentifier.cs:13:\t\t: this(Hashes.HMACSHA256(identificationKey.ToBytes(), scriptPubKey.ToBytes()))",
+    "1228c2c589333a49a9af894da9876518739fab76:MagicalCryptoWallet/Crypto/ProofBody.cs:51:\t\tnew(Hashes.SHA256(this.ToBytes().Concat(ProofFooter(scriptPubKey, commitmentData)).ToArray()));",
+    "1228c2c589333a49a9af894da9876518739fab76:MagicalCryptoWallet/Crypto/Slip21Node.cs:23:\t\tnew(HMACSHA512(Encoding.ASCII.GetBytes(\"Symmetric key seed\"), seed));",
+    "1228c2c589333a49a9af894da9876518739fab76:MagicalCryptoWallet/Crypto/Slip21Node.cs:29:\t\tnew(HMACSHA512(_data[..KEY_SIZE], label.Prepend((byte)0x00).ToArray()));",
+    "1228c2c589333a49a9af894da9876518739fab76:MagicalCryptoWallet/Tor/Control/TorControlClientFactory.cs:103:\t\tusing HMACSHA256 hmacSha256 = new(ClientHmacKey);",
+    "1228c2c589333a49a9af894da9876518739fab76:MagicalCryptoWallet/Wallets/ShamirSecretSharing/Slip39.cs:335:\t\tusing var hmac = new HMACSHA256(random);",
+    "1228c2c589333a49a9af894da9876518739fab76:MagicalCryptoWallet/Wallets/ShamirSecretSharing/Slip39.cs:441:\t\tvar pbkdf2 =  Rfc2898DeriveBytes.Pbkdf2(key, salt, iters, HashAlgorithmName.SHA256, block.Length);"
+  ],
+  "retained_package_references": [
+    {
+      "path": "Contrib/Releases/Publisher/MagicalCryptoWallet.ReleaseTools.csproj",
+      "line": 9,
+      "source": "<PackageReference Include=\"NBitcoin\" />"
+    },
+    {
+      "path": "Directory.Packages.props",
+      "line": 31,
+      "source": "<PackageVersion Include=\"NBitcoin.Secp256k1\" Version=\"3.1.6\" />"
+    },
+    {
+      "path": "Directory.Packages.props",
+      "line": 32,
+      "source": "<PackageVersion Include=\"NBitcoin\" Version=\"10.0.13\" />"
+    },
+    {
+      "path": "MagicalCryptoWallet/MagicalCryptoWallet.csproj",
+      "line": 32,
+      "source": "<PackageReference Include=\"NBitcoin\" />"
+    },
+    {
+      "path": "ThirdParty/WabiSabi/csharp/WabiSabi/WabiSabi.csproj",
+      "line": 13,
+      "source": "<PackageReference Include=\"NBitcoin.Secp256k1\" />"
+    },
+    {
+      "path": "ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/WabiSabiInterop.Tests.csproj",
+      "line": 13,
+      "source": "<PackageReference Include=\"NBitcoin\" />"
+    }
+  ],
+  "rust_implementation_dependencies": [
+    "Rust stdlib",
+    "first-party bitcoin_encoding::Sha256"
+  ],
+  "module_sha256_lf": "752aec6cb51d2603f9c447f12e4c043425bb31129c5b2a473bd63b78eeeeb4a2",
+  "unsafe": "forbidden",
+  "external_cargo_dependencies": 0,
+  "bundled_runtime_or_library_or_companion": 0,
+  "platform_crypto_assumptions": 0,
+  "whole_packages_removed": [],
+  "remaining": [
+    "NBitcoin 10.0.13",
+    "NBitcoin.Secp256k1 3.1.6",
+    "managed System.Security.Cryptography hash/PBKDF2 callers",
+    "transitive managed packages",
+    "mcw registration/adapters/secret-bearing bridge policy",
+    "five-target application acceptance"
+  ],
+  "note": "Read-only source audit. No caller, package, shared manifest, key state or wallet file is migrated."
+}
