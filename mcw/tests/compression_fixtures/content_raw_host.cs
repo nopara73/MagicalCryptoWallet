@@ -68,6 +68,10 @@ internal static class ContentRawHost
                     }
                     // No success body or startup-only cancellation can pass.
                     if (mode == "cancel") { break; }
+                    // A completed/startup-only saturation trial cannot prove
+                    // active overload. Finish this miss rather than waiting for
+                    // a shutdown that an unsaturated queue need never produce.
+                    if (mode == "saturation" && !partial) { break; }
                 }
                 if (response.Kind == 4 && response.Id == 258 && response.Operation == Content)
                 { queueLimit = response.Payload.Length >= 2 && BinaryPrimitives.ReadUInt16LittleEndian(response.Payload) == 4; }

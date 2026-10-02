@@ -198,7 +198,11 @@ def main():
                         verified = dict(input=consumed, output=produced, layer=layer, full=size,
                                         native_exit=code, log=log, private_failure_bytes=22)
                         break
-                    assert code == 75 and 'CONTENT RAW NONPARTIAL mode=' + mode in text, 'Protocol trial failed: ' + log
+                    # Terminal native ingress may exit 1 even when the child
+                    # reports a clean nonpartial trial (75). Neither can pass
+                    # the gate; only the exact VERIFIED counter oracle can.
+                    miss_codes = (75,) if mode == 'cancel' else (1, 75)
+                    assert code in miss_codes and 'CONTENT RAW NONPARTIAL mode=' + mode in text, 'Protocol trial failed: ' + log
                 record['cases'][mode] = dict(verified=verified, attempts=attempts)
                 assert verified is not None, 'Unsatisfied in-flight native ' + mode + ' gate; no timing-only acceptance'
                 print('ACTUAL CONTENT HOST: partial-work ' + mode + ' verified', flush=True)

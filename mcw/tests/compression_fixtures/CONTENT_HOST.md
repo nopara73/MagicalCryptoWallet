@@ -46,6 +46,10 @@ the counter/closure checks, that gate remains unsatisfied and the runner exits
 with failure. This is distinct from the deterministic barrier/checkpoint proof in
 `content_inbox_tests.rs`; `barrier_synchronized_native_checkpoint` stays false.
 Do not call this runner a deterministic native-checkpoint barrier test.
+An explicit nonpartial EOF/overload trial may cause native exit 1 while the child
+reports exit 75. Both are rejected misses and may be retried. A saturation trial
+that observes completed decoding exits promptly rather than waiting for shutdown
+from a queue that may not saturate; it cannot pass the active-work gate.
 
 Run the existing deterministic component proof against the same current source
 checkout separately:
@@ -77,6 +81,12 @@ host cases and all three native interruption cases passing with binary SHA256
 That run is preserved in `portable-host-a/verification.json` under the owned
 ignored evidence directory. A later composition/build requires a fresh paired
 run; the earlier immutable binary copy and logs remain historical evidence.
+A fresh stable composed-source run in `portable-host-b/verification.json` also
+passes all cases on the owner's rebuilt shipping SHA256
+`51fba2c5bb601ceca3ed79bf80335a0a1c736a0954a7a21102280077011e4152`.
+Forced completed-work EOF/saturation trials reject the nonpartial oracle promptly;
+the corrected current component pair passes seven debug/seven optimized cases.
+Final Core composition still requires the owner's frozen-source paired rerun.
 
 Windows x64 local evidence does not certify Linux/macOS or the other architecture.
 The host owner registers and executes this existing proof in the five-platform

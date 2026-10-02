@@ -188,6 +188,16 @@ final frozen packaged pair must rerun this proof on all five native CI targets.
 Portable commands and acceptance details are in
 `mcw/tests/compression_fixtures/CONTENT_HOST.md`.
 
+A fresh run against the owner's rebuilt shipping binary
+`51fba2c5bb601ceca3ed79bf80335a0a1c736a0954a7a21102280077011e4152`
+also passes **26 cases + native CANCEL/EOF/saturation** with stable source/binary
+hashes (`portable-host-b/verification.json`). Positive input/output counters are
+**349/346**, **28696/28693**, and **68153/68147** respectively. The runner now
+retries explicit nonpartial terminal misses with native exit 1 or child exit 75;
+neither can satisfy a gate. Forced completed-decode EOF and saturation trials
+verify rejection without hanging (`portable-misses-verification.json`). The owner
+has confirmed this shipping build, while final Core composition remains pending.
+
 Historical `compression_content_inbox_verify.ps1 -ReviewRoot <prepared-review>` compiles exact
 copied host Inbox/Frame/QR sources, the one review-only query, and the actual owned
 adapter/codecs. Its source is `mcw/tests/compression_fixtures/content_inbox_tests.rs`,
@@ -212,6 +222,8 @@ shipping binary's actual pipe/dispatch interruption proof.
 **Seven debug + seven optimized synchronized cases** pass against exact unpatched
 current sources, recorded in `.artifacts/compression-content/current-inbox-c/verification.json`;
 source and fixture hashes remain stable. The historical review evidence is retained.
+The corrected portable runner is also paired with seven debug/seven optimized
+current-source component cases in `current-inbox-d/verification.json`.
 
 Evidence is under `.artifacts/compression/`, `.artifacts/compression-content/`,
 and `.artifacts/compression-content/actual-host/snapshot-e/.artifacts/`.
