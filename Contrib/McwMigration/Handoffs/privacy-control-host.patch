@@ -1,0 +1,35 @@
+--- a/mcw/src/lib.rs
++++ b/mcw/src/lib.rs
+@@ -25,3 +25,6 @@
+     Some(version) => version,
+     None => "99.99.99",
+ };
++
++#[path = "privacy_service/control_codec/mod.rs"]
++pub mod tor_control;
+--- a/mcw/src/app.rs
++++ b/mcw/src/app.rs
+@@ -263,6 +263,12 @@
+             frame.reply(Vec::new()).write(output)
+         }
+         bridge::QR => bridge::encode_qr(frame).write(output),
++        crate::tor_control::service::PARSE_REPLY | crate::tor_control::service::PARSE_LINE => {
++            match crate::tor_control::service::dispatch(frame.operation, &frame.payload) {
++                Ok(payload) => frame.reply(payload).write(output),
++                Err(_) => frame.error(1, "invalid Tor control codec request").write(output),
++            }
++        }
+         bridge::RESTART | bridge::CRASH | bridge::UPDATE => {
+             let args = match bridge::strings(&frame.payload) {
+                 Ok(args) => args,
+--- a/.github/workflows/build.yml
++++ b/.github/workflows/build.yml
+@@ -100,6 +100,8 @@
+         run: dotnet test --project MagicalCryptoWallet.Tests -c Release --filter-namespace '*UnitTests*' --no-progress --no-ansi --output Normal
+       - name: Rust host, persistent bridge and independently decoded QR versions 1-40
+         run: python Contrib/Mcw/test-host.py --binary .artifacts/packages/${{ matrix.rid }}/MagicalCryptoWallet/mcw${{ matrix.rid == 'win-x64' && '.exe' || '' }}
++      - name: Rust Tor control replies, line framing and coordinator role isolation
++        run: python mcw/tests/privacy_control_host.py --binary .artifacts/packages/${{ matrix.rid }}/MagicalCryptoWallet/mcw${{ matrix.rid == 'win-x64' && '.exe' || '' }}
+       - name: Wallet integration tests against isolated Bitcoin Core
+         run: dotnet test --project MagicalCryptoWallet.IntegrationTests -c Release --no-progress --no-ansi --output Normal
+       - name: Packaged application lifetime, encrypted background startup, offline recovery and process locking

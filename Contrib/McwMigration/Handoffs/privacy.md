@@ -1,124 +1,124 @@
-# Privacy runtime migration
+# Tor control codec handoff
 
-Worker: `01a0fc5c-d23b-7400-8819-68134acaf062`; operation reservation `0x0F00–0x0FFF`.
-Initial current-remote source: `7f5f7ca8a297060d3826769aa9820948e89c7713`.
-Isolated checkout: `.artifacts/mcw-privacy-20261002`.
+Worker: `01a0fc5c-d23b-7400-8819-68134acaf062`.
+Operation reservation: `0x0F00–0x0FFF`; implemented reply/line operations:
+`0x0F00` / `0x0F01`.
 
-**Full Tor/backend expansion stopped by the human scope correction on 2026-10-02.**
-Published protocol checkpoint: `5d7d2c06de698ff3f5122b3c9e916c220f934135`,
-verified as an ancestor of remote `master`. Production Tor remains
-managed/bundled; no privacy dependency has been removed, and no self-contained or
-wallet/mainnet-readiness claim is made. The daemon must not be retired on the strength of these tests. No further full
-Tor, TLS, curve, storage, UI or CoinJoin implementation is authorized by this
-checkpoint. Preserve the existing source and evidence.
+The authorized responsibility is the wallet's **Tor control reply and CRLF-line
+parser**, under `mcw/src/privacy_service/control_codec/`, with its typed adapter
+under `MagicalCryptoWallet/Mcw/Privacy/`. Full Tor/backend expansion remains
+stopped by the human correction. Existing protocol drafts are preserved.
 
-## Ownership and caller declaration
+This handoff publishes the implemented codec, adapter, independent fixtures,
+runtime probe and **exact caller/host integration patches**. The patches have
+been applied and verified in an isolated checkout. They are not activated on
+`master`: the active QR integrator owns the shared host/CI changes. The coordinator
+must queue incorporation until that task is idle. Neither production cutover nor
+a dependency removal is claimed by this source publication.
 
-Own `mcw/src/privacy_service/**`, `MagicalCryptoWallet/Mcw/Privacy/**`, uniquely
-named `privacy_*` tests/fixtures and this document. QR owns shared Cargo/lib/main,
-bridge dispatch/framing, platform/native bindings, app lifecycle and packaging.
-Declared to QR/network/crypto/sync before edits: privacy responsibility is the
-`MagicalCryptoWallet/Tor` manager/process/control/status leaves. Shared
-`MagicalCryptoWallet.Client/Global.cs`, `Services/EventBus.cs`, manifests and
-packaging require reviewable integration patches. Network owns WebClients/TLS;
-sync owns P2P/DNS; Nostr owns discovery. No shared/peer checkout was edited.
+## Exact integration
 
-The external coordinator uses `TorManager`, `TorProcessManager` and control onion
-creation too. Its role must be separated before shared legacy files/packages can
-be removed. The retained wallet itself also creates an ephemeral RPC onion service
-in `MagicalCryptoWallet.Client/Global.cs`; it is part of privacy scope.
+Apply these together, reconciling concurrent hunks without replacing whole files:
 
-## Implemented checkpoint
+- `privacy-control-callers.patch`: replaces the wallet's
+  `TorControlReplyReader.cs` and `PipeReaderLineReaderExtension.cs` with typed
+  Rust-service calls. Threads an explicit reply-reader delegate through
+  `TorControlClient`, its factory and `TorProcessManager`. Their default reader is
+  Rust; there is no service-availability check or managed fallback.
+- The same patch retains the existing managed reader exclusively in the
+  **external coordinator** project. `TorManagerService` explicitly supplies it.
+  Existing unhosted Tor tests explicitly test that coordinator role. No `mcw`
+  hosting requirement is added to the external coordinator.
+- `privacy-control-host.patch`: registers only the small `tor_control` module
+  alias in the shared library, routes its two operations through the existing
+  dispatcher and adds the synthetic host probe to each CI platform. Keep the
+  existing framing, cancellation and lifecycle behavior.
 
-- Safe portable Keccak-f1600, SHA3-256 and bounded SHAKE256. CoinJoin agreed reuse
-  via `privacy_service::crypto::hash::keccak_f1600(&mut [u64;25])`; STROBE owns its
-  distinct rate/domain padding. No second production permutation is needed.
-- Exact bounded modern Tor cell framing/consumption (initial 16-bit VERSIONS,
-  negotiated 32-bit circuit IDs, protocols4/5), commands/circuit checks, padding,
-  CERTS containers and Ed25519 cert structures with duplicate/critical extension
-  rejection. Client NETINFO sends neither local time nor client addresses.
-- Tor v3 onion names, SHA3 checksum/version validation and redacted diagnostics.
-- Relay envelope/BEGIN encoding, random-padding admission, authenticated circuit
-  SENDME v1 tracking and bounded stream windows. These require real authenticated
-  circuit/hop cryptography before network use.
-- CTR mode over a typed AES block primitive, with counter exhaustion admission
-  before mutation. No AES block or SHA1 implementation was duplicated: wallet
-  crypto owns SHA1/HMAC/HKDF/AES, network owns X25519/P256/RSA/X509. CTR binding to
-  the actual AES primitive is pending its verified publication.
+The exact base is `f965ae7b16fbc936582611070cb4e77813dce52b`. The constructor and
+factory hunks in `TorProcessManager` do not touch `IsTorRunningAsync`; that
+readiness leaf belongs to the separately coordinated SOCKS worker. Neither patch
+changes routing, control authentication, daemon/transport lifecycle or wallet
+state. Do not publish caller activation without its matching dispatcher.
 
-There is no Tor controller wrapper, external-daemon substitution, cleartext TLS
-downgrade, DNS resolution or direct-network fallback in this subtree. No fake
-handler is registered. These modules are not yet the application's privacy backend.
+## Compatibility and admission
 
-## Verified checkpoint evidence
+The Rust codec preserves the existing application representation, rather than
+silently imposing a new semantic interpretation:
 
-On native Windows x64, Rust1.99.0, edition2024: module compilation with warnings
-denied, rustfmt check and Clippy all denied passed. `privacy_verify.ps1` ran
-14 tests (9 privacy tests and5 existing peer hash boundary tests), none ignored.
-Independent `hashlib` vectors cover 24 lengths, streaming SHA3 boundaries, and
-300-byte SHAKE output. The Keccak team's 25-lane vector and three Tor-spec onion
-addresses pass, with every tested one-symbol corruption rejected. Cell-prefix,
-max-variable-length, certificate duplicate/unknown-critical-extension, relay
-padding, clock/address suppression and SENDME-forgery/replay tests pass.
+- Terminal `250 OK` lines and data-block `.` lines remain in multiline replies.
+- Blank continuation lines are skipped; literal backslashes and stuffed dots
+  remain literal. High bytes become ASCII `?`, as with the former decoder.
+- Historical first-status handling survives, including unknown enum values,
+  ASCII whitespace/signs and .NET's trailing-NUL behavior. Subsequent status
+  prefixes/separators are projected exactly as before.
+- A complete result reports its exact consumed-byte count; coalesced subsequent
+  replies remain in the pipe. The adapter stages incomplete raw bytes in a bounded
+  buffer, releasing producer backpressure. It contains no Tor grammar.
+- EOF classifications/messages and cancellation are preserved. Both caller
+  cancellation and bridge shutdown release a pending pipe read. Missing service
+  binding and malformed Rust responses fail visibly; they do not parse locally.
+- Exact CRLF scanning fixes the former reader's first-bare-CR positioning bug,
+  including CR/LF across sequence segments.
 
-Reproduce with `python mcw/tests/privacy_reference.py`, then
-`mcw/tests/privacy_verify.ps1`. The verifier takes one of the two exclusive shared
-build slots, checks2GiB free memory, uses the installed toolchain/linker only and
-writes uniquely scoped ignored evidence under `.artifacts/privacy-verification`.
-The default-MSVC dev test executable imports must not be used as the shipping
-runtime audit. Linux x64/ARM64 and macOS x64/ARM64 executions remain unverified.
+Local resource admission is 512 KiB buffered input, 64 KiB per line and 16,384
+projected lines. These are explicit application limits, not limits mandated by
+the [Tor message specification](https://spec.torproject.org/control-spec/message-format.html).
+The request is EOF flag plus raw bytes. The response is typed need-more,
+consumed/status/length-prefixed ASCII lines, or a structured parse rejection.
+Maximum response is 589,840 bytes, within bridge v1's existing 1 MiB frame limit.
+No payload is put in arguments or new diagnostic logs.
 
-`privacy_inventory.py` reads Git-tracked Tor payloads and source callers, and
-parses PE/ELF/Mach-O imports without running Tor or using a public network. Exact
-payload hashes/imports and caller lines are in `privacy_fixtures/inventory.json`.
-The Windows Tor ledger reports0.4.9.9 plus embedded Libevent2.1.12/OpenSSL3.5.6/
-zlib1.3.2; that is QR's separate version evidence, not a claim that the new source
-removed those dependencies. Linux payloads retain libssl/libcrypto/libevent/
-libstdc++; macOS payload retains libevent and the Tor executable. License notices
-also require per-build provenance, particularly static libraries.
+## Verification evidence
 
-## Former broad cutover gates (audit only; not an active assignment)
+Verified on native Windows x64, Rust 1.99.0/edition 2024, .NET 10:
 
-The network peer confirmed authenticated TLS is **not implemented** yet. Tor needs
-a distinct provisional TLS link returning bounded exact leaf DER, with no
-resumption, compression, client auth, domain DNS/SNI or application/circuit cells
-before CERTS proves the expected relay identity. Normal HTTPS keeps its separate
-PKIX policy; no general certificate-bypass switch is acceptable. Missing actual
-TLS/curve primitive APIs are a concrete upstream interface blocker for relay
-execution. The human subsequently stopped the broad privacy-domain expansion;
-these are recorded obligations rather than authorization to continue it.
+- Eight Rust tests passed, none ignored: 24 reply fixtures generated by the
+  original C# reader, 8,000 independent .NET status-prefix cases, every fixture
+  prefix/EOF, coalesced replies, CRLF/bare-CR, exact limits, invalid requests and
+  2,048 deterministic hostile-input lengths. Strict codec Clippy and formatting
+  passed.
+- The full production core/client/probe compiled with zero warnings/errors.
+  The **actual shipping Rust host**, with the integration patches applied,
+  passed 102 assertions in GUI mode and 102 in daemon mode. This covers
+  byte-by-byte fragments, segmented/coalesced pipes, normal pipe backpressure,
+  exact replies/errors, event/synchronous routing, cancellation, bridge shutdown,
+  no-service rejection and malformed-response rejection.
+- The 34 retained coordinator/Tor unit tests passed. Their successful process
+  exit was verified. The hosted wallet and external coordinator use explicit
+  separate readers; a mocked parser is not used for the wallet positive tests.
+- The Windows release build and `Contrib/Mcw/audit.py` import audit passed with
+  only native Windows system libraries, no VC++ Redistributable import. The
+  audited host SHA256 is
+  `7068105d008d997cc853bfdace8b2835f665d108d86a953f6f09bdae9edee87e`.
+  The application Cargo dependency graph remains one package with no external
+  normal/build/test crates.
 
-Still required: real Ed25519 certificate authentication (network/crypto ownership
-has no existing verifier), RSA authority/key-cert and consensus authentication,
-microdescriptor binding, authenticated ntor/ntor-v3 and hop encryption, circuit
-extension/stream lifecycle, persistent guard selection/recovery, path diversity,
-onion descriptor/blinding/introduction/rendezvous/service hosting, padding and
-Conflux, retries/cancellation/cleanup, exact retained privacy/isolation policy,
-bridge transports (`obfs4`, Snowflake, WebTunnel) and their non-OS dependencies.
-`TorSettings` currently requests three entry/primary guards, Conflux throughput,
-and `ExtendedErrors KeepAliveIsolateSOCKSAuth`; silently dropping these is not a
-compatible cutover. SOCKS-greeting success is not bootstrap readiness.
+Reproduce the codec with `mcw/tests/privacy_control_verify.ps1`, or Cargo's
+`privacy_control` integration test. After applying both exact patches, build the
+host using the existing first-party runtime build and run
+`python mcw/tests/privacy_control_host.py --binary <mcw-path>`. Hold one exclusive
+shared build slot, use one build job and require at least 2 GiB free memory.
+The probe uses synthetic identities/data and an ephemeral loopback TCP server.
+It is not packaged. Source hashes and results are in
+`privacy-control-evidence.json`; detailed ignored logs are under
+`.artifacts/mcw-privacy-control-verify-20261002/.artifacts/privacy-control-verification`.
 
-Production service/managed adapter/caller execution, synthetic independent Tor
-network interoperability, privacy/security review, recovery/crash safety and all
-five target runtime/package/import audits are required before deleting Tor,
-OpenSSL, Libevent, zlib or any retained bridge implementation. Every state must
-have one authoritative owner. Tor state/files/guard authority has not moved here.
+Still unverified: activation on remote `master`, packaged production Tor smoke,
+the incorporated exact-commit CI and Linux x64/ARM64 plus macOS x64/ARM64 runtime
+execution. QR's earlier failed CI is not evidence for this codec. The added CI
+step must actually pass after incorporation; a proposed step is not verification.
 
-## Bounded caller replacement audit after scope correction
+## Retained dependencies and earlier checkpoint
 
-The coordinator was sent the concrete small candidate: Tor control reply framing
-and parsing in `MagicalCryptoWallet/Tor/Control/TorControlReplyReader.cs`, whose
-production caller is `TorControlClient.ReaderLoopAsync`. It currently uses the
-managed `PipeReaderLineReaderExtension.ReadLineAsync`. These leaves have not been
-edited or registered pending the narrowed assignment. The old reply shape must
-be preserved for `ProtocolInfoReply` (terminal raw `250 OK`) and
-`GetInfoCircuitStatusReply` (data dot/terminal lines); ASCII bytes and literal
-backslashes must survive. Replies/events, multi-line/data replies, exact
-consumption, fragmentation, cancellation/EOF and bounded malformed inputs need
-independent compatibility evidence. There is no need to replace Tor or change
-transport/daemon/control authentication/wallet-state ownership for this candidate.
+Tor, its managed daemon/controller/transport, OpenSSL, Libevent, zlib and the
+bundled Linux C++ runtime remain. The external coordinator intentionally retains
+its managed parser. No shared package or native dependency is marked removed.
+Tor state/files, guards, isolation and SOCKS policy retain their existing owner.
 
-All14 verified tests and19 native-file/99 caller-line audit evidence are preserved.
-No production service/legacy caller/package or shared host module was changed by
-this checkpoint.
+The prior protocol-only checkpoint is
+`5d7d2c06de698ff3f5122b3c9e916c220f934135`; its scope correction handoff is
+`875e929193d11106766603767a939d1985a431cf`. Their 14 tests and native inventory
+remain preserved. They are not a Tor backend, release or authorization to resume
+Tor/circuit/consensus/TLS/curve/storage/UI/CoinJoin rewrites. The small public
+`privacy_service::crypto::hash::keccak_f1600(&mut [u64;25])` API remains unchanged
+for the separately authorized round-hash worker; no second permutation is added.
