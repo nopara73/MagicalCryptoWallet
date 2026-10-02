@@ -1,4 +1,4 @@
-# snapshot_revision=6365f3244d23b801c0bb36581967caad8aae968e
+# snapshot_revision=2f4867c188b49d61d2eded702975fca111d3bbe4
 # category	path	line	source
 package	Contrib/Releases/Publisher/MagicalCryptoWallet.ReleaseTools.csproj	9	<PackageReference Include="NBitcoin" />
 direct_nbitcoin	Contrib/Releases/Publisher/Program.cs	3	using NBitcoin;
@@ -16,7 +16,7 @@ direct_nbitcoin	Contrib/VisualPreview/AutomaticCoinSelectionChecks.cs	13	using N
 direct_nbitcoin	Contrib/VisualPreview/BitcoinP2pChecks.cs	12	using NBitcoin;
 direct_nbitcoin	Contrib/VisualPreview/BitcoinP2pChecks.cs	13	using NBitcoin.Protocol;
 direct_nbitcoin	Contrib/VisualPreview/FeeDisplayChecks.cs	12	using NBitcoin;
-address_codec	Contrib/VisualPreview/FeeDisplayChecks.cs	105	SetBackingField(regular, nameof(regular.DestinationAddresses), Array.Empty<BitcoinAddress>());
+address_codec	Contrib/VisualPreview/FeeDisplayChecks.cs	103	SetBackingField(regular, nameof(regular.DestinationAddresses), Array.Empty<BitcoinAddress>());
 direct_nbitcoin	Contrib/VisualPreview/HistoryDateChecks.cs	15	using NBitcoin;
 address_codec	Contrib/VisualPreview/HistoryDateChecks.cs	145	SetBackingField(details, nameof(details.DestinationAddresses), Array.Empty<BitcoinAddress>());
 direct_nbitcoin	Contrib/VisualPreview/RecoveryWordsChecks.cs	13	using NBitcoin;
@@ -83,7 +83,6 @@ package_lock	MagicalCryptoWallet.Fluent.Desktop/packages.lock.json	582	"NBitcoin
 package_lock	MagicalCryptoWallet.Fluent.Desktop/packages.lock.json	726	"NBitcoin": {
 package_lock	MagicalCryptoWallet.Fluent.Desktop/packages.lock.json	736	"NBitcoin.Secp256k1": {
 package_lock	MagicalCryptoWallet.Fluent.Desktop/packages.lock.json	756	"NBitcoin.Secp256k1": "3.1.6",
-direct_nbitcoin	MagicalCryptoWallet.Fluent/App.axaml.cs	11	using NBitcoin;
 direct_nbitcoin	MagicalCryptoWallet.Fluent/Behaviors/HistoryItemTypeClassBehavior.cs	6	using NBitcoin;
 direct_nbitcoin	MagicalCryptoWallet.Fluent/Controls/AmountControl.axaml.cs	3	using NBitcoin;
 direct_nbitcoin	MagicalCryptoWallet.Fluent/Controls/CurrencyEntryBox.axaml.cs	10	using NBitcoin;
@@ -94,12 +93,11 @@ direct_nbitcoin	MagicalCryptoWallet.Fluent/Extensions/CurrencyExtensions.cs	3	us
 direct_nbitcoin	MagicalCryptoWallet.Fluent/Helpers/NotificationHelpers.cs	7	using NBitcoin;
 direct_nbitcoin	MagicalCryptoWallet.Fluent/Helpers/TextHelpers.cs	5	using NBitcoin;
 direct_nbitcoin	MagicalCryptoWallet.Fluent/Helpers/TransactionFeeHelper.cs	4	using NBitcoin;
-direct_nbitcoin	MagicalCryptoWallet.Fluent/Helpers/TransactionHelpers.cs	5	using NBitcoin;
-direct_nbitcoin	MagicalCryptoWallet.Fluent/IServices.cs	5	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/Helpers/TransactionHelpers.cs	3	using NBitcoin;
+direct_nbitcoin	MagicalCryptoWallet.Fluent/IServices.cs	4	using NBitcoin;
 direct_nbitcoin	MagicalCryptoWallet.Fluent/Infrastructure/ClipboardObserver.cs	1	using NBitcoin;
 direct_nbitcoin	MagicalCryptoWallet.Fluent/Models/DataLegend.cs	1	using NBitcoin;
 direct_nbitcoin	MagicalCryptoWallet.Fluent/Models/Pocket.cs	2	using NBitcoin;
-direct_nbitcoin	MagicalCryptoWallet.Fluent/Models/TransactionBroadcasterModel.cs	1	using NBitcoin;
 direct_nbitcoin	MagicalCryptoWallet.Fluent/Models/Transactions/PrivacySuggestion.cs	1	using NBitcoin;
 direct_nbitcoin	MagicalCryptoWallet.Fluent/Models/Transactions/PrivacySuggestionsModel.cs	1	using NBitcoin;
 direct_nbitcoin	MagicalCryptoWallet.Fluent/Models/Transactions/RecipientInfo.cs	1	using NBitcoin;
@@ -138,10 +136,10 @@ direct_nbitcoin	MagicalCryptoWallet.Fluent/Models/Wallets/WalletModelExtensions.
 direct_nbitcoin	MagicalCryptoWallet.Fluent/Models/Wallets/WalletSettingsModel.cs	3	using NBitcoin;
 direct_nbitcoin	MagicalCryptoWallet.Fluent/Models/Wallets/WalletSetupService.cs	1	using NBitcoin;
 direct_nbitcoin	MagicalCryptoWallet.Fluent/Models/Wallets/WalletTransactionsModel.cs	10	using NBitcoin;
-address_codec	MagicalCryptoWallet.Fluent/Models/Wallets/WalletTransactionsModel.cs	150	public IEnumerable<BitcoinAddress> GetDestinationAddresses(uint256 id)
-address_codec	MagicalCryptoWallet.Fluent/Models/Wallets/WalletTransactionsModel.cs	160	return GetDestinationAddresses(inputs, outputs);
-address_codec	MagicalCryptoWallet.Fluent/Models/Wallets/WalletTransactionsModel.cs	163	private IEnumerable<BitcoinAddress> GetDestinationAddresses(ICollection<IInput> inputs, ICollection<Output> outputs)
-direct_nbitcoin	MagicalCryptoWallet.Fluent/Services.cs	6	using NBitcoin;
+address_codec	MagicalCryptoWallet.Fluent/Models/Wallets/WalletTransactionsModel.cs	143	public IEnumerable<BitcoinAddress> GetDestinationAddresses(uint256 id)
+address_codec	MagicalCryptoWallet.Fluent/Models/Wallets/WalletTransactionsModel.cs	153	return GetDestinationAddresses(inputs, outputs);
+address_codec	MagicalCryptoWallet.Fluent/Models/Wallets/WalletTransactionsModel.cs	156	private IEnumerable<BitcoinAddress> GetDestinationAddresses(ICollection<IInput> inputs, ICollection<Output> outputs)
+direct_nbitcoin	MagicalCryptoWallet.Fluent/Services.cs	5	using NBitcoin;
 direct_nbitcoin	MagicalCryptoWallet.Fluent/ViewModels/AddWallet/Create/ConfirmMultiShareViewModel.cs	338	IsSkipEnabled = UiContext.Services.GetNetwork() != NBitcoin.Network.Main || System.Diagnostics.Debugger.IsAttached;
 direct_nbitcoin	MagicalCryptoWallet.Fluent/ViewModels/AddWallet/Create/ConfirmRecoveryWordsViewModel.cs	228	IsSkipEnabled = UiContext.Services.GetNetwork() != NBitcoin.Network.Main || System.Diagnostics.Debugger.IsAttached;
 direct_nbitcoin	MagicalCryptoWallet.Fluent/ViewModels/AddWallet/Create/RecoveryWordsViewModel.cs	3	using NBitcoin;
