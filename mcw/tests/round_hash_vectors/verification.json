@@ -1,0 +1,76 @@
+{
+  "schema": 1,
+  "scope": "Client round fingerprint only",
+  "reference_source_unchanged": true,
+  "managed_vectors": 38,
+  "strobego_checkpoints": 67,
+  "strict_clippy": true,
+  "cargo_packages": 1,
+  "external_cargo_dependencies": 0,
+  "native_target": "Windows x64",
+  "native_host_sha256": "54156da9dbc30c2180889526bfcdd4abfe10eb3b4d620a12ec2b1b13f8269d60",
+  "runtime_imports": [
+    "KERNEL32.dll",
+    "api-ms-win-core-synch-l1-2-0.dll",
+    "kernel32.dll",
+    "kernelbase.dll",
+    "ntdll.dll",
+    "shell32.dll"
+  ],
+  "actual_host": {
+    "host_sha256": "54156da9dbc30c2180889526bfcdd4abfe10eb3b4d620a12ec2b1b13f8269d60",
+    "fixture_sha256": "b1f4b88aa34dbaf933d95ddc67aea56833dbc1af1042d086d77b1a1301cde7aa",
+    "host": {
+      "vectors": 38,
+      "comparisons": 140,
+      "updaterAcceptance": true,
+      "updaterMismatch": true,
+      "cancellation": true,
+      "updaterCancellation": true,
+      "lateReply": true,
+      "truncated": 352,
+      "malformedIsolation": true,
+      "wallets": 0,
+      "network": false
+    },
+    "unavailable": {
+      "unavailable": true,
+      "pre_canceled": true,
+      "short_reply_rejected": true,
+      "poll_state_preserved": true,
+      "encoder_bounds": true
+    },
+    "wallets": 0,
+    "live_coordinator": false
+  },
+  "updater_regression": {
+    "failed": 0,
+    "passed": 14
+  },
+  "live_wallets": 0,
+  "live_coinjoin": false,
+  "other_native_targets": "not verified by this worker",
+  "dependency_removed": false,
+  "production_incorporation": "pending coordinator atomic registration/caller/ledger publication",
+  "production_integrated": false,
+  "old_implementation_retired": false,
+  "checkpoint_validation": {
+    "unregistered_rust_conformance_tests": 5,
+    "strict_clippy": true,
+    "tested_leaf_and_adapter_bytes_match": true,
+    "probe_guard_modes_compile_on_verified_baseline": "be4d8d0f4d34a2478e42e7cc4c78e0ba38229d9e",
+    "inactive_reference_vectors": 38,
+    "inactive_activation_guard_exit_code": 2,
+    "activated_guard_actual_host_retested": true,
+    "latest_master_managed_build_attempt": {
+      "baseline": "88f916aa0084a14c5a9bdf646d18602a02216f5b",
+      "passed": false,
+      "unrelated_errors": [
+        "RpcObjectCodec.cs:8 CS0234 MagicalCryptoWallet.Rpc namespace missing",
+        "RpcObjectCodec.cs:14 CS0118 Network namespace used as type"
+      ],
+      "owner_notified": true,
+      "peer_sources_unchanged": true
+    }
+  }
+}

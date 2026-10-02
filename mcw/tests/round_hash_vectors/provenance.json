@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "normalization": "UTF-8 with CRLF converted to LF before SHA256",
+  "managed_reference": {
+    "MagicalCryptoWallet/WabiSabi/Crypto/RoundHasher.cs": "26b3eceda3cb89b326393c4c9e4a9a76c77550c8b9104d823bbef088d9284e11",
+    "MagicalCryptoWallet/Crypto/StrobeProtocol/StrobeHasherExtensions.cs": "269da15547b13272176448bdf9567e66db595e0bb84b54f1fc7b6c37f41d95d9",
+    "ThirdParty/WabiSabi/csharp/WabiSabi/Crypto/StrobeProtocol/StrobeHasher.cs": "4aa65143f9dbadbd36011b3bb91da656e4442627f466c4383108f4c4754a5f4e"
+  },
+  "published_strobego": {
+    "source": "https://raw.githubusercontent.com/mimoo/StrobeGo/master/strobe/test_vectors/test_vectors.json",
+    "vendored_path": "ThirdParty/WabiSabi/csharp/WabiSabi.Tests/Data/StrobeTestVectors.json",
+    "sha256": "6d71efb60c87aba5b80ed16e5342db1d1f1bcaf5d5327b6cb9b89683d9c4b7e8",
+    "selected_cases": 67,
+    "license": "Apache-2.0; STROBEGO-LICENSE.txt",
+    "license_sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+    "published_snapshot_sha256": "27fc8367f24e913258cad8b0f89d760871980f83d801fd1f176bfb0b18ac41f6",
+    "published_selected_data_sha256": "16e8ec8d09d013c61090dc8b6cf401cc6794e4141c6dfc4d92983917fea549e8",
+    "published_snapshot_verified_on": "2026-10-02",
+    "selection": "Four initialization cases; AD/metaAD/PRF and continuation/rate cases from test-only upstream checkpoints. KEY/ENC/MAC are not implemented."
+  },
+  "specification": "https://strobe.sourceforge.io/specs/",
+  "keccak_owner": "mcw/src/privacy_service/crypto/hash.rs",
+  "shipping_oracle": false
+}

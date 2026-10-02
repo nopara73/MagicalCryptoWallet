@@ -1,0 +1,54 @@
+{
+  "schema": 1,
+  "scope": "Client-side round fingerprint only, operation 0x1200",
+  "status": "Verified activation patches prepared; published checkpoint is unused and production callers remain legacy",
+  "activation_patches": [
+    "Contrib/McwMigration/Handoffs/coinjoin-caller-activation.patch",
+    "Contrib/McwMigration/Handoffs/coinjoin-host-registration.patch"
+  ],
+  "managed_adapter": "MagicalCryptoWallet/Mcw/CoinJoin/McwRoundHash.cs",
+  "rust_domain": "mcw/src/round_hash/mod.rs",
+  "keccak_owner": "mcw/src/privacy_service/crypto/hash.rs",
+  "shared_registration": [
+    "mcw/src/lib.rs",
+    "mcw/src/app.rs"
+  ],
+  "unchanged_reference": {
+    "path": "MagicalCryptoWallet/WabiSabi/Crypto/RoundHasher.cs",
+    "production_caller": "MagicalCryptoWallet/WabiSabi/Coordinator/Rounds/Round.cs",
+    "reason": "External coordinator retains independent round ID computation and policy"
+  },
+  "verification_only": [
+    "Contrib/Mcw/RoundHashProbe",
+    "Contrib/Mcw/test-round-hash.py",
+    "MagicalCryptoWallet.Tests/Helpers/RoundHashReference.cs",
+    "mcw/tests/round_hash_conformance.rs",
+    "mcw/tests/round_hash_strobe.inc",
+    "mcw/tests/round_hash_prepare_strobego.py",
+    "mcw/tests/round_hash_verify.ps1",
+    "mcw/tests/round_hash_vectors"
+  ],
+  "package_references_removed": [],
+  "credential_protocol_migrated": false,
+  "wallet_or_round_state_ownership_changed": false,
+  "live_coinjoin_tested": false,
+  "broad_drafts_included": false,
+  "production_integrated": false,
+  "old_implementation_retired": false,
+  "dependency_removed": false,
+  "planned_activation_callers": [
+    {
+      "path": "MagicalCryptoWallet/WabiSabi/Models/RoundState.cs",
+      "member": "IsRoundIdMatchingAsync",
+      "implementation": "McwRoundHash.CalculateAsync via IMcwApplicationServices.RequestAsync",
+      "compatibility": "Record properties and advertised ID comparison retained; no stale private lazy cache on record copies",
+      "retirement_after_activation": "private Lazy<uint256> invoking managed RoundHasher.CalculateHash"
+    },
+    {
+      "path": "MagicalCryptoWallet/WabiSabi/Client/RoundStateAwaiters/RoundStateUpdater.cs",
+      "member": "UpdateRoundsStateAsync",
+      "implementation": "Default async validator awaits RoundState.IsRoundIdMatchingAsync with linked poll token before accepting new rounds",
+      "compatibility": "Existing round preference/cache/awaiter/failure behavior; test-only explicit oracle injection"
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+diff --git a/mcw/src/app.rs b/mcw/src/app.rs
+index 1906e36d56..ccb36fc91d 100644
+--- a/mcw/src/app.rs
++++ b/mcw/src/app.rs
+@@ -265,2 +265,10 @@ fn dispatch(
+         bridge::QR => bridge::encode_qr(frame).write(output),
++        crate::round_hash::OPERATION => {
++            match crate::round_hash::handle(frame.operation, &frame.payload) {
++                Ok(hash) => frame.reply(hash).write(output),
++                Err(_) => frame
++                    .error(1, "invalid round fingerprint request")
++                    .write(output),
++            }
++        }
+         bridge::RESTART | bridge::CRASH | bridge::UPDATE => {
+diff --git a/mcw/src/lib.rs b/mcw/src/lib.rs
+index c461c13a29..6224f21808 100644
+--- a/mcw/src/lib.rs
++++ b/mcw/src/lib.rs
+@@ -18,2 +18,3 @@ pub mod psbt;
+ pub mod qr;
++pub mod round_hash;
+ pub mod script_service;

@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Independent verification tool. Never included in an application package. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <DisableImplicitNamespaceImports>true</DisableImplicitNamespaceImports>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(RoundHashActivated)' == 'true'">
+    <DefineConstants>$(DefineConstants);MCW_ROUND_HASH_ACTIVATED</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../../MagicalCryptoWallet.Client/MagicalCryptoWallet.Client.csproj" />
+  </ItemGroup>
+</Project>

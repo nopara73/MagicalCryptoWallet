@@ -1,0 +1,118 @@
+diff --git a/MagicalCryptoWallet.Tests/UnitTests/Services/UpdateManagerTests.cs b/MagicalCryptoWallet.Tests/UnitTests/Services/UpdateManagerTests.cs
+index d87b28d60e..d242d7db6d 100644
+--- a/MagicalCryptoWallet.Tests/UnitTests/Services/UpdateManagerTests.cs
++++ b/MagicalCryptoWallet.Tests/UnitTests/Services/UpdateManagerTests.cs
+@@ -251,7 +251,7 @@ public class RoundStateUpdaterForTesting
+ 				: null;
+ 			var process = EventDriven(
+ 				new RoundsState(DateTime.UtcNow, TimeSpan.Zero, new Dictionary<uint256, RoundState>(), ImmutableList<RoundStateAwaiter>.Empty),
+-				RoundStateUpdater.Create(api));
++				RoundStateUpdater.Create(api, roundIdValidator: MagicalCryptoWallet.Tests.Helpers.RoundHashReference.MatchesAsync));
+ 			await process(mailbox, token).ConfigureAwait(false);
+ 		}, cancellationToken);
+ }
+diff --git a/MagicalCryptoWallet/WabiSabi/Client/RoundStateAwaiters/RoundStateUpdater.cs b/MagicalCryptoWallet/WabiSabi/Client/RoundStateAwaiters/RoundStateUpdater.cs
+index cf447a1e0b..5ddf9911a6 100644
+--- a/MagicalCryptoWallet/WabiSabi/Client/RoundStateAwaiters/RoundStateUpdater.cs
++++ b/MagicalCryptoWallet/WabiSabi/Client/RoundStateAwaiters/RoundStateUpdater.cs
+@@ -50,14 +50,19 @@ public record RoundsState(
+ 
+ public static class RoundStateUpdater
+ {
+-	public static MessageHandler<RoundUpdateMessage, RoundsState> Create(IWabiSabiApiRequestHandler arenaRequestHandler, TimeProvider? timeProvider = null) =>
+-		(msg, state, cancellationToken) => ProcessMessageAsync(msg, state, arenaRequestHandler, timeProvider ?? TimeProvider.System, cancellationToken);
++	public static MessageHandler<RoundUpdateMessage, RoundsState> Create(
++		IWabiSabiApiRequestHandler arenaRequestHandler,
++		TimeProvider? timeProvider = null,
++		Func<RoundState, CancellationToken, Task<bool>>? roundIdValidator = null) =>
++		(msg, state, cancellationToken) => ProcessMessageAsync(msg, state, arenaRequestHandler, timeProvider ?? TimeProvider.System,
++			roundIdValidator ?? ((round, token) => round.IsRoundIdMatchingAsync(token)), cancellationToken);
+ 
+ 	private static async Task<RoundsState> ProcessMessageAsync(
+ 		RoundUpdateMessage msg,
+ 		RoundsState state,
+ 		IWabiSabiApiRequestHandler arenaRequestHandler,
+ 		TimeProvider timeProvider,
++		Func<RoundState, CancellationToken, Task<bool>> roundIdValidator,
+ 		CancellationToken cancellationToken)
+ 	{
+ 		var finished = state.Awaiters.Where(a => a.Task.IsCompleted).ToArray();
+@@ -70,7 +75,7 @@ public static class RoundStateUpdater
+ 				{
+ 					try
+ 					{
+-						var (rounds, awaiters) = await UpdateRoundsStateAsync(state, arenaRequestHandler, cancellationToken).ConfigureAwait(false);
++						var (rounds, awaiters) = await UpdateRoundsStateAsync(state, arenaRequestHandler, roundIdValidator, cancellationToken).ConfigureAwait(false);
+ 						state = state with
+ 						{
+ 							NextQueryTime = timeProvider.GetUtcNow().UtcDateTime + state.QueryInterval,
+@@ -111,6 +116,7 @@ public static class RoundStateUpdater
+ 	private static async Task<(Dictionary<uint256, RoundState> Rounds, ImmutableList<RoundStateAwaiter> Awaiters)> UpdateRoundsStateAsync(
+ 		RoundsState state,
+ 		IWabiSabiApiRequestHandler arenaRequestHandler,
++		Func<RoundState, CancellationToken, Task<bool>> roundIdValidator,
+ 		CancellationToken cancellationToken)
+ 	{
+ 		var request = new RoundStateRequest(
+@@ -125,10 +131,13 @@ public static class RoundStateUpdater
+ 		var newRoundStates = roundStates
+ 			.Where(rs => !state.Rounds.ContainsKey(rs.Id));
+ 
+-		if (newRoundStates.Any(r => !r.IsRoundIdMatching()))
++		foreach (var round in newRoundStates)
+ 		{
+-			throw new InvalidOperationException(
+-				"Coordinator is cheating by creating rounds that do not match the parameters.");
++			if (!await roundIdValidator(round, linkedCts.Token).ConfigureAwait(false))
++			{
++				throw new InvalidOperationException(
++					"Coordinator is cheating by creating rounds that do not match the parameters.");
++			}
+ 		}
+ 
+ 		// Don't use ToImmutable dictionary, because that ruins the original order and makes the server unable to suggest a round preference.
+diff --git a/MagicalCryptoWallet/WabiSabi/Models/RoundState.cs b/MagicalCryptoWallet/WabiSabi/Models/RoundState.cs
+index 07283d75c2..2e75ffea7f 100644
+--- a/MagicalCryptoWallet/WabiSabi/Models/RoundState.cs
++++ b/MagicalCryptoWallet/WabiSabi/Models/RoundState.cs
+@@ -1,7 +1,7 @@
+ using WabiSabi.Crypto;
+ using WabiSabi.Crypto.Randomness;
+ using MagicalCryptoWallet.WabiSabi.Coordinator.Rounds;
+-using MagicalCryptoWallet.WabiSabi.Crypto;
++using MagicalCryptoWallet.Mcw.CoinJoin;
+ using MagicalCryptoWallet.WabiSabi.Models.MultipartyTransaction;
+ using CredentialIssuerParameters = WabiSabi.Crypto.CredentialIssuerParameters;
+ 
+@@ -17,29 +17,8 @@ public record RoundState(uint256 Id,
+ 	TimeSpan InputRegistrationTimeout,
+ 	MultipartyTransactionState CoinjoinState)
+ {
+-	private readonly Lazy<uint256> _calculatedRoundId = new(() => RoundHasher.CalculateHash(
+-		InputRegistrationStart,
+-		InputRegistrationTimeout,
+-		CoinjoinState.Parameters.ConnectionConfirmationTimeout,
+-		CoinjoinState.Parameters.OutputRegistrationTimeout,
+-		CoinjoinState.Parameters.TransactionSigningTimeout,
+-		CoinjoinState.Parameters.AllowedInputAmounts,
+-		CoinjoinState.Parameters.AllowedInputTypes,
+-		CoinjoinState.Parameters.AllowedOutputAmounts,
+-		CoinjoinState.Parameters.AllowedOutputTypes,
+-		CoinjoinState.Parameters.Network,
+-		CoinjoinState.Parameters.MiningFeeRate.FeePerK,
+-		CoinjoinState.Parameters.MaxTransactionSize,
+-		CoinjoinState.Parameters.MinRelayTxFee.FeePerK,
+-		CoinjoinState.Parameters.MaxAmountCredentialValue,
+-		CoinjoinState.Parameters.MaxVsizeCredentialValue,
+-		CoinjoinState.Parameters.MaxVsizeAllocationPerAlice,
+-		CoinjoinState.Parameters.MaxSuggestedAmount,
+-		CoinjoinState.Parameters.CoordinationIdentifier,
+-		AmountCredentialIssuerParameters,
+-		VsizeCredentialIssuerParameters));
+-
+-	public bool IsRoundIdMatching() => Id == _calculatedRoundId.Value;
++	public async Task<bool> IsRoundIdMatchingAsync(CancellationToken cancellationToken = default) =>
++		Id == await McwRoundHash.CalculateAsync(this, cancellationToken).ConfigureAwait(false);
+ 	public DateTimeOffset InputRegistrationEnd => InputRegistrationStart + InputRegistrationTimeout;
+ 	public bool IsBlame => BlameOf != uint256.Zero;
+ 
