@@ -1,0 +1,124 @@
+name: Diagnose retained mcw blame round
+on:
+  workflow_dispatch:
+    inputs:
+      build_run:
+        description: Run containing the authenticated macOS x64 native package
+        type: number
+        required: true
+      artifact_id:
+        description: packages-osx-x64 artifact ID
+        type: number
+        required: true
+      build_commit:
+        description: Exact source commit of the packaged native application
+        required: true
+      archive_sha256:
+        description: Complete GitHub artifact archive SHA-256
+        required: true
+      diagnostic_diff_sha256:
+        description: SHA-256 of the reviewed binary Git diff from build_commit
+        required: true
+permissions:
+  contents: read
+  actions: read
+jobs:
+  retained-blame:
+    runs-on: macos-15-intel
+    timeout-minutes: 25
+    env:
+      AVALONIA_TELEMETRY_OPTOUT: '1'
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      DOTNET_NOLOGO: '1'
+      BUILD_RUN: ${{ inputs.build_run }}
+      ARTIFACT_ID: ${{ inputs.artifact_id }}
+      BUILD_COMMIT: ${{ inputs.build_commit }}
+      ARCHIVE_SHA256: ${{ inputs.archive_sha256 }}
+      DIAGNOSTIC_DIFF_SHA256: ${{ inputs.diagnostic_diff_sha256 }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+      - name: Authenticate retained native package and restrict diagnostic source changes
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p .artifacts/retained-blame
+          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/$ARTIFACT_ID" > .artifacts/retained-blame/artifact.json
+          python - <<'PY'
+          import hashlib, json, os, re, subprocess
+          from pathlib import Path
+          artifact = json.loads(Path('.artifacts/retained-blame/artifact.json').read_text())
+          assert re.fullmatch('[0-9a-f]{40}', os.environ['BUILD_COMMIT'])
+          assert re.fullmatch('[0-9a-f]{64}', os.environ['ARCHIVE_SHA256'])
+          assert re.fullmatch('[0-9a-f]{64}', os.environ['DIAGNOSTIC_DIFF_SHA256'])
+          assert artifact['workflow_run']['id'] == int(os.environ['BUILD_RUN'])
+          assert artifact['workflow_run']['head_sha'] == os.environ['BUILD_COMMIT']
+          assert artifact['digest'] == 'sha256:' + os.environ['ARCHIVE_SHA256']
+          assert artifact['name'] == 'packages-osx-x64' and not artifact['expired']
+          allowed = {'.github/workflows/mcw-retained-diagnostic.yml',
+                     'MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Integration/WabiSabiHttpApiIntegrationTests.cs'}
+          changed = set(subprocess.check_output(['git', 'diff', '--name-only', os.environ['BUILD_COMMIT'], 'HEAD'], text=True).splitlines())
+          assert changed <= allowed, 'Application source changed; rebuild the native application.'
+          diff = subprocess.check_output(['git', 'diff', '--binary', '--full-index', '--no-ext-diff', '--no-color', '--diff-algorithm=myers', '--no-renames', '-U3', '--src-prefix=a/', '--dst-prefix=b/', '--no-textconv', os.environ['BUILD_COMMIT'], 'HEAD'])
+          assert hashlib.sha256(diff).hexdigest() == os.environ['DIAGNOSTIC_DIFF_SHA256'], 'Unreviewed diagnostic source change.'
+          Path('.artifacts/retained-blame/reviewed-source.diff').write_bytes(diff)
+          PY
+          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/$ARTIFACT_ID/zip" --allow-escape-sequences > .artifacts/retained-blame/snapshot.zip
+          python - <<'PY'
+          import hashlib, json, os, zipfile
+          from pathlib import Path
+          root = Path('.artifacts/retained-blame').resolve()
+          digest = lambda data: hashlib.sha256(data).hexdigest()
+          assert digest((root / 'snapshot.zip').read_bytes()) == os.environ['ARCHIVE_SHA256']
+          with zipfile.ZipFile(root / 'snapshot.zip') as artifact:
+              assert artifact.testzip() is None
+              name, = [name for name in artifact.namelist() if name.startswith('packages/') and name.endswith('-macOS-x64.zip')]
+              native_name, = [name for name in artifact.namelist() if name.startswith('.artifacts/mcw-evidence/native-osx-x64-') and name.endswith('/verification.json')]
+              native = json.loads(artifact.read(native_name))
+              assert native['passed'] and native['runtime_import_audit_passed'] and native['external_cargo_dependencies'] == []
+              package = root / 'package.zip'
+              package.write_bytes(artifact.read(name))
+          with zipfile.ZipFile(package) as archive:
+              for member in archive.infolist():
+                  destination = (root / 'payload' / member.filename).resolve()
+                  assert destination.is_relative_to(root / 'payload')
+              archive.extractall(root / 'payload')
+          binary, = [path for path in (root / 'payload').rglob('mcw') if path.is_file()]
+          assert digest(binary.read_bytes()) == native['native_sha256']
+          binary.chmod(0o755)
+          provenance = {'purpose': 'Retained synthetic blame diagnosis; not release qualification',
+                        'build_run': int(os.environ['BUILD_RUN']), 'artifact_id': int(os.environ['ARTIFACT_ID']),
+                        'build_commit': os.environ['BUILD_COMMIT'], 'archive_sha256': os.environ['ARCHIVE_SHA256'],
+                        'native_sha256': native['native_sha256'], 'application_source_unchanged': True,
+                        'diagnostic_diff_sha256': os.environ['DIAGNOSTIC_DIFF_SHA256']}
+          (root / 'provenance.json').write_text(json.dumps(provenance, indent=2) + '\n')
+          with open(os.environ['GITHUB_ENV'], 'a') as environment:
+              environment.write('MCW_DIAGNOSTIC_BINARY=' + str(binary) + '\n')
+          PY
+      - name: Audit the actual packaged native executable
+        run: python Contrib/Mcw/audit.py --binary "$MCW_DIAGNOSTIC_BINARY"
+      - name: Preserve related fixture context and exact blame broadcast assertions
+        run: python Contrib/Mcw/run-managed-tests.py --binary "$MCW_DIAGNOSTIC_BINARY" --project MagicalCryptoWallet.Tests --filter-class '*WabiSabiHttpApiIntegrationTests' --progress off --no-ansi --output Normal
+      - name: Retain diagnostic source, native identity and synthetic evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mcw-retained-blame-${{ github.run_id }}
+          path: |
+            .artifacts/retained-blame/artifact.json
+            .artifacts/retained-blame/provenance.json
+            .artifacts/retained-blame/reviewed-source.diff
+            .artifacts/mcw-evidence/*.imports.json
+            .artifacts/managed-host-verification/**/verification.json
+            .artifacts/managed-host-verification/**/source-snapshot.zip
+            .artifacts/managed-host-verification/**/build/**
+            .artifacts/managed-host-verification/**/*.log
+            .artifacts/managed-host-verification/**/restore-locks/**
+            .artifacts/managed-host-verification/**/restore-locks.targets

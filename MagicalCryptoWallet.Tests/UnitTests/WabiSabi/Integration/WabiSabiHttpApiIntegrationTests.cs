@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using NBitcoin;
+using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
@@ -266,6 +267,30 @@ public class WabiSabiHttpApiIntegrationTests : IClassFixture<WabiSabiApiApplicat
 		var coinJoinClient2Bad = WabiSabiFactory.CreateTestCoinJoinClient(_ => apiClient2Bad, keyManager2, roundStateProvider);
 		var coinJoinClient3 = WabiSabiFactory.CreateTestCoinJoinClient(_ => apiClient3, keyManager3, roundStateProvider);
 		var coinJoinClient4 = WabiSabiFactory.CreateTestCoinJoinClient(_ => apiClient4, keyManager4, roundStateProvider);
+		CoinJoinClient[] clients = [coinJoinClient1, coinJoinClient2Bad, coinJoinClient3, coinJoinClient4];
+		var progress = clients.Select(_ => new ConcurrentQueue<string>()).ToArray();
+		var endedRounds = clients.Select(_ => new ConcurrentQueue<RoundState>()).ToArray();
+		var elapsed = System.Diagnostics.Stopwatch.StartNew();
+		static string DescribeRound(RoundState state) => $"id={state.Id}, blameOf={state.BlameOf}, phase={state.Phase}, end={state.EndRoundState}, inputs={state.CoinjoinState.Inputs.Count()}, outputs={state.CoinjoinState.Outputs.Count()}";
+		for (int i = 0; i < clients.Length; i++)
+		{
+			var messages = progress[i];
+			var rounds = endedRounds[i];
+			clients[i].CoinJoinClientProgress += (_, value) =>
+			{
+				var state = value switch
+				{
+					global::MagicalCryptoWallet.WabiSabi.Client.CoinJoinProgressEvents.RoundEnded ended => ended.LastRoundState,
+					global::MagicalCryptoWallet.WabiSabi.Client.CoinJoinProgressEvents.RoundStateChanged changed => changed.RoundState,
+					_ => null
+				};
+				if (value is global::MagicalCryptoWallet.WabiSabi.Client.CoinJoinProgressEvents.RoundEnded && state is not null)
+				{
+					rounds.Enqueue(state);
+				}
+				messages.Enqueue($"{elapsed.Elapsed.TotalSeconds:F3}s {value.GetType().Name} {(state is null ? "" : DescribeRound(state))}");
+			};
+		}
 
 		var participant1CoinjoinTask = coinJoinClient1.StartCoinJoinAsync(() => participant1Coins, cts.Token);
 		var participant2CoinjoinTaskBad = coinJoinClient2Bad.StartRoundAsync(participant2CoinsBad, UnrestrictedRound.Instance, roundState, cts.Token);
@@ -277,6 +302,42 @@ public class WabiSabiHttpApiIntegrationTests : IClassFixture<WabiSabiApiApplicat
 		var participant1Result = await participant1CoinjoinTask;
 		var participant2ResultBad = await participant2CoinjoinTaskBad;
 		var participant3Result = await participant3CoinjoinTask;
+		var participant4Result = await participant4CoinjoinTask;
+		if (participant1Result is not SuccessfulCoinJoinResult || participant3Result is not SuccessfulCoinJoinResult ||
+			participant4Result is not SuccessfulCoinJoinResult)
+		{
+			CoinJoinResult[] results = [participant1Result, participant2ResultBad, participant3Result, participant4Result];
+			for (int i = 0; i < clients.Length; i++)
+			{
+				_output.WriteLine($"Blame participant {i + 1}: result={results[i].GetType().Name}, progress={string.Join(", ", progress[i])}, schedules={string.Join(", ", ((TestableCoinJoinClient)clients[i]).ScheduledMaximumDelays)}.");
+				foreach (var ended in endedRounds[i])
+				{
+					_output.WriteLine($"Blame participant {i + 1} retained RoundEnded: {DescribeRound(ended)}.");
+				}
+			}
+			try
+			{
+				using var diagnosticTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+				var status = await apiClient1.GetStatusAsync(RoundStateRequest.Empty, diagnosticTimeout.Token);
+				foreach (var current in status.RoundStates)
+				{
+					_output.WriteLine($"Blame coordinator round: id={current.Id}, blameOf={current.BlameOf}, phase={current.Phase}, end={current.EndRoundState}, inputs={current.CoinjoinState.Inputs.Count()}, outputs={current.CoinjoinState.Outputs.Count()}.");
+				}
+				var logPath = Path.GetFullPath(global::MagicalCryptoWallet.Logging.Logger.FilePath);
+				if (logPath.StartsWith(Path.GetFullPath(Common.DataDir) + Path.DirectorySeparatorChar, StringComparison.Ordinal) && File.Exists(logPath))
+				{
+					_output.WriteLine("Synthetic blame coordinator/client log tail:");
+					foreach (var line in File.ReadLines(logPath).Where(line => line.Contains("CoinJoinClient") || line.Contains("Arena") || line.Contains("RoundStateUpdater")).TakeLast(400))
+					{
+						_output.WriteLine(line);
+					}
+				}
+			}
+			catch (Exception diagnosticError)
+			{
+				_output.WriteLine($"Blame diagnosis unavailable: {diagnosticError.GetType().Name}.");
+			}
+		}
 
 		Assert.IsType<SuccessfulCoinJoinResult>(participant1Result);
 
@@ -285,7 +346,7 @@ public class WabiSabiHttpApiIntegrationTests : IClassFixture<WabiSabiApiApplicat
 		Assert.IsNotType<SuccessfulCoinJoinResult>(participant2ResultBad);
 
 		Assert.IsType<SuccessfulCoinJoinResult>(participant3Result);
-		Assert.IsType<SuccessfulCoinJoinResult>(await participant4CoinjoinTask);
+		Assert.IsType<SuccessfulCoinJoinResult>(participant4Result);
 
 		var broadcastedTx = await broadcastedTxTcs.Task; // wait for the transaction to be broadcasted.
 		Assert.NotNull(broadcastedTx);
