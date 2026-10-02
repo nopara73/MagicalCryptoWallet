@@ -41,10 +41,14 @@ def wait_for(check, timeout=45):
     raise AssertionError(f"Condition timed out after {timeout}s; last result: {last!r}")
 
 
-def rpc(url, method, params=(), allow_error=False):
+def rpc(url, method, params=(), allow_error=False, timeout=None):
     request = urllib.request.Request(url, json.dumps({"jsonrpc": "2.0", "id": 1, "method": method, "params": params}).encode(),
         {"Content-Type": "application/json", "Authorization": "Basic " + base64.b64encode(b"synthetic:synthetic").decode()})
-    with urllib.request.urlopen(request, timeout=5) as response:
+    # Mining and password derivation can exceed five seconds on slower CI runners.
+    # Give expensive operations one bounded request; never retry a wallet mutation.
+    if timeout is None:
+        timeout = 30 if method in {"generatetoaddress", "createwallet", "recoverwallet", "build", "send"} else 5
+    with urllib.request.urlopen(request, timeout=timeout) as response:
         body = response.read()
     if not body:
         return None

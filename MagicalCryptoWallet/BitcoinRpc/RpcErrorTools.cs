@@ -22,9 +22,7 @@ public static class RpcErrorTools
 		["bad-txns-nonfinal"] = "The transaction is not final and cannot be broadcast.",
 		["bad-txns-oversize"] = "The transaction is too big.",
 
-		["invalid password"] = "Wrong password.",
-		["Invalid wallet name"] = "Invalid wallet name.",
-		["Wallet name is already taken"] = "Wallet name is already taken."
+		["invalid password"] = "Wrong password."
 	};
 
 	public static bool IsSpentError(string error)

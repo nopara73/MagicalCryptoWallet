@@ -20,7 +20,28 @@ public class LockTimeSelectorTests
 		}
 		else
 		{
-			Assert.InRange(lockTime.Value, tipHeight - 99, tipHeight + 1);
+			Assert.InRange(lockTime.Value, tipHeight - 99, tipHeight);
 		}
+	}
+
+	[Theory]
+	[InlineData(0u)]
+	[InlineData(1u)]
+	[InlineData(10u)]
+	[InlineData(600_000u)]
+	public void EveryDistributionBranchProducesAnImmediatelyFinalLockTime(uint tipHeight)
+	{
+		// Future locks fail mempool policy; subtracting 99 from a short chain must not wrap uint.
+		foreach (var distributionValue in new[] { 0.0, 0.91, 0.978, 0.999 })
+		{
+			var selector = new LockTimeSelector(new FixedRandom(distributionValue));
+			Assert.InRange(selector.GetLockTimeBasedOnDistribution(tipHeight).Value, 0u, tipHeight);
+		}
+	}
+
+	private sealed class FixedRandom(double value) : Random
+	{
+		public override double NextDouble() => value;
+		public override int Next(int minValue, int maxValue) => maxValue - 1;
 	}
 }

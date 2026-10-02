@@ -227,6 +227,9 @@ public class TransactionStore : IDisposable
 
 	public void Dispose()
 	{
-		_sqliteStorage.Dispose();
+		lock (_sqliteStorageLock)
+		{
+			_sqliteStorage.Dispose();
+		}
 	}
 }

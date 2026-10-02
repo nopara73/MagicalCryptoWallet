@@ -249,8 +249,10 @@ public class SingleWalletTests
 		await WaitForAsync(() => app.Session.Snapshot.IsSynchronized);
 		Assert.False(app.Session.Snapshot.CoinJoinRequiresAuthorization);
 	}
-	[Fact]
-	public async Task CancellationWhileWaitingForHeadersStopsCleanlyAsync()
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public async Task CancellationWhileWaitingForHeadersStopsCleanlyAsync(bool cancelShutdownWait)
 	{
 		await using var app = new SyntheticApplication(await Common.GetEmptyWorkDirAsync());
 		app.Session.Configure(app.NewKeys());
@@ -258,8 +260,11 @@ public class SingleWalletTests
 		await WaitForAsync(() => app.Session.Snapshot.HasCachedData);
 		Assert.False(app.Session.Snapshot.IsSynchronized);
 		using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+		if (cancelShutdownWait) { timeout.Cancel(); }
+		var wallet = app.Session.GetWallet()!;
 		await app.Session.StopAsync(timeout.Token);
 		Assert.Equal(WalletSessionState.Stopping, app.Session.Snapshot.State);
+		Assert.True(wallet.WalletFilterProcessor.ExecuteTask is null or { IsCompleted: true });
 		Assert.Throws<ObjectDisposedException>(() => { _ = app.Session.InitializeAsync(); });
 	}
 	[Fact]

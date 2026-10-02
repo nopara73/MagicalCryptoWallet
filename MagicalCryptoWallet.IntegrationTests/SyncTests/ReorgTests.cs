@@ -5,6 +5,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using NBitcoin;
 using MagicalCryptoWallet.IntegrationTests.Infrastructure;
+using MagicalCryptoWallet.Services;
+using MagicalCryptoWallet.Models;
 using Xunit;
 
 namespace MagicalCryptoWallet.IntegrationTests.SyncTests;
@@ -21,6 +23,38 @@ public class ReorgTests
 	public ReorgTests(IntegrationTestFixture fixture)
 	{
 		_fixture = fixture;
+	}
+
+	[Theory(Timeout = 120_000)]
+	[InlineData(false)]
+	[InlineData(true)]
+	public async Task StopDrainsReorgWaitingForBlockDownloadAndRejectsLateEvents(bool cancelShutdownWait)
+	{
+		await using var env = await RegTestEnvironment.CreateAsync(_fixture);
+		var keyManager = env.CreateKeyManager();
+		var receiveKey = keyManager.GetNextReceiveKey("Synthetic shutdown funding");
+		await env.FundAddressAsync(receiveKey.GetP2wpkhAddress(env.Network), Money.Coins(1m));
+		await env.SyncFiltersRpcAsync(TestContext.Current.CancellationToken);
+		var tip = env.FilterStore.GetTip()!;
+		var downloading = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+		var wallet = env.CreateWallet(keyManager, async (_, token) =>
+		{
+			downloading.SetResult();
+			await Task.Delay(Timeout.InfiniteTimeSpan, token);
+			throw new InvalidOperationException("A canceled block request must not complete.");
+		});
+		var startup = wallet.StartAsync(TestContext.Current.CancellationToken);
+		await downloading.Task.WaitAsync(TestContext.Current.CancellationToken);
+		env.EventBus.Publish(new ChainReorganized(new Height.ChainHeight(tip.Header.Height), tip.Header.BlockHash));
+		using var shutdown = new CancellationTokenSource();
+		if (cancelShutdownWait) { shutdown.Cancel(); }
+		await wallet.StopAsync(shutdown.Token);
+		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => startup);
+		Assert.Equal(tip.Header.Height - 1, keyManager.GetBestHeight());
+
+		// EventBus publishers may have copied a subscription before shutdown began.
+		env.EventBus.Publish(new ChainReorganized(new Height.ChainHeight(1), tip.Header.BlockHash));
+		Assert.Equal(tip.Header.Height - 1, keyManager.GetBestHeight());
 	}
 
 	[Fact(Timeout = 120_000)] // 2 minute timeout

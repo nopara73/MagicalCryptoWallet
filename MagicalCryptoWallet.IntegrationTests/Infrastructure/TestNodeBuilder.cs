@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -15,6 +16,8 @@ namespace MagicalCryptoWallet.IntegrationTests.Infrastructure;
 public static class TestNodeBuilder
 {
 	public static readonly EventBus EventBus = new();
+	internal static string DataDir { get; } = EnvironmentHelpers.GetDataDir(
+		Path.Combine("MagicalCryptoWallet", "IntegrationTests", Guid.NewGuid().ToString("N")));
 
 	public static async Task<CoreNode> CreateAsync([CallerFilePath] string callerFilePath = "", [CallerMemberName] string callerMemberName = "", string additionalFolder = "")
 	{
@@ -60,7 +63,6 @@ public static class TestNodeBuilder
 
 	private static string GetWorkDir(string callerFilePath, string callerMemberName)
 	{
-		var dataDir = EnvironmentHelpers.GetDataDir(Path.Combine("MagicalCryptoWallet", "IntegrationTests"));
-		return Path.Combine(dataDir, EnvironmentHelpers.ExtractFileName(callerFilePath), callerMemberName);
+		return Path.Combine(DataDir, EnvironmentHelpers.ExtractFileName(callerFilePath), callerMemberName);
 	}
 }

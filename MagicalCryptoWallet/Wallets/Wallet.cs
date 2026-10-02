@@ -32,6 +32,8 @@ public delegate Wallet WalletFactory(KeyManager keyManager);
 public class Wallet : BackgroundService
 {
 	private readonly ComposedDisposable _disposables = new();
+	private readonly Lock _mempoolGate = new();
+	private bool _stopping;
 
 	public static WalletFactory CreateFactory(
 		Network network, FilterStore filterStore, AllTransactionStore transactionStore, FilterHeaderChain filterHeaderChain,
@@ -252,15 +254,25 @@ public class Wallet : BackgroundService
 	/// <inheritdoc/>
 	public override async Task StopAsync(CancellationToken cancel)
 	{
+		StopSubscriptions();
 		await base.StopAsync(cancel).ConfigureAwait(false);
 		await WalletFilterProcessor.StopAsync(cancel).ConfigureAwait(false);
 	}
 
 	public override void Dispose()
 	{
+		StopSubscriptions();
 		WalletFilterProcessor.Dispose();
-		_disposables.Dispose();
 		base.Dispose();
+	}
+
+	private void StopSubscriptions()
+	{
+		lock (_mempoolGate)
+		{
+			_stopping = true;
+			_disposables.Dispose();
+		}
 	}
 
 	private void WalletRelevantTransactionProcessed(ProcessedResult e)
@@ -287,16 +299,20 @@ public class Wallet : BackgroundService
 
 	private void Mempool_TransactionReceived(SmartTransaction tx)
 	{
-		try
+		lock (_mempoolGate)
 		{
-			if (!TransactionProcessor.IsAware(tx.GetHash()))
+			if (_stopping) { return; }
+			try
 			{
-				TransactionProcessor.Process(tx);
+				if (!TransactionProcessor.IsAware(tx.GetHash()))
+				{
+					TransactionProcessor.Process(tx);
+				}
 			}
-		}
-		catch (Exception ex)
-		{
-			Logger.LogWarning(FormatLog(ex.ToString(), this));
+			catch (Exception ex)
+			{
+				Logger.LogWarning(FormatLog(ex.ToString(), this));
+			}
 		}
 	}
 

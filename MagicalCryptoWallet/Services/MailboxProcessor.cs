@@ -69,7 +69,8 @@ public sealed class MailboxProcessor<TMsg>(
 			throw new InvalidOperationException("The processor has already been started.");
 		}
 
-		_processingTask = Task.Run(InternalStartAsync, _cts.Token);
+		var token = _cts.Token;
+		_processingTask = Task.Run(() => InternalStartAsync(token), token);
 	}
 
 	public bool Post(TMsg message)
@@ -118,20 +119,24 @@ public sealed class MailboxProcessor<TMsg>(
 		}
 
 		_isDisposed = true;
-		_mailbox.Complete();
 		_cts.Cancel();
+		_mailbox.Complete();
 		_cts.Dispose();
 	}
 
-	private async Task InternalStartAsync()
+	private async Task InternalStartAsync(CancellationToken cancellationToken)
 	{
 		try
 		{
-			await _body(_mailbox, _cts.Token).ConfigureAwait(false);
+			await _body(_mailbox, cancellationToken).ConfigureAwait(false);
 		}
-		catch (OperationCanceledException) when (_cts.Token.IsCancellationRequested)
+		catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
 		{
 			// Normal cancellation, ignore
+		}
+		catch (ChannelClosedException) when (cancellationToken.IsCancellationRequested)
+		{
+			// A receive already queued when shutdown completes the mailbox can observe its closure.
 		}
 	}
 }
