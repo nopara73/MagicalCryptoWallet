@@ -2,6 +2,7 @@ param(
  [string]$SharedRoot='C:\Users\user\OneDrive\Documents\ChatGPT\MagicalCryptoWallet',
  [string]$ManagedHostSource,
  [string]$RustSourceRoot,
+ [string]$NativeLibraryPath,
  [string]$Python='C:\Python314\python.exe'
 )
 $ErrorActionPreference='Stop'
@@ -20,6 +21,13 @@ foreach ($relative in 'MagicalCryptoWallet/Crypto/OwnershipIdentifier.cs','Magic
 $hostText=[IO.File]::ReadAllText($ManagedHostSource)
 $dispatchText=[IO.File]::ReadAllText((Join-Path $RustSourceRoot 'app.rs'))
 if ($hostText -notmatch 'Invalid application error encoding' -or $dispatchText -notmatch 'wallet_hash_service::execute') { throw 'Apply the reviewed shared host patch in the verification candidate first' }
+if (-not $NativeLibraryPath) {
+ foreach ($candidate in @((Join-Path $root 'ThirdParty/WabiSabi/c/build-win/libwabisabi.dll'),(Join-Path $SharedRoot 'ThirdParty/WabiSabi/c/build-win/libwabisabi.dll'))) {
+  if (Test-Path -LiteralPath $candidate -PathType Leaf) { $NativeLibraryPath=$candidate; break }
+ }
+}
+if (-not $NativeLibraryPath -or -not (Test-Path -LiteralPath $NativeLibraryPath -PathType Leaf)) { throw 'Build the retained source WabiSabi library first, or supply its existing NativeLibraryPath' }
+$NativeLibraryPath=[IO.Path]::GetFullPath($NativeLibraryPath)
 if ((Get-CimInstance Win32_OperatingSystem).FreePhysicalMemory -lt 2097152) { Write-Output 'BUILD_DEFERRED'; exit 3 }
 $handle=$null
 foreach ($slot in 1,2) {
@@ -41,7 +49,7 @@ try {
  $project=Join-Path $projectDirectory 'HmacProbe.csproj'
  Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'HmacProbe.csproj.inc') -Destination $project
  Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'packages.lock.json.inc') -Destination (Join-Path $projectDirectory 'packages.lock.json')
- & dotnet build $project -c Release -m:1 -nr:false -p:UseSharedCompilation=false -p:BuildMcwHost=false -p:RestoreLockedMode=true "-p:HmacHostSource=$ManagedHostSource" "-p:HmacCoreProject=$(Join-Path $root 'MagicalCryptoWallet/MagicalCryptoWallet.csproj')" "-p:HmacProbeSourceRoot=$PSScriptRoot" 2>&1 | Tee-Object -FilePath (Join-Path $evidence 'managed-build.txt')
+ & dotnet build $project -c Release -m:1 -nr:false -p:UseSharedCompilation=false -p:BuildMcwHost=false -p:RestoreLockedMode=true "-p:HmacHostSource=$ManagedHostSource" "-p:HmacCoreProject=$(Join-Path $root 'MagicalCryptoWallet/MagicalCryptoWallet.csproj')" "-p:HmacProbeSourceRoot=$PSScriptRoot" "-p:NativeLibraryPath=$NativeLibraryPath" 2>&1 | Tee-Object -FilePath (Join-Path $evidence 'managed-build.txt')
  if ($LASTEXITCODE -ne 0) { throw 'Actual managed caller build failed' }
  $run=Join-Path $evidence ('run-'+[Guid]::NewGuid().ToString('N'))
  New-Item -ItemType Directory -Path $run | Out-Null

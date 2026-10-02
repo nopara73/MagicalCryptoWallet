@@ -70,6 +70,7 @@ hashes["generated/HmacProbe.csproj"] = sha256(evidence / "project/HmacProbe.cspr
 hashes["generated/packages.lock.json"] = sha256(evidence / "project/packages.lock.json")
 for name in ("mcw.exe", "HmacProbe.dll", "MagicalCryptoWallet.dll"):
     hashes["run/" + name] = sha256(run / name)
+hashes["run/libwabisabi.dll"] = sha256(run / "libwabisabi.dll")
 results.update(
     source_and_binary_hashes=hashes,
     fixture_sha256=sha256(fixture),

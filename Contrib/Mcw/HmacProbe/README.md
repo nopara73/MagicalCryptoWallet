@@ -16,6 +16,11 @@ build slot, requires 2 GiB free RAM and uses single-job .NET builds and the exis
 Rust 1.99/MSVC tools. `-SharedRoot` and `-Python` select existing tools. Optional
 `-ManagedHostSource` and `-RustSourceRoot` select reviewed snapshot source; such runs
 are marked as staged evidence. Release the build slot before review or publication.
+The core requires its retained source-built WabiSabi DLL. The verifier uses an
+existing `ThirdParty/WabiSabi/c/build-win/libwabisabi.dll` in this checkout or
+SharedRoot; `-NativeLibraryPath` selects that existing library explicitly. Its
+test-copy hash is recorded. This is a retained core prerequisite; HMAC remains
+implemented by the first-party Rust handler.
 
 The verifier builds a test-only Rust host into ignored artifacts and copies this
 probe as its managed desktop child. The probe exercises 441 offline independent

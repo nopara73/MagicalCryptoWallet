@@ -43,7 +43,7 @@ lengths, exact frame capacity and one-byte overflow. Checksums and source/binary
 hashes are recorded in ignored `.artifacts/wallet-hmac-evidence/verification.json`.
 Test executables are tooling only and do not add a shipping package.
 
-## Verified actual caller candidate
+## Historical actual caller candidate
 
 `Contrib/Mcw/HmacProbe/verify.ps1` compiles the real core domain classes and actual
 managed host source, then runs them as the child of an actual Rust host snapshot.
@@ -52,7 +52,7 @@ artifacts. It adds no application project, Cargo package, shipping executable or
 new package version. `README.md` in that directory describes reproduction in an
 isolated candidate with both review patches applied.
 
-The final Windows x64 candidate is based on master
+The first verified Windows x64 candidate is based on master
 `a7d07f383ab75a7b7b7fbd9493000b46eb38ad0a`. The reviewed shared patch is applied
 only to copied snapshot source; the active QR checkout and production shared
 files were not edited. Locked managed restore/build passed with zero warnings and
@@ -78,6 +78,32 @@ under `.artifacts/wallet-hmac-evidence/caller-probe`. The native snapshot uses a
 tooling-only static CRT and does not set the production Windows runtime cfg;
 shipping-runtime removal, packaging and other four target executions remain
 unverified. The proof does not claim formal erasure or constant-time execution.
+
+## Current GUI caller recheck
+
+The same meaningful caller proof was rebuilt and rerun against master
+`76b5c878cc27f6ae3182f2a77730fb15c163b1c2`, after verifying ancestry of source
+retirement `6af4217e820dcfa689e745f011d8df88d159202e`. The obsolete RpcObjectCodec
+and RPC probe lock are absent. The fixture launches `mcw gui` and copies its
+test child as `magicalcryptowallet.exe`; no retired feature was restored or source
+gate excluded. Fresh copied source avoids retaining deleted snapshot files.
+
+The actual retained core, actual caller candidate and actual managed transport
+rebuilt with locked restore and zero warnings/errors. The current staged Rust GUI
+host passed Clippy `-D warnings` and optimized compilation. All 441 independent
+fixtures, 462 successful domain calls, six ASCII-label cases, three actual caller
+boundary checks, six adapter failures and 37 transport lifetime/fault checks
+passed again. Two real malformed requests and one canceled request left the
+connection usable; stdout was empty and stderr contained no synthetic markers.
+
+The existing source-built WabiSabi DLL is a retained core build prerequisite,
+selected through `NativeLibraryPath`; its test-copy SHA256 is
+`fbc41759c3623e4232930b7e37541dce41cae2dad81c367d0b1e78c92711b3b3`.
+It adds no dependency and does not implement these HMAC computations.
+`wallet-hmac-gui-evidence.json` binds the current source/binaries and unchanged
+review-patch hashes. The original `wallet-hmac-evidence.json` remains the
+historical proof. This current proof is Windows tooling composition; production
+activation, regular-suite host binding and five-target acceptance remain false.
 
 | Review patch | SHA256 of Git LF bytes |
 |---|---|
