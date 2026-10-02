@@ -37,7 +37,6 @@
         <MergeResourceInclude Source="avares://MagicalCryptoWallet.Fluent/Controls/ToggleRadioButton.axaml" />
         <MergeResourceInclude Source="avares://MagicalCryptoWallet.Fluent/Controls/ScrollBar.axaml" />
         <MergeResourceInclude Source="avares://MagicalCryptoWallet.Fluent/Controls/ContentControl.axaml" />
-        <MergeResourceInclude Source="avares://MagicalCryptoWallet.Fluent/Controls/WalletIconControl.axaml" />
         <MergeResourceInclude Source="avares://MagicalCryptoWallet.Fluent/Controls/TagsBoxAutoCompleteBox.axaml" />
         <MergeResourceInclude Source="avares://MagicalCryptoWallet.Fluent/Controls/TagsBox.axaml" />
         <MergeResourceInclude Source="avares://MagicalCryptoWallet.Fluent/Controls/SubActionButton.axaml" />

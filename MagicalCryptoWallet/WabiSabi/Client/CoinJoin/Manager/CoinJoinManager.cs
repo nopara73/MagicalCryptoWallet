@@ -224,7 +224,7 @@ public class CoinJoinManager : BackgroundService
 	}
 	private async Task ConsiderAutomaticStartAsync(CancellationToken cancel)
 	{
-		if (_session.GetWallet() is not { } wallet || wallet.KeyManager.IsWatchOnly) { return; }
+		if (_session.GetWallet() is not { } wallet) { return; }
 		if (_previousAutoSetting is { } previous && previous != wallet.KeyManager.AutoCoinJoin)
 		{
 			_automaticStartConsidered = false;

@@ -87,6 +87,8 @@ public sealed class WalletDirectories
 		{
 			throw new InvalidDataException("Interrupted wallet setup needs recovery. The committed file does not match its journal.");
 		}
+		// Reject unsupported or corrupt keys before changing any recovery evidence.
+		_ = KeyManager.FromFile(candidate);
 		if (candidate == temporary) { File.Move(temporary, NewWalletFilePath, overwrite: false); }
 		PersistConfiguredFile(NewWalletFilePath);
 		File.Delete(SetupJournalPath);

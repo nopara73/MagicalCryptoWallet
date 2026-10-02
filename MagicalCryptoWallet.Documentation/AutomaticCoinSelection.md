@@ -1,16 +1,16 @@
 # Automatic coin selection
 
-Send always opens the normal payment flow. The wallet chooses transaction inputs automatically, using the existing privacy-aware selection algorithms. Fees, privacy suggestions, multiple recipients, payjoin, silent payments, hardware-wallet signing, PSBT export, and Coinjoin payments remain available.
+Send always opens the normal payment flow. The wallet chooses transaction inputs automatically, using the existing privacy-aware selection algorithms. Fees, privacy suggestions, multiple recipients, payjoin, silent payments, local passphrase signing, and Coinjoin payments remain available.
 
 Manual Control, the Alt-key **Review coins** shortcut, and per-coin Coinjoin exclusions are removed. **Wallet Coins** remains a read-only view with expandable groups, sorting, status, privacy scores, labels, and address copying. It cannot select or exclude transaction inputs. Coinjoin still checks availability, confirmations, maturity, coordinator bans, and its automatic cooldowns.
 
-Older wallet JSON files can still be imported. Obsolete `DefaultSendWorkflow` and `ExcludedCoinsFromCoinJoin` fields are ignored and omitted on the next save. Imported coins participate in the normal automatic selection rules. Keys, labels, wallet derivation, recovery material, and transaction wire formats are unchanged.
+Older software-wallet JSON files can still be imported. Obsolete `DefaultSendWorkflow` and `ExcludedCoinsFromCoinJoin` fields are ignored and omitted on the next save. Imported coins participate in the normal automatic selection rules. Keys, labels, wallet derivation, recovery material, and transaction wire formats are unchanged.
 
 ## RPC
 
 `build`, `buildunsafetransaction`, and `send` accept `payments`, `feeTarget`, `feeRate`, and `password`. Payment amounts still use satoshis. They choose inputs from the configured wallet automatically. Requests containing `coins`, including the old five-argument positional form, return invalid parameters (`-32602`). `excludefromcoinjoin` is removed and returns method not found (`-32601`).
 
-`listcoins` and `listunspentcoins` still expose read-only coin details; their exclusion flag is removed. Scheme coin inspection remains available without exclusion accessors. Raw transaction broadcasting and external PSBT workflows retain their existing transaction formats.
+`listcoins` and `listunspentcoins` still expose read-only coin details; their exclusion flag is removed. Scheme coin inspection remains available without exclusion accessors. Raw transaction broadcasting retains its transaction format. External PSBT import, paste and export are removed; internal PSBTs still support unsigned previews, local signing and Payjoin.
 
 ## Verification
 

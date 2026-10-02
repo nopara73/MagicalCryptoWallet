@@ -81,7 +81,7 @@ public partial class WalletViewModel : RoutableViewModel, IWalletViewModel, IDis
 
 		 // Keep the send button visible while Lurking Wife Mode is on. Otherwise its absence reveals an empty wallet.
 		 this.WhenAnyValue(x => x.IsWalletBalanceZero, x => x.UiContext.ApplicationSettings.PrivacyMode)
-			.Subscribe(_ => IsSendButtonVisible = (!IsWalletBalanceZero || UiContext.ApplicationSettings.PrivacyMode) && (!WalletModel.IsWatchOnlyWallet || WalletModel.IsHardwareWallet)).DisposeWith(_lifetime);
+			.Subscribe(_ => IsSendButtonVisible = !IsWalletBalanceZero || UiContext.ApplicationSettings.PrivacyMode).DisposeWith(_lifetime);
 
 
 		 WalletModel.Privacy.IsWalletPrivate
@@ -113,7 +113,7 @@ public partial class WalletViewModel : RoutableViewModel, IWalletViewModel, IDis
 					 return isActive && !WalletModel.IsCoinJoinEnabled && (isPointerOver || isMusicBoxFlyoutDisplayed);
 				 }
 
-				 return isActive && !hasNoBalance && !WalletModel.IsWatchOnlyWallet;
+				 return isActive && !hasNoBalance;
 			 });
 
 
@@ -178,10 +178,6 @@ public partial class WalletViewModel : RoutableViewModel, IWalletViewModel, IDis
 
 		Tiles = GetTiles().ToList();
 
-		this.WhenAnyValue(x => x.Settings.PreferPsbtWorkflow)
-			.Do(x => this.RaisePropertyChanged(nameof(PreferPsbtWorkflow)))
-			.Subscribe().DisposeWith(_lifetime);
-
 		Title = "Magical Crypto Wallet";
 		SyncStatus = new WalletSyncStatusViewModel(uiContext, walletModel);
 		walletModel.Status.Subscribe(status =>
@@ -202,11 +198,9 @@ public partial class WalletViewModel : RoutableViewModel, IWalletViewModel, IDis
 	public string IconName => "nav_wallet_24_regular";
 	public string IconNameFocused => "nav_wallet_24_filled";
 
-	public bool PreferPsbtWorkflow => WalletModel.Settings.PreferPsbtWorkflow;
 
 	public bool SeveralReceivingScriptTypes => WalletModel.SeveralReceivingScriptTypes;
 
-	public bool IsWatchOnly => WalletModel.IsWatchOnlyWallet;
 
 	public IObservable<bool> IsMusicBoxVisible { get; }
 
@@ -220,7 +214,6 @@ public partial class WalletViewModel : RoutableViewModel, IWalletViewModel, IDis
 
 	public ICommand SendCommand { get; private set; }
 
-	public ICommand? BroadcastPsbtCommand { get; set; }
 	public ICommand SegwitReceiveCommand { get; private set; }
 	public ICommand? TaprootReceiveCommand { get; private set; }
 
@@ -304,10 +297,7 @@ public partial class WalletViewModel : RoutableViewModel, IWalletViewModel, IDis
 	{
 		yield return new WalletBalanceTileViewModel(UiContext, WalletModel.Balances);
 
-		if (!IsWatchOnly)
-		{
-			yield return new PrivacyControlTileViewModel(UiContext, WalletModel);
-		}
+		yield return new PrivacyControlTileViewModel(UiContext, WalletModel);
 
 		yield return new BtcPriceTileViewModel(UiContext, UiContext.AmountProvider);
 	}

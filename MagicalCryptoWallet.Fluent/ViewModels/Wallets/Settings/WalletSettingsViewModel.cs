@@ -28,7 +28,6 @@ public partial class WalletSettingsViewModel : RoutableViewModel, IDisposable
 {
 	private readonly CompositeDisposable _lifetime = new();
     private readonly IWalletModel _wallet;
-    [AutoNotify] private bool _preferPsbtWorkflow;
     [AutoNotify] private int _selectedTab;
     [AutoNotify] private ScriptType _defaultReceiveScriptType;
     [AutoNotify] private bool _isSegWitDefaultReceiveScriptType;
@@ -38,10 +37,7 @@ public partial class WalletSettingsViewModel : RoutableViewModel, IDisposable
     {
         _wallet = walletModel;
         walletModel.Status.Subscribe(_ => this.RaisePropertyChanged(nameof(SeveralReceivingScriptTypes))).DisposeWith(_lifetime);
-        _preferPsbtWorkflow = walletModel.Settings.PreferPsbtWorkflow;
         _selectedTab = 0;
-        IsHardwareWallet = walletModel.IsHardwareWallet;
-        IsWatchOnly = walletModel.IsWatchOnlyWallet;
 
         SetupCancel(enableCancel: true, enableCancelOnEscape: true, enableCancelOnPressed: true);
         NextCommand = ReactiveCommand.Create(() => { _wallet.Settings.Save(); Navigate().Back(); });
@@ -92,17 +88,8 @@ public partial class WalletSettingsViewModel : RoutableViewModel, IDisposable
                 walletModel.Settings.Save();
             }).DisposeWith(_lifetime);
 
-        this.WhenAnyValue(x => x.PreferPsbtWorkflow)
-            .Skip(1)
-            .Subscribe(value =>
-            {
-                walletModel.Settings.PreferPsbtWorkflow = value;
-                walletModel.Settings.Save();
-            }).DisposeWith(_lifetime);
     }
 
-    public bool IsHardwareWallet { get; }
-    public bool IsWatchOnly { get; }
     public bool SeveralReceivingScriptTypes => _wallet.SeveralReceivingScriptTypes;
 
     public IEnumerable<ScriptType> ReceiveScriptTypes { get; } = [ScriptType.SegWit, ScriptType.Taproot];

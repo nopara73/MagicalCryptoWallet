@@ -34,12 +34,6 @@ public static class FileDialogHelper
 		MimeTypes = new[] { MediaTypeNames.Text.Plain }
 	};
 
-	private static FilePickerFileType Psbt { get; } = new("PSBT files")
-	{
-		Patterns = new[] { "*.psbt" },
-		MimeTypes = new[] { "*/*" }
-	};
-
 	private static FilePickerFileType Txn { get; } = new("TXN files")
 	{
 		Patterns = new[] { "*.txn" },
@@ -93,11 +87,6 @@ public static class FileDialogHelper
 				case "txt":
 					{
 						fileTypeFilters.Add(Text);
-						break;
-					}
-				case "psbt":
-					{
-						fileTypeFilters.Add(Psbt);
 						break;
 					}
 				case "txn":

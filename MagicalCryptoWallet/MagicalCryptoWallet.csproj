@@ -48,22 +48,6 @@
 		<None Update="BundledApps\Binaries\win-x64\Tor\**\*">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
-		<!-- HWI. -->
-		<None Update="BundledApps\Binaries\linux-arm64\hwi">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
-		<None Update="BundledApps\Binaries\linux-x64\hwi">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
-		<None Update="BundledApps\Binaries\osx64\hwi">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
-		<None Update="BundledApps\Binaries\osx-arm64\hwi">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
-		<None Update="BundledApps\Binaries\win-x64\hwi.exe">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
 		<!-- GEOIP. -->
 		<None Update="Tor\Geoip\geoip">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

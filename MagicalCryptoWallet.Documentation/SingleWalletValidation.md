@@ -4,7 +4,9 @@ All destructive and signing tests use synthetic wallets and isolated data direct
 
 The branch's [draft PR and exact-head CI checks](https://github.com/nopara73/MagicalCryptoWallet/pull/2) contain the platform results and downloadable unsigned packages. CI builds Windows x64, Linux x64/arm64, and macOS x64/arm64; each platform runs wallet tests, real packaged-process tests, managed/native cryptography and wire interoperability, source/generated/symbol audits, extracted-package inspection, and actual Avalonia rendering. Linux x64 additionally exercises five encrypted clients through Send authorization and a real local CoinJoin. Windows tests the desktop and daemon; other platforms test the daemon.
 
-## Local results, 2026-10-02
+## Single-wallet baseline results, 2026-10-02
+
+These results describe the preceding single-wallet change. The software-wallet-only change is validated separately by the same platform workflow plus the rejection tests and UI checks described in [SoftwareWallet.md](SoftwareWallet.md).
 
 | Verification | Result |
 |---|---|
@@ -22,7 +24,7 @@ The process checks cover encrypted first-run setup, zero-height regtest, synchro
 
 CoinJoin tests cover concurrent starts, fresh trackers after cancellation, overlapping send/shutdown restrictions, canceled restarts, automatic authorization after Send, manual pause and disabled automatic settings. The five-client process harness requires confirmed mixed outputs for every independent client and fails if a prior successful Send bypasses a later incorrect passphrase.
 
-Physical hardware-device interaction and production platform certificates were not exercised. Hardware paths are covered by synthetic tests; packages are unsigned snapshots, not production releases. Installer coexistence runs only on the ephemeral Windows CI runner, without changing this machine's installed wallets or startup preferences.
+Production platform certificates were not exercised; packages are unsigned snapshots, not production releases. Installer coexistence runs only on the ephemeral Windows CI runner, without changing this machine's installed wallets or startup preferences.
 
 The removal audit rejects retired types, generated navigation, wallet-indexed orchestration, name routing, old commands, and logged-in authorization shortcuts. Exact compatibility, migration-documentation, negative-test, and Bitcoin Core fixture exceptions are recorded individually in `Contrib/SingleWallet/exceptions.json`.
 
