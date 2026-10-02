@@ -56,7 +56,7 @@ mcw_authorized_rpc() {
     }
     error=$(printf '%s' "$response" | jq -r '.error.message // empty')
     if [[ -n "$error" && "$error" =~ [Pp]assword|[Pp]assphrase|[Aa]uthorization ]]; then
-        read -r -s -p 'Passphrase: ' passphrase || return 1
+        read -r -s -p 'Password: ' passphrase || return 1
         printf '\n' >&2
         request=$(printf '%s' "$passphrase" | jq -Rsc --arg method "$method" --argjson parameters "$parameters" \
             '{jsonrpc:"2.0",id:1,method:$method,params:(if $method=="startcoinjoin" then [.]+$parameters else $parameters+[.] end)}')

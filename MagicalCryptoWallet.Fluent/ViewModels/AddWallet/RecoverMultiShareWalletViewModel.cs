@@ -138,7 +138,7 @@ public partial class RecoverMultiShareWalletViewModel : RoutableViewModel
 		}
 		else
 		{
-			var password = await Navigate().To().CreatePasswordDialog("Add Passphrase", "If you used a passphrase when you created your wallet you must type it below, otherwise leave this empty.").GetResultAsync();
+			var password = await Navigate().To().CreatePasswordDialog("Add Password", "Enter your wallet's original password, or leave this empty if it had none.").GetResultAsync();
 
 			if (password is null)
 			{

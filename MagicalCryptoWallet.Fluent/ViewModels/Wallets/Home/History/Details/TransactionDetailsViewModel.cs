@@ -9,8 +9,6 @@ using MagicalCryptoWallet.Blockchain.Analysis.Clustering;
 using MagicalCryptoWallet.Fluent.Extensions;
 using MagicalCryptoWallet.Fluent.Models.Wallets;
 using MagicalCryptoWallet.Fluent.ViewModels.Navigation;
-using MagicalCryptoWallet.Fluent.ViewModels.Wallets.Transactions.Inputs;
-using MagicalCryptoWallet.Fluent.ViewModels.Wallets.Transactions.Outputs;
 
 namespace MagicalCryptoWallet.Fluent.ViewModels.Wallets.Home.History.Details;
 
@@ -36,13 +34,6 @@ public partial class TransactionDetailsViewModel : RoutableViewModel
 	{
 		_wallet = wallet;
 
-		InputList = new InputsCoinListViewModel(uiContext, model.WalletInputs, wallet.Network, model.WalletInputs.Count + model.ForeignInputs.Value.Count);
-		OutputList = new OutputsCoinListViewModel(
-			uiContext,
-			model.WalletOutputs.Select(x => x.TxOut).ToList(),
-			model.ForeignOutputs.Value.Select(x => x.TxOut).ToList(),
-			wallet.Network);
-
 		NextCommand = ReactiveCommand.Create(OnNext);
 		Fee = wallet.AmountProvider.Create(model.Fee);
 		IsFeeVisible = model.Fee != null;
@@ -55,9 +46,6 @@ public partial class TransactionDetailsViewModel : RoutableViewModel
 
 		Task.Run(() => UpdateValuesAsync(model, CancellationToken.None));
 	}
-
-	public InputsCoinListViewModel InputList { get; }
-	public OutputsCoinListViewModel OutputList { get; }
 
 	public BitcoinAddress? SingleAddress { get; set; }
 

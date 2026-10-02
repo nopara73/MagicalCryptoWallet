@@ -28,7 +28,7 @@ public partial class WalletBackupTypeViewModel : RoutableViewModel
 						new WalletBackupTypeOptions(
 							Description: "Single mnemonic phrase (BIP39)",
 							HelpText: "Back up your wallet using a set of secret words. Write them down and store them safely.",
-							ToolTipText: "Creates a 12 word mnemonic phrase that encodes the wallet's seed. This phrase is used in addition to your passphrase to regenerate your private keys and restore access to your funds.")),
+							ToolTipText: "Creates a 12 word mnemonic phrase that encodes the wallet's seed. This phrase is used in addition to your password to regenerate your private keys and restore access to your funds.")),
 				];
 
 				break;

@@ -31,25 +31,6 @@ public partial class CoinJoinsDetailsViewModel : RoutableViewModel
 
 		Costs = new CoinjoinCostsViewModel(wallet.AmountProvider.Create);
 
-		var allWalletInputs = transaction.Children.SelectMany(x => x.WalletInputs).ToList();
-		var allWalletOutputs = transaction.Children.SelectMany(x => x.WalletOutputs).ToList();
-		var freshWalletInputs = allWalletInputs.Where(x => !allWalletOutputs.Select(y => y.Outpoint).Contains(x.Outpoint)).OrderByDescending(x => x.Amount).ToList();
-		var finalWalletOutputs = allWalletOutputs.Where(x => !allWalletInputs.Select(y => y.Outpoint).Contains(x.Outpoint)).OrderByDescending(x => x.Amount).ToList();
-
-		var allInputs = transaction.Children.SelectMany(x => x.ForeignInputs.Value)
-			.Union(allWalletInputs.Select(x => x.Outpoint))
-			.ToList();
-
-		var allOutputs = transaction.Children.SelectMany(x => x.ForeignOutputs.Value.Select(y => new OutPoint(y.Transaction.GetHash(), y.N)))
-			.Union(allWalletOutputs.Select(x => x.Outpoint))
-			.ToList();
-
-		var freshInputs = allInputs.Where(x => !allOutputs.Contains(x));
-		var finalOutputs = allOutputs.Where(x => !allInputs.Contains(x));
-
-		InputList = new CoinjoinCoinListViewModel(UiContext, freshWalletInputs, wallet.Network, freshWalletInputs.Count + freshInputs.Count());
-		OutputList = new CoinjoinCoinListViewModel(UiContext, finalWalletOutputs, wallet.Network, finalWalletOutputs.Count + finalOutputs.Count());
-
 		SetupCancel(enableCancel: false, enableCancelOnEscape: true, enableCancelOnPressed: true);
 		NextCommand = CancelCommand;
 
@@ -57,8 +38,6 @@ public partial class CoinJoinsDetailsViewModel : RoutableViewModel
 		IsConfirmationTimeVisible = ConfirmationTime.HasValue && ConfirmationTime != TimeSpan.Zero;
 	}
 
-	public CoinjoinCoinListViewModel InputList { get; }
-	public CoinjoinCoinListViewModel OutputList { get; }
 	public CoinjoinCostsViewModel Costs { get; }
 
 	public TimeSpan? ConfirmationTime { get; set; }

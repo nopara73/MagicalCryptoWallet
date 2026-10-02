@@ -28,8 +28,6 @@ using MagicalCryptoWallet.Fluent.ViewModels.Wallets.Advanced;
 using MagicalCryptoWallet.Fluent.ViewModels.Wallets.Coins;
 using MagicalCryptoWallet.Fluent.ViewModels.Wallets.Send;
 using MagicalCryptoWallet.Fluent.ViewModels.Wallets.Settings;
-using MagicalCryptoWallet.Fluent.ViewModels.Wallets.Transactions.Inputs;
-using MagicalCryptoWallet.Fluent.ViewModels.Wallets.Transactions.Outputs;
 using MagicalCryptoWallet.Fluent.Views.Wallets;
 using MagicalCryptoWallet.Fluent.Views.Wallets.Advanced;
 using MagicalCryptoWallet.Fluent.Views.Wallets.Send;
@@ -110,7 +108,7 @@ internal static class AutomaticCoinSelectionChecks
 		return view;
 	}
 
-	[SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Commands and lists are disposed when the returned view detaches.")]
+	[SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Commands are disposed when the returned view detaches.")]
 	public static Control CreateTransactionPreview(UiContext context, Action? adjust = null, Action? confirm = null)
 	{
 		var parent = NewModel<TransactionPreviewViewModel>(context);
@@ -127,11 +125,7 @@ internal static class AutomaticCoinSelectionChecks
 		var summary = new TransactionSummaryViewModel(context, parent, NewWallet(), info)
 		{
 			Amount = new Amount(Money.Coins(0.01m)), Fee = new Amount(Money.Satoshis(280)), FeeRate = new FeeRate(2m),
-			ConfirmationTime = TimeSpan.FromMinutes(20), Recipient = new LabelsArray("synthetic-payment"),
-			InputList = new InputsCoinListViewModel(context, NewCoins(), Network.RegTest, 2),
-			OutputList = new OutputsCoinListViewModel(context,
-				[new TxOut(Money.Coins(0.0449972m), NewCoins()[0].ScriptPubKey)],
-				[new TxOut(Money.Coins(0.01m), destination.ScriptPubKey)], Network.RegTest, new HashSet<Script> { destination.ScriptPubKey })
+			ConfirmationTime = TimeSpan.FromMinutes(20), Recipient = new LabelsArray("synthetic-payment")
 		};
 		var privacy = NewModel<PrivacySuggestionsFlyoutViewModel>(context);
 		privacy.GoodPrivacy = true;
@@ -140,7 +134,7 @@ internal static class AutomaticCoinSelectionChecks
 		SetBackingField(parent, nameof(TransactionPreviewViewModel.TransactionSummaries), new List<TransactionSummaryViewModel> { summary });
 		parent.DisplayedTransactionSummary = summary;
 		var view = new TransactionPreviewView { DataContext = parent };
-		view.DetachedFromVisualTree += (_, _) => { feeCommand.Dispose(); confirmCommand.Dispose(); summary.InputList.Dispose(); summary.OutputList.Dispose(); };
+		view.DetachedFromVisualTree += (_, _) => { feeCommand.Dispose(); confirmCommand.Dispose(); };
 		return view;
 	}
 

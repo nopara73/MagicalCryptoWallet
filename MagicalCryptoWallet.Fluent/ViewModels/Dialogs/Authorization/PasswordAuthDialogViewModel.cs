@@ -5,13 +5,13 @@ using MagicalCryptoWallet.Wallets;
 
 namespace MagicalCryptoWallet.Fluent.ViewModels.Dialogs.Authorization;
 
-[NavigationMetaData(Title = "Enter your passphrase", NavigationTarget = NavigationTarget.CompactDialogScreen)]
+[NavigationMetaData(Title = "Enter your password", NavigationTarget = NavigationTarget.CompactDialogScreen)]
 public partial class PasswordAuthDialogViewModel : DialogViewModelBase<WalletAuthorization?>
 {
 	private readonly IWalletModel _wallet;
 	[AutoNotify] private string _password = "";
 	[AutoNotify] private bool _hasAuthorizationFailed;
-	[AutoNotify] private string _authorizationFailedMessage = "The passphrase is incorrect. Please try again.";
+	[AutoNotify] private string _authorizationFailedMessage = "The password is incorrect. Please try again.";
 
 	public PasswordAuthDialogViewModel(UiContext uiContext, IWalletModel wallet, string continueText = "Continue") : base(uiContext)
 	{
@@ -35,7 +35,7 @@ public partial class PasswordAuthDialogViewModel : DialogViewModelBase<WalletAut
 			{
 				if (authorization.CompatibilityPasswordUsed)
 				{
-					await ShowErrorAsync(Title, MagicalCryptoWallet.Userfacing.PasswordHelper.CompatibilityPasswordWarnMessage, "Compatibility passphrase was used");
+					await ShowErrorAsync(Title, MagicalCryptoWallet.Userfacing.PasswordHelper.CompatibilityPasswordWarnMessage, "Compatibility password was used");
 				}
 				if (!IsDialogOpen) { return; }
 				Close(DialogResultKind.Normal, authorization);

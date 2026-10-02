@@ -19,7 +19,7 @@ internal static class PasswordBoxChecks
 		var model = new PasswordModel();
 		var password = new CopyablePasswordTextBox
 		{
-			PasswordChar = '•', Watermark = "Passphrase", Width = 400,
+			PasswordChar = '•', Watermark = "Password", Width = 400,
 			FixedPasswordText = ChinesePasswordTextPresenter.CreationMaskText
 		};
 		password.Classes.Add("revealPasswordButton");
@@ -73,7 +73,7 @@ internal static class PasswordBoxChecks
 			Check(clipboard.TryGetTextAsync().GetAwaiter().GetResult() == "clipboard sentinel" && model.Password == "a12e", "Hidden direct copy/cut must not expose or remove the password.");
 
 			var peer = (IValueProvider)ControlAutomationPeer.CreatePeerForElement(password);
-			Check(string.IsNullOrEmpty(peer.Value), "Accessibility must not expose a hidden passphrase.");
+			Check(string.IsNullOrEmpty(peer.Value), "Accessibility must not expose a hidden password.");
 			password.RevealPassword = true;
 			Check(Rendered(password) == "a12e" && peer.Value == "a12e", "Reveal must show the real password.");
 			Check(password.CanCopyModified && password.CanCutModified, "Reveal must enable clipboard commands for a selection.");

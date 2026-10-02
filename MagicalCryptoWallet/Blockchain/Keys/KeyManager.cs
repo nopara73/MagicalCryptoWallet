@@ -454,7 +454,7 @@ public class KeyManager
 		}
 		catch (SecurityException ex)
 		{
-			throw new SecurityException("Invalid passphrase.", ex);
+			throw new SecurityException("Invalid password.", ex);
 		}
 	}
 

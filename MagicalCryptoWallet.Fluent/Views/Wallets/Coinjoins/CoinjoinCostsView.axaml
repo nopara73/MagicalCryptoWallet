@@ -24,7 +24,7 @@
                  Margin="25 0 0 0"
                  Icon="{StaticResource paper_cash_regular}"
                  Label="Mining fee"
-                 ToolTip.Tip="Fee paid to miners for the wallet's inputs and outputs."
+                 ToolTip.Tip="Mining fee paid by your wallet for this coinjoin."
                  CopyableContent="{Binding MiningFeeAmount.Btc, Converter={x:Static conv:MoneyConverters.ToFeeWithoutUnit}}">
       <PrivacyContentControl>
         <AmountControl Classes="WithUsd" Amount="{Binding MiningFeeAmount}" />

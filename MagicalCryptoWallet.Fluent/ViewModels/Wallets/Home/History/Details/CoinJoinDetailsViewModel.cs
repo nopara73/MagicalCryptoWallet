@@ -27,9 +27,6 @@ public partial class CoinJoinDetailsViewModel : RoutableViewModel
 
 	public CoinJoinDetailsViewModel(UiContext uiContext, IWalletModel wallet, CoinJoinTransactionModel transaction) : base(uiContext)
 	{
-		InputList = new CoinjoinCoinListViewModel(uiContext, transaction.WalletInputs, wallet.Network, transaction.WalletInputs.Count + transaction.ForeignInputs.Value.Count);
-		OutputList = new CoinjoinCoinListViewModel(uiContext, transaction.WalletOutputs, wallet.Network, transaction.WalletOutputs.Count + transaction.ForeignOutputs.Value.Count);
-
 		_wallet = wallet;
 		_transaction = transaction;
 
@@ -41,8 +38,6 @@ public partial class CoinJoinDetailsViewModel : RoutableViewModel
 		NextCommand = CancelCommand;
 	}
 
-	public CoinjoinCoinListViewModel InputList { get; }
-	public CoinjoinCoinListViewModel OutputList { get; }
 	public CoinjoinCostsViewModel Costs { get; }
 	public string TransactionHex { get; }
 
