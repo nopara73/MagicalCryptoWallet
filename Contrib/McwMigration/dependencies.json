@@ -1022,6 +1022,12 @@
           "role": "verification"
         },
         {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
+        },
+        {
           "lock": "Contrib/Releases/Publisher/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -1077,6 +1083,12 @@
         },
         {
           "lock": "MagicalCryptoWallet/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
+        },
+        {
+          "lock": "mcw/tests/nostr_host/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -1098,6 +1110,12 @@
           "role": "verification"
         },
         {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
+        },
+        {
           "lock": "Contrib/Releases/Publisher/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -1153,6 +1171,12 @@
         },
         {
           "lock": "MagicalCryptoWallet/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
+        },
+        {
+          "lock": "mcw/tests/nostr_host/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -1507,6 +1531,12 @@
           "role": "verification"
         },
         {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "application"
+        },
+        {
           "lock": "Contrib/VisualPreview/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
@@ -1552,6 +1582,12 @@
           "lock": "MagicalCryptoWallet/packages.lock.json",
           "framework": "net10.0",
           "type": "Direct",
+          "role": "application"
+        },
+        {
+          "lock": "mcw/tests/nostr_host/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
           "role": "application"
         }
       ],
@@ -1645,6 +1681,12 @@
           "role": "verification"
         },
         {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Direct",
+          "role": "application"
+        },
+        {
           "lock": "Contrib/Rebrand/AssemblyAudit/packages.lock.json",
           "framework": "net10.0",
           "type": "Direct",
@@ -1706,6 +1748,12 @@
         },
         {
           "lock": "MagicalCryptoWallet/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Direct",
+          "role": "application"
+        },
+        {
+          "lock": "mcw/tests/nostr_host/packages.lock.json",
           "framework": "net10.0",
           "type": "Direct",
           "role": "application"
@@ -1792,6 +1840,12 @@
           "role": "verification"
         },
         {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "application"
+        },
+        {
           "lock": "Contrib/VisualPreview/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
@@ -1843,6 +1897,12 @@
           "lock": "MagicalCryptoWallet/packages.lock.json",
           "framework": "net10.0",
           "type": "Direct",
+          "role": "application"
+        },
+        {
+          "lock": "mcw/tests/nostr_host/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
           "role": "application"
         }
       ],
@@ -1866,6 +1926,12 @@
           "role": "verification"
         },
         {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
+        },
+        {
           "lock": "Contrib/VisualPreview/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -1918,6 +1984,12 @@
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
+        },
+        {
+          "lock": "mcw/tests/nostr_host/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
         }
       ],
       "dependencies": {
@@ -1936,6 +2008,12 @@
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "verification"
+        },
+        {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "application"
         },
         {
           "lock": "Contrib/VisualPreview/packages.lock.json",
@@ -1984,6 +2062,12 @@
           "framework": "net10.0",
           "type": "Direct",
           "role": "application"
+        },
+        {
+          "lock": "mcw/tests/nostr_host/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "application"
         }
       ],
       "dependencies": {
@@ -2002,6 +2086,12 @@
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "verification"
+        },
+        {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "application"
         },
         {
           "lock": "Contrib/VisualPreview/packages.lock.json",
@@ -2068,6 +2158,12 @@
           "role": "verification"
         },
         {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
+        },
+        {
           "lock": "Contrib/VisualPreview/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -2111,6 +2207,12 @@
         },
         {
           "lock": "MagicalCryptoWallet/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
+        },
+        {
+          "lock": "mcw/tests/nostr_host/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -2135,6 +2237,12 @@
           "role": "verification"
         },
         {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
+        },
+        {
           "lock": "Contrib/VisualPreview/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -2178,6 +2286,12 @@
         },
         {
           "lock": "MagicalCryptoWallet/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
+        },
+        {
+          "lock": "mcw/tests/nostr_host/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -2201,6 +2315,12 @@
           "role": "verification"
         },
         {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
+        },
+        {
           "lock": "Contrib/VisualPreview/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -2244,6 +2364,12 @@
         },
         {
           "lock": "MagicalCryptoWallet/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
+        },
+        {
+          "lock": "mcw/tests/nostr_host/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -2370,6 +2496,12 @@
           "role": "verification"
         },
         {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
+        },
+        {
           "lock": "Contrib/VisualPreview/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -2413,6 +2545,12 @@
         },
         {
           "lock": "MagicalCryptoWallet/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
+        },
+        {
+          "lock": "mcw/tests/nostr_host/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -2436,6 +2574,12 @@
           "role": "verification"
         },
         {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
+        },
+        {
           "lock": "Contrib/VisualPreview/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -2479,6 +2623,12 @@
         },
         {
           "lock": "MagicalCryptoWallet/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
+        },
+        {
+          "lock": "mcw/tests/nostr_host/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -2516,6 +2666,12 @@
           "role": "verification"
         },
         {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
+        },
+        {
           "lock": "Contrib/VisualPreview/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -2559,6 +2715,12 @@
         },
         {
           "lock": "MagicalCryptoWallet/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
+        },
+        {
+          "lock": "mcw/tests/nostr_host/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -2584,6 +2746,12 @@
           "role": "verification"
         },
         {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
+        },
+        {
           "lock": "Contrib/VisualPreview/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -2627,6 +2795,12 @@
         },
         {
           "lock": "MagicalCryptoWallet/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
+        },
+        {
+          "lock": "mcw/tests/nostr_host/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -2651,6 +2825,12 @@
           "role": "verification"
         },
         {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
+        },
+        {
           "lock": "Contrib/VisualPreview/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -2694,6 +2874,12 @@
         },
         {
           "lock": "MagicalCryptoWallet/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
+        },
+        {
+          "lock": "mcw/tests/nostr_host/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -2792,6 +2978,12 @@
           "role": "verification"
         },
         {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "application"
+        },
+        {
           "lock": "Contrib/VisualPreview/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
@@ -2837,6 +3029,12 @@
           "lock": "MagicalCryptoWallet/packages.lock.json",
           "framework": "net10.0",
           "type": "Direct",
+          "role": "application"
+        },
+        {
+          "lock": "mcw/tests/nostr_host/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
           "role": "application"
         }
       ],
@@ -2862,6 +3060,12 @@
           "role": "verification"
         },
         {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "application"
+        },
+        {
           "lock": "Contrib/VisualPreview/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
@@ -2907,6 +3111,12 @@
           "lock": "MagicalCryptoWallet/packages.lock.json",
           "framework": "net10.0",
           "type": "Direct",
+          "role": "application"
+        },
+        {
+          "lock": "mcw/tests/nostr_host/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
           "role": "application"
         }
       ],
@@ -2933,6 +3143,12 @@
           "role": "verification"
         },
         {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
+        },
+        {
           "lock": "Contrib/VisualPreview/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -2976,6 +3192,12 @@
         },
         {
           "lock": "MagicalCryptoWallet/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
+        },
+        {
+          "lock": "mcw/tests/nostr_host/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -3023,6 +3245,12 @@
           "role": "verification"
         },
         {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
+        },
+        {
           "lock": "Contrib/VisualPreview/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -3066,6 +3294,12 @@
         },
         {
           "lock": "MagicalCryptoWallet/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
+        },
+        {
+          "lock": "mcw/tests/nostr_host/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -3200,6 +3434,12 @@
           "role": "verification"
         },
         {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
+        },
+        {
           "lock": "Contrib/VisualPreview/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -3243,6 +3483,12 @@
         },
         {
           "lock": "MagicalCryptoWallet/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
+        },
+        {
+          "lock": "mcw/tests/nostr_host/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -3267,6 +3513,12 @@
           "role": "verification"
         },
         {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
+        },
+        {
           "lock": "Contrib/VisualPreview/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -3310,6 +3562,12 @@
         },
         {
           "lock": "MagicalCryptoWallet/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
+        },
+        {
+          "lock": "mcw/tests/nostr_host/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -3337,6 +3595,12 @@
           "role": "verification"
         },
         {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
+        },
+        {
           "lock": "Contrib/VisualPreview/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -3380,6 +3644,12 @@
         },
         {
           "lock": "MagicalCryptoWallet/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
+        },
+        {
+          "lock": "mcw/tests/nostr_host/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -3401,6 +3671,12 @@
           "role": "verification"
         },
         {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
+        },
+        {
           "lock": "Contrib/VisualPreview/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -3444,6 +3720,12 @@
         },
         {
           "lock": "MagicalCryptoWallet/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
+        },
+        {
+          "lock": "mcw/tests/nostr_host/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -3660,6 +3942,12 @@
           "role": "verification"
         },
         {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "application"
+        },
+        {
           "lock": "Contrib/VisualPreview/packages.lock.json",
           "framework": "net10.0",
           "type": "CentralTransitive",
@@ -3712,6 +4000,12 @@
           "framework": "net10.0",
           "type": "Direct",
           "role": "application"
+        },
+        {
+          "lock": "mcw/tests/nostr_host/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "application"
         }
       ],
       "dependencies": {},
@@ -3746,6 +4040,12 @@
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "verification"
+        },
+        {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "application"
         },
         {
           "lock": "Contrib/Releases/Publisher/packages.lock.json",
@@ -3812,6 +4112,12 @@
           "framework": "net10.0",
           "type": "Direct",
           "role": "verification"
+        },
+        {
+          "lock": "mcw/tests/nostr_host/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "application"
         }
       ],
       "dependencies": {
@@ -3831,6 +4137,12 @@
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "verification"
+        },
+        {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "application"
         },
         {
           "lock": "Contrib/Releases/Publisher/packages.lock.json",
@@ -3915,6 +4227,12 @@
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "application"
+        },
+        {
+          "lock": "mcw/tests/nostr_host/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "application"
         }
       ],
       "dependencies": {},
@@ -3965,6 +4283,12 @@
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "verification"
+        },
+        {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "application"
         },
         {
           "lock": "Contrib/Releases/Publisher/packages.lock.json",
@@ -4031,6 +4355,12 @@
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "verification"
+        },
+        {
+          "lock": "mcw/tests/nostr_host/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "application"
         }
       ],
       "dependencies": {},
@@ -4047,6 +4377,12 @@
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "verification"
+        },
+        {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "application"
         },
         {
           "lock": "Contrib/Releases/Publisher/packages.lock.json",
@@ -4107,6 +4443,12 @@
           "framework": "net10.0",
           "type": "Direct",
           "role": "application"
+        },
+        {
+          "lock": "mcw/tests/nostr_host/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "application"
         }
       ],
       "dependencies": {
@@ -4128,6 +4470,12 @@
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "verification"
+        },
+        {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "application"
         },
         {
           "lock": "Contrib/VisualPreview/packages.lock.json",
@@ -4727,6 +5075,12 @@
           "role": "verification"
         },
         {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
+        },
+        {
           "lock": "Contrib/VisualPreview/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -4776,6 +5130,12 @@
         },
         {
           "lock": "MagicalCryptoWallet/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
+        },
+        {
+          "lock": "mcw/tests/nostr_host/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -4800,6 +5160,12 @@
           "role": "verification"
         },
         {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
+        },
+        {
           "lock": "Contrib/VisualPreview/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -4849,6 +5215,12 @@
         },
         {
           "lock": "MagicalCryptoWallet/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
+        },
+        {
+          "lock": "mcw/tests/nostr_host/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -4870,6 +5242,12 @@
           "role": "verification"
         },
         {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
+        },
+        {
           "lock": "Contrib/VisualPreview/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -4919,6 +5297,12 @@
         },
         {
           "lock": "MagicalCryptoWallet/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
+        },
+        {
+          "lock": "mcw/tests/nostr_host/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -4940,6 +5324,12 @@
           "role": "verification"
         },
         {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
+        },
+        {
           "lock": "Contrib/VisualPreview/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -4989,6 +5379,12 @@
         },
         {
           "lock": "MagicalCryptoWallet/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
+        },
+        {
+          "lock": "mcw/tests/nostr_host/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
@@ -5183,6 +5579,12 @@
           "role": "verification"
         },
         {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
+        },
+        {
           "lock": "Contrib/VisualPreview/packages.lock.json",
           "framework": "net10.0",
           "type": "Transitive",
@@ -5235,6 +5637,12 @@
           "framework": "net10.0",
           "type": "Transitive",
           "role": "application"
+        },
+        {
+          "lock": "mcw/tests/nostr_host/packages.lock.json",
+          "framework": "net10.0",
+          "type": "Transitive",
+          "role": "application"
         }
       ],
       "dependencies": {},
@@ -5269,6 +5677,12 @@
           "framework": "net10.0",
           "type": "CentralTransitive",
           "role": "verification"
+        },
+        {
+          "lock": "Contrib/McwMigration/PrivacyControlProbe/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
+          "role": "application"
         },
         {
           "lock": "Contrib/VisualPreview/packages.lock.json",
@@ -5322,6 +5736,12 @@
           "lock": "MagicalCryptoWallet/packages.lock.json",
           "framework": "net10.0",
           "type": "Direct",
+          "role": "application"
+        },
+        {
+          "lock": "mcw/tests/nostr_host/packages.lock.json",
+          "framework": "net10.0",
+          "type": "CentralTransitive",
           "role": "application"
         }
       ],
@@ -6865,6 +7285,12 @@
       "path": "mcw/src/json.rs",
       "status": "implementation present; production caller integration pending",
       "handoff": "Contrib/McwMigration/Handoffs/json.md"
+    },
+    {
+      "name": "nostr_event_id",
+      "path": "mcw/src/nostr_event_id.rs",
+      "status": "implementation present; production caller integration pending",
+      "handoff": "Contrib/McwMigration/Handoffs/nostr-event-id.md"
     },
     {
       "name": "payment_uri",
