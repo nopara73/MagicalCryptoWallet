@@ -18,6 +18,7 @@ pub mod psbt;
 pub mod qr;
 pub mod script_service;
 pub mod socks5;
+pub mod wallet_hash_service;
 pub mod wallet_hashes;
 pub mod websocket;
 
