@@ -259,6 +259,15 @@ fn late_angle_and_entity_terminators_exhaust_charged_work() {
     assert_eq!(parse(&text, &AtomicBool::new(false)), Err(Error::Limit));
 }
 #[test]
+fn empty_reference_labels_cannot_copy_unbudgeted_large_titles() {
+    let text = format!(
+        "{}\n\n[note]: https://example.test/ \"{}\"\n",
+        "[][note] ".repeat(1000),
+        "t".repeat(16_000)
+    );
+    assert_eq!(parse(&text, &AtomicBool::new(false)), Err(Error::Limit));
+}
+#[test]
 fn bounded_autolinks_keep_the_existing_length_and_unicode_boundaries() {
     let prefix = "https://example.test/";
     let approved = prefix.to_owned() + &"a".repeat(4096 - prefix.len());

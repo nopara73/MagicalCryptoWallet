@@ -56,6 +56,17 @@ fn key(text: &str) -> String {
         .join(" ")
         .to_lowercase()
 }
+fn reference_target(
+    references: &References,
+    name: &str,
+    budget: &mut Budget<'_>,
+) -> Result<Option<(String, Option<String>)>, Error> {
+    let Some((destination, title)) = references.get(&key(name)) else {
+        return Ok(None);
+    };
+    budget.charge(destination.len() + title.as_deref().map_or(0, str::len))?;
+    Ok(Some((destination.clone(), title.clone())))
+}
 pub(super) fn safe_link(text: &str) -> bool {
     if text.len() > 4096
         || text.chars().any(|c| c.is_control() || c.is_whitespace())
@@ -86,7 +97,9 @@ fn push(
     if text.is_empty() {
         return Ok(());
     }
-    budget.charge(text.len())?;
+    // Metadata can be much larger than its label. Reserve comparisons and
+    // copies before merging or allocating, not just the visible text bytes.
+    budget.charge(text.len() + link.map_or(0, str::len) + title.map_or(0, str::len))?;
     if let Some(last) = output
         .last_mut()
         .filter(|r| r.style == style && r.link.as_deref() == link && r.title.as_deref() == title)
@@ -231,11 +244,11 @@ pub(super) fn parse(
             } else if let Some(rest) = after.strip_prefix('[') {
                 if let Some(close) = find_byte(rest.as_bytes(), b']', rest.len(), budget)? {
                     let name = if close == 0 { label } else { &rest[..close] };
-                    target = references.get(&key(name)).cloned();
+                    target = reference_target(references, name, budget)?;
                     consumed = close + 2;
                 }
             } else {
-                target = references.get(&key(label)).cloned();
+                target = reference_target(references, label, budget)?;
             }
             if let Some((dest, tooltip)) = target {
                 let approved = safe_link(&dest);
@@ -614,5 +627,39 @@ mod tests {
         assert_eq!(budget.work, 128);
         assert_eq!(run_length(&bytes, b'x', &mut budget), Err(Error::Cancelled));
         assert_eq!(budget.work, 192);
+    }
+
+    #[test]
+    fn reference_metadata_reserves_work_before_cloning_or_emitting() {
+        let cancel = AtomicBool::new(false);
+        let mut references = References::new();
+        references.insert(
+            "note".into(),
+            ("https://example.test/".into(), Some("t".repeat(4096))),
+        );
+        let mut budget = Budget {
+            cancel: &cancel,
+            work: super::super::MAX_WORK - 32,
+            runs: 0,
+        };
+        assert_eq!(
+            reference_target(&references, "note", &mut budget),
+            Err(Error::Limit)
+        );
+        budget.work = super::super::MAX_WORK - 32;
+        let mut output = Vec::new();
+        assert_eq!(
+            push(
+                &mut output,
+                "x",
+                0,
+                None,
+                Some(&"t".repeat(4096)),
+                &mut budget
+            ),
+            Err(Error::Limit)
+        );
+        assert!(output.is_empty());
+        assert_eq!(budget.runs, 0);
     }
 }

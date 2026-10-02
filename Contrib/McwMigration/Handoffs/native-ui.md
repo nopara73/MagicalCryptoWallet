@@ -49,7 +49,9 @@ nesting32 and an eight-million-unit parser work budget. Tag/entity/autolink
 windows are capped before scanning; each at-most64-byte chunk reserves work and
 checks cancellation before inspection. Delimiter runs and reference closers use
 the same accounting. Failed destinations and one-line reference parsing reserve
-their linear suffix work before searching. Diagnostics never echo input.
+their linear suffix work before searching. Reference target URL/title clones and
+emitted run metadata reserve work before comparisons/copies, including empty
+reference labels. Diagnostics never echo input.
 Headings, lists/lazy continuation, emphasis, links/reference links, line breaks,
 historical literal `<br>` breaks, plain code, quotes and rules are supported.
 Unsupported markup stays inert. This is the retained release-note grammar,
@@ -70,7 +72,7 @@ exactly, including its empty `MarkdownText` result; no release copy is edited.
 ## Evidence and reproduction
 
 `mcw/tests/native_ui_markdown_verify.ps1 -Format` acquires a shared build slot,
-uses Rust1.99 single-job/native linker, runs seventeen grammar/bounds/fuzz/wire
+uses Rust1.99 single-job/native linker, runs nineteen grammar/bounds/fuzz/wire
 tests, dispatches thirteen actual/historical inputs, decodes real Rust output
 through the shipping managed leaf, and compares exact semantic blocks/levels/
 depth/text/styles/link destinations with captured Markdown.Avalonia.Full11.0.3
@@ -134,15 +136,22 @@ Publication binding compares captured source Git blobs with a concrete commit.
 The source hash manifest is evidence for that commit, not whichever later
 master happens to contain it. Snapshot registration remains proposed.
 
-Fresh candidate evidence at base `2a091f3dd7`:
+Latest final candidate evidence at base `b5e3777b8e` (with the metadata-budget
+follow-up):
 
-- `.artifacts/native-ui-markdown-verification/runs/20261002T141241336Z/`:
-  seventeen tests, strict lint, thirteen exact legacy comparisons and sixteen
+- `.artifacts/native-ui-markdown-verification/runs/20261002T142815970Z/`:
+  nineteen tests, strict lint, thirteen exact legacy comparisons and sixteen
   renderer cases; 1283 captured compiler source inputs unchanged during the run.
-- `.artifacts/native-ui-markdown-verification/host-runs/20261002T141336671Z/`:
+- `.artifacts/native-ui-markdown-verification/host-runs/20261002T143015054Z/`:
   matching parser bytes, actual shared managed host, thirteen exact corpus
   comparisons, malformed/adversarial/concurrent checks, clean exit, current
   retained Fluent build, and before/after source and built-binary hashes.
+
+The earlier seventeen-test candidate at `2a091f3dd7` remains preserved. Full
+publication binding rejected its reuse after an unrelated content adapter
+changed on rebase; it is not the final publication proof. Bind the final runs
+to their concrete published commit, rerunning on a pinned published checkout
+if the source comparison reports any concurrent compiler-input change.
 
 The immutable fixture SHA256 remains
 `02e8b976e6671d70f07eca2c354b0014c2486065c8f9ef9d3b01ffb72328002e`.
