@@ -1,0 +1,15 @@
+{
+  "legacy_vectors": 500,
+  "segwit_vectors": 10,
+  "taproot_vectors": 7,
+  "hashes": {
+    "core-sighash.json": "52cf23c2076e7f129c71d5508631d3e5ae3be1b1cb0585c0e23bbb4bb373e924",
+    "bip143.mediawiki": "62bc71351563e68baeb12643c68355d217953ae9eb6a6e68b2b0323275b6beec",
+    "bip341.mediawiki": "463690d4c409587759c0ff6e8b8fc3a2bf6cb2cdda0c06ff193d317e0ed898ec",
+    "bip341-wallet-vectors.json": "403e19fb81dd1f31e745699216308f61fb403774b2aafa87b631b8f7c042d37f",
+    "legacy_sighash.tsv": "181602c0231cf91b70c0d426b5cf182d20cd2bfa916ee920d4dd0a16dd7914c5",
+    "segwit_sighash.tsv": "d6372c0b926fdcb41abec33b91581aee0238999feeba72d275414713db68034e",
+    "taproot_sighash.tsv": "a105061d9ab1e207eaee1ce4ca3b19f146d368eebf003527f83611f940240bf4"
+  },
+  "scope": "published digest/message expectations; no key/signature verification claim"
+}
