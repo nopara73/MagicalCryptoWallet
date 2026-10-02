@@ -40,10 +40,17 @@ later composition. JSON caller replacement, payment URI, PNG, native transport,
 wallet/recovery state, SQLite, Tor runtime and whole native UI remain awaiting
 migration. No component implementation by itself is dependency removal.
 
-The Markdown package closure and the unused HTTP factory package are retired
-from current source references, restored lock graphs and Nix inputs only after
-the audit confirms their absence. Packaged-target audits enforce absence of their
-assemblies. Avalonia/Skia/QRackers (embedded FlashCap), NBitcoin/Secp256k1, Newtonsoft/NNostr,
+The fifteen Markdown packages are retired after source, lock, Nix and packaged
+assembly/dependency audits confirm their absence. The HTTP factory's direct
+NuGet reference is removed from source and lock graphs, while
+`Microsoft.Extensions.Http.dll` remains in the self-contained external
+coordinator's ASP.NET runtime. It is explicitly retained in the ledger and is
+not a globally removed dependency. The packaged client manifest must have no
+HTTP NuGet library or runtime asset provider; the coordinator's sole provider
+must be its declared ASP.NET runtime pack, with matching runtime configuration
+and bytes from that exact restored SDK package. A retired NuGet library,
+unexpected client provider or different DLL still fails the audit.
+Avalonia/Skia/QRackers (embedded FlashCap), NBitcoin/Secp256k1, Newtonsoft/NNostr,
 SQLite, bundled Tor and the managed framework retain their other responsibilities.
 The external coordinator's HTTP/Tor/reference hashing roles remain explicit.
 

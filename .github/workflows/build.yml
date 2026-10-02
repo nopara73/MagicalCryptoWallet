@@ -135,6 +135,7 @@ jobs:
         shell: bash
         run: |
           python Contrib/SingleWallet/test-audit.py
+          python Contrib/Mcw/test-retirements.py --output .artifacts/mcw-evidence/retirement-negative-tests.json
           python Contrib/AutomationRemoval/audit.py --self-test
       - name: Forked managed cryptography and published vectors
         run: dotnet test --project ThirdParty/WabiSabi/csharp/WabiSabi.Tests -c Release --no-progress --no-ansi --output Normal

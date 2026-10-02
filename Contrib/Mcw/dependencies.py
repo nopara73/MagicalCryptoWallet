@@ -116,6 +116,7 @@ def inventory():
               if (ROOT/"mcw/src/scan_service/charset_data.rs").is_file() else []),
         "native_and_embedded":[
             {"name":".NET runtime and ASP.NET shared libraries","status":"retained","owner":"managed application/external coordinator","evidence":"self-contained dotnet publish and .deps.json"},
+            {"name":"Microsoft.Extensions.Http.dll from ASP.NET runtime pack","status":"retained; direct NuGet package reference removed, not global dependency removal","owner":"external coordinator framework","evidence":"Coordinator.deps.json runtimepack provider, runtimeconfig version and exact restored runtime-package bytes checked by Contrib/Mcw/audit-retirements.py"},
             {"name":"Avalonia native platform backends, Skia and HarfBuzz","status":"retained","owner":"managed UI","evidence":"NuGet locks plus published runtimes/*/native payloads"},
             {"name":"FlashCap camera capture APIs embedded in QRackers","status":"retained; QR image decoding callers migrated while camera capture remains","owner":"managed camera UI","evidence":"QRackers 1.1.0 exports FlashCap capture types; QrCodeReader.cs still acquires frames through them"},
             {"name":"SQLite native e_sqlite3","status":"retained","owner":"managed storage","evidence":"SQLitePCLRaw bundle/provider/native NuGet locks"},

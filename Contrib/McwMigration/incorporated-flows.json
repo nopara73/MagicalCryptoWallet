@@ -277,9 +277,20 @@
     "HtmlAgilityPack",
     "ShimSkiaSharp",
     "Svg.Custom",
-    "Svg.Model",
-    "Microsoft.Extensions.Http"
+    "Svg.Model"
   ],
   "verification_only_packages": [],
-  "retirement_rule": "source/manifest/lock/Nix cache removal plus every packaged target; historical oracle names and external shared-framework roles are qualified separately"
+  "retirement_rule": "fully retired packages require source, lock, Nix and every packaged reference absent; source-only NuGet retirements retain explicitly verified framework assets and are not global dependency removal",
+  "source_only_package_retirements": [
+    "Microsoft.Extensions.Http"
+  ],
+  "retained_framework_assets": [
+    {
+      "assembly": "Microsoft.Extensions.Http.dll",
+      "manifest": "MagicalCryptoWallet.Coordinator.deps.json",
+      "runtime_config": "MagicalCryptoWallet.Coordinator.runtimeconfig.json",
+      "runtime_package_prefix": "Microsoft.AspNetCore.App.Runtime.",
+      "role": "external coordinator ASP.NET runtime; no client NuGet dependency"
+    }
+  ]
 }
