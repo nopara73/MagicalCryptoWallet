@@ -1,0 +1,15 @@
+{
+  "reference": "NBitcoin 10.0.13 net10.0, retained application package, test-only",
+  "repository_commit": "bd666454562c12155210fac65b07c70289dcecc1",
+  "oracle_assembly_sha256": "ebb7e5548fe1325514289528e67b2ee0e24b3bfecb75ed4067c44ea99a202167",
+  "oracle_program_sha256": "ee0a750521198f2cac399ab4bfa0835252b736e2ff5c1c9ec27fff06e4e0b118",
+  "generator_sha256": "a98e4a9dccb99953ed388ae5b82df0ba0bfb3de8a3adda68d867e57681dff062",
+  "seed": 218636326,
+  "cases": 10914,
+  "parse_cases": 5655,
+  "render_cases": 5259,
+  "parse_errors": 980,
+  "fixtures_sha256": "5ae17e2109e8e430937b63721de354d63a7be1ce95adc9a74dbf34ef9a3d065f",
+  "synthetic_only": true,
+  "production_release": false
+}
