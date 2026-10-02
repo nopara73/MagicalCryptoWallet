@@ -4,6 +4,25 @@ All destructive and signing tests use synthetic wallets and isolated data direct
 
 Changes are committed and pushed directly to `master`. The repository's [CI checks](https://github.com/nopara73/MagicalCryptoWallet/actions/workflows/build.yml) contain platform results and downloadable unsigned packages. CI builds Windows x64, Linux x64/arm64, and macOS x64/arm64; each platform runs wallet tests, real packaged-process tests, managed/native cryptography and wire interoperability, source/generated/symbol audits, extracted-package inspection, and actual Avalonia rendering. Linux x64 additionally exercises seven encrypted clients through Send authorization and a real local CoinJoin. Windows tests the desktop and daemon; other platforms test the daemon.
 
+## Verified application snapshot, 2026-10-02
+
+[Run 37003880808](https://github.com/nopara73/MagicalCryptoWallet/actions/runs/37003880808) completed successfully for application revision `d60e01b1b3e27af4aba789cde8ccddfba11952f9`. Windows x64, Linux x64/arm64, macOS x64/arm64, Nix, and the coordinator container all passed. Packages use the development version `99.99.99` and are unsigned snapshots.
+
+| Verification | Result |
+|---|---|
+| Complete wallet unit / Bitcoin integration suites | 1,207 / 45 passed |
+| Managed cryptography / native-managed interoperability / native CTest | 125 / 34 / 1 of 1 passed |
+| Windows packaged application lifecycle | All 15 checks passed, including setup authorization, passwordless synchronization, reorg recovery, independent Send confirmation, offline history, activation, locking, and credential disposal |
+| Seven encrypted clients | One confirmed 35-input CoinJoin; every client's measured anonymity score was 7 |
+| Send authorization and first-round payments | Correct passwords started automatic CoinJoin; subsequent incorrect passwords were rejected; all seven payments reconciled exactly once |
+| Actual application views | 248 captures per platform in both themes at 100%, 125%, 150%, and 200%; Chinese masking and Lurking Wife Mode checks passed |
+| Removal, trust, generated-code, resource, symbol, and extracted-package audits | Passed; all 50 retired-interface negative fixtures rejected |
+| macOS disk-image creation | Completed and verified; four regression checks cover bounded busy-error retries, unrelated errors, persistent failure, and invalid images |
+
+Accepted GUI authorization and passwords supplied through RPC, creation, or recovery retain separate CoinJoin credentials for that process. Dismissing an authorization dialog during password derivation does not authorize CoinJoin. Every later signing or private-information operation checks its own password; stopping the process clears retained credentials.
+
+The Windows ZIP and MSI were also downloaded in the background and independently checked against the package inspection report: all 451 payload files and package hashes matched. SHA-256: ZIP `d4caeb42f4566c03c13e4461ff76834ee5f2ff999bbcc646e9571407607e7bc4`; MSI `23fb5fb83f363773f9356bfc1558d10697b42abe5f937ce302ef14462797a7d8`.
+
 ## Automatic CoinJoin verification, 2026-10-02
 
 | Verification | Result |
