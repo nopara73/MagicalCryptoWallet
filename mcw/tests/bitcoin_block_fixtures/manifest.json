@@ -78,6 +78,8 @@
   "files": {
     "blocks.tsv": "300df1908bb654a16a31202dcc91aa5ed644e13a00e4070cf637b051df2395e8",
     "partial.tsv": "5b0673fbac006f725dd3f3342c1d603a6dea7a35a25e20ba371719f99d519d7d",
-    "BITCOIN-CORE-LICENSE.txt": "7c4a87f43afaf667b4c2187af92ebdd27310a24cec113f973e058e3300a76002"
-  }
+    "BITCOIN-CORE-LICENSE.txt": "7c4a87f43afaf667b4c2187af92ebdd27310a24cec113f973e058e3300a76002",
+    "headers.tsv": "d944ab1db40ced4afe3b40e2c47e5026259a6671ed4ac894232376918a79761b"
+  },
+  "header_vectors": 256
 }

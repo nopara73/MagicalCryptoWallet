@@ -1,6 +1,6 @@
 # Wallet Script format and signature-hash checkpoints
 
-State: **verified checkpoints preserved; bounded caller assignment pending**.
+State: **verified checkpoints preserved; bounded client Script text work active**.
 The human scope correction of 2026-10-02 stops the full Script/transaction
 validation migration. No interpreter or validation-engine code was written.
 No production caller has been migrated by these checkpoints. They do not replace
@@ -27,13 +27,13 @@ outpoint and output types and `bitcoin_encoding::Sha256`; it adds no curve or
 signature implementation. It was published immediately before the scope
 correction arrived; no production registration or cutover followed.
 
-Former broad caller ownership is inactive under the correction. Bounded candidates
-being audited are `Extensions/NBitcoinExtensions.cs` classification/key-identifier
-leaves and the Script text leaf in `Serialization/Bitcoin.cs`. The latter file
-remains JSON-owner-owned. No existing managed file has been changed by this worker.
+Former broad caller ownership is inactive under the correction. The subsequent
+precise assignment is only client Script text parsing/rendering; its implementation,
+small released JSON caller leaves and separate evidence are described in
+[script-text.md](script-text.md). Classification/key-identifier leaves and
+`Extensions/NBitcoinExtensions.cs` remain outside this worker's assignment.
 Script execution, BIP322, CoinJoin verification and whole transaction validation
-are outside the revised assignment. A precise bounded assignment is required
-before further caller work. QR retains
+are outside the revised assignment. QR retains
 shared crate registration/manifests/host/dispatch/lifecycle/platform/packaging and
 the shared ledger. Coordinator alone dispatches actual incorporation when QR is idle.
 
@@ -197,8 +197,8 @@ references in six files; six NBitcoin package references in five files; 56 lockf
 references in 14 files. Tests/comments are included; implicit imported references
 require further audit. Nothing in the checkpoint removes these references.
 
-Next permitted work is an audit of concrete minimal classification/serialization
-caller replacements, followed by the coordinator's precise bounded assignment.
+The precise bounded client Script text assignment is documented separately in
+[script-text.md](script-text.md); it does not expand these preserved checkpoints.
 Full interpreter, signature verification, wallet-cryptography, CoinJoin and
 transaction-engine expansion is stopped. Existing legacy paths are retained.
 No fake verifier, managed fallback or stub is accepted.

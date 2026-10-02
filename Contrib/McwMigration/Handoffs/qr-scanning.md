@@ -33,6 +33,9 @@ caller change. `qr-scanning-host.patch` adds the Rust module and a connection-ow
 incorporated together by the shared host owner. Their initial base is
 `8a438c9737926887a1491e45bb0d82a718ca0fc0`. The actual-host test applied them
 successfully to shared revision `556fc1a18a89029bab272c3d5c64d77f55de0501`.
+Their scoped Git attributes preserve LF on Windows. The verifier can check both
+patches against the current retained sources with `-CheckPatchesOnly`, without
+acquiring a build slot or rebuilding the unchanged decoder.
 
 The host reader must register scanner requests immediately after `Frame::read`
 and before the bounded dispatcher queue. It must deliver matching cancellation

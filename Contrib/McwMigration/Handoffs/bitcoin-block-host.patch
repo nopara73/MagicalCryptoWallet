@@ -1,0 +1,17 @@
+diff --git a/mcw/src/lib.rs b/mcw/src/lib.rs
+--- a/mcw/src/lib.rs
++++ b/mcw/src/lib.rs
+@@ -3,1 +3,2 @@
+ pub mod bitcoin_block;
++pub mod bitcoin_block_service;
+diff --git a/mcw/src/app.rs b/mcw/src/app.rs
+--- a/mcw/src/app.rs
++++ b/mcw/src/app.rs
+@@ -272,1 +272,7 @@
+         bridge::QR => bridge::encode_qr(frame).write(output),
++        crate::bitcoin_block_service::HASH_HEADER => {
++            match crate::bitcoin_block_service::hash_header(&frame.payload) {
++                Ok(digest) => frame.reply(digest.to_vec()).write(output),
++                Err(_) => frame.error(1, "invalid block header").write(output),
++            }
++        }

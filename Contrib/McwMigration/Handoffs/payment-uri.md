@@ -1,20 +1,29 @@
 # Payment URI migration handoff
 
-State: ready for integration once this handoff is published. This is a verified
-domain-module delivery; the managed callers and release host still require the
-QR/application-host owner's integration. No package has been removed by this track.
+State: ready for integration after verified publication. The existing payment URI
+assignment's domain and bounded service checkpoints are verified. Routing, managed
+callers and the release host require the QR/application-host owner's integration.
+No package has been removed by this track.
 
-Implementation commit: `bd47d2cc945d3036875e7be17dc6fa09547b4936`.
+Domain implementation commit: `bd47d2cc945d3036875e7be17dc6fa09547b4936`.
+Domain handoff publication: `8ae6cac6a762ef6041437f966b280bf3168e3ee4`.
+Service implementation commit: `887c1dc018dbc20586debbfdaa51e4eb788e3cdf`.
 Publication commit: recorded in the ignored coordination handoff JSON, since a
 document cannot contain the hash of its own commit.
 Baseline inspected: `82127991068522210cdcf77080dc9b819502e486` (`origin/master`).
+Published host foundation: `989cf2a2df22d23837c1aa328e29abfd33c9b9c8`.
+Actual Cargo verification revision: `887c1dc018dbc20586debbfdaa51e4eb788e3cdf`,
+reconciled over published host `566bcab91f453592b85ce4b91852b966457419e1`.
+Earlier Cargo checkpoint: `7ae424b5f5f3734ca1870962a2d913769c59b26d`.
 Thread: `01a0fc2a-52bd-7461-9c8a-1f15bdc04520` (registry and process thread ID).
 
 ## Owned files
 
 - `mcw/src/payment_uri.rs`
+- `mcw/src/payment_uri/service.rs`
 - `mcw/tests/payment_uri_semantics.rs`
 - `mcw/tests/payment_uri_addresses.rs`
+- `mcw/tests/payment_uri_service.rs`
 - `mcw/tests/payment_uri_reference.py`
 - `mcw/tests/payment_uri_verify.ps1`
 - `Contrib/McwMigration/Handoffs/payment-uri.md`
@@ -116,12 +125,16 @@ shared-prefix networks; the explicitly selected network is preserved. Regtest
 witness requests require `bcrt`. Checksums, witness versions, program sizes and
 padding are checked exclusively by the first-party address service.
 
-## Reserved bridge operation proposal
+## Bounded application-service API
 
-Range `0x0400–0x04FF` is reserved for this track. The host owner chooses the actual
-binary framing, network IDs, error mapping and message schemas.
+Range `0x0400–0x04FF` is reserved for this track. The owned
+`payment_uri::service::handle(operation: u16, payload: &[u8])` implements the six
+operations below as a pure byte-buffer adapter over the real domain/address
+services. `handles(operation)` identifies supported IDs. The module owns no
+framing, IPC, process, filesystem, OS handles or wallet state. It uses only the
+Rust standard library and the actual first-party address service.
 
-| Proposal | Responsibility |
+| Operation | Responsibility |
 | --- | --- |
 | `0x0400` | Parse destination input with explicit network and parsing mode |
 | `0x0401` | Format a validated retained request from integer satoshis/metadata |
@@ -130,10 +143,176 @@ binary framing, network IDs, error mapping and message schemas.
 | `0x0404` | Percent-encode UTF-8 metadata |
 | `0x0405` | Percent-decode metadata with explicit URI/form mode |
 
-No bridge operation was implemented in a shared host file. A bridge must return
-the typed validation/error results and use integer satoshis, not binary floats.
+Every request and successful reply starts with one version byte, currently `1`.
+All multi-byte integers are little endian. `text` is a `u32` UTF-8 byte length
+followed by those bytes, with strict UTF-8 and no terminator. `data` uses the same
+length prefix with arbitrary bytes. The operation ID is in the existing frame,
+not duplicated in its payload. Requests/replies are bounded to 32,000 bytes.
+Truncation, trailing data, invalid IDs/flags/version and oversized fields fail.
 
-## Verification and independent evidence
+Network byte IDs are `0=Mainnet`, `1=Testnet`, `2=Testnet4`, `3=Signet`,
+`4=Regtest`. Mode IDs are `0=Bip21`, `1=ManagedCompatibility`. The managed
+replacement must use mode `1` to retain existing key/plus handling. Never infer
+the selected network from shared testnet prefixes.
+
+`details` consists of one flags byte: bit 0=amount, bit 1=label, bit 2=message;
+other bits are invalid. Present fields follow in that order: amount is `u64`
+satoshis, label/message are `text`. Zero and empty values remain present.
+
+| Operation | Request after version | Reply after version |
+| --- | --- | --- |
+| `0x0400` | network, mode, text input | parsed destination schema below |
+| `0x0401` | network, text address, details | text formatted retained URI |
+| `0x0402` | text decimal BTC | u64 satoshis |
+| `0x0403` | u64 satoshis | text decimal BTC |
+| `0x0404` | text metadata | text percent-encoded metadata |
+| `0x0405` | mode, text encoded metadata | text decoded metadata |
+
+The parse reply contains, in order:
+
+1. Result-kind byte (`0=bare address`, `1=URI`), selected-network byte,
+   address-kind byte (`0=P2PKH`, `1=P2SH`, `2=witness`), witness-version byte
+   (`255` for legacy).
+2. `data` checked hash (20 bytes) or witness program (2–40 bytes), `text` original
+   address, and `text` canonical address from first-party `address_encode`.
+3. `details`, then original-URI-present byte (`0`/`1`) and original URI `text`
+   when present. Entry-point whitespace is trimmed; address spelling and query
+   content are otherwise preserved.
+4. `u32` optional parameter count. Each entry contains `text` name,
+   value-present byte (`0`/`1`), and `text` value when present. Bare flags and empty
+   values are distinct. These are opaque metadata, never destinations or actions.
+
+Parse runs the retained 1,000 UTF-16-unit input check; its input field allows up
+to 4,000 UTF-8 bytes. Parse never invokes URI formatting: valid raw compatible
+Unicode may expand past the formatter's separate limit. Format retains only
+amount/label/message. Metadata codecs permit 4,000 decoded bytes and up to 12,000
+encoded bytes. The independent transcript oracle exercises this exact schema.
+
+On failure `service::Error { code: u16, message: &'static str }` is returned.
+Domain codes `1–11` are preserved with generic messages; caller data is discarded
+from service errors. Service-only codes are `100=unsupported operation`,
+`101=malformed/truncated/trailing payload`, `102=version`, `103=network`,
+`104=mode`, `105=UTF-8`, `106=flags`, `107=size`. There is no successful reply
+payload on failure. The host should use the existing error frame's `u16` code
+followed by UTF-8 message, not serialize an exception or supplied input.
+
+## Exact host and managed integration handoff
+
+The verified host base already declares `pub mod payment_uri` in `lib.rs`.
+Its `app.rs` still returns unsupported-operation for these IDs. The QR owner
+can insert this bounded arm immediately after the QR arm in the existing
+`dispatch` operation match:
+
+```rust
+operation if crate::payment_uri::service::handles(operation) => {
+    match crate::payment_uri::service::handle(operation, &frame.payload) {
+        Ok(payload) => frame.reply(payload).write(output),
+        Err(error) => frame.error(error.code, error.message).write(output),
+    }
+}
+```
+
+No shared host file was edited by this track. Handshake, request IDs, cancellation,
+framing, lifecycle and transport failure handling remain in the actual host.
+The process-route/cancellation tests belong after this arm is incorporated.
+
+The existing managed API is
+`McwApplicationServices.Current.RequestAsync(ushort, ReadOnlyMemory<byte>, CancellationToken)`.
+Use BCL `BinaryPrimitives`, strict `UTF8Encoding(false, true)` and bounded
+byte arrays to encode/decode the schema. Await the request, propagate cancellation
+and host failures, validate every reply field/version/length and consume the
+entire reply. Do not synchronously block the GUI or fall back to managed parsing.
+Operation `0x0400` returns the already checked hash/program and canonical address;
+the transitional wallet backend can construct its address representation from
+that descriptor without running a second string/address validator.
+If it needs a script representation, the checked descriptors project directly:
+P2PKH is `76 a9 14 <hash20> 88 ac`, P2SH is `a9 14 <hash20> 87`, and witness
+is `<00 for v0, 50+version for v1–16> <program length> <program>`.
+Do not restrict otherwise valid witness destinations by treating every future
+version/program as a public key; first-party validation owns address semantics.
+
+At verification base `7ae424b5`, `ManagedApplicationHost.cs` reads an error code
+but line 241 discards it in a plain `IOException` string. Before migrating the
+parser, add a shared typed exception to the existing application-service contract:
+
+```csharp
+public sealed class McwServiceException : System.IO.IOException
+{
+    public ushort Code { get; }
+    public McwServiceException(ushort code, string message) : base(message)
+    {
+        Code = code;
+    }
+}
+```
+
+Replace that error construction with:
+
+```csharp
+serviceError = new McwServiceException(
+    code, Utf8.GetString(payload, 2, payload.Length - 2));
+```
+
+The existing `IOException?` variable can carry this subtype. The payment adapter
+can map codes `1–11` into the retained `Bip21UriParser.Error`/`AddressParser`
+result contract. Transport/schema errors must remain failures. Never extract
+numeric codes by parsing exception text. These are concrete proposed patches for
+QR-owned files, not claims that those files or production callers were changed.
+
+The caller migration must preserve clipboard/QR validation, original request
+metadata, canonical address display, amount/label autofill and the existing
+multi-recipient BIP21 rejection. Use integer satoshis through the boundary;
+the managed UI's exact decimal display conversion can divide by `100_000_000m`.
+Receive formatting should call `0x0401`; it must not keep an independent
+`Uri.EscapeDataString`/`Money.TryParse`/`HttpUtility` payment URI implementation.
+
+## Published-host service checkpoint
+
+The actual published Cargo host at `7ae424b5` passed the original 21 URI/address
+integration tests before this follow-up. Its locked offline metadata contains one
+`mcw` package and zero dependencies. The permanent `lib.rs` declares both
+first-party modules. The bounded handler is now verified against those actual
+checked-out sources:
+
+- 31 owned tests plus the actual address module's SHA boundary test: 32 passed.
+- 14,188 independent cases per build: the original 14,102 Decimal/urllib cases
+  plus 86 byte-for-byte request/reply/error transcripts using Python stdlib
+  `struct`, `Decimal`, `urllib` and published address fixtures. Independent
+  Base58 fixture extraction verifies SHA256d; it is test tooling only.
+- Both debug and optimized builds passed, including malformed binary prefixes,
+  trailing bytes, invalid UTF-8/IDs/flags/version, maximum metadata buffers,
+  domain error-code preservation and static error-message redaction.
+- Rustfmt, compiler warnings denied and Clippy all with warnings denied passed.
+  The optimized harness imports only the five Windows OS DLLs listed below.
+- Updated actual Cargo host check passed: 31 tests across all three permanent
+  integration targets, using the locked offline host graph at `7ae424b5`, then
+  again at reconciled implementation `887c1dc0` over published host `566bcab9`.
+  All five tested Git blobs survived reconciliation unchanged; the actual address
+  Git blob is `a9866af06ffe05347329e5e048ae3eb60c58769d`.
+
+For the initial follow-up verification checkout, SHA256 values were
+`110aab20821ecb5ec9d8158720cd1550e3c79c5e3597b0427f7f939d4d28d31a`
+for the parent URI file and
+`54a0b7fa0f6fa07c35f9b2c59254cf2a68a01456dedf7bc812f5c23d3264ab5e`
+for the new handler. The unchanged actual address file's checkout SHA256 is
+`55f2002f3e2e91a8e0567523a5b1c8df778d95ffef71604ed87241af71ab13c2`;
+its Git blob still matches the published encoding implementation. This differs
+from the original LF snapshot hash below because Git materialized CRLF.
+The reconciled checkout's handler hash is
+`f6bbe768e8b00987779b999568de09c4a76b9993778e44b3b628f1bdc9fb5e99`
+after Git materialized CRLF; its Git blob is identical to the optimized tested
+source. Parent URI and actual address checkout hashes are unchanged.
+
+Evidence lives in this track's ignored `.artifacts/payment-uri-evidence`, with
+separate debug/optimized verification and transcript result records. Actual Cargo
+commands compile the permanent application library/bin and the three owned test
+targets; they do not establish that dispatcher routing or managed callers changed.
+No custom native runtime, five-target release or production dependency removal is
+claimed. QR owns the separately reported foundation CI failure and release audit.
+The ignored coordination JSON records both verification checkout paths and exact
+published commits; the handoff document cannot embed its own publication hash.
+
+## Initial domain checkpoint evidence
 
 The actual peer address source was snapshotted in this checkout for tests, with
 SHA256 `4e59e9210317f6c75f1196d22892202b3c72f62adcf9d05be88c4c3c66925ec0`.
@@ -188,19 +367,23 @@ Verified native library directories on this machine were MSVC
 `14.51.36231/lib/onecore/x64` and SDK `10.0.26100.0/{ucrt,um}/x64`; these are build
 tools and introduce no runtime dependency. No compiler installation was changed.
 
-The ordinary Cargo tests after host integration are:
+The ordinary Cargo integration checks are:
 
 ```text
-cargo test --manifest-path mcw/Cargo.toml --offline --test payment_uri_semantics
-cargo test --manifest-path mcw/Cargo.toml --offline --test payment_uri_addresses
+cargo test --manifest-path mcw/Cargo.toml --offline --locked --test payment_uri_semantics --test payment_uri_addresses --test payment_uri_service
 ```
 
-These Cargo commands are proposed integration checks, not pre-integration results:
-the baseline remote checkout had no Cargo host or module declarations. The host
-owner's then-current worktree manifest had empty dependencies/dev-dependencies/
-build-dependencies tables, but its uncommitted manifest is not delivered by this
-track. This track adds no manifest, external Cargo dependency, native library,
-runtime installer, C#/Avalonia/IPC dependency or companion shipping executable.
+To reproduce both independent and actual published-host checks under a single
+shared build-slot lock, run `payment_uri_verify.ps1 -CargoHost`; add `-Optimized`
+for optimized harnesses and Cargo release test profile. The initial domain
+checkpoint predates the host; use the later published-host checkpoint above for
+current Cargo results. This track adds no manifest, external Cargo dependency,
+native library, runtime installer, C#/Avalonia/IPC dependency or companion shipping
+executable.
+
+The Cargo test profile was verified; Cargo release/native profiles were not.
+Optional `-BuildSlotWaitSeconds 50` waits at most 50 seconds for a shared slot
+before returning deferred. Memory is checked again after the slot is acquired.
 
 Reference sources inspected on 2026-10-02:
 
@@ -259,7 +442,7 @@ track has not changed or removed any of those upstream usages or dependencies.
 1. Use the published first-party address service; wire `payment_uri` into the
    permanent mcw host with no external dependency tables populated.
 2. Run the independent runner against the integrated actual address source and
-   both ordinary Cargo integration test targets on the final host revision.
+   all three ordinary Cargo integration test targets on the final host revision.
 3. Bridge the managed feature using explicit selected networks, integer satoshis,
    ManagedCompatibility, stable error mapping and canonical-address conversion.
    Retain original request metadata separately and preserve multi-recipient URI
