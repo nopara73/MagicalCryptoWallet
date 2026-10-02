@@ -1,0 +1,93 @@
+{
+  "core_version": "v29.0",
+  "wallet_reference_version": "NBitcoin v10.0.13",
+  "core_format_vectors": 2414,
+  "number_vectors": 189,
+  "hashes": {
+    "bip143.mediawiki": {
+      "sha256": "62bc71351563e68baeb12643c68355d217953ae9eb6a6e68b2b0323275b6beec",
+      "bytes": 57755
+    },
+    "bip341-wallet-vectors.json": {
+      "sha256": "403e19fb81dd1f31e745699216308f61fb403774b2aafa87b631b8f7c042d37f",
+      "bytes": 29296
+    },
+    "bip341.mediawiki": {
+      "sha256": "463690d4c409587759c0ff6e8b8fc3a2bf6cb2cdda0c06ff193d317e0ed898ec",
+      "bytes": 44162
+    },
+    "core-COPYING": {
+      "sha256": "7c4a87f43afaf667b4c2187af92ebdd27310a24cec113f973e058e3300a76002",
+      "bytes": 1142
+    },
+    "core-interpreter.cpp": {
+      "sha256": "cf0e8947e2fccd53fc390f422b8f73c7dab11555446f502b64968a7b289943c0",
+      "bytes": 88026
+    },
+    "core-interpreter.h": {
+      "sha256": "bcf1d227c0c4b4c6d6d74034ad3ce5c3512777fd16de146ee01aff8237db7698",
+      "bytes": 15461
+    },
+    "core-read.cpp": {
+      "sha256": "c84e71a66513ea2f4e3509f8c78e2bd5bcacff9219d2c30452d12d7a8d75658f",
+      "bytes": 8784
+    },
+    "core-script-tests.cpp": {
+      "sha256": "065de4907807dfdfd6d25f0c474c23a8cd64034645ecd90f2b52e6641780fcca",
+      "bytes": 102758
+    },
+    "core-script-tests.json": {
+      "sha256": "195d1ae4c1701ffa4e4b0ac14ba2b451da0e73fb22292656cd0f2196a78010db",
+      "bytes": 215625
+    },
+    "core-script.cpp": {
+      "sha256": "c9fb34fbf1a36fdd5ceccdfc6df8189887e1c10ca4f858f93b31c616af762bfc",
+      "bytes": 13802
+    },
+    "core-script.h": {
+      "sha256": "7ee09e112e9675e9c4b2a585f033ae7a007abd3c43901bd8eda4b4cb3d8b4c7f",
+      "bytes": 20031
+    },
+    "core-scriptnum-tests.cpp": {
+      "sha256": "aacfd8e14669d49a7b64916a5d31dfee35c85319babdab9b9b99a66f9bbb2143",
+      "bytes": 7406
+    },
+    "core-sighash.json": {
+      "sha256": "52cf23c2076e7f129c71d5508631d3e5ae3be1b1cb0585c0e23bbb4bb373e924",
+      "bytes": 210483
+    },
+    "core-solver.cpp": {
+      "sha256": "15c4ee79d8e0ec44b6aa667af30815f68ee00b2c57526531850a1304a61da340",
+      "bytes": 8419
+    },
+    "core-write.cpp": {
+      "sha256": "aa5a554ea531795ec9aeb344caae5e8f91e2c8c5dddf193262b48fd4326aed00",
+      "bytes": 10569
+    },
+    "nbitcoin-LICENSE": {
+      "sha256": "f43bafc3ccd9a13217619cb5e0735fc8f1b918f24020e0d3eeefecc055136010",
+      "bytes": 1097
+    },
+    "nbitcoin-Script.cs": {
+      "sha256": "eb04199e81b0d292f8f7933ae5c088b303c995d252d1e38b9e7088dc40a73c89",
+      "bytes": 30331
+    },
+    "nbitcoin-ScriptReader.cs": {
+      "sha256": "5f1c0e7d6f1aeb0325307783df9ad09867b9ec9823f07c5055bebc69522698ad",
+      "bytes": 19701
+    },
+    "nbitcoin-StandardScriptTemplate.cs": {
+      "sha256": "f61e885dbd053fe56d67527a72443047875aca54cac3134649b597123d50bc3b",
+      "bytes": 37821
+    },
+    "core_vectors.tsv": {
+      "sha256": "e710e12fb366881c6061a2eacc2985b8ed3defdde3004b06f5c76e66a2018666",
+      "bytes": 1167293
+    },
+    "numbers.tsv": {
+      "sha256": "e56510fb436168db44681846020efb86ae73d16c1b96deeae9fc7e7b11a5a9a7",
+      "bytes": 3406
+    }
+  },
+  "scope": "format only; upstream execution result/flags/witness ignored"
+}

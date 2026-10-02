@@ -16,7 +16,6 @@ using MagicalCryptoWallet.Fluent.ViewModels.NavBar;
 using MagicalCryptoWallet.Fluent.ViewModels.OpenDirectory;
 using MagicalCryptoWallet.Fluent.ViewModels.Settings;
 using MagicalCryptoWallet.Fluent.ViewModels.Scheme;
-using MagicalCryptoWallet.Fluent.ViewModels.TransactionBroadcasting;
 using MagicalCryptoWallet.Fluent.ViewModels.Wallets;
 using MagicalCryptoWallet.Fluent.ViewModels.Wallets.Advanced;
 using MagicalCryptoWallet.Fluent.ViewModels.Wallets.CoinJoinPayment;
@@ -122,11 +121,6 @@ public partial class FluentNavigate
 	public void WalletCoins(IWalletModel wallet, NavigationTarget navigationTarget = NavigationTarget.DialogScreen, NavigationMode navigationMode = NavigationMode.Normal)
 	{
 		UiContext.Navigate(navigationTarget).To(new WalletCoinsViewModel(UiContext, wallet), navigationMode);
-	}
-
-	public void Broadcaster(NavigationTarget navigationTarget = NavigationTarget.DialogScreen, NavigationMode navigationMode = NavigationMode.Normal)
-	{
-		UiContext.Navigate(navigationTarget).To(new BroadcasterViewModel(UiContext), navigationMode);
 	}
 
 	public void OpenTorLogs(NavigationTarget navigationTarget = NavigationTarget.DialogScreen, NavigationMode navigationMode = NavigationMode.Normal)
@@ -271,11 +265,6 @@ public partial class FluentNavigate
 		return new FluentDialog<System.Reactive.Unit>(target.NavigateDialogAsync(dialog, navigationMode));
 	}
 
-	public void BroadcastTransaction(SmartTransaction transaction, NavigationTarget navigationTarget = NavigationTarget.DialogScreen, NavigationMode navigationMode = NavigationMode.Normal)
-	{
-		UiContext.Navigate(navigationTarget).To(new BroadcastTransactionViewModel(UiContext, transaction), navigationMode);
-	}
-
 	public void ConfirmMultiShare(WalletCreationOptions.AddNewWallet options, Dictionary<int, List<RecoveryWordViewModel>> wordsDictionary, NavigationTarget navigationTarget = NavigationTarget.DialogScreen, NavigationMode navigationMode = NavigationMode.Normal)
 	{
 		UiContext.Navigate(navigationTarget).To(new ConfirmMultiShareViewModel(UiContext, options, wordsDictionary), navigationMode);
@@ -393,15 +382,6 @@ public partial class FluentNavigate
 		target.To(dialog, navigationMode);
 
 		return new FluentDialog<System.Reactive.Unit>(target.NavigateDialogAsync(dialog, navigationMode));
-	}
-
-	public FluentDialog<SmartTransaction?> LoadTransaction(NavigationTarget navigationTarget = NavigationTarget.DialogScreen, NavigationMode navigationMode = NavigationMode.Normal)
-	{
-		var dialog = new LoadTransactionViewModel(UiContext);
-		var target = UiContext.Navigate(navigationTarget);
-		target.To(dialog, navigationMode);
-
-		return new FluentDialog<SmartTransaction?>(target.NavigateDialogAsync(dialog, navigationMode));
 	}
 
 

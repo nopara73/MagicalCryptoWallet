@@ -16,11 +16,9 @@ using MagicalCryptoWallet.Fluent.Models;
 using MagicalCryptoWallet.Fluent.Models.UI;
 using MagicalCryptoWallet.Fluent.Models.Wallets;
 using MagicalCryptoWallet.Fluent.ViewModels;
-using MagicalCryptoWallet.Fluent.ViewModels.TransactionBroadcasting;
 using MagicalCryptoWallet.Fluent.ViewModels.Wallets.Coinjoins;
 using MagicalCryptoWallet.Fluent.ViewModels.Wallets.Home.History.Details;
 using MagicalCryptoWallet.Fluent.ViewModels.Wallets.Home.History.Features;
-using MagicalCryptoWallet.Fluent.Views.TransactionBroadcasting;
 using MagicalCryptoWallet.Fluent.Views.Wallets.Home.History.Details;
 using MagicalCryptoWallet.Fluent.Views.Wallets.Home.History.Features;
 using MagicalCryptoWallet.Services;
@@ -83,7 +81,7 @@ internal static class FeeDisplayChecks
 				}
 			}
 		}
-		Console.WriteLine("Fee display checks passed: send, history, CoinJoin, broadcast, speed-up, and cancellation show USD-only totals, handle missing and changing quotes, and omit confirmation estimates.");
+		Console.WriteLine("Fee display checks passed: send, history, CoinJoin, speed-up, and cancellation show USD-only totals, handle missing and changing quotes, and omit confirmation estimates.");
 	}
 
 	private static IEnumerable<(string Name, Control View)> CreateViews(UiContext context, AmountProvider provider, decimal rate)
@@ -119,14 +117,6 @@ internal static class FeeDisplayChecks
 		group.TxCount = 1;
 		SetBackingField(group, nameof(group.Costs), costs);
 		yield return ("coinjoins-details", new CoinJoinsDetailsView { DataContext = group });
-
-		var broadcast = NewModel<BroadcastTransactionViewModel>(context);
-		var info = (TransactionBroadcastInfo)RuntimeHelpers.GetUninitializedObject(typeof(TransactionBroadcastInfo));
-		SetBackingField(info, nameof(info.TransactionId), uint256.One.ToString());
-		SetBackingField(info, nameof(info.TotalAmount), amount);
-		SetBackingField(info, nameof(info.NetworkFee), fee);
-		SetBackingField(broadcast, nameof(broadcast.BroadcastInfo), info);
-		yield return ("broadcast-fee", new BroadcastTransactionView { DataContext = broadcast });
 
 		var cancel = NewModel<CancelTransactionDialogViewModel>(context);
 		SetBackingField(cancel, nameof(cancel.Fee), fee);

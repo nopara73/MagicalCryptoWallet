@@ -73,6 +73,15 @@ def main():
         info = rpc(url, "getwalletinfo")
         return info if info["state"] == "Ready" and info["balance"] >= minimum_balance else False
 
+    def payment_finished(url, payment_id):
+        response = rpc(url, "listpaymentsincoinjoin", allow_error=True)
+        if "error" in response:
+            error = response["error"]
+            if error["code"] == -32603 and error["message"] == "The wallet must finish synchronizing before this operation.":
+                return False
+            raise AssertionError(f"listpaymentsincoinjoin: {error}")
+        return any(payment["id"] == payment_id and payment["state"][0]["status"] == "Finished" for payment in response["result"])
+
     try:
         node = launch(args.bitcoind.resolve(), ["-regtest", f"-datadir={bitcoin}", "-server=1", "-blockfilterindex=1",
             f"-rpcport={node_rpc}", f"-port={node_p2p}", "-rpcuser=synthetic", "-rpcpassword=synthetic",
@@ -165,7 +174,7 @@ def main():
                     coinjoins.append(txid)
                     # Confirm the coordinator broadcast and verify the clients' confirmed outputs.
                     coinjoin_blocks[txid] = rpc(node_url, "generatetoaddress", [1, mining_address], timeout=60)[0]
-            if coinjoins and all(any(coin["anonymityScore"] >= 2 for coin in rpc(url, "listcoins")) for _, url in clients) and all(any(payment["id"] == payment_id and payment["state"][0]["status"] == "Finished" for payment in rpc(url, "listpaymentsincoinjoin")) for url, payment_id, _ in payments):
+            if coinjoins and all(any(coin["anonymityScore"] >= 2 for coin in rpc(url, "listcoins")) for _, url in clients) and all(payment_finished(url, payment_id) for url, payment_id, _ in payments):
                 break
             time.sleep(.5)
         assert coinjoins, "No CoinJoin broadcast before the deadline."

@@ -82,6 +82,8 @@ public sealed class MailboxProcessor<TMsg>(
 		CancellationToken cancellationToken)
 	{
 		ObjectDisposedException.ThrowIf(_isDisposed, this);
+		cancellationToken.ThrowIfCancellationRequested();
+		CancellationToken.ThrowIfCancellationRequested();
 
 		var tcs = new TaskCompletionSource<TReply>();
 		var replyChannel = new ReplyChannel<TReply>(reply =>

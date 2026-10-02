@@ -24,7 +24,6 @@ public class UiContext
 		FileSystemModel fileSystem,
 		ClientConfigModel config,
 		ApplicationSettings applicationSettings,
-		TransactionBroadcasterModel transactionBroadcaster,
 		AmountProvider amountProvider,
 		EditableSearchSource editableSearchSource,
 		TorStatusCheckerModel torStatusChecker,
@@ -41,7 +40,6 @@ public class UiContext
 		FileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
 		Config = config ?? throw new ArgumentNullException(nameof(config));
 		ApplicationSettings = applicationSettings ?? throw new ArgumentNullException(nameof(applicationSettings));
-		TransactionBroadcaster = transactionBroadcaster ?? throw new ArgumentNullException(nameof(transactionBroadcaster));
 		AmountProvider = amountProvider ?? throw new ArgumentNullException(nameof(amountProvider));
 		EditableSearchSource = editableSearchSource ?? throw new ArgumentNullException(nameof(editableSearchSource));
 		TorStatusChecker = torStatusChecker ?? throw new ArgumentNullException(nameof(torStatusChecker));
@@ -59,7 +57,6 @@ public class UiContext
 	public FileSystemModel FileSystem { get; }
 	public ClientConfigModel Config { get; }
 	public ApplicationSettings ApplicationSettings { get; }
-	public TransactionBroadcasterModel TransactionBroadcaster { get; }
 	public AmountProvider AmountProvider { get; }
 	public EditableSearchSource EditableSearchSource { get; }
 	public TorStatusCheckerModel TorStatusChecker { get; }
