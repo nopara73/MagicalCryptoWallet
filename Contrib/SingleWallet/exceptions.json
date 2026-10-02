@@ -448,5 +448,11 @@
     "line": 1,
     "line_sha256": "ef02f8d104f053ea2167d95858f8ba91a3463fc8cae05c3f531d3147e54d59e8",
     "reason": "Frozen legacy RPC JSON conformance input preserves its recorded hash; it does not restore wallet selection."
+  },
+  {
+    "path": "mcw/tests/bitcoin_block_fixtures/managed_callers.tsv",
+    "line": 202,
+    "line_sha256": "c1fd85e2dd80bb5a3c3b11ea22efdaa7da13ec36918d87ce2efc077003e28f24",
+    "reason": "Immutable migration caller snapshot records the removed standalone broadcast model; it is not an active application caller."
   }
 ]
