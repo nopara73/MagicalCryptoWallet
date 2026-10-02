@@ -1,0 +1,91 @@
+diff --git a/MagicalCryptoWallet.Tests/MagicalCryptoWallet.Tests.csproj b/MagicalCryptoWallet.Tests/MagicalCryptoWallet.Tests.csproj
+index 048e7ee6f7..954ead3137 100644
+--- a/MagicalCryptoWallet.Tests/MagicalCryptoWallet.Tests.csproj
++++ b/MagicalCryptoWallet.Tests/MagicalCryptoWallet.Tests.csproj
+@@ -6,6 +6,7 @@
+ 		<NoWarn>1701;1702;1705;1591;CA1031;CA1822</NoWarn>
+ 		<OutputType>Exe</OutputType>
+ 		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
++		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+ 
+ 		<!-- https://xunit.net/docs/getting-started/v3/microsoft-testing-platform -->
+ 		<UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
+@@ -69,4 +70,9 @@
+ 		<Compile Include="..\Contrib\Tests\RegTestRpcProviders.cs" Link="Infrastructure\RegTestRpcProviders.cs" />
+ 	</ItemGroup>
+ 
++	<ItemGroup>
++		<ProjectReference Include="..\MagicalCryptoWallet.Client\MagicalCryptoWallet.Client.csproj" />
++		<Compile Include="..\mcw\tests\psbt_metadata_managed_fixture.cs" Link="Infrastructure\McwManagedTestHost.cs" />
++	</ItemGroup>
++
+ </Project>
+diff --git a/MagicalCryptoWallet.Tests/ModuleInitializer.cs b/MagicalCryptoWallet.Tests/ModuleInitializer.cs
+index 91caccdb6a..6578e76fd2 100644
+--- a/MagicalCryptoWallet.Tests/ModuleInitializer.cs
++++ b/MagicalCryptoWallet.Tests/ModuleInitializer.cs
+@@ -10,6 +10,8 @@ public static class ModuleInitializer
+ 	[ModuleInitializer]
+ 	internal static void Initialize()
+ 	{
++		global::MagicalCryptoWallet.Tests.Infrastructure.McwManagedTestHost.Initialize();
++
+ 		// Make sure that MagicalCryptoWallet.ModuleInitializer is initialized before running the tests.
+ 		RuntimeHelpers.RunClassConstructor(typeof(MagicalCryptoWallet.ModuleInitializer).TypeHandle);
+ 
+diff --git a/MagicalCryptoWallet.Client/Application/ManagedApplicationHost.cs b/MagicalCryptoWallet.Client/Application/ManagedApplicationHost.cs
+index 21902e3129..229813afd0 100644
+--- a/MagicalCryptoWallet.Client/Application/ManagedApplicationHost.cs
++++ b/MagicalCryptoWallet.Client/Application/ManagedApplicationHost.cs
+@@ -76,7 +76,16 @@ public sealed class ManagedApplicationHost : IDisposable, IMcwApplicationService
+     public static ManagedApplicationHost Connect()
+     {
+         if (Current is not null) { throw new InvalidOperationException("The application already has a host connection."); }
+-        var host = new ManagedApplicationHost(Console.OpenStandardInput(), Console.OpenStandardOutput());
++        return Connect(Console.OpenStandardInput(), Console.OpenStandardOutput());
++    }
++
++    /// <summary>Connect using owned protocol streams, including an isolated test runner's reserved pipe.</summary>
++    public static ManagedApplicationHost Connect(Stream input, Stream output)
++    {
++        ArgumentNullException.ThrowIfNull(input);
++        ArgumentNullException.ThrowIfNull(output);
++        if (Current is not null) { throw new InvalidOperationException("The application already has a host connection."); }
++        var host = new ManagedApplicationHost(input, output);
+         // Only the binary protocol may use stdout. Capture the stream first.
+         Console.SetOut(Console.Error);
+         Current = host;
+diff --git a/MagicalCryptoWallet.IntegrationTests/MagicalCryptoWallet.IntegrationTests.csproj b/MagicalCryptoWallet.IntegrationTests/MagicalCryptoWallet.IntegrationTests.csproj
+index 0af359e91d..7403da4874 100644
+--- a/MagicalCryptoWallet.IntegrationTests/MagicalCryptoWallet.IntegrationTests.csproj
++++ b/MagicalCryptoWallet.IntegrationTests/MagicalCryptoWallet.IntegrationTests.csproj
+@@ -6,6 +6,7 @@
+ 		<NoWarn>1701;1702;1705;1591;CA1031;CA1822</NoWarn>
+ 		<OutputType>Exe</OutputType>
+ 		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
++		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+ 
+ 		<!-- https://xunit.net/docs/getting-started/v3/microsoft-testing-platform -->
+ 		<UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
+@@ -51,4 +52,8 @@
+ 		<Compile Include="..\Contrib\Tests\RegTestRpcProviders.cs" Link="Infrastructure\RegTestRpcProviders.cs" />
+ 	</ItemGroup>
+ 
++	<ItemGroup>
++		<Compile Include="..\mcw\tests\psbt_metadata_managed_fixture.cs" Link="Infrastructure\McwManagedTestHost.cs" />
++	</ItemGroup>
++
+ </Project>
+diff --git a/MagicalCryptoWallet.IntegrationTests/ModuleInitializer.cs b/MagicalCryptoWallet.IntegrationTests/ModuleInitializer.cs
+index 475928c70f..69f657a6f8 100644
+--- a/MagicalCryptoWallet.IntegrationTests/ModuleInitializer.cs
++++ b/MagicalCryptoWallet.IntegrationTests/ModuleInitializer.cs
+@@ -7,6 +7,8 @@ public static class ModuleInitializer
+ 	[ModuleInitializer]
+ 	internal static void Initialize()
+ 	{
++		global::MagicalCryptoWallet.Tests.Infrastructure.McwManagedTestHost.Initialize();
++
+ 		// Make sure that MagicalCryptoWallet.ModuleInitializer is initialized before running the tests.
+ 		RuntimeHelpers.RunClassConstructor(typeof(MagicalCryptoWallet.ModuleInitializer).TypeHandle);
+ 	}

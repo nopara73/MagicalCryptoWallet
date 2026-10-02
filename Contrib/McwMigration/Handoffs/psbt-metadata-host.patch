@@ -1,8 +1,8 @@
 diff --git a/mcw/src/app.rs b/mcw/src/app.rs
-index 1906e36d56..f5860bbe6f 100644
+index db122d7655..cbc709559a 100644
 --- a/mcw/src/app.rs
 +++ b/mcw/src/app.rs
-@@ -127,6 +127,7 @@ fn host(
+@@ -130,6 +130,7 @@ fn host(
      let mut closing = false;
      let mut stopping = None;
      let handshake_deadline = Instant::now() + Duration::from_secs(15);
@@ -10,7 +10,7 @@ index 1906e36d56..f5860bbe6f 100644
      loop {
          if let Some(status) = child.process.try_wait()? {
              // Drain already queued handoffs even if the process exited immediately.
-@@ -140,6 +141,7 @@ fn host(
+@@ -143,6 +144,7 @@ fn host(
                      &mut handoff,
                      &mut closing,
                      bootstrap,
@@ -18,7 +18,7 @@ index 1906e36d56..f5860bbe6f 100644
                  );
              }
              return Ok((
-@@ -181,7 +183,9 @@ fn host(
+@@ -184,7 +186,9 @@ fn host(
                      &mut handoff,
                      &mut closing,
                      bootstrap,
@@ -28,23 +28,15 @@ index 1906e36d56..f5860bbe6f 100644
                      eprintln!("mcw: {error}");
                      broken = true;
                      let _ = Frame {
-@@ -195,6 +199,7 @@ fn host(
+@@ -198,6 +202,7 @@ fn host(
                  }
              }
-             Ok(Ok(None)) | Err(mpsc::RecvTimeoutError::Disconnected) => {
+             Event::Closed(failure) => {
 +                psbt_metadata.clear();
-                 // Unannounced EOF is the same failure signal observed by the child.
-                 // Do not return early and orphan a child still cleaning up its wallet.
-                 if stopping.is_none() {
-@@ -211,6 +216,7 @@ fn host(
-                 std::thread::sleep(Duration::from_millis(50));
-             }
-             Ok(Err(error)) => {
-+                psbt_metadata.clear();
-                 eprintln!("mcw: {error}");
-                 broken = true;
-                 let _ = Frame {
-@@ -234,6 +240,7 @@ fn dispatch(
+                 if let Some(failure) = failure {
+                     eprintln!("mcw: {}", failure.error);
+                     broken = true;
+@@ -232,6 +237,7 @@ fn dispatch(
      handoff: &mut Handoff,
      closing: &mut bool,
      bootstrap: &[u8],
@@ -52,7 +44,7 @@ index 1906e36d56..f5860bbe6f 100644
  ) -> io::Result<()> {
      if !*ready {
          if frame.kind != bridge::HELLO
-@@ -252,6 +259,7 @@ fn dispatch(
+@@ -250,6 +256,7 @@ fn dispatch(
          && (frame.operation == bridge::QR || frame.operation >= 0x0100)
          && frame.payload.is_empty()
      {
@@ -60,7 +52,7 @@ index 1906e36d56..f5860bbe6f 100644
          return Ok(());
      }
      if frame.kind != bridge::REQUEST || frame.id == 0 {
-@@ -263,6 +271,12 @@ fn dispatch(
+@@ -261,6 +268,12 @@ fn dispatch(
              frame.reply(Vec::new()).write(output)
          }
          bridge::QR => bridge::encode_qr(frame).write(output),
@@ -73,16 +65,3 @@ index 1906e36d56..f5860bbe6f 100644
          bridge::RESTART | bridge::CRASH | bridge::UPDATE => {
              let args = match bridge::strings(&frame.payload) {
                  Ok(args) => args,
-diff --git a/mcw/src/lib.rs b/mcw/src/lib.rs
-index 92dda7f8b4..53dd0dbd24 100644
---- a/mcw/src/lib.rs
-+++ b/mcw/src/lib.rs
-@@ -15,6 +15,8 @@ pub mod platform;
- pub mod png;
- pub mod privacy_service;
- pub mod psbt;
-+pub mod psbt_metadata;
-+pub mod psbt_metadata_service;
- pub mod qr;
- pub mod script_service;
- pub mod socks5;

@@ -16,8 +16,12 @@ factory call sites. The QR integrator owns `mcw/src/lib.rs`, `app.rs`, bridge,
 Cargo, CLI, platform, packaging, and the migration ledger. The prepared
 `psbt-metadata-host.patch` is for idle shared-owner incorporation.
 `psbt-metadata-caller.patch` contains the factory change and helper deletion;
-`psbt-metadata-activation.patch` combines both. Host routing, caller activation,
-and the integrator's real-host managed-test fixture must be incorporated
+`psbt-metadata-tests.patch` prepares the real-host fixture in both managed test
+projects and a small owned-stream connection overload in ManagedApplicationHost.
+`psbt-metadata-ci.patch` routes the existing managed CI commands through the
+actual packaged host. `psbt-metadata-activation.patch` combines all four patches.
+Host routing, caller activation, the real-host managed-test fixture and its CI
+runner commands must be incorporated
 atomically. The patches do not change the active host checkout or the 1 MiB
 bridge frame ceiling.
 
@@ -98,7 +102,11 @@ Offsets and counts are checked before allocating or appending. A malformed
 append/commit/read for a recognized session deletes its provisional upload/result. Only a complete upload
 can commit; only a complete, ordered result can reach the retained signer.
 Final read automatically drops the native result. Abort is idempotent. The
-host's request-ID cancellation drops the associated provisional session, EOF
+host's request-ID cancellation drops sessions tagged by a processed request. A
+queued request removed by the shared inbox has not tagged its session yet;
+the production adapter's known-session abort and connection cleanup remain
+authoritative for that case. Retaining removed-request context in the shared
+inbox is needed before claiming session-specific queued cancellation cleanup. EOF
 and protocol failure clear all sessions, and restart/connection destruction
 drops their owner. Managed error paths abort their known session, and the
 existing reader drains late replies. Buffer clearing is best effort, not a
@@ -120,10 +128,14 @@ finalized/part-finalized inputs, origin replacement, v2 and witnessed parents.
 ./mcw/tests/psbt_metadata_verify.ps1
 ./mcw/tests/psbt_metadata_verify.ps1 -Optimized
 ./mcw/tests/psbt_metadata_host_patch.ps1
+./mcw/tests/psbt_metadata_suite_patch.ps1
 ./mcw/tests/psbt_metadata_host_verify.ps1 -BuildOnly
 ./mcw/tests/psbt_metadata_host_verify.ps1 -NativeApplication <fresh-integrated-mcw.exe>
 # Before shared activation, select a tracked-source snapshot with the complete patch:
 ./mcw/tests/psbt_metadata_host_verify.ps1 -CoreSourceRoot <activation-snapshot> -NativeApplication <snapshot-mcw.exe>
+./mcw/tests/psbt_metadata_suite_verify.ps1 -CoreSourceRoot <activation-snapshot> -NativeApplication <snapshot-mcw.exe>
+./mcw/tests/psbt_metadata_suite_verify.ps1 -NativeApplication <fresh-integrated-mcw.exe> -FilterNamespace '*UnitTests*'
+./mcw/tests/psbt_metadata_suite_verify.ps1 -NativeApplication <fresh-integrated-mcw.exe> -TestProject MagicalCryptoWallet.IntegrationTests -AllTests
 ```
 
 Verifiers hold a shared build slot only during actual compilation/testing,
@@ -146,7 +158,8 @@ the exact published integration must pass again before completion.
 It uses no real wallet or broadcaster. Until the shared routing patch is
 incorporated and that exact native application passes this probe, production
 host integration remains pending. Existing managed transaction tests also need
-the integrator's shared real-host fixture; there is no test-only legacy fallback.
+the prepared real-host fixture incorporated with their runner commands; there
+is no test-only legacy fallback.
 
 NBitcoin remains a required managed package for builders, signer, keys, scripts,
 typed PSBT results and other live callers. This leaf adds no external Rust
@@ -179,3 +192,26 @@ hash recorded. No source-graph stubs or removed daemon mode were used.
 This is candidate integration evidence. Published shared routing, the managed
 suite fixture, and verification of that exact published application remain
 pending; the currently published caller still uses its original helpers.
+
+The newer published source `76b5c878cc` plus the complete activation candidate
+passes all 56 selected existing wallet regressions through the real host:
+20 TransactionFactory, four WalletOperationAuthorization and 32 SoftwareWallet
+tests. Both managed test projects compile with zero warnings/errors; four
+CoreConfig tests also pass through the integration-project fixture. These four
+checks prove integration-runner binding and shutdown, not node-backed wallet
+integration. Evidence:
+`.artifacts/mcw-psbt/.artifacts/psbt-metadata-suite/20261002-220529-048-16398642/evidence.json`
+and `.artifacts/mcw-psbt/.artifacts/psbt-metadata-suite/20261002-220815-026-279b2b14/evidence.json`.
+The candidate native executable builds with warnings denied and the actual
+first-party Cargo graph has one package and no external dependencies.
+
+MTP may open OS stdout directly. The fixture reserves the original protocol
+pipe, redirects runner output to stderr inside its own process, and binds the
+real ManagedApplicationHost before runner startup. Its xUnit startup hook checks
+the real binding and disposes it at shutdown. The same test-only fixture is
+prepared for both test projects; CI runner deltas use the existing packaged mcw.
+No mock transport, serializer fallback, service stub or extra shipping executable
+is introduced. Windows execution is verified; Unix pipe reservation and native
+package execution still require the shared owner's Linux/macOS checks. Source
+and publication IDs remain candidate evidence until atomic shared activation
+and exact published-host verification are complete.
