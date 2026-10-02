@@ -203,7 +203,9 @@ def prepare(directory: Path) -> None:
 def differential(directory: Path, executable: Path, evidence: Path) -> None:
     manifest = json.loads((FIXTURES / "manifest.json").read_text())
     for name, expected in manifest["files"].items():
-        assert sha((FIXTURES / name).read_bytes()) == expected
+        # Tracked text may have CRLF after checkout on Windows; hashes are the
+        # canonical LF Git contents. Ignored downloaded references stay byte-exact.
+        assert sha((FIXTURES / name).read_bytes().replace(b"\r\n", b"\n")) == expected
     core = core_reference(directory, manifest["sources"])
     randomizer = random.Random(SEED)
     requests, expected, counts = [], [], {}

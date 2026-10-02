@@ -11,6 +11,10 @@ $toolBin = Join-Path $SharedRoot '.artifacts/mcw-tools/rustup/toolchains/1.99.0-
 $rustc = Join-Path $toolBin 'rustc.exe'
 New-Item -ItemType Directory -Force -Path $harnessRoot | Out-Null
 function Source-Hash([string]$Path) { (Get-FileHash -LiteralPath $Path -Algorithm SHA256).Hash.ToLowerInvariant() }
+function Text-Hash([string]$Path) {
+    $canonical = [IO.File]::ReadAllText($Path).Replace("`r`n", "`n")
+    [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData([Text.Encoding]::UTF8.GetBytes($canonical))).ToLowerInvariant()
+}
 $sources = [ordered]@{}
 foreach ($name in 'bitcoin_encoding', 'bitcoin_wire', 'bitcoin_block') {
     $sources[$name] = Join-Path $repoRoot ('mcw/src/' + $name + '.rs')
@@ -25,7 +29,7 @@ $sourceHashes['driver'] = Source-Hash $driverSource
 $manifestPath = Join-Path $PSScriptRoot 'bitcoin_block_fixtures/manifest.json'
 $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
 foreach ($file in $manifest.files.PSObject.Properties) {
-    if ((Source-Hash (Join-Path $PSScriptRoot ('bitcoin_block_fixtures/' + $file.Name))) -ne $file.Value) { throw ('Fixture hash mismatch: ' + $file.Name) }
+    if ((Text-Hash (Join-Path $PSScriptRoot ('bitcoin_block_fixtures/' + $file.Name))) -ne $file.Value) { throw ('Fixture hash mismatch: ' + $file.Name) }
 }
 $buildHandle = $null
 try {
