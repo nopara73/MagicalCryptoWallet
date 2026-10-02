@@ -41,6 +41,7 @@ def main():
     # Review-only source belongs below Cargo's auto-discovered integration tests.
     files.discard("mcw/tests/compression_content_inbox_tests.rs")
     files.add("mcw/tests/compression_fixtures/content_inbox_tests.rs")
+    files.add("mcw/tests/compression_fixtures/content_raw_host.cs")
     files = {p for p in files if not p.startswith((
         "MagicalCryptoWallet/BundledApps/Binaries/", "MagicalCryptoWallet/Tor/Geoip/"))}
     for directory in ("mcw/src/content_service", "MagicalCryptoWallet/Mcw/Content"):
@@ -63,7 +64,8 @@ def main():
     if args.integrated:
         assert "pub mod content_service;" in (repo / "mcw/src/lib.rs").read_text()
         app = (repo / "mcw/src/app.rs").read_text()
-        assert "content_adapter::OPERATION =>" in app and "content_adapter::execute(" in app
+        assert "content_adapter::OPERATION =>" in app or "crate::content_service::adapter::OPERATION =>" in app
+        assert "content_adapter::execute(" in app or "crate::content_service::adapter::execute(" in app
         assert "inbox.is_interrupted(frame.id, frame.operation)" in app, "Real host interruption hook required"
         assert "fn is_interrupted(" in (repo / "mcw/src/app/inbox.rs").read_text()
         factory = (repo / "MagicalCryptoWallet/WebClients/MagicalCryptoWallet/MagicalCryptoWalletHttpClientFactory.cs").read_text()
@@ -90,6 +92,7 @@ def main():
     ET.SubElement(items, "ProjectReference", {"Include": "../MagicalCryptoWallet/MagicalCryptoWallet.csproj"})
     ET.SubElement(items, "Compile", {"Include": "../MagicalCryptoWallet.Client/Application/ManagedApplicationHost.cs"})
     ET.SubElement(items, "Compile", {"Include": "../mcw/tests/compression_content_host_fixture.cs"})
+    ET.SubElement(items, "Compile", {"Include": "../mcw/tests/compression_fixtures/content_raw_host.cs"})
     ET.indent(project)
     ET.ElementTree(project).write(fixture / "ContentActualHost.csproj", encoding="unicode")
     record = {

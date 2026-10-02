@@ -1,6 +1,6 @@
-// Compiled by compression_content_inbox_verify.ps1 with source-hashed copies of
-// the real host Inbox/Frame and one review-only interruption-query hook.
-// This is a synchronized component proof, not production host integration.
+// Compiled by the current-source portable verifier, or the historical review
+// verifier, with exact source-hashed host Inbox/Frame modules. No Cargo target.
+// This synchronized component proof complements the shipping-host wire proof.
 use crate::content_service::Abort;
 use crate::{
     bridge,
@@ -219,7 +219,7 @@ impl Ingress {
     }
     fn fill(&mut self) {
         for id in 1..=QUEUE as u64 {
-            self.send(request(id));
+            self.send(request(ACTIVE + id));
         }
     }
     fn eof(&mut self) {
@@ -268,7 +268,7 @@ fn in_flight_cancel_is_read_while_request_queue_is_saturated() {
         matches!(inbox.receive(Duration::ZERO), Event::Frame(f) if f.kind == bridge::CANCEL && f.id == ACTIVE)
     );
     for id in 1..=QUEUE as u64 {
-        assert!(matches!(inbox.receive(Duration::ZERO), Event::Frame(f) if f.id == id));
+        assert!(matches!(inbox.receive(Duration::ZERO), Event::Frame(f) if f.id == ACTIVE + id));
     }
     assert!(matches!(inbox.receive(Duration::ZERO), Event::Timeout));
 }
@@ -277,21 +277,21 @@ fn in_flight_cancel_is_read_while_request_queue_is_saturated() {
 fn queued_cancel_removes_work_and_leaves_active_and_siblings_usable() {
     let (inbox, worker, mut ingress) = setup();
     ingress.fill();
-    ingress.send(cancel(128, adapter::OPERATION));
-    ingress.send(cancel(128, adapter::OPERATION)); // bounded deduplication
-    ingress.send(request(257)); // proves the queue slot was recovered
+    ingress.send(cancel(ACTIVE + 128, adapter::OPERATION));
+    ingress.send(cancel(ACTIVE + 128, adapter::OPERATION)); // bounded deduplication
+    ingress.send(request(ACTIVE + 257)); // proves the queue slot was recovered
     assert!(!inbox.is_interrupted(ACTIVE, adapter::OPERATION));
     worker.finish(false);
     assert!(
-        matches!(inbox.receive(Duration::ZERO), Event::Frame(f) if f.kind == bridge::CANCEL && f.id == 128)
+        matches!(inbox.receive(Duration::ZERO), Event::Frame(f) if f.kind == bridge::CANCEL && f.id == ACTIVE + 128)
     );
     let mut dispatched = Vec::new();
     while let Event::Frame(f) = inbox.receive(Duration::ZERO) {
         dispatched.push(f.id);
     }
     assert_eq!(dispatched.len(), QUEUE);
-    assert!(!dispatched.contains(&128));
-    assert_eq!(dispatched.last(), Some(&257));
+    assert!(!dispatched.contains(&(ACTIVE + 128)));
+    assert_eq!(dispatched.last(), Some(&(ACTIVE + 257)));
 }
 
 #[test]
@@ -313,7 +313,7 @@ fn in_flight_eof_clears_a_saturated_queue_and_withholds_partial_body() {
     assert!(inbox.is_interrupted(ACTIVE, adapter::OPERATION));
     worker.finish(true);
     assert!(matches!(inbox.receive(Duration::ZERO), Event::Closed(None)));
-    assert!(!inbox.push(request(257)));
+    assert!(!inbox.push(request(ACTIVE + 257)));
 }
 
 #[test]
@@ -327,7 +327,7 @@ fn in_flight_protocol_failure_withholds_partial_body_and_discards_queue() {
             inbox.receive(Duration::ZERO),
             Event::Closed(Some(_))
         ));
-        assert!(!inbox.push(request(257)));
+        assert!(!inbox.push(request(ACTIVE + 257)));
     }
 }
 
@@ -335,7 +335,7 @@ fn in_flight_protocol_failure_withholds_partial_body_and_discards_queue() {
 fn in_flight_request_overload_closes_ingress_and_aborts_partial_decode() {
     let (inbox, worker, mut ingress) = setup();
     ingress.fill();
-    request(257).write(&mut ingress.socket).unwrap();
+    request(ACTIVE + 257).write(&mut ingress.socket).unwrap();
     assert!(matches!(
         ingress.events.recv_timeout(WAIT).unwrap(),
         ReadEvent::Failed
@@ -346,18 +346,18 @@ fn in_flight_request_overload_closes_ingress_and_aborts_partial_decode() {
     };
     assert_eq!(
         failure.reply,
-        Some(request(257).error(4, "application request queue limit exceeded"))
+        Some(request(ACTIVE + 257).error(4, "application request queue limit exceeded"))
     );
-    assert!(!inbox.push(request(258)));
+    assert!(!inbox.push(request(ACTIVE + 258)));
 }
 
 #[test]
 fn in_flight_control_overload_closes_ingress_and_aborts_partial_decode() {
     let (inbox, worker, mut ingress) = setup();
     for id in 1..=QUEUE as u64 {
-        ingress.send(cancel(id, adapter::OPERATION));
+        ingress.send(cancel(ACTIVE + id, adapter::OPERATION));
     }
-    cancel(257, adapter::OPERATION)
+    cancel(ACTIVE + 257, adapter::OPERATION)
         .write(&mut ingress.socket)
         .unwrap();
     assert!(matches!(
@@ -369,5 +369,5 @@ fn in_flight_control_overload_closes_ingress_and_aborts_partial_decode() {
         inbox.receive(Duration::ZERO),
         Event::Closed(Some(_))
     ));
-    assert!(!inbox.push(request(258)));
+    assert!(!inbox.push(request(ACTIVE + 258)));
 }

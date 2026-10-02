@@ -2,6 +2,7 @@
 // real cached factory/retry/transport, real SOCKS socket and real host adapter.
 // The loopback SOCKS fixture never connects to, or resolves, its requested target.
 using System;
+using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
@@ -15,6 +16,7 @@ using System.Threading.Tasks;
 using MagicalCryptoWallet.Client.Application;
 using MagicalCryptoWallet.FeeRateEstimation;
 using MagicalCryptoWallet.Logging;
+using MagicalCryptoWallet.Mcw;
 using MagicalCryptoWallet.Mcw.Content;
 using MagicalCryptoWallet.WebClients.MagicalCryptoWallet;
 
@@ -24,9 +26,11 @@ internal static class ContentHostFixture
 	private static readonly byte[] Plain = Encoding.UTF8.GetBytes("{\"fastestFee\":8.25,\"halfHourFee\":6,\"hourFee\":4,\"economyFee\":2}");
 	private static void Check(bool condition, string name)
 	{ if (!condition) { throw new InvalidOperationException(name); } }
-	public static async Task<int> Main()
+	public static async Task<int> Main(string[] arguments)
 	{
 		if (Environment.GetEnvironmentVariable("MCW_HOSTED") != "1") { throw new InvalidOperationException("Actual mcw host required."); }
+		if (arguments.Length != 0 && arguments[0].StartsWith("raw-", StringComparison.Ordinal))
+		{ return await ContentRawHost.Run(arguments).ConfigureAwait(false); }
 		using var host = ManagedApplicationHost.Connect();
 		Logger.Configure(filePath: Path.Combine(AppContext.BaseDirectory, "synthetic-content-fixture.log"), logModes: [LogMode.Console]);
 		var count = 0;
@@ -39,7 +43,9 @@ internal static class ContentHostFixture
 		await Caller("unknown", false, false, true).ConfigureAwait(false);count++;Console.WriteLine("HOST PASS unsupported-coding-withheld");
 		await ResponseMetadata().ConfigureAwait(false);count++;Console.WriteLine("HOST PASS actual-decoded-response-metadata");
 		await BodyAcquisitionCancellation().ConfigureAwait(false);count++;Console.WriteLine("HOST PASS retained-caller-body-acquisition-cancellation");
-		Console.WriteLine($"ACTUAL HOST RESULT: {count} passed; actual_application_host=true; synthetic_only=true");
+		await ReverseLayers(host).ConfigureAwait(false); count++; Console.WriteLine("HOST PASS four-reverse-coding-proofs");
+		count += await NativeBounds(host).ConfigureAwait(false);
+		Console.WriteLine($"ACTUAL CONTENT HOST RESULT: {count} passed; actual_application_host=true; synthetic_only=true");
 		return 0;
 	}
 	private static async Task Caller(string coding, bool chunked, bool corrupt, bool unsupported)
@@ -108,6 +114,51 @@ internal static class ContentHostFixture
 		if (coding == "identity") { return input; }using var output = new MemoryStream();
 		using (Stream encoder = coding switch { "gzip" => new GZipStream(output, CompressionLevel.Optimal, true), "deflate" => new ZLibStream(output, CompressionLevel.Optimal, true), "br" => new BrotliStream(output, CompressionLevel.Optimal, true), _ => throw new ArgumentException("oracle coding") })
 		{ encoder.Write(input); }return output.ToArray();
+	}
+	private static async Task ReverseLayers(ManagedApplicationHost host)
+	{
+		var encoded = Packed(Packed(Packed(Packed(Plain, "gzip"), "deflate"), "br"), "gzip");
+		var result = await McwContentDecoder.DecodeAsync(encoded, ["gzip", "deflate, br", "gzip"], host).ConfigureAwait(false);
+		Check(result.Bytes.SequenceEqual(Plain), "four reverse layers exact bytes");
+		Check(result.Layers.Select(v => v.Coding).SequenceEqual(new[] { McwContentCoding.Gzip, McwContentCoding.Brotli, McwContentCoding.Deflate, McwContentCoding.Gzip }), "four reverse layer order");
+		Check(result.Layers.All(v => v.InputLength == v.Consumed), "four reverse layers exact consumption");
+	}
+	internal static byte[] NativePacket(byte[] body, params string[] fields)
+	{
+		using var stream = new MemoryStream(); using var writer = new BinaryWriter(stream, Encoding.ASCII, true);
+		writer.Write((ushort)1); writer.Write((ushort)5000); writer.Write((byte)fields.Length); writer.Write((byte)0); writer.Write(body.Length);
+		foreach (var field in fields) { var bytes = Encoding.ASCII.GetBytes(field); writer.Write((ushort)bytes.Length); writer.Write(bytes); }
+		writer.Write(body); return stream.ToArray();
+	}
+	private static async Task<int> NativeBounds(ManagedApplicationHost host)
+	{
+		var good = NativePacket(Plain);
+		var cases = new List<(string Name, byte[] Packet, ushort Failure)> {
+			("empty-packet", [], 1), ("short-packet", new byte[9], 1),
+			("truncated-body", good[..^1], 1), ("trailing-body", good.Concat(new byte[1]).ToArray(), 1),
+			("encoded-body-bound", NativePacket(new byte[McwContentDecoder.MaxBody + 1]), 1),
+			("field-bound", NativePacket([], new string('x', McwContentDecoder.MaxField + 1)), 1),
+			("field-count-bound", NativePacket([], "identity", "identity", "identity", "identity", "identity"), 1),
+			("coding-count-bound", NativePacket([], "identity,identity,identity,identity,identity"), 4),
+			("invalid-encoding", NativePacket(Plain, "gzip\n"), 2),
+			("unsupported-encoding", NativePacket(Plain, "unknown"), 3),
+			("decoded-body-bound", NativePacket(Packed(Enumerable.Range(0, McwContentDecoder.MaxBody + 1).Select(i => (byte)i).ToArray(), "gzip"), "gzip"), 8),
+		};
+		foreach (var pair in new[] { (Index: 0, Value: (byte)2, Name: "packet-version"), (Index: 5, Value: (byte)1, Name: "reserved-byte") })
+		{ var changed = good.ToArray(); changed[pair.Index] = pair.Value; cases.Add((pair.Name, changed, 1)); }
+		foreach (ushort timeout in new ushort[] { 0, 5001 })
+		{ var changed = good.ToArray(); BinaryPrimitives.WriteUInt16LittleEndian(changed.AsSpan(2), timeout); cases.Add(("deadline-bound-" + timeout, changed, 1)); }
+		using var limit = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+		foreach (var item in cases)
+		{
+			var reply = await ((IMcwApplicationServices)host).RequestAsync(McwContentDecoder.Operation, item.Packet, limit.Token).ConfigureAwait(false);
+			Check(reply.Length == 22 && reply[0] == 1 && reply[1] == 0 && reply[2] == 1, "private bounded native failure framing");
+			Check(BinaryPrimitives.ReadUInt16LittleEndian(reply.AsSpan(3)) == item.Failure, "native classification " + item.Name);
+			Array.Clear(reply); Console.WriteLine("HOST PASS native-boundary " + item.Name);
+		}
+		var after = await McwContentDecoder.DecodeAsync(Plain, [], host, limit.Token).ConfigureAwait(false);
+		Check(after.Bytes.SequenceEqual(Plain), "connection usable after malformed packets");
+		Console.WriteLine("HOST PASS native-boundary-sibling-after-errors"); return cases.Count + 1;
 	}
 	private sealed class SpyFactory(Uri proxy) : OnionHttpClientFactory(proxy)
 	{

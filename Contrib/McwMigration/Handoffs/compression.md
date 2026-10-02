@@ -2,11 +2,11 @@
 
 The accepted caller is **`MempoolSpace-bitcoin-fee-rate-provider`**, created by
 `FeeRateProviders.MempoolSpaceAsync`. This work replaces only that small response
-body's decoder. A historical native-host/retained-caller fixture passes with
-test-local shared patches; its cancellation case stalls HTTP body acquisition.
-Production registration, cancellation hooks and factory incorporation remain
-with their owners; an unused leaf or a test-local patch is not a completed
-production cutover.
+body's decoder. A current composed-source Windows fixture passes with the actual
+Core, cached factory, ManagedApplicationHost and supplied shipping native binary,
+without shared patches. It covers 26 retained-caller/boundary cases and native
+partial-work CANCEL, EOF and saturation. Final frozen-source publication and
+five-platform packaging/CI acceptance remain with the host owner.
 
 Worker: `compression`, chat `01a0fc45-d443-7f93-aab1-3ba11b889a0e`.
 Coordinator: `01a0fc1e-7c20-76d3-bf81-cb1f68c9adb7`.
@@ -34,8 +34,10 @@ Owned paths are `mcw/src/compression.rs`, `mcw/src/content_service/**`,
 `mcw/tests/compression_*`, `MagicalCryptoWallet/Mcw/Content/**`, and this handoff.
 QR retains lib/Cargo/app/bridge/platform/lifecycle/packaging. Network retains
 factory and mechanical caller-interface changes. Prepared small shared patches
-are applied only in an ignored test snapshot; coordinator requests QR
-incorporation only while QR is idle. No active owner checkout is edited here.
+were applied only in ignored historical test snapshots. QR has composed the real
+registration, Inbox interruption hook and selected factory activation. The current
+portable proof uses these exact sources directly; no active owner checkout is
+edited here.
 
 The reviewed factory proposal caches the outer content handler for the exact named client,
 with its existing transport as the inner handler. That transport alone gets
@@ -161,7 +163,32 @@ NTDLL and SHELL32. This is Windows x64 fixture evidence; other target/runtime
 and complete product-release acceptance remain with the host owner. These facts
 are bound to the recorded historical sources and binary, not current master.
 
-`compression_content_inbox_verify.ps1 -ReviewRoot <prepared-review>` compiles exact
+The current composed-source proof uses
+`compression_content_host_portable.py --source-root <current> --native <shipping>
+--out <fresh-evidence>`. It builds actual Core and ManagedApplicationHost in
+isolated output, honors existing package locks, and stages an exact supplied
+native copy. **26 retained-caller/reverse-layer/malformed/boundary cases** pass
+with **0 warnings, 0 errors** and native exit **0**. Additional raw sessions require
+an actual **22-byte Cancelled failure**, positive input and partial output below
+the complete body size. CANCEL records input/output **675/672**, preserves a later
+sibling and exits **0**; EOF records **268873/268858** and drains shutdown before
+native exit **1**; saturation records **71883/71877**, exact ID258/code4 queue-limit
+failure and shutdown before exit **1**. All REQUEST IDs increase in wire order.
+No success body or startup-only cancellation can satisfy these checks.
+
+Evidence `.artifacts/compression-content/portable-host-a/verification.json`
+pins exact current source/fixture hashes and shipping SHA256
+`9a62a0d48f14312bf047d403b507a11d0c6f41d59aedfdbf4397ae2328e02eec`;
+before/after hashes match. It uses no candidate host patch or native rebuild.
+There is no shipping checkpoint acknowledgement, so the bounded injection search
+is explicitly **not** a deterministic native-checkpoint barrier. Actual partial
+counters establish in-flight work. Source composition subsequently continues;
+the immutable staged binary and earlier paired evidence are preserved, and the
+final frozen packaged pair must rerun this proof on all five native CI targets.
+Portable commands and acceptance details are in
+`mcw/tests/compression_fixtures/CONTENT_HOST.md`.
+
+Historical `compression_content_inbox_verify.ps1 -ReviewRoot <prepared-review>` compiles exact
 copied host Inbox/Frame/QR sources, the one review-only query, and the actual owned
 adapter/codecs. Its source is `mcw/tests/compression_fixtures/content_inbox_tests.rs`,
 outside Cargo's automatically discovered integration-test roots; only this verifier
@@ -175,6 +202,16 @@ interruption requires nonzero partial-output counters below the complete size an
 only the 22-byte typed failure packet. No sleep determines when work has started.
 This test uses a synthetic loopback stream and never runs the real application
 host; its passing results do not satisfy the real-host incorporation gates.
+
+`compression_content_inbox_portable.py --source-root <current> --rustc <compiler>
+--out <fresh-evidence>` instead compiles the actual current Inbox/Frame dependency
+closure and decoder sources with no shared hook or patch. Its seven existing
+checkpoint cases now respect the increasing request-ID contract. This current
+deterministic component proof complements, and remains distinct from, the supplied
+shipping binary's actual pipe/dispatch interruption proof.
+**Seven debug + seven optimized synchronized cases** pass against exact unpatched
+current sources, recorded in `.artifacts/compression-content/current-inbox-c/verification.json`;
+source and fixture hashes remain stable. The historical review evidence is retained.
 
 Evidence is under `.artifacts/compression/`, `.artifacts/compression-content/`,
 and `.artifacts/compression-content/actual-host/snapshot-e/.artifacts/`.
@@ -208,13 +245,14 @@ and network/factory hunks plus exact originals, source roots and SHA256. It
 refuses the old blocking-reader contract and never edits active owner files.
 Coordinator delivers host incorporation only when QR is idle;
 network applies its own factory hunks after leaf publication and host dispatch.
-Run `compression_content_host_prepare.py --integrated` against exact incorporated
-master after real registration, the interruption hook and selected factory
-activation. It applies no local shared patches and must be followed by the actual
-host verifier. Its nine retained-caller cases cover body acquisition cancellation;
-meaningful synchronized native in-flight cancellation/EOF/queue proof through that
-incorporated host is a separate unsatisfied gate. Prepared/tested hunks alone are
-pending. The queued factory baseline differs from the tested historical baseline.
+Use the portable host runner against the final incorporated sources and their
+exact packaged shipping native binary. QR registers it in all five platform jobs.
+The legacy `compression_content_host_prepare.py --integrated` also accepts the
+current fully qualified dispatcher and builds 26 retained-caller cases without
+shared patches; its legacy runner still covers HTTP body acquisition cancellation
+only. The portable runner provides actual native partial-work CANCEL/EOF/saturation
+evidence. Current composed Windows evidence is verified; exact final-master and
+other-platform results remain pending until the owner publishes and reruns them.
 
 Other response clients keep managed AutomaticDecompression, including coordinator,
 exchange, CPFP, broadcaster, other fee providers and installer streams.
