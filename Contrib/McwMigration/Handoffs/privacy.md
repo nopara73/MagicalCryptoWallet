@@ -4,10 +4,13 @@ Worker: `01a0fc5c-d23b-7400-8819-68134acaf062`; operation reservation `0x0F00–
 Initial current-remote source: `7f5f7ca8a297060d3826769aa9820948e89c7713`.
 Isolated checkout: `.artifacts/mcw-privacy-20261002`.
 
-**Subsystem in progress. Protocol checkpoint only.** Production Tor remains
+**Full Tor/backend expansion stopped by the human scope correction on 2026-10-02.**
+Published protocol checkpoint: `5d7d2c06de698ff3f5122b3c9e916c220f934135`,
+verified as an ancestor of remote `master`. Production Tor remains
 managed/bundled; no privacy dependency has been removed, and no self-contained or
-wallet/mainnet-readiness claim is made. Continuing work must not retire the daemon
-on the strength of these tests.
+wallet/mainnet-readiness claim is made. The daemon must not be retired on the strength of these tests. No further full
+Tor, TLS, curve, storage, UI or CoinJoin implementation is authorized by this
+checkpoint. Preserve the existing source and evidence.
 
 ## Ownership and caller declaration
 
@@ -74,7 +77,7 @@ removed those dependencies. Linux payloads retain libssl/libcrypto/libevent/
 libstdc++; macOS payload retains libevent and the Tor executable. License notices
 also require per-build provenance, particularly static libraries.
 
-## Cutover gates and current external interface blockers
+## Former broad cutover gates (audit only; not an active assignment)
 
 The network peer confirmed authenticated TLS is **not implemented** yet. Tor needs
 a distinct provisional TLS link returning bounded exact leaf DER, with no
@@ -82,7 +85,8 @@ resumption, compression, client auth, domain DNS/SNI or application/circuit cell
 before CERTS proves the expected relay identity. Normal HTTPS keeps its separate
 PKIX policy; no general certificate-bypass switch is acceptable. Missing actual
 TLS/curve primitive APIs are a concrete upstream interface blocker for relay
-execution, while independent privacy-domain implementation continues.
+execution. The human subsequently stopped the broad privacy-domain expansion;
+these are recorded obligations rather than authorization to continue it.
 
 Still required: real Ed25519 certificate authentication (network/crypto ownership
 has no existing verifier), RSA authority/key-cert and consensus authentication,
@@ -100,3 +104,21 @@ network interoperability, privacy/security review, recovery/crash safety and all
 five target runtime/package/import audits are required before deleting Tor,
 OpenSSL, Libevent, zlib or any retained bridge implementation. Every state must
 have one authoritative owner. Tor state/files/guard authority has not moved here.
+
+## Bounded caller replacement audit after scope correction
+
+The coordinator was sent the concrete small candidate: Tor control reply framing
+and parsing in `MagicalCryptoWallet/Tor/Control/TorControlReplyReader.cs`, whose
+production caller is `TorControlClient.ReaderLoopAsync`. It currently uses the
+managed `PipeReaderLineReaderExtension.ReadLineAsync`. These leaves have not been
+edited or registered pending the narrowed assignment. The old reply shape must
+be preserved for `ProtocolInfoReply` (terminal raw `250 OK`) and
+`GetInfoCircuitStatusReply` (data dot/terminal lines); ASCII bytes and literal
+backslashes must survive. Replies/events, multi-line/data replies, exact
+consumption, fragmentation, cancellation/EOF and bounded malformed inputs need
+independent compatibility evidence. There is no need to replace Tor or change
+transport/daemon/control authentication/wallet-state ownership for this candidate.
+
+All14 verified tests and19 native-file/99 caller-line audit evidence are preserved.
+No production service/legacy caller/package or shared host module was changed by
+this checkpoint.
