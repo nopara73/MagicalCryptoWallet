@@ -1,4 +1,4 @@
-# snapshot_revision=82127991068522210cdcf77080dc9b819502e486
+# snapshot_revision=6365f3244d23b801c0bb36581967caad8aae968e
 # category	path	line	source
 package	Contrib/Releases/Publisher/MagicalCryptoWallet.ReleaseTools.csproj	9	<PackageReference Include="NBitcoin" />
 direct_nbitcoin	Contrib/Releases/Publisher/Program.cs	3	using NBitcoin;
