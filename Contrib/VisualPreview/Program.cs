@@ -41,7 +41,7 @@ string destination = args.FirstOrDefault() ?? ".artifacts/rebrand/screenshots";
 Directory.CreateDirectory(destination);
 var context = (UiContext)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(UiContext));
 PasswordBoxChecks.Run();
-using var syntheticWallets = LurkingWifeModeChecks.Run(context, destination);
+LurkingWifeModeChecks.Initialize(context, destination);
 SingleWalletChecks.Run(context);
 AutomaticCoinSelectionChecks.Run(context);
 SoftwareWalletChecks.Run(context, destination);
@@ -132,6 +132,7 @@ foreach (var theme in new[] { ThemeVariant.Light, ThemeVariant.Dark })
     }
 }
 Console.WriteLine($"Rendered {capturedFrames} actual application captures: Welcome, About, password creation/authorization, Lurking Wife Mode, single-wallet sidebar/dashboard, setup, wallet actions, transaction preview, coins, settings, send, receive, recovery and recovery words in both themes at 100, 125, 150 and 200 percent.");
+using var syntheticWallets = LurkingWifeModeChecks.Run(context, destination);
 
 // Authorize is never invoked. Any attempt to use a wallet service fails immediately.
 public class InertPreviewWallet : DispatchProxy
