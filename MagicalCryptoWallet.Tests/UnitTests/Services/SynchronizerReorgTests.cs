@@ -1,3 +1,4 @@
+using MagicalCryptoWallet.TestInfrastructure;
 using NBitcoin;
 using System.Threading;
 using System.Threading.Tasks;
@@ -42,8 +43,8 @@ public class SynchronizerReorgTests(ITestOutputHelper output)
 		var fork = Fork.Create();
 		Proof($"RPC  filters={fork.Orphan.ToString()[..8]}…  headers={fork.Winner.ToString()[..8]}…  height={fork.Height}");
 
-		var result = await FilterProviders
-			.CreateBitcoinRpcFilterProvider(new MockRpcClient(), fork.BlockHeaders)
+		var result = await RegTestRpcProviders
+			.CreateFilterProvider(new MockRpcClient(), fork.BlockHeaders)
 			(fork.Height, fork.Orphan, CancellationToken.None);
 
 		Proof($"RPC  got {Describe(result)}  want BestBlockUnknown");

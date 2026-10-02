@@ -1,3 +1,4 @@
+using MagicalCryptoWallet.TestInfrastructure;
 using NBitcoin;
 using NBitcoin.RPC;
 using System.Collections.Generic;
@@ -25,7 +26,7 @@ public class FilterProvidersTests(ITestOutputHelper output)
 			OnGetBlockHashAsync = async height => { await Task.Delay(50); return height == 0 ? genesis : uint256.One; },
 			OnGetBlockFilterAsync = hash => Task.FromResult(CreateBlockFilter(hash))
 		};
-		var provider = FilterProviders.CreateBitcoinRpcFilterProvider(rpc, new ConcurrentChain(Network.RegTest));
+		var provider = RegTestRpcProviders.CreateFilterProvider(rpc, new ConcurrentChain(Network.RegTest));
 		var result = await provider(0, genesis, TestContext.Current.CancellationToken);
 		Assert.True(result.IsOk);
 		Assert.Single(Assert.IsType<FiltersResponse.NewFiltersAvailable>(result.Value).Filters);
@@ -60,7 +61,7 @@ public class FilterProvidersTests(ITestOutputHelper output)
 			}
 		};
 
-		var provider = FilterProviders.CreateBitcoinRpcFilterProvider(rpc, new ConcurrentChain(Network.Main));
+		var provider = RegTestRpcProviders.CreateFilterProvider(rpc, new ConcurrentChain(Network.Main));
 		var result = await provider(fromHeight: 0, fromHash: genesisHash, testCts.Token);
 
 		Assert.True(result.IsOk);
@@ -100,7 +101,7 @@ public class FilterProvidersTests(ITestOutputHelper output)
 
 		using CancellationTokenSource testCts = new(TimeSpan.FromMinutes(1));
 
-		var provider = FilterProviders.CreateBitcoinRpcFilterProvider(rpc, new ConcurrentChain(Network.Main));
+		var provider = RegTestRpcProviders.CreateFilterProvider(rpc, new ConcurrentChain(Network.Main));
 		var result = await provider(fromHeight: 0, fromHash: genesisHash, testCts.Token);
 
 		Assert.True(result.IsOk);
@@ -125,7 +126,7 @@ public class FilterProvidersTests(ITestOutputHelper output)
 		var originalBlockAtHeight100 = blockchain.GetBlock(100);
 		Assert.NotNull(originalBlockAtHeight100);
 
-		var provider = FilterProviders.CreateBitcoinRpcFilterProvider(rpcClient, blockchain);
+		var provider = RegTestRpcProviders.CreateFilterProvider(rpcClient, blockchain);
 
 		// Sync blocks 0-100 of the original chain first.
 		{
@@ -173,7 +174,7 @@ public class FilterProvidersTests(ITestOutputHelper output)
 		var originalBlockAtHeight100 = blockchain.GetBlock(100);
 		Assert.NotNull(originalBlockAtHeight100);
 
-		var provider = FilterProviders.CreateBitcoinRpcFilterProvider(rpcClient, blockchain);
+		var provider = RegTestRpcProviders.CreateFilterProvider(rpcClient, blockchain);
 
 		// Sync blocks 0-100 of the original chain first.
 		{
@@ -235,7 +236,7 @@ public class FilterProvidersTests(ITestOutputHelper output)
 		Assert.NotNull(originalBlockAtHeight99);
 		Assert.NotNull(originalBlockAtHeight100);
 
-		var provider = FilterProviders.CreateBitcoinRpcFilterProvider(rpcClient, blockchain);
+		var provider = RegTestRpcProviders.CreateFilterProvider(rpcClient, blockchain);
 
 		// Sync 0-100 on the original chain first.
 		{
@@ -295,7 +296,7 @@ public class FilterProvidersTests(ITestOutputHelper output)
 		var blockAtHeight100 = blockchain.GetBlock(100);
 		Assert.NotNull(blockAtHeight100);
 
-		var provider = FilterProviders.CreateBitcoinRpcFilterProvider(rpcClient, blockchain);
+		var provider = RegTestRpcProviders.CreateFilterProvider(rpcClient, blockchain);
 
 		// Sync 0-100 on the original chain first.
 		{

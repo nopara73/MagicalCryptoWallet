@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NBitcoin;
 using MagicalCryptoWallet.Blockchain.Analysis.Clustering;
+using MagicalCryptoWallet.BitcoinP2p;
 using MagicalCryptoWallet.Blockchain.TransactionBroadcasting;
 using MagicalCryptoWallet.Blockchain.TransactionBuilding;
 using MagicalCryptoWallet.Blockchain.Transactions;
@@ -97,11 +98,23 @@ public class WalletSendTests
 		await env.RpcClient.GenerateAsync(1);
 
 		// Broadcast the transaction
-		var broadcaster = new TransactionBroadcaster([new RpcBroadcaster(env.RpcClient)], env.MempoolService);
+		using var peer = await env.BitcoinCoreNode.CreateNewP2pNodeAsync();
+		peer.Behaviors.Add(new P2pBehavior(env.MempoolService));
+		await peer.VersionHandshakeAsync(cts.Token);
+		Assert.True(txResult.Transaction.TryGetFeeRate(out var transactionFeeRate));
+		await env.WaitForConditionAsync(() => P2pBehavior.GetNodesWillingToRelay(transactionFeeRate!).Contains(peer), TimeSpan.FromSeconds(30));
+		var broadcaster = new TransactionBroadcaster(
+			[new NetworkBroadcaster(env.MempoolService, () => [peer], env.Network.MinBroadcastNodes)], env.MempoolService);
 		await broadcaster.SendTransactionAsync(txResult.Transaction);
 
 		// Verify transaction is in mempool
+		var acceptanceDeadline = DateTimeOffset.UtcNow + TimeSpan.FromSeconds(10);
 		var mempoolTxs = await env.RpcClient.GetRawMempoolAsync();
+		while (!mempoolTxs.Contains(txResult.Transaction.GetHash()) && DateTimeOffset.UtcNow < acceptanceDeadline)
+		{
+			await Task.Delay(50, cts.Token);
+			mempoolTxs = await env.RpcClient.GetRawMempoolAsync();
+		}
 		Assert.Contains(txResult.Transaction.GetHash(), mempoolTxs);
 
 		// Confirm the transaction

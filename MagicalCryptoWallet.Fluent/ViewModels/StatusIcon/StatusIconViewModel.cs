@@ -47,7 +47,6 @@ public partial class StatusIconViewModel : ViewModelBase
 
 	public ICommand AskMeLaterCommand { get; }
 
-	public string BitcoinCoreName => "Bitcoin Node";
 
 	public bool IsTorDisabled => HealthMonitor.TorStatus == MagicalCryptoWallet.Models.TorStatus.TurnedOff;
 

@@ -28,7 +28,6 @@ public class CoinJoinClient
 		RoundStateProvider roundStatusProvider,
 		CoinJoinCoinSelector coinJoinCoinSelector,
 		CoinJoinConfiguration coinJoinConfiguration,
-		InputVerifier verifyInputsExistance,
 		LiquidityClueProvider liquidityClueProvider,
 		TimeSpan doNotRegisterInLastMinuteTimeLimit = default,
 		int minAnonScoreForPayments = 0)
@@ -39,7 +38,6 @@ public class CoinJoinClient
 		_roundStatusProvider = roundStatusProvider;
 		_liquidityClueProvider = liquidityClueProvider;
 		_coinJoinConfiguration = coinJoinConfiguration;
-		_verifyInputsExistance = verifyInputsExistance;
 		_coinJoinCoinSelector = coinJoinCoinSelector;
 		_secureRandom = SecureRandom.Instance;
 		_doNotRegisterInLastMinuteTimeLimit = doNotRegisterInLastMinuteTimeLimit;
@@ -57,7 +55,6 @@ public class CoinJoinClient
 	private readonly RoundStateProvider _roundStatusProvider;
 	private readonly LiquidityClueProvider _liquidityClueProvider;
 	private readonly CoinJoinConfiguration _coinJoinConfiguration;
-	private readonly InputVerifier _verifyInputsExistance;
 	private readonly CoinJoinCoinSelector _coinJoinCoinSelector;
 	private readonly TimeSpan _doNotRegisterInLastMinuteTimeLimit;
 	private readonly int _minAnonScoreForPayments;
@@ -806,8 +803,6 @@ public class CoinJoinClient
 			throw new CoinJoinClientException(CoinjoinError.CoordinatorLiedAboutInputs, "Coordinator lied about registered inputs. It probably tries to be malicious.");
 		}
 
-		// Verify other participants' inputs to detect a malicious coordinator.
-		await _verifyInputsExistance(theirCoins.ToArray(), cancellationToken).ConfigureAwait(false);
 
 		var arePaymentsAllowed = registeredAliceClients.All(x => x.SmartCoin.IsPrivate(_minAnonScoreForPayments));
 

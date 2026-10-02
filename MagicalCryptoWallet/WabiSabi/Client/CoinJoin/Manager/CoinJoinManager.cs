@@ -19,7 +19,6 @@ public class CoinJoinManager : BackgroundService
 	private readonly WalletSession _session;
 	private readonly RoundStateProvider _roundStatusProvider;
 	private readonly CoinPrison _coinPrison;
-	private readonly InputVerifier _inputVerifier;
 	private readonly CoinRefrigerator _coinRefrigerator = new();
 	private readonly CoinJoinConfiguration _coinJoinConfiguration;
 	private readonly Func<string, IWabiSabiApiRequestHandler> ArenaRequestHandlerFactory;
@@ -51,14 +50,13 @@ public class CoinJoinManager : BackgroundService
 
 	public CoinJoinManager(WalletSession session, RoundStateProvider roundStatusProvider,
 		Func<string, IWabiSabiApiRequestHandler> arenaRequestHandlerFactory, CoinJoinConfiguration coinJoinConfiguration,
-		CoinPrison coinPrison, InputVerifier inputVerifier, EventBus eventBus)
+		CoinPrison coinPrison, EventBus eventBus)
 	{
 		_session = session;
 		_roundStatusProvider = roundStatusProvider;
 		ArenaRequestHandlerFactory = arenaRequestHandlerFactory;
 		_coinJoinConfiguration = coinJoinConfiguration;
 		_coinPrison = coinPrison;
-		_inputVerifier = inputVerifier;
 		_mailboxProcessor = new MailboxProcessor<CoinJoinCommand>(nameof(CoinJoinManager), HandleCommandsAsync, cancellationToken: _stopCts.Token);
 		_serverTipHeightChangeSubscription = eventBus.Subscribe<NetworkTipHeightChanged>(h => _mailboxProcessor.Post(new TipHeightCommand(h.Height)));
 		_recoveryRegistration = session.RegisterRecoveryGuard(QuiesceForRecoveryAsync);
@@ -143,7 +141,7 @@ public class CoinJoinManager : BackgroundService
 	}
 	private async Task HandleCommandsAsync(Mailbox<CoinJoinCommand> mailbox, CancellationToken cancel)
 	{
-		var factory = new CoinJoinTrackerFactory(ArenaRequestHandlerFactory, _roundStatusProvider, _coinJoinConfiguration, _inputVerifier, cancel);
+		var factory = new CoinJoinTrackerFactory(ArenaRequestHandlerFactory, _roundStatusProvider, _coinJoinConfiguration, cancel);
 		try
 		{
 			while (!cancel.IsCancellationRequested)

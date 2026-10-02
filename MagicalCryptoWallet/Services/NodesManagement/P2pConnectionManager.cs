@@ -105,6 +105,7 @@ public class P2pConnectionManager : IDisposable
 	private int _isReevaluating;
 	private DateTimeOffset _lastMaintainTime;
 	private DateTimeOffset _lastRotateTime;
+	private DateTimeOffset _lastSeedTime;
 
 	private int _timeoutsCounter;
 	private int _currentTimeoutSeconds = 16;
@@ -162,6 +163,7 @@ public class P2pConnectionManager : IDisposable
 			cancellationToken: cancellationToken);
 		_discoveryCoordinator.DisposeUsing(_disposables);
 
+		_lastSeedTime = DateTimeOffset.UtcNow;
 		_ = Task.Run(() => SeedFromDnsAsync(cancellationToken), cancellationToken);
 
 		_eventBus.Subscribe<Tick>(async void (_) =>
@@ -195,6 +197,15 @@ public class P2pConnectionManager : IDisposable
 			{
 				_lastMaintainTime = now;
 				await ConnectToBestPeersAsync(cancellationToken).ConfigureAwait(false);
+			}
+
+			// Offline startup can exhaust every seed before discovering a peer.
+			// Retry discovery after the same cooldown used for peer connections.
+			if (count == 0 && now - _lastSeedTime >= ReconnectCooldown &&
+			    await GetDiscoveredPeersAsync(cancellationToken).ConfigureAwait(false) is [])
+			{
+				_lastSeedTime = now;
+				await SeedFromDnsAsync(cancellationToken).ConfigureAwait(false);
 			}
 
 			if ((now - _lastRotateTime >= RotateInterval && count > TargetConnections - 3) ||

@@ -3,7 +3,6 @@ using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
-using MagicalCryptoWallet.BitcoinRpc;
 using MagicalCryptoWallet.Fluent.Extensions;
 using MagicalCryptoWallet.Helpers;
 using MagicalCryptoWallet.Services;
@@ -19,7 +18,6 @@ public partial class HealthMonitor : ReactiveObject
 	[AutoNotify] private uint _blockchainTip;
 	[AutoNotify] private uint _clientTip;
 	[AutoNotify] private TorStatus _torStatus;
-	[AutoNotify] private Result<ConnectedRpcStatus, string> _bitcoinRpcStatus;
 	[AutoNotify] private int _peers;
 	[AutoNotify] private bool _isP2pConnected;
 	[AutoNotify] private HealthMonitorState _state;
@@ -28,8 +26,6 @@ public partial class HealthMonitor : ReactiveObject
 	[AutoNotify] private bool _checkForUpdates = true;
 	[AutoNotify] private Version? _clientVersion;
 
-	private const string NoBitcoinRpcConfigured = "Not configured";
-	private const string NoBitcoinRpcDetected = "Not detected";
 
 	public HealthMonitor(IServices services, TorStatusCheckerModel torStatusChecker)
 	{
@@ -37,8 +33,6 @@ public partial class HealthMonitor : ReactiveObject
 		UseTor = services.GetUseTor();
 		TorStatus = UseTor == TorMode.Disabled ? TorStatus.TurnedOff : TorStatus.NotRunning;
 
-		var statusMessage = string.IsNullOrWhiteSpace(services.Config.BitcoinRpcUri) ? NoBitcoinRpcConfigured : NoBitcoinRpcDetected;
-		_bitcoinRpcStatus = Result<ConnectedRpcStatus, string>.Fail(statusMessage);
 
 		// Priority Fee
 		services.EventBus.AsObservable<MiningFeeRatesChanged>()
@@ -104,15 +98,7 @@ public partial class HealthMonitor : ReactiveObject
 			.BindTo(this, x => x.Peers)
 			.DisposeWith(Disposables);
 
-		// Bitcoin Core Status
-		services.EventBus.AsObservable<RpcStatusChanged>()
-			.Select(x => x.Status)
-			.ObserveOn(RxApp.MainThreadScheduler)
-			.Subscribe(x => BitcoinRpcStatus = x)
-			.DisposeWith(Disposables);
-
 		// Is P2P Connected
-		// The source of the p2p connection comes from if we use Core for it or the network.
 		this.WhenAnyValue(x => x.Peers)
 			.Select(peerCount => peerCount > 0)
 			.BindTo(this, x => x.IsP2pConnected)
@@ -137,7 +123,6 @@ public partial class HealthMonitor : ReactiveObject
 				x => x.Peers,
 				x => x.BlockchainTip,
 				x => x.ClientTip,
-				x => x.BitcoinRpcStatus,
 				x => x.UpdateAvailable,
 				x => x.CheckForUpdates)
 			.Throttle(TimeSpan.FromMilliseconds(100))
@@ -167,23 +152,10 @@ public partial class HealthMonitor : ReactiveObject
 
 		var torConnected = UseTor == TorMode.Disabled || TorStatus == TorStatus.Running;
 
-		if (torConnected && BlockchainTip > 0 && BlockchainTip == ClientTip)
+		if (torConnected && IsP2pConnected && BlockchainTip > 0 && BlockchainTip == ClientTip)
 		{
 			return HealthMonitorState.Ready;
 		}
-		if (torConnected && BlockchainTip > ClientTip && Peers > 0)
-		{
-			return HealthMonitorState.Loading;
-		}
-
-		return _bitcoinRpcStatus.Match(
-			r => torConnected
-				? r.Synchronized
-					? HealthMonitorState.Ready
-					: HealthMonitorState.BitcoinRpcSynchronizing
-				: HealthMonitorState.Loading,
-			e => e == NoBitcoinRpcConfigured || e == NoBitcoinRpcDetected
-				? HealthMonitorState.Ready
-				: HealthMonitorState.BitcoinRpcIssueDetected);
+		return HealthMonitorState.Loading;
 	}
 }

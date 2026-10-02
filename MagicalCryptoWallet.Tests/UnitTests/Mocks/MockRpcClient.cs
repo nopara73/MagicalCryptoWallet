@@ -198,10 +198,6 @@ public class MockRpcClient : IRPCClient
 		throw new NotImplementedException();
 	}
 
-	public Task<bool> SupportsBlockFiltersAsync(CancellationToken cancellationToken)
-	{
-		throw new NotImplementedException();
-	}
 
 	public Task<ScanTxoutSetResponse> StartScanTxoutSetAsync(ScanTxoutSetParameters parameters, CancellationToken cancellationToken = default)
 	{

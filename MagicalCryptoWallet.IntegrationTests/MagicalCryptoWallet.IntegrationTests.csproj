@@ -45,4 +45,8 @@
 		<RuntimeHostConfigurationOption Include="System.Globalization.Invariant" Value="true" />
 	</ItemGroup>
 
+	<ItemGroup>
+		<Compile Include="..\Contrib\Tests\RegTestRpcProviders.cs" Link="Infrastructure\RegTestRpcProviders.cs" />
+	</ItemGroup>
+
 </Project>

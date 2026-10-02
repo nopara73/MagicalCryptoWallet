@@ -1,7 +1,6 @@
 using NBitcoin;
 using System.Threading;
 using System.Threading.Tasks;
-using MagicalCryptoWallet.BitcoinRpc;
 using MagicalCryptoWallet.Logging;
 using MagicalCryptoWallet.Services;
 using MagicalCryptoWallet.Services.NodesManagement;
@@ -14,20 +13,6 @@ public static class BlockProviders
 {
 	public static BlockProvider FileSystemBlockProvider(FileSystemBlockRepository fs) =>
 		fs.TryGetBlockAsync;
-
-	public static BlockProvider RpcBlockProvider(IRPCClient rpcClient) =>
-		async (blockHash, cancellationToken) =>
-		{
-			try
-			{
-				return await rpcClient.GetBlockAsync(blockHash, cancellationToken).ConfigureAwait(false);
-			}
-			catch (Exception ex)
-			{
-				Logger.LogDebug($"RPC block provider failed to retrieve block {blockHash}: {ex}");
-				return null;
-			}
-		};
 
 	public static BlockProvider P2pBlockProvider(P2pNodeProvider getNode) =>
 		async (blockHash, cancellationToken) =>

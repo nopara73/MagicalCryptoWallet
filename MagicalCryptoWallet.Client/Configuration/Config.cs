@@ -42,8 +42,6 @@ public class Config
 			[nameof(TorBridges)] = GetStringArrayValue("TorBridges", PersistentConfig.TorBridges.ToArray(), cliArgs),
 			[nameof(TerminateTorOnExit)] = GetBoolValue("TerminateTorOnExit", PersistentConfig.TerminateTorOnExit, cliArgs),
 			[nameof(DownloadNewVersion)] = GetBoolValue("DownloadNewVersion", PersistentConfig.DownloadNewVersion, cliArgs),
-			[nameof(BitcoinRpcCredentialString)] = GetStringValue("BitcoinRpcCredentialString", PersistentConfig.BitcoinRpcCredentialString, cliArgs),
-			[nameof(BitcoinRpcUri)] = GetUriStringValue("BitcoinRpcEndPoint", PersistentConfig.BitcoinRpcUri, cliArgs),
 			[nameof(JsonRpcServerEnabled)] = GetBoolValue("JsonRpcServerEnabled", PersistentConfig.JsonRpcServerEnabled, cliArgs),
 			[nameof(JsonRpcUser)] = GetStringValue("JsonRpcUser", PersistentConfig.JsonRpcUser, cliArgs),
 			[nameof(JsonRpcPassword)] = GetStringValue("JsonRpcPassword", PersistentConfig.JsonRpcPassword, cliArgs),
@@ -95,8 +93,6 @@ public class Config
 			[nameof(TorBridges)] = "Tor is started with the set of specified bridges",
 			[nameof(TerminateTorOnExit)] = "Stop the Tor process when Magical Crypto Wallet is closed",
 			[nameof(DownloadNewVersion)] = "Automatically download any new released version of MagicalCryptoWallet",
-			[nameof(BitcoinRpcCredentialString)] = "Credentials for authenticating against the bitcoin node rpc server",
-			[nameof(BitcoinRpcUri)] = "-",
 			[nameof(JsonRpcServerEnabled)] = "Start the Json RPC Server and accept requests",
 			[nameof(JsonRpcUser)] = "The user name that is authorized to make requests to the Json RPC server",
 			[nameof(JsonRpcPassword)] = "The user password that is authorized to make requests to the Json RPC server",
@@ -129,8 +125,6 @@ public class Config
 	public string[] TorBridges => GetEffectiveValue<string[]>(nameof(TorBridges));
 	public bool TerminateTorOnExit => GetEffectiveValue<bool>(nameof(TerminateTorOnExit));
 	public bool DownloadNewVersion => GetEffectiveValue<bool>(nameof(DownloadNewVersion));
-	public string BitcoinRpcCredentialString => GetEffectiveValue<string>(nameof(BitcoinRpcCredentialString));
-	public string BitcoinRpcUri => GetEffectiveValue<string>(nameof(BitcoinRpcUri));
 	public bool JsonRpcServerEnabled => GetEffectiveValue<bool>(nameof(JsonRpcServerEnabled));
 	public string JsonRpcUser => GetEffectiveValue<string>(nameof(JsonRpcUser));
 	public string JsonRpcPassword => GetEffectiveValue<string>(nameof(JsonRpcPassword));
@@ -271,19 +265,6 @@ public class Config
 		return new StringValue(value, value, ValueSource.Disk);
 	}
 
-	private static StringValue GetUriStringValue(string key, string value, string[] cliArgs)
-	{
-		value = string.IsNullOrWhiteSpace(value)
-			? value
-			: value.StartsWith("http") ? value : $"http://{value}";
-		if (GetOverrideValue(key, cliArgs, out string? overrideValue, out ValueSource? valueSource))
-		{
-			overrideValue = overrideValue.StartsWith("http") ? overrideValue : $"http://{overrideValue}";
-			return new StringValue(value, overrideValue, valueSource.Value);
-		}
-
-		return new StringValue(value, value, ValueSource.Disk);
-	}
 	private static NullableStringValue GetNullableStringValue(string key, string? value, string[] cliArgs)
 	{
 		if (GetOverrideValue(key, cliArgs, out string? overrideValue, out ValueSource? valueSource))

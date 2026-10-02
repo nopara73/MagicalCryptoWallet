@@ -1,6 +1,4 @@
 using Avalonia.Data.Converters;
-using MagicalCryptoWallet.BitcoinRpc;
-using MagicalCryptoWallet.Helpers;
 using MagicalCryptoWallet.Models;
 
 namespace MagicalCryptoWallet.Fluent.Converters;
@@ -22,8 +20,5 @@ public static class StatusConverters
 	public static readonly IValueConverter HeightToString =
 		new FuncValueConverter<uint, string>(x => x == 0 ? "No data" : $"{x:N0}");
 
-	public static readonly IValueConverter RpcStatusStringConverter =
-		new FuncValueConverter<Result<ConnectedRpcStatus, string>, string>(status => status is not null
-			? status.Match(s => s.ToString() ?? "", e => e)
-			: "Unknown Status");
+
 }

@@ -12,7 +12,8 @@ import uuid
 
 ROOT = Path(__file__).resolve().parents[2]
 helpers = runpy.run_path(str(Path(__file__).with_name("test-single-wallet-process.py")))
-free_port, wait_for, rpc = (helpers[name] for name in ("free_port", "wait_for", "rpc"))
+free_port, wait_for, rpc, require_regtest_p2p_port = (helpers[name] for name in ("free_port", "wait_for", "rpc", "require_regtest_p2p_port"))
+regtest_p2p_port_lease = helpers["regtest_p2p_port_lease"]
 PASSWORD = "synthetic CoinJoin passphrase"
 
 
@@ -30,7 +31,8 @@ def main():
     suffix = ".exe" if os.name == "nt" else ""
     package = args.package.resolve()
     daemon, coordinator = (package / (name + suffix) for name in ("magicalcryptowalletd", "magicalcryptowallet-coordinator"))
-    node_rpc, node_p2p, coordinator_port = free_port(), free_port(), free_port()
+    node_p2p = require_regtest_p2p_port()
+    node_rpc, coordinator_port = free_port(), free_port()
     node_url = f"http://127.0.0.1:{node_rpc}/"
     coordinator_url = f"http://127.0.0.1:{coordinator_port}/"
     config = dict(Network="RegTest", MainNetBitcoinRpcUri=node_url, TestNetBitcoinRpcUri=node_url,
@@ -70,7 +72,7 @@ def main():
     try:
         node = launch(args.bitcoind.resolve(), ["-regtest", f"-datadir={bitcoin}", "-server=1", "-blockfilterindex=1",
             f"-rpcport={node_rpc}", f"-port={node_p2p}", "-rpcuser=synthetic", "-rpcpassword=synthetic",
-            "-fallbackfee=0.0001", "-listen=0", "-discover=0"], "bitcoin")
+            "-fallbackfee=0.0001", "-listen=1", "-bind=127.0.0.1", "-peerblockfilters=1", "-discover=0"], "bitcoin")
         wait_for(lambda: rpc(node_url, "getblockchaininfo"))
         # This is Bitcoin Core's independent miner, not an application wallet-selection command.
         rpc(node_url, "createwallet", ["synthetic-miner"])
@@ -82,14 +84,13 @@ def main():
             data = run / ("client " + str(index)); data.mkdir()
             url = f"http://127.0.0.1:{free_port()}/"
             cli = [f"--datadir={data}", "--network=RegTest", "--jsonrpcserverenabled=true", "--jsonrpcuser=synthetic",
-                "--jsonrpcpassword=synthetic", f"--jsonrpcserverprefixes={url}", f"--bitcoinrpcendpoint={node_url}",
-                "--bitcoinrpccredentialstring=synthetic:synthetic", f"--coordinatoruri={coordinator_url}",
-                "--exchangerateprovider=None", "--feerateestimationprovider=None", "--downloadnewversion=false",
+                "--jsonrpcpassword=synthetic", f"--jsonrpcserverprefixes={url}", f"--coordinatoruri={coordinator_url}",
+                "--usetor=Disabled", "--exchangerateprovider=None", "--feerateestimationprovider=None", "--downloadnewversion=false",
                 "--maxcoinjoinminingfeerate=500", "--absolutemininputcount=4", "--enablegpu=false"]
             process = launch(daemon, cli, f"setup-{index}")
             wait_for(lambda: rpc(url, "getwalletinfo"))
             rpc(url, "createwallet", [PASSWORD])
-            wait_for(lambda: ready(url))
+            wait_for(lambda: ready(url), timeout=360)
             rpc(url, "stop")
             assert process.wait(timeout=40) == 0
             wallet_file = data / "Wallets/RegTest/Wallet.json"
@@ -97,7 +98,7 @@ def main():
             wallet.update(AutoCoinJoin=True, AnonScoreTarget=5)
             wallet_file.write_text(json.dumps(wallet), encoding="utf-8")
             process = launch(daemon, cli, f"client-{index}")
-            info = wait_for(lambda: ready(url))
+            info = wait_for(lambda: ready(url), timeout=360)
             assert info["coinJoinRequiresAuthorization"] and info["coinjoinStatus"] == "Idle"
             for _ in range(4):
                 address = rpc(url, "getnewaddress", ["synthetic funding"])["address"]
@@ -106,7 +107,7 @@ def main():
             print(f"Client {index}: encrypted startup synchronized without authorization.", flush=True)
         rpc(node_url, "generatetoaddress", [1, mining_address])
         for process, url in clients:
-            wait_for(lambda: ready(url, 400_000_000))
+            wait_for(lambda: ready(url, 400_000_000), timeout=360)
             assert process.poll() is None and rpc(url, "getwalletinfo")["coinJoinRequiresAuthorization"]
             destination = rpc(miner_url, "getnewaddress")
             payment = [dict(Sendto=destination, Amount=500_000, Label="synthetic send", SubtractFee=False)]
@@ -116,7 +117,7 @@ def main():
             assert "error" in wrong, "A previous Send skipped a later passphrase check."
             print(f"Client {len(sends) - 1}: Send authorized automatic CoinJoin; later wrong password rejected.", flush=True)
         for _, url in clients:
-            wait_for(lambda: rpc(url, "getwalletinfo")["coinjoinStatus"] != "Idle", timeout=20)
+            wait_for(lambda: rpc(url, "getwalletinfo")["coinjoinStatus"] != "Idle", timeout=360)
         rpc(node_url, "generatetoaddress", [1, mining_address])
         # All clients are authorized before opening a round, so setup speed cannot split participants across rounds.
         service = launch(coordinator, [f"--datadir={coordinator_data}", f"--urls={coordinator_url}"], "coordinator")
@@ -136,7 +137,7 @@ def main():
                 transaction = rpc(node_url, "getrawtransaction", [txid, True])
                 if len(transaction["vin"]) >= 5 and len(transaction["vout"]) >= 5:
                     coinjoins.append(txid)
-                    # With no P2P listener, clients discover coordinator broadcasts through confirmed filters.
+                    # Confirm the coordinator broadcast and verify it through client P2P filters.
                     rpc(node_url, "generatetoaddress", [1, mining_address])
             if coinjoins and all(any(coin["anonymityScore"] > 1 for coin in rpc(url, "listcoins")) for _, url in clients):
                 break
@@ -144,7 +145,7 @@ def main():
         assert coinjoins, "No CoinJoin broadcast before the deadline."
         rpc(node_url, "generatetoaddress", [1, mining_address])
         for _, url in clients:
-            wait_for(lambda: ready(url))
+            wait_for(lambda: ready(url), timeout=360)
             wait_for(lambda: any(coin["anonymityScore"] > 1 and coin["confirmed"] for coin in rpc(url, "listcoins")))
             rpc(url, "stopcoinjoin")
         for process, url in clients:
@@ -166,4 +167,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    with regtest_p2p_port_lease():
+        main()

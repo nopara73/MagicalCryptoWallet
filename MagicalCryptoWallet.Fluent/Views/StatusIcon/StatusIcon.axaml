@@ -119,13 +119,6 @@
               </StatusItem.Icon>
             </StatusItem>
 
-            <StatusItem
-              Title="Bitcoin Node"
-              StatusText="{Binding HealthMonitor.BitcoinRpcStatus, Converter={x:Static converters:StatusConverters.RpcStatusStringConverter}}">
-              <StatusItem.Icon>
-                <PathIcon Data="{StaticResource btc_logo}" />
-              </StatusItem.Icon>
-            </StatusItem>
           </StackPanel>
 
           <!-- Update -->
@@ -183,21 +176,6 @@
       Data="{StaticResource arrow_sync_regular}"
       Foreground="{DynamicResource SystemAccentColor}"
       Classes.rotate="{Binding $self.IsVisible}" />
-
-    <!-- Bitcoin Core Synchronizing -->
-    <PathIcon
-      IsVisible="{Binding HealthMonitor.State, Converter={x:Static converters:HealthMonitorStateVisibilityConverter.Instance}, ConverterParameter={x:Static models:HealthMonitorState.BitcoinRpcSynchronizing}}"
-      Data="{StaticResource arrow_sync_regular}"
-      Foreground="{DynamicResource SystemAccentColor}"
-      Classes.rotate="{Binding $self.IsVisible}" />
-
-    <!-- Bitcoin Core Connection issue -->
-    <PathIcon
-      IsVisible="{Binding HealthMonitor.State, Converter={x:Static converters:HealthMonitorStateVisibilityConverter.Instance}, ConverterParameter={x:Static models:HealthMonitorState.BitcoinRpcIssueDetected}}"
-      Data="{StaticResource warning_circle}"
-      Foreground="Goldenrod"
-      VerticalAlignment="Center" HorizontalAlignment="Right"
-      Classes.blink="{Binding $self.IsVisible}" />
 
     <!--Update available-->
     <PathIcon

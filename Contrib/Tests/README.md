@@ -1,6 +1,8 @@
 # Single-wallet regtest verification
 
-Both harnesses use packaged executables, synthetic wallets, dynamically allocated loopback ports and new UUID data directories. They keep evidence and stop only their own child processes. No installation, startup registration, public broadcast or existing wallet is modified. CI uploads result JSON, logs and screenshots; wallet files stay local to the ephemeral runner.
+Both harnesses use packaged executables, synthetic wallets and new UUID data directories. RPC ports are allocated dynamically; wallet clients use the standard regtest P2P endpoint `127.0.0.1:18444`, with compact-filter serving enabled. The harness fails if that port is occupied and never stops the existing process. Core RPC is used by the harness and coordinator for mining, funding and independent assertions; wallet clients receive no Core credentials. Synthetic sends use explicit fee rates so no public fee service is required. They keep evidence and stop only their own child processes. No installation, startup registration, public broadcast or existing wallet is modified. CI uploads result JSON, logs and screenshots; wallet files stay local to the ephemeral runner.
+
+The harnesses hold a shared temporary-file lock for port 18444 across checkouts. During the offline check, an exclusive socket reserves that port without accepting connections. This keeps another synthetic node from replacing the intended peer during downtime. The offline/reconnection check allows six minutes for the existing P2P reconnect cooldown and verifies the reconnected chain height against the harness's Core RPC. The shared `RegTestRpcProviders.cs` oracle is compiled only into the two test projects, so test filter/block adapters are excluded from application assemblies.
 
 ## Automatic CoinJoin authorization
 

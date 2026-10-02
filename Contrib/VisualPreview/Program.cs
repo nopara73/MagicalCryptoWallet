@@ -37,13 +37,19 @@ using (Task.Run(() => RxSchedulers.MainThreadScheduler.Schedule(() => callbackOn
     if (!callbackOnUiThread) throw new InvalidOperationException("Headless command notifications must return to the Avalonia UI thread.");
 }
 Console.WriteLine("Headless UI scheduler check passed: background callbacks return to the Avalonia dispatcher.");
-string destination = args.FirstOrDefault() ?? ".artifacts/rebrand/screenshots";
+string destination = args.FirstOrDefault(x => x != "--bitcoin-only") ?? ".artifacts/rebrand/screenshots";
 Directory.CreateDirectory(destination);
+if (args.Contains("--bitcoin-only"))
+{
+    BitcoinP2pChecks.Render(destination);
+    return;
+}
 var context = (UiContext)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(UiContext));
 PasswordBoxChecks.Run();
 using var syntheticWallets = LurkingWifeModeChecks.Run(context, destination);
 SingleWalletChecks.Run(context);
 AutomaticCoinSelectionChecks.Run(context);
+using var bitcoinP2p = new BitcoinP2pChecks(destination);
 foreach (var theme in new[] { ThemeVariant.Light, ThemeVariant.Dark })
 {
     Application.Current!.RequestedThemeVariant = theme;
@@ -95,6 +101,8 @@ foreach (var theme in new[] { ThemeVariant.Light, ThemeVariant.Dark })
         Render("transaction-preview", AutomaticCoinSelectionChecks.CreateTransactionPreview(context), 900, 650);
         Render("wallet-coins", AutomaticCoinSelectionChecks.CreateWalletCoins(context), 900, 650);
         Render("wallet-general-settings", AutomaticCoinSelectionChecks.CreateWalletSettings(context), 900, 650);
+        Render("bitcoin-settings", bitcoinP2p.CreateSettings(), 650, 340);
+        Render("bitcoin-status", bitcoinP2p.CreateStatus(), 360, 560);
         void Render(string name, Control content, int width, int height)
         {
             var panel = new DockPanel();

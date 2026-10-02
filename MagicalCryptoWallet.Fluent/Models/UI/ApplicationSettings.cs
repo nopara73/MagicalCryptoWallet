@@ -38,8 +38,6 @@ public partial class ApplicationSettings : ReactiveObject
 	// Bitcoin
 	[AutoNotify] private Network _network;
 
-	[AutoNotify] private string _bitcoinRpcUri;
-	[AutoNotify] private string _bitcoinRpcCredentialString;
 	[AutoNotify] private string _dustThreshold;
 	[AutoNotify] private string _exchangeRateProvider;
 	[AutoNotify] private string _feeRateEstimationProvider;
@@ -92,8 +90,6 @@ public partial class ApplicationSettings : ReactiveObject
 
 		// Bitcoin
 		_network = persistentConfig.Network;
-		_bitcoinRpcUri = persistentConfig.BitcoinRpcUri;
-		_bitcoinRpcCredentialString = persistentConfig.BitcoinRpcCredentialString;
 		_dustThreshold = persistentConfig.DustThreshold.ToString();
 
 		// Coordinator
@@ -136,8 +132,6 @@ public partial class ApplicationSettings : ReactiveObject
 
 		// Bitcoin
 		Network = persistentConfig.Network;
-		BitcoinRpcUri = persistentConfig.BitcoinRpcUri;
-		BitcoinRpcCredentialString = persistentConfig.BitcoinRpcCredentialString;
 		DustThreshold = persistentConfig.DustThreshold.ToString();
 
 		// Coordinator
@@ -176,13 +170,11 @@ public partial class ApplicationSettings : ReactiveObject
 			this.WhenAnyValue(
 					x => x.EnableGpu,
 					x => x.Network,
-					x => x.BitcoinRpcCredentialString,
-					x => x.BitcoinRpcUri,
 					x => x.DustThreshold,
 					x => x.UseTor,
 					x => x.TerminateTorOnExit,
 					x => x.DownloadNewVersion,
-					(_, _, _, _, _, _, _, _) => Unit.Default)
+					(_, _, _, _, _, _) => Unit.Default)
 				.Skip(1);
 		var configSaveTrigger2 =
 			this.WhenAnyValue(
@@ -299,16 +291,6 @@ public partial class ApplicationSettings : ReactiveObject
 
 		// Advanced
 		result = result with { EnableGpu = EnableGpu };
-
-		// Bitcoin
-		if (string.IsNullOrWhiteSpace(BitcoinRpcUri))
-		{
-			result = result with { BitcoinRpcUri = "", BitcoinRpcCredentialString = BitcoinRpcCredentialString };
-		}
-		else if (Uri.TryCreate(BitcoinRpcUri, UriKind.Absolute, out var uri))
-		{
-			result = result with { BitcoinRpcUri = uri.ToString(), BitcoinRpcCredentialString = BitcoinRpcCredentialString };
-		}
 
 		result = result with { CoordinatorUri = CoordinatorUri };
 
