@@ -31,6 +31,7 @@ public class JsonRpcServer : BackgroundService
 	public override async Task StartAsync(CancellationToken cancellationToken)
 	{
 		_listener.Start();
+		Logger.LogInfo("JSON-RPC server started.");
 		await base.StartAsync(cancellationToken).ConfigureAwait(false);
 	}
 

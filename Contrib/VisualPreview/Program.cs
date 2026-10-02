@@ -93,12 +93,21 @@ foreach (var theme in new[] { ThemeVariant.Light, ThemeVariant.Dark })
             panel.Children.Add(content);
             var window = new Window { Title = "Magical Crypto Wallet", Width = width, Height = height, Content = panel,
                 Background = theme == ThemeVariant.Dark ? new SolidColorBrush(Color.Parse("#151515")) : Brushes.White };
+            // Avalonia 11's headless backend fixes this property at 1. Simulate the
+            // platform's DPI notification so layout and the compositor use the same scale.
+            var platform = window.PlatformImpl ?? throw new InvalidOperationException("Missing headless window.");
+            var scalingField = platform.GetType().GetField("<RenderScaling>k__BackingField", BindingFlags.Instance | BindingFlags.NonPublic)
+                ?? throw new InvalidOperationException("The pinned headless backend no longer exposes its scaling field.");
+            scalingField.SetValue(platform, scale);
+            var scalingChanged = platform.GetType().GetProperty("ScalingChanged")?.GetValue(platform) as Action<double>;
+            (scalingChanged ?? throw new InvalidOperationException("Missing platform DPI notification."))(scale);
             window.Show();
             Dispatcher.UIThread.RunJobs();
             window.Measure(new Size(width, height));
             window.Arrange(new Rect(0, 0, width, height));
-            using var bitmap = new RenderTargetBitmap(new PixelSize((int)(width * scale), (int)(height * scale)), new Vector(96 * scale, 96 * scale));
-            bitmap.Render(window);
+            using var bitmap = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("The compositor did not render a frame.");
+            if (window.RenderScaling != scale || bitmap.PixelSize != new PixelSize((int)(width * scale), (int)(height * scale)))
+                throw new InvalidOperationException("The captured frame does not match the requested display scale.");
             bitmap.Save(Path.Combine(destination, $"{name}-{theme.Key!.ToString()!.ToLowerInvariant()}-{(int)(scale * 100)}.png"));
             window.Close();
         }

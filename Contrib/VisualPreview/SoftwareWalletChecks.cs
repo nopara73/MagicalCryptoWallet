@@ -69,6 +69,14 @@ internal static class SoftwareWalletChecks
 			Check(tiles.Length == 3, "Setup must offer exactly Create, Import and Recover.");
 			Check(Grid.GetColumnSpan(tiles[0]) == 2 && tiles[0].Bounds.Width > tiles[1].Bounds.Width
 				&& Math.Abs(tiles[1].Bounds.Width - tiles[2].Bounds.Width) < 1, "Create must span the equal Import and Recover columns.");
+			Check(tiles[0].Focus(), "Create must accept focus before traversing setup.");
+			foreach (var (index, modifiers) in new[] { (1, RawInputModifiers.None), (2, RawInputModifiers.None), (1, RawInputModifiers.Shift), (0, RawInputModifiers.Shift) })
+			{
+				window.KeyPress(Key.Tab, modifiers, PhysicalKey.Tab, "");
+				window.KeyRelease(Key.Tab, modifiers, PhysicalKey.Tab, "");
+				Dispatcher.UIThread.RunJobs();
+				Check(tiles[index].IsFocused, "Tab and Shift+Tab must follow Create, Import and Recover in visual order.");
+			}
 			for (int i = 0; i < tiles.Length; i++)
 			{
 				Check(ControlAutomationPeer.CreatePeerForElement(tiles[i]).GetName() == tiles[i].Text, "Setup actions need accessible names.");
@@ -84,7 +92,7 @@ internal static class SoftwareWalletChecks
 			}
 		}
 		finally { window.Close(); foreach (var command in commands) command.Dispose(); }
-		Console.WriteLine("Software-wallet UI checks passed: exactly three accessible setup actions, full-width Create, equal Import/Recover, actual Enter/Space activation.");
+		Console.WriteLine("Software-wallet UI checks passed: exactly three accessible setup actions, full-width Create, equal Import/Recover, Tab/Shift+Tab navigation and actual Enter/Space activation.");
 	}
 
 	public static Control CreateReceive(UiContext context)
