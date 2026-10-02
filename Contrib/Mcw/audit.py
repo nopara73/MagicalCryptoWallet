@@ -57,7 +57,8 @@ def audit(binary):
         imports=subprocess.check_output(["ldd",str(binary)]).decode().splitlines()
         assert "not found" not in "\n".join(imports)
         allowed = re.compile(r"^(linux-(vdso|gate)\.so\.[0-9]+|lib(c|m|pthread|dl|rt|util|resolv)\.so\.[0-9]+|ld-linux[^/]*\.so\.[0-9]+)$")
-        assert imports and all(allowed.fullmatch(Path(line.strip().split()[0]).name) for line in imports if line.strip()), "Non-OS ELF runtime dependency"
+        rejected = [line.strip() for line in imports if line.strip() and not allowed.fullmatch(Path(line.strip().split()[0]).name)]
+        assert imports and not rejected, "Non-OS ELF runtime dependency: " + "; ".join(rejected)
     version=subprocess.check_output([str(binary),"--version"]).decode().strip()
     assert version.startswith("mcw ")
     result={"binary":str(binary),"sha256":hashlib.sha256(binary.read_bytes()).hexdigest(),"version":version,"runtime_imports":imports}
