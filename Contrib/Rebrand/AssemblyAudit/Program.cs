@@ -7,6 +7,9 @@ using System.Text.RegularExpressions;
 var policy = JsonDocument.Parse(File.ReadAllText(args[0]));
 var forbidden = new Regex(policy.RootElement.GetProperty("forbidden_pattern").GetString()!, RegexOptions.IgnoreCase);
 var removedControls = new Regex(policy.RootElement.GetProperty("removed_coin_control_pattern").GetString()!, RegexOptions.IgnoreCase);
+var allowedUserStrings = policy.RootElement.TryGetProperty("allowed_user_strings", out var strings)
+    ? strings.EnumerateArray().Select(x => x.GetString()!).ToHashSet(StringComparer.Ordinal)
+    : new HashSet<string>(StringComparer.Ordinal);
 int assemblies = 0, symbols = 0, failures = 0;
 foreach (string folder in args.Skip(1))
 foreach (string file in Directory.EnumerateFiles(folder, "MagicalCryptoWallet*.dll", SearchOption.AllDirectories))
@@ -44,7 +47,7 @@ foreach (string file in Directory.EnumerateFiles(folder, "MagicalCryptoWallet*.d
     var userString = MetadataTokens.UserStringHandle(1);
     while (!userString.IsNil)
     {
-        Check(reader.GetUserString(userString));
+        Check(reader.GetUserString(userString), isUserString: true);
         userString = reader.GetNextHandle(userString);
     }
     foreach (var handle in reader.CustomAttributes)
@@ -78,8 +81,9 @@ foreach (string file in Directory.EnumerateFiles(folder, "MagicalCryptoWallet*.d
         symbols++;
         foreach (var handle in pdbReader.Documents) Check(pdbReader.GetString(pdbReader.GetDocument(handle).Name));
     }
-    void Check(string value)
+    void Check(string value, bool isUserString = false)
     {
+        if (isUserString && allowedUserStrings.Contains(value)) return;
         if (!forbidden.IsMatch(value) && !removedControls.IsMatch(value)) return;
         Console.Error.WriteLine($"Stale assembly/resource/symbol identity: {Path.GetFileName(file)}: {value}");
         failures++;

@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using System.Reactive.Linq;
 using System.Runtime.CompilerServices;
 using Avalonia;
 using Avalonia.Automation.Peers;
@@ -80,19 +81,30 @@ internal static class AutomaticCoinSelectionChecks
 	}
 
 	[SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Commands are disposed when the returned view detaches.")]
-	public static Control CreateWalletActions(UiContext context, Action? send = null)
+	public static Control CreateWalletActions(UiContext context, Action? send = null, string status = "Ready", bool hasCachedData = true)
 	{
 		var model = NewModel<WalletViewModel>(context);
-		SetProperty(model, nameof(WalletViewModel.Title), "My Wallet");
+		SetProperty(model, nameof(WalletViewModel.Title), "Magical Crypto Wallet");
 		SetProperty(model, nameof(WalletViewModel.IsSendButtonVisible), true);
+		SetProperty(model, nameof(WalletViewModel.HasCachedData), hasCachedData);
+		model.CanSpend = status == "Ready" && hasCachedData;
 		SetBackingField(model, nameof(WalletViewModel.WalletModel), NewWallet());
 		SetBackingField(model, nameof(WalletViewModel.Settings), NewModel<WalletSettingsViewModel>(context));
-		SetBackingField(model, nameof(WalletViewModel.Tiles), Array.Empty<ActivatableViewModel>());
-		var command = ReactiveCommand.Create(() => send?.Invoke());
-		var receiveCommand = ReactiveCommand.Create(() => { });
+		SetBackingField(model, nameof(WalletViewModel.Tiles), new ActivatableViewModel[]
+		{
+			new MagicalCryptoWallet.Fluent.ViewModels.Wallets.Home.Tiles.WalletBalanceTileViewModel(context, Observable.Return(new Amount(Money.Coins(0.055m))))
+		});
+		var command = ReactiveCommand.Create(() => send?.Invoke(), Observable.Return(model.CanSpend));
+		var receiveCommand = ReactiveCommand.Create(() => { }, Observable.Return(hasCachedData));
 		SetProperty(model, nameof(WalletViewModel.SendCommand), command);
 		SetProperty(model, nameof(WalletViewModel.SegwitReceiveCommand), receiveCommand);
 		model.DefaultReceiveCommand = receiveCommand;
+		var sync = NewModel<WalletSyncStatusViewModel>(context);
+		sync.StatusText = status;
+		sync.IsExpanded = status is "Syncing" or "Faulted";
+		sync.IsFaulted = status == "Faulted";
+		sync.Error = sync.IsFaulted ? "Synthetic storage is unavailable." : null;
+		SetBackingField(model, nameof(WalletViewModel.SyncStatus), sync);
 		var view = new WalletView { DataContext = model };
 		view.DetachedFromVisualTree += (_, _) => { command.Dispose(); receiveCommand.Dispose(); };
 		return view;
@@ -151,13 +163,15 @@ internal static class AutomaticCoinSelectionChecks
 	public static Control CreateWalletSettings(UiContext context)
 	{
 		var settings = NewModel<WalletSettingsViewModel>(context);
-		SetField(settings, "_wallet", NewWallet(severalTypes: true));
-		settings.WalletName = "My Wallet";
+		var wallet = NewWallet(severalTypes: true);
+		SetField(settings, "_wallet", wallet);
 		settings.DefaultReceiveScriptType = MagicalCryptoWallet.Fluent.Models.Wallets.ScriptType.SegWit;
 		settings.ChangeScriptPubKeyType = PreferredScriptPubKeyType.Unspecified.Instance;
 		SetBackingField(settings, nameof(WalletSettingsViewModel.ReceiveScriptTypes), new[] { MagicalCryptoWallet.Fluent.Models.Wallets.ScriptType.SegWit, MagicalCryptoWallet.Fluent.Models.Wallets.ScriptType.Taproot });
 		SetBackingField(settings, nameof(WalletSettingsViewModel.ChangeScriptPubKeyTypes), new PreferredScriptPubKeyType[] { PreferredScriptPubKeyType.Unspecified.Instance, PreferredScriptPubKeyType.Specified.SegWit, PreferredScriptPubKeyType.Specified.Taproot });
-		return new WalletGeneralSettingsView { DataContext = settings, Margin = new Thickness(24) };
+		var view = new WalletGeneralSettingsView { DataContext = settings, Margin = new Thickness(24) };
+		view.DetachedFromVisualTree += (_, _) => (wallet as IDisposable)?.Dispose();
+		return view;
 	}
 
 	private static T NewModel<T>(UiContext context) where T : ViewModelBase

@@ -58,9 +58,10 @@ foreach (var theme in new[] { ThemeVariant.Light, ThemeVariant.Dark })
                 Password = "synthetic-passphrase", ConfirmPassword = "synthetic-passphrase"
             }
         }, 640, 440);
+		var authorizationWallet = DispatchProxy.Create<IWalletModel, InertPreviewWallet>();
         Render("password-auth", new PasswordAuthDialogView
         {
-            DataContext = new PasswordAuthDialogViewModel(context, DispatchProxy.Create<IWalletModel, InertPreviewWallet>())
+            DataContext = new PasswordAuthDialogViewModel(context, authorizationWallet)
             {
                 Password = "synthetic-passphrase"
             }
@@ -71,6 +72,10 @@ foreach (var theme in new[] { ThemeVariant.Light, ThemeVariant.Dark })
         Render("single-wallet", SingleWalletChecks.CreatePreview(context), 800, 600);
         Render("wallet-setup", new AddWalletPageView { DataContext = new AddWalletPageViewModel(context) }, 800, 600);
         Render("wallet-actions", AutomaticCoinSelectionChecks.CreateWalletActions(context), 900, 650);
+        Render("dashboard-unknown", AutomaticCoinSelectionChecks.CreateWalletActions(context, status: "Loading", hasCachedData: false), 900, 650);
+        Render("dashboard-syncing", AutomaticCoinSelectionChecks.CreateWalletActions(context, status: "Syncing"), 900, 650);
+        Render("dashboard-offline", AutomaticCoinSelectionChecks.CreateWalletActions(context, status: "Offline"), 900, 650);
+        Render("dashboard-faulted", AutomaticCoinSelectionChecks.CreateWalletActions(context, status: "Faulted"), 900, 650);
         Render("transaction-preview", AutomaticCoinSelectionChecks.CreateTransactionPreview(context), 900, 650);
         Render("wallet-coins", AutomaticCoinSelectionChecks.CreateWalletCoins(context), 900, 650);
         Render("wallet-general-settings", AutomaticCoinSelectionChecks.CreateWalletSettings(context), 900, 650);
@@ -94,11 +99,15 @@ foreach (var theme in new[] { ThemeVariant.Light, ThemeVariant.Dark })
         }
     }
 }
-Console.WriteLine("Rendered actual Welcome, About, passphrase creation/authorization, Lurking Wife Mode, single-wallet sidebar/login, first-run setup, wallet actions, transaction preview, read-only coins, wallet settings, and title bar views in both themes at 100, 125, 150, and 200 percent.");
+Console.WriteLine("Rendered actual Welcome, About, passphrase creation/authorization, Lurking Wife Mode, single-wallet sidebar/dashboard, first-run setup, wallet actions, transaction preview, read-only coins, wallet settings, and title bar views in both themes at 100, 125, 150, and 200 percent.");
 
 // Authorize is never invoked. Any attempt to use a wallet service fails immediately.
 public class InertPreviewWallet : DispatchProxy
 {
-    protected override object? Invoke(MethodInfo? targetMethod, object?[]? args) => targetMethod?.Name == "get_IsHardwareWallet"
-        ? false : throw new InvalidOperationException("Wallet services are unavailable in the visual preview.");
+    protected override object? Invoke(MethodInfo? targetMethod, object?[]? args) => targetMethod?.Name switch
+	{
+		"get_IsHardwareWallet" => false,
+		"Dispose" => null,
+		_ => throw new InvalidOperationException("Wallet services are unavailable in the visual preview.")
+	};
 }

@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.Reflection;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
@@ -16,11 +17,9 @@ using MagicalCryptoWallet.Fluent.Models.UI;
 using MagicalCryptoWallet.Fluent.Models.Wallets;
 using MagicalCryptoWallet.Fluent.ViewModels;
 using MagicalCryptoWallet.Fluent.ViewModels.AddWallet;
-using MagicalCryptoWallet.Fluent.ViewModels.Login;
 using MagicalCryptoWallet.Fluent.ViewModels.NavBar;
 using MagicalCryptoWallet.Fluent.ViewModels.Navigation;
 using MagicalCryptoWallet.Fluent.ViewModels.Wallets;
-using MagicalCryptoWallet.Fluent.Views.Login;
 using NavBarView = MagicalCryptoWallet.Fluent.Views.NavBar.NavBar;
 
 internal static class SingleWalletChecks
@@ -42,8 +41,8 @@ internal static class SingleWalletChecks
 			Check(!sidebar.GetVisualDescendants().OfType<ListBox>().Any(), "The sidebar must have no wallet selector.");
 			var home = sidebar.GetVisualDescendants().OfType<NavBarItem>().Single();
 			var accessibleName = ControlAutomationPeer.CreatePeerForElement(home).GetName();
-			Check(home.Bounds.Width == 75 && accessibleName == "My Wallet",
-				$"The one wallet home button must retain its size and accessible name: width={home.Bounds.Width}, name={accessibleName}, context={home.DataContext?.GetType().Name}, title={(home.DataContext as WalletPageViewModel)?.Title}, tooltip={ToolTip.GetTip(home)}, command={home.Command is not null}.");
+			Check(home.Bounds.Width == 75 && accessibleName == "Magical Crypto Wallet",
+				$"The one wallet home button must retain its size and accessible name: width={home.Bounds.Width}, name={accessibleName}, context={home.DataContext?.GetType().Name}, title={(home.DataContext as WalletViewModel)?.Title}, tooltip={ToolTip.GetTip(home)}, command={home.Command is not null}.");
 			var point = home.TranslatePoint(new Point(home.Bounds.Width / 2, home.Bounds.Height / 2), window)!.Value;
 			window.MouseMove(point);
 			window.MouseDown(point, MouseButton.Left);
@@ -68,25 +67,22 @@ internal static class SingleWalletChecks
 	[SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The returned sidebar owns its command and disposes it on detachment.")]
 	public static Control CreatePreview(UiContext context, Action? onOpen = null)
 	{
-		// Render the real sidebar and login views without initializing wallet or network services.
-		var page = (WalletPageViewModel)RuntimeHelpers.GetUninitializedObject(typeof(WalletPageViewModel));
+		// Render the real sidebar and dashboard views without initializing wallet or network services.
+		var page = (WalletViewModel)RuntimeHelpers.GetUninitializedObject(typeof(WalletViewModel));
 		// Initialize base binding/validation events while leaving wallet and network services inert.
 		typeof(ViewModelBase).GetConstructor([typeof(UiContext)])!.Invoke(page, [context]);
-		page.Title = "My Wallet";
-		page.IconName = "nav_wallet_24_regular";
-		page.IconNameFocused = "nav_wallet_24_filled";
-		page.IsSelected = true;
+		typeof(WalletViewModel).GetProperty(nameof(WalletViewModel.Title))!.SetValue(page, "Magical Crypto Wallet");
+		page.IsActive = true;
 		var command = ReactiveCommand.Create(() => onOpen?.Invoke());
-		SetBackingField(page, nameof(WalletPageViewModel.OpenCommand), command);
-		var model = new NavBarViewModel(context) { Wallet = page };
+		SetBackingField(page, nameof(WalletViewModel.OpenCommand), command);
+		var model = new NavBarViewModel(context) { Home = page };
 		var sidebar = new NavBarView { DataContext = model };
 		sidebar.DetachedFromVisualTree += (_, _) => command.Dispose();
-		var wallet = DispatchProxy.Create<IWalletModel, SinglePreviewWallet>();
-		var login = new LoginView { DataContext = new LoginViewModel(context, wallet) { Password = "synthetic-passphrase" } };
+		var dashboard = AutomaticCoinSelectionChecks.CreateWalletActions(context);
 		var content = new Grid { ColumnDefinitions = new ColumnDefinitions("84,*") };
 		content.Children.Add(sidebar);
-		Grid.SetColumn(login, 1);
-		content.Children.Add(login);
+		Grid.SetColumn(dashboard, 1);
+		content.Children.Add(dashboard);
 		return content;
 	}
 
@@ -96,16 +92,4 @@ internal static class SingleWalletChecks
 	{
 		if (!success) { throw new InvalidOperationException(message); }
 	}
-}
-
-public class SinglePreviewWallet : DispatchProxy
-{
-	private readonly WalletSettingsModel _settings = (WalletSettingsModel)RuntimeHelpers.GetUninitializedObject(typeof(WalletSettingsModel));
-	protected override object? Invoke(MethodInfo? targetMethod, object?[]? args) => targetMethod?.Name switch
-	{
-		"get_Name" => "My Wallet",
-		"get_IsWatchOnlyWallet" => false,
-		"get_Settings" => _settings,
-		_ => throw new InvalidOperationException("Wallet services are unavailable in this preview.")
-	};
 }

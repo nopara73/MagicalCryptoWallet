@@ -36,6 +36,16 @@ The script uses the following default configuration (editable at the top of the 
 ./regtest-coinjoin-test.sh
 ```
 
+## Packaged application lifetime
+
+`test-single-wallet-process.py` creates a new synthetic encrypted regtest wallet in an isolated data directory with spaces, using a separately launched Bitcoin Core node. It verifies automatic first-setup synchronization, cached offline balance/history, reconnection, operation authorization, clean quit, credential disposal, and lock ownership. On Windows it also launches the actual desktop hidden, verifies no window or passphrase prompt, activates the same process in the foreground, captures its masked dashboard, and checks hide/reopen, duplicate silent launches, and daemon/network conflicts. Other platforms exercise the same lifecycle through the packaged daemon.
+
+```powershell
+python Contrib/Tests/test-single-wallet-process.py --package .artifacts/packages/win-x64/MagicalCryptoWallet --bitcoind MagicalCryptoWallet.IntegrationTests/bin/Release/net10.0/BundledApps/Binaries/win-x64/bitcoind.exe
+```
+
+The harness does not install the application, modify startup registration, broadcast publicly, or touch existing wallets. Its output directory contains synthetic test data; CI uploads only result JSON, logs, and screenshots. `--output <directory>` selects a different evidence directory. Failed checks terminate only the child processes launched by that run.
+
 ## References
 
 - Magical Crypto Wallet GitHub: https://github.com/nopara73/MagicalCryptoWallet

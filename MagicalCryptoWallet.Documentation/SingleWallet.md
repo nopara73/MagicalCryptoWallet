@@ -1,19 +1,54 @@
-# One wallet
+# Single-wallet storage and API migration
 
-Magical Crypto Wallet manages one wallet in the active network's data directory. First-run **Set Up Wallet** offers creation, hardware-wallet connection, explicit JSON import, and recovery. Once setup is complete, the sidebar has one wallet home button; there is no add-wallet entry, wallet list, or switching control. Multi-share recovery backups remain supported.
+MCW opens and synchronizes its configured wallet whenever the application starts, including silent desktop startup. The dashboard opens directly, shows placeholders until local data is known, then shows cached balance/history while synchronization continues. Detailed progress and retry appear in the expandable status surface. Protected operations validate their own passphrases. Any successful authorization also authorizes CoinJoin for this application run; automatic CoinJoin starts when synchronization and send/shutdown restrictions allow. This never skips authorization for later spending or private information. Chinese password masking and Lurking Wife Mode remain supported.
 
-Coinjoin returns wallet outputs to the same wallet. Payment batching and payments to external Bitcoin addresses remain available. There is no output-wallet selector or cross-wallet sweep.
+## Storage and setup
 
-## Existing application data
+One wallet is configured per active network and data directory. New creation, recovery, hardware connection, and explicit import create unsaved drafts and commit `Wallet.json` through a serialized, recoverable journal. Import sources stay unchanged; destination collisions and concurrent setup cannot overwrite stored keys or accept a second wallet.
 
-On the first start after this change, an installation with several wallet files adopts its last-used wallet from `UiConfig.json`, if that wallet exists in the active network directory. Otherwise it adopts the first filename in ordinal name order. Other wallet files are left untouched. The chosen name is saved atomically in `Wallets/.wallet` (or `Wallets/<network>/.wallet`), so file timestamps, directory enumeration, and later changes to old UI settings cannot change it.
+Existing filenames and the `.wallet` marker stay unchanged. A compatibility reader honors that marker, otherwise adopts the former last-used file if it exists, then the first filename in ordinal order. Additional files remain untouched. Missing, corrupt, invalid, or traversing configured paths produce a recovery error; another file is never substituted. Interrupted setup only rolls forward a file matching the recorded hash.
 
-A missing or corrupt configured wallet stops startup with an error instead of silently opening a different wallet. Restore the configured file from a backup. Renaming the wallet updates the saved identity.
+Filenames are storage details. There is no naming, renaming, switching, replacement, or manual loading UI. Use a fresh explicit `--datadir=<path>` and first-run setup for an independently configured wallet. Mainnet uses `Wallets/`; other networks use `Wallets/<network>/`.
 
-Application data stays separate from other wallets' application data. To import or recover a different wallet, use a fresh data directory with `--datadir=<path>` and complete initial setup there. Keep existing wallet files and recovery backups. Do not overwrite a configured wallet to replace it.
+## RPC
 
-## RPC and daemon
+Every application wallet operation uses the root endpoint, such as `http://127.0.0.1:38128/`. Retired methods, old name arguments, and named endpoint paths fail explicitly.
 
-The daemon starts the configured wallet automatically. Wallet operations use the root RPC endpoint, for example `http://127.0.0.1:38128/`. `loadwallet` takes no parameters. `createwallet` and `recoverwallet` configure the first wallet and reject further creation before writing a file. Wallet-name URL paths, named-wallet CLI arguments, `listwallets`, and `startcoinjoinsweep` are removed.
+| Interface | Current contract |
+|---|---|
+| `createwallet` | Required `password`; configure and start automatically. |
+| `recoverwallet` | Required `mnemonicStr`, optional `password`; configure and start automatically. |
+| `getwalletinfo` | Works before setup and during startup; reports state, cached-data availability, synchronization, heights, account coverage, and CoinJoin authorization. |
+| `loadwallet` | Removed. Observe readiness instead. |
+| `walletName`, `loaded` | Removed from wallet information. |
+| Wallet URL paths and CLI selection arguments | Removed. The configured session is implicit. |
+| Signing/private operations | Validate the supplied passphrase for each operation. CoinJoin authorization cannot authorize unrelated requests. |
 
-The CLI helpers and Scheme `(wallet)` function use the configured wallet directly. The regtest harness runs separate clients with one wallet, data directory, and RPC port each to simulate independent Coinjoin participants.
+An initial status response includes:
+
+```json
+{
+  "state": "Unconfigured",
+  "hasCachedData": false,
+  "synchronized": false,
+  "syncHeight": null,
+  "targetHeight": null,
+  "coinJoinRequiresAuthorization": false,
+  "publicMetadataRequiresAuthorization": false,
+  "error": null,
+  "balance": null,
+  "accounts": []
+}
+```
+
+`balance` is in satoshis and remains `null` until public local state is initialized. A numeric balance with `synchronized: false` is cached. Heights may be unavailable. `Ready` means known accounts have caught up; a legacy account needing metadata authorization never reports complete synchronization. Mutations fail clearly while unready, offline, or unauthorized. CoinJoin authorization lasts until process shutdown and does not cause hidden startup prompts.
+
+Scripts should poll status with a deadline, stop on `Unconfigured`, `Faulted`, or `Stopping`, and fail on timeout. The bundled payment helpers use a two-minute readiness deadline, prompt without echo for protected operations, and check RPC errors. `wcli.sh --json` reads a sensitive JSON request from stdin so passphrases need not enter command history or process arguments. Use `MAGICALCRYPTOWALLET_DATADIR` or `MAGICALCRYPTOWALLET_CONFIG` to choose the explicit context.
+
+## Scheme and diagnostics
+
+`(wallet)` accesses the configured wallet. `(wallet-status)` exposes the session snapshot and `(wallet-info)` works before setup. `open-wallet`, `__start_wallet`, and wallet-name accessors are removed. Diagnostics no longer take wallet-name arguments. Transaction graph generation still takes its transaction ID.
+
+Bitcoin Core retains its own wallet-management commands in test infrastructure. Regtest CoinJoin participants are independent single-wallet clients, each with its own data directory and RPC port; they do not represent multiple wallets in one MCW process.
+
+See [architecture and deletion summary](SingleWalletArchitecture.md) for lifecycle, authorization, CoinJoin coordination, and activation behavior.

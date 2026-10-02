@@ -1,6 +1,8 @@
 # MagicalCryptoWallet CLI
 
-A bash script for interaction with the Magical Crypto Wallet RPC server. Every wallet operation uses the root endpoint and the one configured wallet. `loadwallet` takes no parameters. Set `MAGICALCRYPTOWALLET_DATADIR` to use an explicit client data directory.
+A bash script for interaction with the Magical Crypto Wallet RPC server. Every wallet operation uses the root endpoint and the one configured wallet. Synchronization starts automatically; use `getwalletinfo` to observe readiness. Set `MAGICALCRYPTOWALLET_DATADIR` to use an explicit client data directory.
+
+For sensitive requests, pipe JSON to `./wcli.sh --json`; passphrases should not appear in shell history or process arguments. The payment helpers prompt without echo, check authorization errors, and bound startup readiness waits to two minutes. They use the active network configuration (or `MAGICALCRYPTOWALLET_CONFIG`).
 
 USAGE:
 
@@ -44,15 +46,21 @@ $ ./wcli.sh getstatus
 $ ./wcli.sh getwalletinfo
 
 {
-  "walletName": "MyWallet",
-  "walletFile": "/home/ricardo/.magicalcryptowallet/client/Wallets/MyWallet.json",
-  "state": "Started",
+  "walletFile": "/home/ricardo/.magicalcryptowallet/client/Wallets/Wallet.json",
+  "state": "Ready",
+  "hasCachedData": true,
+  "synchronized": true,
+  "syncHeight": 900000,
+  "targetHeight": 900000,
+  "coinJoinRequiresAuthorization": true,
+  "publicMetadataRequiresAuthorization": false,
+  "error": null,
   "masterKeyFingerprint": "d415c529",
   "anonScoreTarget": 5,
   "isWatchOnly": false,
   "isHardwareWallet": false,
   "isAutoCoinjoin": true,
-  "isRedCoinIsolation": false,
+  "isNonPrivateCoinIsolation": false,
   "accounts": [
     {
       "name": "segwit",

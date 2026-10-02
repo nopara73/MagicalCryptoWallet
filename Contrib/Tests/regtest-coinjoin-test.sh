@@ -179,7 +179,7 @@ create_and_fund_wallet() {
   local port=$((MAGICALCRYPTOWALLET_WALLET_RPC_PORT + client))
 
   echo -e "${YELLOW}Creating MagicalCryptoWallet wallet $wallet_name...${NC}"
-  local request="{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"createwallet\",\"params\":[\"$wallet_name\", \"\"]}"
+  local request="{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"createwallet\",\"params\":[\"\"]}"
   echo "→ $request"
 
   local response=$(curl -s -X POST "http://127.0.0.1:$port/" -H "Content-Type: application/json" -d "$request")
@@ -188,12 +188,16 @@ create_and_fund_wallet() {
   echo -e "${YELLOW}Generating a block to make sure wallet loading will succeed...${NC}"
   bitcoin-cli -regtest -rpcport=$BITCOIN_RPC_PORT -rpcuser=regtest -rpcpassword=regtest generatetoaddress 1 $(bitcoin-cli -regtest -rpcport=$BITCOIN_RPC_PORT -rpcuser=regtest -rpcpassword=regtest -rpcwallet="default" getnewaddress) > /dev/null
 
-  echo -e "${YELLOW}Loading wallet $wallet_name...${NC}"
-  local request="{\"jsonrpc\":\"2.0\",\"id\":\"2\",\"method\":\"loadwallet\",\"params\":[]}"
-  echo "→ $request"
-
-  local response=$(curl -s -X POST "http://127.0.0.1:$port/" -H "Content-Type: application/json" -d "$request")
-  echo "← $response"
+  local deadline=$((SECONDS + 120))
+  while (( SECONDS < deadline )); do
+    local info=$(curl -s --max-time 5 -X POST "http://127.0.0.1:$port/" -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","id":2,"method":"getwalletinfo"}')
+    if [[ $(echo "$info" | jq -r '.result.state') == "Ready" ]]; then break; fi
+    sleep 1
+  done
+  if [[ $(echo "$info" | jq -r '.result.state') != "Ready" ]]; then
+    echo "Client $client did not become ready: $info" >&2
+    exit 1
+  fi
 
   local i
   for (( i = 0; i < 4; i++ )); do

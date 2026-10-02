@@ -1,0 +1,5 @@
+{
+  "forbidden_pattern": "\\b(?:WalletManager|WalletRepository|WalletId|WalletPageViewModel|WalletLoadWorkflow|WalletAuthModel|WalletLoginResult|WalletNamePageViewModel|WalletNamePageView|LoginViewModel|LoginView|LoadingViewModel|LoadingView|WalletLoaded|IsLoggedIn|walletName|LastSelectedWallet|loadwallet|listwallets|startcoinjoinsweep|__start_wallet)\\b|open-wallet|wallet-name",
+  "removed_coin_control_pattern": "(?!)",
+  "allowed_user_strings": ["LastSelectedWallet"]
+}

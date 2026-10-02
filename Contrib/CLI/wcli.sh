@@ -1,42 +1,26 @@
 #!/usr/bin/env bash
-
-function config_extract() {
-  jq -r "$1" "${MAGICALCRYPTOWALLET_DATADIR:-$HOME/.magicalcryptowallet/client}/Config.json"
-}
-
-CREDENTIALS=$(config_extract '.JsonRpcUser + ":" + .JsonRpcPassword')
-ENDPOINT=$(config_extract '.JsonRpcServerPrefixes[0]')
-BASIC_AUTH=$([ "$CREDENTIALS" == ":" ] && echo "" || echo "--user ${CREDENTIALS}")
-
-METHOD=$1
-shift
-
-if [ $# -ge 1 ]; then
-    if [[ "$1" ]]; then
-        PARAMS="\"$1\""
-        shift
-    else
-        PARAMS="\"\""
-        shift
-    fi
-
-    while (( "$#" )); do
-        if [[ "$1" ]]; then
-            PARAMS="$PARAMS, $1"
-        fi
-        shift
+source "$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)/rpc-common.sh"
+if [[ "${1:-}" == --json ]]; then
+    REQUEST=$(cat)
+    METHOD=$(printf '%s' "$REQUEST" | jq -er '.method') || exit 1
+else
+    METHOD="${1:?Usage: wcli.sh command [arguments] or wcli.sh --json < request.json}"
+    shift
+    PARAMS='[]'
+    for value in "$@"; do
+        item=$(printf '%s' "$value" | jq -Rsc '. as $text | try fromjson catch $text')
+        PARAMS=$(printf '%s' "$PARAMS" | jq -c --argjson item "$item" '. + [$item]')
     done
+    REQUEST=$(jq -nc --arg method "$METHOD" --argjson params "$PARAMS" '{jsonrpc:"2.0",id:1,method:$method,params:$params}')
 fi
-
-REQUEST="{\"jsonrpc\":\"2.0\", \"id\":\"curltext\", \"method\":\"$METHOD\", \"params\":[$PARAMS]}"
-RESULT=$(curl -s $BASIC_AUTH --data-binary "$REQUEST" -H "Content-Type: application/json" "$ENDPOINT")
+RESULT=$(mcw_rpc_raw "$REQUEST")
 CURL_ERRORCODE=$?
-RESULT_ERROR=$(echo "$RESULT" | jq -r .error)
-CURL_FAIL_TO_CONNECT_ERRORCODE=7
+RESULT_ERROR=$(printf '%s' "$RESULT" | jq -r .error)
 
 rawprint=(help)
-if [ $CURL_ERRORCODE -eq $CURL_FAIL_TO_CONNECT_ERRORCODE ]; then
-    echo "It was not possible to get a response. RPC server could be disabled."
+if [ $CURL_ERRORCODE -ne 0 ]; then
+    echo "It was not possible to get a response. RPC server could be disabled." >&2
+    exit 1
 elif [[ "$RESULT_ERROR" == "null" ]]; then
     if [[ " ${rawprint[*]} " =~ ${METHOD} || ${METHOD} == 'query' ]]; then
        echo "$RESULT" | jq -r .result
@@ -51,5 +35,6 @@ elif [[ "$RESULT_ERROR" == "null" ]]; then
         fi
     fi
 else
-   echo "$RESULT_ERROR" | jq -r .message
+   echo "$RESULT_ERROR" | jq -r .message >&2
+   exit 1
 fi

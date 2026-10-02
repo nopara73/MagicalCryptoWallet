@@ -3,55 +3,31 @@
 # MagicalCryptoWallet CoinJoin Payment Runner
 # Starts coinjoin and monitors payments, adapting to new/cancelled payments
 
-function config_extract() {
-  jq -r "$1" "${MAGICALCRYPTOWALLET_DATADIR:-$HOME/.magicalcryptowallet/client}/Config.json"
-}
-
-RPC_CREDENTIALS=$(config_extract '.JsonRpcUser + ":" + .JsonRpcPassword')
-RPC_ENDPOINT=$(config_extract '.JsonRpcServerPrefixes[0]')
-BASIC_AUTH=$([ "$RPC_CREDENTIALS" == ":" ] && echo "" || echo "--user ${RPC_CREDENTIALS}")
+source "$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)/rpc-common.sh"
 
 # Check RPC connection
-status=$(curl -s $BASIC_AUTH --connect-timeout 3 -d '{"jsonrpc":"2.0","id":"1","method":"getstatus"}' "$RPC_ENDPOINT" 2>/dev/null)
+status=$(mcw_rpc '{"jsonrpc":"2.0","id":"1","method":"getstatus"}' 2>/dev/null)
 if [ -z "$status" ]; then
     echo "Error: Cannot connect to Magical Crypto Wallet RPC at $RPC_ENDPOINT"
     echo "Make sure MagicalCryptoWallet is running and RPC is enabled in Config.json"
     exit 1
 fi
 
-# Use the one configured wallet.
-info=$(curl -s $BASIC_AUTH -d '{"jsonrpc":"2.0","id":"1","method":"getwalletinfo"}' "$RPC_ENDPOINT")
-info_error=$(echo "$info" | jq -r '.error.message // empty')
-if [ -n "$info_error" ]; then
-    echo "Error: $info_error"
-    exit 1
-fi
-WALLET=$(echo "$info" | jq -r '.result.walletName')
-
-# Load wallet if not already loaded
-echo ""
-echo "Loading wallet $WALLET (this may take a moment)..."
-load_result=$(curl -s $BASIC_AUTH -d '{"jsonrpc":"2.0","id":"1","method":"loadwallet","params":[]}' "$RPC_ENDPOINT")
-load_error=$(echo "$load_result" | jq -r '.error.message // empty')
-
-if [ -n "$load_error" ] && [[ "$load_error" != *"already"* ]]; then
-    echo "Error loading wallet: $load_error"
-    exit 1
-fi
+mcw_wait_ready || exit 1
 echo "Wallet ready."
 
 # Handle Ctrl+C gracefully
 cleanup() {
     echo ""
     echo "Stopping coinjoin..."
-    curl -s $BASIC_AUTH -d '{"jsonrpc":"2.0","id":"1","method":"stopcoinjoin"}' "$RPC_ENDPOINT" > /dev/null
+    mcw_rpc '{"jsonrpc":"2.0","id":"1","method":"stopcoinjoin"}' > /dev/null || exit 1
     echo "CoinJoin stopped."
     exit 0
 }
 trap cleanup SIGINT
 
 get_pending() {
-    curl -s $BASIC_AUTH -d '{"jsonrpc":"2.0","id":"1","method":"listpaymentsincoinjoin"}' "$RPC_ENDPOINT" \
+    mcw_rpc '{"jsonrpc":"2.0","id":"1","method":"listpaymentsincoinjoin"}' \
         | jq '[.result[] | select(.state[0].status == "Pending")] | sort_by(.address)'
 }
 
@@ -67,7 +43,7 @@ show_pending() {
 
 # Show initial state
 echo ""
-echo "=== Wallet: $WALLET ==="
+echo "=== Wallet: Magical Crypto Wallet ==="
 echo ""
 echo "Pending payments:"
 prev=$(get_pending)
@@ -84,7 +60,7 @@ fi
 
 # Start coinjoin
 echo ""
-curl -s $BASIC_AUTH -d '{"jsonrpc":"2.0","id":"1","method":"startcoinjoin","params":["",false,true]}' "$RPC_ENDPOINT" > /dev/null
+mcw_authorized_rpc startcoinjoin '[false,true]' > /dev/null || exit 1
 echo "=== CoinJoin started ==="
 echo ""
 
@@ -142,5 +118,5 @@ done
 echo ""
 echo "=== All payments done ==="
 
-curl -s $BASIC_AUTH -d '{"jsonrpc":"2.0","id":"1","method":"stopcoinjoin"}' "$RPC_ENDPOINT" > /dev/null
+mcw_rpc '{"jsonrpc":"2.0","id":"1","method":"stopcoinjoin"}' > /dev/null || exit 1
 echo "CoinJoin stopped"

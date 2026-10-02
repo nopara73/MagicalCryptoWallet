@@ -283,6 +283,7 @@ result/
 
 # Local validation, downloaded source archives, and package output.
 .artifacts/
+/Logs.txt
 packages/
 ThirdParty/WabiSabi/c/build*/
 ThirdParty/WabiSabi/csharp/WabiSabi/runtimes/

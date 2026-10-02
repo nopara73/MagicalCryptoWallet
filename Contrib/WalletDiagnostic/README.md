@@ -1,7 +1,7 @@
 Wallet diagnostic
 ----------
 
-Toolset for observe the internal state of wallets.
+Tools for observing the configured wallet.
 
 ## MagicalCryptoWallet keys state generation
 
@@ -9,12 +9,12 @@ Create a visual representation from a MagicalCryptoWallet keys dump.
 
 ### How to run it
 
-Run MagicalCryptoWallet, open the wallet you are interested in.
+Run MCW and wait for its configured wallet to synchronize.
 
 Next open a terminal and enter:
 
 ```bash
-dotnet fsi keygraph.fsx <wallet-name>
+dotnet fsi keygraph.fsx
 ```
 
 ### The result
@@ -31,12 +31,12 @@ Create a visual representation from a MagicalCryptoWallet coins dump.
 
 ### How to run it
 
-Run MagicalCryptoWallet, open the wallet you are interested in.
+Run MCW and wait for its configured wallet to synchronize.
 
 Next open a terminal and enter:
 
 ```bash
-dotnet fsi txgraph.fsx <wallet-name> <initial-txid> | dot -Tpng | feh  -
+dotnet fsi txgraph.fsx <initial-txid> | dot -Tpng | feh  -
 ```
 
 ## The result

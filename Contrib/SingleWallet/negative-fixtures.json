@@ -1,0 +1,7 @@
+[
+  "WalletManager", "WalletRepository", "WalletId", "WalletPageViewModel", "WalletLoadWorkflow",
+  "WalletAuthModel", "WalletLoginResult", "WalletNamePageViewModel", "WalletNamePageView",
+  "LoginViewModel", "LoginView", "LoadingViewModel", "LoadingView", "WalletLoaded", "IsLoggedIn",
+  "walletName", "LastSelectedWallet", "loadwallet", "listwallets", "startcoinjoinsweep",
+  "__start_wallet", "open-wallet", "wallet-name"
+]

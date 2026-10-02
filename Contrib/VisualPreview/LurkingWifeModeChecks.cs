@@ -34,8 +34,8 @@ internal static class LurkingWifeModeChecks
 		var services = (Services)RuntimeHelpers.GetUninitializedObject(typeof(Services));
 		SetBackingField(services, nameof(Services.UiConfig), _config);
 		typeof(Services).GetProperty(nameof(Services.Instance))!.SetValue(null, services);
-		var repository = (WalletRepository)RuntimeHelpers.GetUninitializedObject(typeof(WalletRepository));
-		SetBackingField(context, nameof(UiContext.WalletRepository), repository);
+		var repository = (WalletSetupService)RuntimeHelpers.GetUninitializedObject(typeof(WalletSetupService));
+		SetBackingField(context, nameof(UiContext.WalletSetupService), repository);
 
 		foreach (bool initiallyEnabled in new[] { false, true })
 		{

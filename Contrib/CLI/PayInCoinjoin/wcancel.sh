@@ -3,48 +3,24 @@
 # MagicalCryptoWallet Cancel Payments in CoinJoin
 # Interactive selection to cancel pending payments
 
-function config_extract() {
-  jq -r "$1" "${MAGICALCRYPTOWALLET_DATADIR:-$HOME/.magicalcryptowallet/client}/Config.json"
-}
-
-RPC_CREDENTIALS=$(config_extract '.JsonRpcUser + ":" + .JsonRpcPassword')
-RPC_ENDPOINT=$(config_extract '.JsonRpcServerPrefixes[0]')
-BASIC_AUTH=$([ "$RPC_CREDENTIALS" == ":" ] && echo "" || echo "--user ${RPC_CREDENTIALS}")
+source "$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)/rpc-common.sh"
 
 # Check RPC connection
-status=$(curl -s $BASIC_AUTH --connect-timeout 3 -d '{"jsonrpc":"2.0","id":"1","method":"getstatus"}' "$RPC_ENDPOINT" 2>/dev/null)
+status=$(mcw_rpc '{"jsonrpc":"2.0","id":"1","method":"getstatus"}' 2>/dev/null)
 if [ -z "$status" ]; then
     echo "Error: Cannot connect to Magical Crypto Wallet RPC at $RPC_ENDPOINT"
     echo "Make sure MagicalCryptoWallet is running and RPC is enabled in Config.json"
     exit 1
 fi
 
-# Use the one configured wallet.
-info=$(curl -s $BASIC_AUTH -d '{"jsonrpc":"2.0","id":"1","method":"getwalletinfo"}' "$RPC_ENDPOINT")
-info_error=$(echo "$info" | jq -r '.error.message // empty')
-if [ -n "$info_error" ]; then
-    echo "Error: $info_error"
-    exit 1
-fi
-WALLET=$(echo "$info" | jq -r '.result.walletName')
-
-# Load wallet if not already loaded
-echo ""
-echo "Loading wallet $WALLET (this may take a moment)..."
-load_result=$(curl -s $BASIC_AUTH -d '{"jsonrpc":"2.0","id":"1","method":"loadwallet","params":[]}' "$RPC_ENDPOINT")
-load_error=$(echo "$load_result" | jq -r '.error.message // empty')
-
-if [ -n "$load_error" ] && [[ "$load_error" != *"already"* ]]; then
-    echo "Error loading wallet: $load_error"
-    exit 1
-fi
+mcw_wait_ready || exit 1
 echo "Wallet ready."
 echo ""
 echo "=== Pending Payments ==="
 echo ""
 
 # Get pending payments
-result=$(curl -s $BASIC_AUTH -d '{"jsonrpc":"2.0","id":"1","method":"listpaymentsincoinjoin"}' "$RPC_ENDPOINT")
+result=$(mcw_rpc '{"jsonrpc":"2.0","id":"1","method":"listpaymentsincoinjoin"}')
 error=$(echo "$result" | jq -r '.error.message // empty')
 
 if [ -n "$error" ]; then
@@ -84,7 +60,7 @@ if [[ "${choice^^}" == "A" ]]; then
     echo ""
     ids=$(echo "$payments" | jq -r '.[].id')
     for id in $ids; do
-        curl -s $BASIC_AUTH -d '{"jsonrpc":"2.0","id":"1","method":"cancelpaymentincoinjoin","params":["'"$id"'"]}' "$RPC_ENDPOINT" > /dev/null
+        mcw_authorized_rpc cancelpaymentincoinjoin "$(jq -nc --arg id "$id" '[$id]')" > /dev/null || exit 1
         amount=$(echo "$payments" | jq -r ".[] | select(.id == \"$id\") | .amount")
         address=$(echo "$payments" | jq -r ".[] | select(.id == \"$id\") | .address")
         echo "Cancelled: $amount sats -> $address"
@@ -112,7 +88,7 @@ for sel in $selections; do
     amount=$(echo "$payments" | jq -r ".[$idx].amount")
     address=$(echo "$payments" | jq -r ".[$idx].address")
 
-    cancel_result=$(curl -s $BASIC_AUTH -d '{"jsonrpc":"2.0","id":"1","method":"cancelpaymentincoinjoin","params":["'"$id"'"]}' "$RPC_ENDPOINT")
+    cancel_result=$(mcw_authorized_rpc cancelpaymentincoinjoin "$(jq -nc --arg id "$id" '[$id]')") || continue
     cancel_error=$(echo "$cancel_result" | jq -r '.error.message // empty')
 
     if [ -n "$cancel_error" ]; then
