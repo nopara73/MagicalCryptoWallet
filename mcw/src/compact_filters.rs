@@ -125,17 +125,18 @@ pub fn basic_key(block_hash: &[u8; 32]) -> [u8; 16] {
 /// SipHash-2-4, with little-endian key words and little-endian message words.
 /// This is BIP158's keyed mapping primitive, not a wallet signing primitive.
 pub fn siphash24(key: &[u8; 16], message: &[u8]) -> u64 {
-    let k0 = u64::from_le_bytes(key[..8].try_into().unwrap());
-    let k1 = u64::from_le_bytes(key[8..].try_into().unwrap());
+    let (key_words, _) = key.as_chunks::<8>();
+    let k0 = u64::from_le_bytes(key_words[0]);
+    let k1 = u64::from_le_bytes(key_words[1]);
     let mut state = [
         0x736f6d6570736575 ^ k0,
         0x646f72616e646f6d ^ k1,
         0x6c7967656e657261 ^ k0,
         0x7465646279746573 ^ k1,
     ];
-    let mut words = message.chunks_exact(8);
-    for word in &mut words {
-        let word = u64::from_le_bytes(word.try_into().unwrap());
+    let (words, remaining) = message.as_chunks::<8>();
+    for &word in words {
+        let word = u64::from_le_bytes(word);
         state[3] ^= word;
         sip_round(&mut state);
         sip_round(&mut state);
@@ -143,7 +144,7 @@ pub fn siphash24(key: &[u8; 16], message: &[u8]) -> u64 {
     }
     // SipHash encodes the message length modulo 256 in the high byte.
     let mut last = (message.len() as u64) << 56;
-    for (i, &byte) in words.remainder().iter().enumerate() {
+    for (i, &byte) in remaining.iter().enumerate() {
         last |= u64::from(byte) << (8 * i);
     }
     state[3] ^= last;
