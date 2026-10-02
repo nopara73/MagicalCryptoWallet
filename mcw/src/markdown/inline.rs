@@ -136,6 +136,8 @@ pub(super) fn parse(
     let bytes = text.as_bytes();
     while i < bytes.len() {
         budget.charge(1)?;
+        #[cfg(test)]
+        budget.progress(i)?;
         if bytes[i] == b'<'
             && let Some(end) = find_byte(&bytes[i..], b'>', 7, budget)?
         {

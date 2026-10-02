@@ -3,6 +3,10 @@
 //! engine. Unsupported markup stays literal and no resource is ever fetched.
 #![forbid(unsafe_code)]
 mod inline;
+#[cfg(test)]
+mod progress;
+#[cfg(test)]
+pub(crate) use progress::{ProgressCheckpoint, with_progress_observer};
 use std::sync::atomic::{AtomicBool, Ordering};
 
 pub const OPERATION: u16 = 0x1100;
@@ -70,6 +74,21 @@ impl Budget<'_> {
         }
         if self.cancel.load(Ordering::Relaxed) {
             return Err(Error::Cancelled);
+        }
+        Ok(())
+    }
+    #[cfg(test)]
+    fn progress(&self, inline_byte_offset: usize) -> Result<(), Error> {
+        if inline_byte_offset != 0 {
+            progress::notify(ProgressCheckpoint {
+                charged_work: self.work,
+                inline_byte_offset,
+            });
+            // A synchronized reader can set the real token while the observer
+            // is paused. Recheck it before the parser resumes this charged step.
+            if self.cancel.load(Ordering::Relaxed) {
+                return Err(Error::Cancelled);
+            }
         }
         Ok(())
     }

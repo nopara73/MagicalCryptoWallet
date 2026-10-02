@@ -190,5 +190,34 @@ All verifier locks release in `finally` before source review/publication.
    verify remote ancestry and report the exact commit. Update the worker handoff
    with actual production integration/package retirement evidence.
 
+## Synchronized cancellation test support
+
+The existing incorporation now has a scoped observer in
+`mcw/src/markdown/progress.rs`, present only under `cfg(test)`. There was no
+equivalent observer in this subtree. Crate tests call
+`markdown::with_progress_observer(observer, action)` on the dispatch thread.
+`observer` is `impl FnMut(ProgressCheckpoint) + 'static`; `action` is
+`impl FnOnce() -> T`, and the function returns `T`.
+
+`ProgressCheckpoint` has public `charged_work` and `inline_byte_offset` fields.
+It fires after nonzero inline bytes have actually been consumed and the next
+step is charged. A callback can wait for offset32 or1024, signal a reader test,
+and await its resume channel. The parser rechecks the provided AtomicBool
+immediately after the callback returns. Scoped thread-local installation
+restores any previous callback on normal return or unwind; nested callback
+parsing cannot recursively invoke the same observer. The entire observer
+module, export and call compile out of production. Parse/dispatch signatures,
+pre-scan/pre-allocation charging and the production presentation are unchanged.
+
+Two added local checks prove cancellation of an initially live token after real
+parser progress and thread isolation/nested-unwind restoration. All original
+nineteen checks remain, for21 total; thirteen legacy comparisons and sixteen
+renderer cases still pass. Run evidence with stable before/after inputs is
+`.artifacts/native-ui-markdown-verification/runs/20261002T163249118Z/`.
+This local flag test is not the actual shared-dispatcher/Inbox CANCEL, EOF or
+overload proof; those tests and activation publication belong to QR. The
+prepared integration now uses its live Inbox Arc token, while the published
+activation/retirement flags remain gated until the atomic batch is verified.
+
 No whole UI/help/wallet rewrite, general platform edit, deployment readiness
 claim or replacement assignment belongs to this bounded work.

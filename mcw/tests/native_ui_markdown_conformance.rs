@@ -2,11 +2,82 @@
 pub mod markdown;
 use markdown::*;
 use std::sync::atomic::AtomicBool;
+use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::{Arc, mpsc};
+use std::time::Duration;
 fn parsed(text: &str) -> Document {
     parse(text, &AtomicBool::new(false)).unwrap()
 }
 fn flat(block: &Block) -> String {
     block.runs.iter().map(|r| r.text.as_str()).collect()
+}
+
+#[test]
+fn scoped_observer_synchronizes_cancellation_after_real_inline_progress() {
+    let cancel = Arc::new(AtomicBool::new(false));
+    let worker_cancel = Arc::clone(&cancel);
+    let (progress_tx, progress_rx) = mpsc::sync_channel(1);
+    let (resume_tx, resume_rx) = mpsc::sync_channel(1);
+    let worker = std::thread::spawn(move || {
+        let mut observed = false;
+        with_progress_observer(
+            move |checkpoint| {
+                if !observed && checkpoint.inline_byte_offset >= 32 {
+                    observed = true;
+                    progress_tx.send(checkpoint).unwrap();
+                    resume_rx.recv_timeout(Duration::from_secs(10)).unwrap();
+                }
+            },
+            || parse(&"a".repeat(1000), &worker_cancel),
+        )
+    });
+    let checkpoint = progress_rx.recv_timeout(Duration::from_secs(10)).unwrap();
+    assert!(checkpoint.inline_byte_offset >= 32);
+    assert!(checkpoint.charged_work > checkpoint.inline_byte_offset);
+    assert!(!cancel.load(Ordering::Relaxed));
+    cancel.store(true, Ordering::Relaxed);
+    resume_tx.send(()).unwrap();
+    assert_eq!(worker.join().unwrap(), Err(Error::Cancelled));
+}
+
+#[test]
+fn scoped_observer_is_thread_local_and_restores_after_nested_unwind() {
+    let outer = Arc::new(AtomicUsize::new(0));
+    let inner = Arc::new(AtomicUsize::new(0));
+    let outer_callback = Arc::clone(&outer);
+    with_progress_observer(
+        move |_| {
+            outer_callback.fetch_add(1, Ordering::Relaxed);
+        },
+        || {
+            parsed("abc");
+            let before = outer.load(Ordering::Relaxed);
+            std::thread::spawn(|| parsed("thread-local"))
+                .join()
+                .unwrap();
+            assert_eq!(outer.load(Ordering::Relaxed), before);
+            let inner_callback = Arc::clone(&inner);
+            let panic = std::panic::catch_unwind(|| {
+                with_progress_observer(
+                    move |_| {
+                        inner_callback.fetch_add(1, Ordering::Relaxed);
+                    },
+                    || {
+                        parsed("inner");
+                        panic!("test observer unwind");
+                    },
+                )
+            });
+            assert!(panic.is_err());
+            assert!(inner.load(Ordering::Relaxed) > 0);
+            assert_eq!(outer.load(Ordering::Relaxed), before);
+            parsed("restored");
+            assert!(outer.load(Ordering::Relaxed) > before);
+        },
+    );
+    let before = outer.load(Ordering::Relaxed);
+    parsed("observer removed");
+    assert_eq!(outer.load(Ordering::Relaxed), before);
 }
 
 #[test]
