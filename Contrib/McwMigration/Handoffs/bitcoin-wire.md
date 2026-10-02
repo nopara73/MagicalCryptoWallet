@@ -243,12 +243,12 @@ from `82127991068522210cdcf77080dc9b819502e486`). The following live production
 paths still use NBitcoin's transaction binary/hex/hash responsibility and must be
 routed by the integrator before this responsibility can be reported migrated:
 
+The standalone transaction-file import/paste flow was removed after this baseline.
+
 | Path | Retained behavior |
 | --- | --- |
 | `MagicalCryptoWallet.Client/Rpc/MagicalCryptoWalletJsonRpcService.cs` | `Transaction.Parse` at 373/424; transaction hex at 244/272/399/417; RPC serializers also expose transaction/hash objects. |
 | `MagicalCryptoWallet/Stores/TransactionSqliteStorage.cs` | Binary `ToBytes` at 187; `Transaction.Load` at 416; txids stored in raw little-endian/digest order. |
-| `MagicalCryptoWallet.Fluent/Models/TransactionBroadcasterModel.cs` | Raw transaction import, `Transaction.Parse` at 24. |
-| `MagicalCryptoWallet.Fluent/Helpers/TransactionHelpers.cs` | Import/parse helper at 121. |
 | `MagicalCryptoWallet/Blockchain/TransactionBroadcasting/TransactionBroadcaster.cs` | Broadcast transaction hex at 104. |
 | `MagicalCryptoWallet/Blockchain/Transactions/TransactionSummary.cs` | Transaction hex at 22. |
 | `MagicalCryptoWallet/Exceptions/InvalidTxException.cs` | Transaction hex in diagnostics at 25. |

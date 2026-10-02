@@ -326,7 +326,7 @@
   {
     "path": "Contrib/SingleWallet/negative-fixtures.json",
     "line": 42,
-    "line_sha256": "2dce03aea2ce77db0d9c4b1b1e977bb98f54f9198cc66008eda339050aad79a6",
+    "line_sha256": "b09cc3b7de2994f67020dd8d250355552dad15db72c08b6155aba3868bf8d1b1",
     "reason": "Explicit negative fixture must be rejected by the removal scanner."
   },
   {
@@ -376,5 +376,83 @@
     "line": 308,
     "line_sha256": "84e7d5238193c363fcf305c34157888f4a17f93a6174b2687c054cf2c0398aad",
     "reason": "Bitcoin Core harness-only mining wallet reload; no application wallet-selection support."
+  },
+  {
+    "path": "Contrib/SingleWallet/negative-fixtures.json",
+    "line": 43,
+    "line_sha256": "0e818974308de95dbfd2584ccefe853cde1f2fefb2fd20e2fe4c5a56b8025da9",
+    "reason": "Explicit negative fixture must be rejected by the removal scanner."
+  },
+  {
+    "path": "Contrib/SingleWallet/negative-fixtures.json",
+    "line": 44,
+    "line_sha256": "ca70978cda94e2d8ee401e43709aa430e084e54a6c840e1c3e6e60bf18a4f784",
+    "reason": "Explicit negative fixture must be rejected by the removal scanner."
+  },
+  {
+    "path": "Contrib/SingleWallet/negative-fixtures.json",
+    "line": 45,
+    "line_sha256": "e9670ad46a795f94df2a847aa6f1cf7f5eccb1d19959dd075e993f5a947d54a4",
+    "reason": "Explicit negative fixture must be rejected by the removal scanner."
+  },
+  {
+    "path": "Contrib/SingleWallet/negative-fixtures.json",
+    "line": 46,
+    "line_sha256": "f68f574f8ac55ba18d3fdfc6351be46013e1ce4e7a1c8455a5be351503f7998e",
+    "reason": "Explicit negative fixture must be rejected by the removal scanner."
+  },
+  {
+    "path": "Contrib/SingleWallet/negative-fixtures.json",
+    "line": 47,
+    "line_sha256": "ec7bc66506225620605afc924b7925ac40bc88ba95ee227f171ad917620c2c0c",
+    "reason": "Explicit negative fixture must be rejected by the removal scanner."
+  },
+  {
+    "path": "Contrib/SingleWallet/negative-fixtures.json",
+    "line": 48,
+    "line_sha256": "108c298d48e31c4f36aea7789416a49d9cff3c131a591e2110e397b0d8fd8716",
+    "reason": "Explicit negative fixture must be rejected by the removal scanner."
+  },
+  {
+    "path": "Contrib/SingleWallet/negative-fixtures.json",
+    "line": 49,
+    "line_sha256": "865786d911f1f3881165b128b64c5db6f7aca547c0dae842edaf8ddb4bbf39aa",
+    "reason": "Explicit negative fixture must be rejected by the removal scanner."
+  },
+  {
+    "path": "Contrib/SingleWallet/negative-fixtures.json",
+    "line": 50,
+    "line_sha256": "a9549df2172a1fae8057a836584ff8fbe55b68584ef31668f298ab0089e50904",
+    "reason": "Explicit negative fixture must be rejected by the removal scanner."
+  },
+  {
+    "path": "Contrib/SingleWallet/negative-fixtures.json",
+    "line": 51,
+    "line_sha256": "3e28714b370d722945532279f68a172ec737b3029d02927521f89d106bfad8a1",
+    "reason": "Explicit negative fixture must be rejected by the removal scanner."
+  },
+  {
+    "path": "Contrib/McwMigration/Handoffs/json.md",
+    "line": 141,
+    "line_sha256": "a2afbdf5fced8cffb9146e0ece30251f6e5e81980e264da659063973808dc362",
+    "reason": "Historical shared-checkout migration inventory; the hardware parser is absent from active source."
+  },
+  {
+    "path": "mcw/tests/json_caller_inventory.json",
+    "line": 72,
+    "line_sha256": "adbfd1d2e31e195cea8923e925b78e124807afee00b7a0d82dacb1a18091ec9f",
+    "reason": "Archived shared-checkout caller inventory records a removed hardware parser, not a runtime caller."
+  },
+  {
+    "path": "mcw/tests/json_vectors/application/rpc-request.json",
+    "line": 1,
+    "line_sha256": "ef02f8d104f053ea2167d95858f8ba91a3463fc8cae05c3f531d3147e54d59e8",
+    "reason": "Frozen legacy RPC JSON conformance input preserves its recorded hash; it does not restore wallet selection."
+  },
+  {
+    "path": "mcw/tests/bitcoin_block_fixtures/managed_callers.tsv",
+    "line": 202,
+    "line_sha256": "c1fd85e2dd80bb5a3c3b11ea22efdaa7da13ec36918d87ce2efc077003e28f24",
+    "reason": "Source provenance: immutable managed-caller inventory at 748a961c78980c42bba293ff7ad1b9ca696566ec records the removed adapter; it is not active application source."
   }
 ]

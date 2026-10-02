@@ -1,3 +1,5 @@
+using System;
+using System.Threading;
 using System.Threading.Tasks;
 using MagicalCryptoWallet.Services;
 using Xunit;
@@ -6,6 +8,25 @@ namespace MagicalCryptoWallet.Tests.UnitTests.Services;
 
 public class MailboxLifetimeTests
 {
+	[Theory]
+	[InlineData(true)]
+	[InlineData(false)]
+	public async Task AlreadyCancelledRequestDoesNotConstructOrDeliverMessage(bool cancelCaller)
+	{
+		using var cancelled = new CancellationTokenSource();
+		cancelled.Cancel();
+		using var worker = new MailboxProcessor<int>("cancelled-request-test", (_, _) => Task.CompletedTask,
+			cancellationToken: cancelCaller ? CancellationToken.None : cancelled.Token);
+		var constructed = false;
+		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => worker.PostAndReplyAsync<int>(reply =>
+		{
+			constructed = true;
+			reply.Reply(1);
+			return 1;
+		}, cancelCaller ? cancelled.Token : CancellationToken.None));
+		Assert.False(constructed);
+	}
+
 	[Fact]
 	public async Task IdleMailboxCanBeDisposedAndDrained()
 	{

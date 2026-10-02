@@ -1,0 +1,607 @@
+# snapshot_revision=748a961c78980c42bba293ff7ad1b9ca696566ec
+# category	path	line	source
+package	Contrib/Releases/Publisher/MagicalCryptoWallet.ReleaseTools.csproj	9	<PackageReference Include="NBitcoin" />
+package_lock	Contrib/Releases/Publisher/packages.lock.json	5	"NBitcoin": {
+package_lock	Contrib/Releases/Publisher/packages.lock.json	23	"NBitcoin.Secp256k1": "3.1.6",
+package_lock	Contrib/Releases/Publisher/packages.lock.json	55	"NBitcoin.Secp256k1": {
+script_format	Contrib/VisualPreview/AutomaticCoinSelectionChecks.cs	131	var info = new TransactionInfo(new Destination(destination.ScriptPubKey), 50);
+package_lock	Contrib/VisualPreview/packages.lock.json	487	"NBitcoin": "[10.0.13, )",
+package_lock	Contrib/VisualPreview/packages.lock.json	521	"NBitcoin.Secp256k1": "[3.1.6, )"
+package_lock	Contrib/VisualPreview/packages.lock.json	665	"NBitcoin": {
+package_lock	Contrib/VisualPreview/packages.lock.json	675	"NBitcoin.Secp256k1": {
+package_lock	Contrib/VisualPreview/packages.lock.json	695	"NBitcoin.Secp256k1": "3.1.6",
+package	Directory.Packages.props	31	<PackageVersion Include="NBitcoin.Secp256k1" Version="3.1.6" />
+package	Directory.Packages.props	32	<PackageVersion Include="NBitcoin" Version="10.0.13" />
+script_format	MagicalCryptoWallet.Client/Bootstrap.cs	58	RegisterNativeFunction<Script>("script->address", s => s.GetDestinationAddress(global.Network)!);
+script_format	MagicalCryptoWallet.Client/MagicalCryptoWalletLibGenerator.cs	126	DefineAccessor("coin-script-pubkey", (SmartCoin c) => c.ScriptPubKey);
+script_format	MagicalCryptoWallet.Client/Rpc/MagicalCryptoWalletJsonRpcService.cs	296	["destination"] = x.Destination.ScriptPubKey.ToHex()
+script_format	MagicalCryptoWallet.Client/Rpc/MagicalCryptoWalletJsonRpcService.cs	345	if (x.Destination.ScriptPubKey.GetDestinationAddress(activeWallet.Network) is { } address)
+package_lock	MagicalCryptoWallet.Client/packages.lock.json	208	"NBitcoin": "[10.0.13, )",
+package_lock	MagicalCryptoWallet.Client/packages.lock.json	216	"NBitcoin.Secp256k1": "[3.1.6, )"
+package_lock	MagicalCryptoWallet.Client/packages.lock.json	281	"NBitcoin": {
+package_lock	MagicalCryptoWallet.Client/packages.lock.json	291	"NBitcoin.Secp256k1": {
+package_lock	MagicalCryptoWallet.Client/packages.lock.json	311	"NBitcoin.Secp256k1": "3.1.6",
+script_format	MagicalCryptoWallet.Coordinator/Startup.cs	53	options.ModelMetadataDetailsProviders.Add(new SuppressChildValidationMetadataProvider(typeof(Script)));
+script_format	MagicalCryptoWallet.Coordinator/WabiSabi/Arena.Partial.cs	240	if (_coinJoinScriptStore?.Contains(request.Script) is true)
+script_format	MagicalCryptoWallet.Coordinator/WabiSabi/Arena.Partial.cs	249	.Select(x => x.Script)
+script_format	MagicalCryptoWallet.Coordinator/WabiSabi/Arena.Partial.cs	251	if (outputScripts.Contains(request.Script))
+script_format	MagicalCryptoWallet.Coordinator/WabiSabi/Arena.Partial.cs	257	var inputScripts = Rounds.SelectMany(r => round.Alices).Select(a => a.Coin.ScriptPubKey).ToHashSet();
+script_format	MagicalCryptoWallet.Coordinator/WabiSabi/Arena.Partial.cs	258	if (inputScripts.Contains(request.Script))
+script_format	MagicalCryptoWallet.Coordinator/WabiSabi/Arena.Partial.cs	264	Bob bob = new(request.Script, credentialAmount);
+script_format	MagicalCryptoWallet.Coordinator/WabiSabi/Arena.Partial.cs	275	var newState = round.AddOutput(new TxOut(outputValue, bob.Script));
+script_format	MagicalCryptoWallet.Coordinator/WabiSabi/Arena.cs	326	.Select(x => x.ScriptPubKey)
+script_format	MagicalCryptoWallet.Coordinator/WabiSabi/Arena.cs	340	_coinJoinScriptStore?.AddRange(coinjoin.Outputs.Select(x => x.ScriptPubKey));
+script_format	MagicalCryptoWallet.Coordinator/WabiSabi/Arena.cs	517	public static ConstructionState AddCoordinationFee(Round round, ConstructionState coinjoin, Script coordinatorScriptPubKey, bool trimCoordinatorOutput = false)
+script_format	MagicalCryptoWallet.Coordinator/WabiSabi/Arena.cs	564	private Script GetCoordinatorScriptPreventReuse(Round round)
+package_lock	MagicalCryptoWallet.Coordinator/packages.lock.json	67	"NBitcoin": "[10.0.13, )",
+package_lock	MagicalCryptoWallet.Coordinator/packages.lock.json	75	"NBitcoin.Secp256k1": "[3.1.6, )"
+package_lock	MagicalCryptoWallet.Coordinator/packages.lock.json	95	"NBitcoin": {
+package_lock	MagicalCryptoWallet.Coordinator/packages.lock.json	104	"NBitcoin.Secp256k1": {
+package_lock	MagicalCryptoWallet.Coordinator/packages.lock.json	124	"NBitcoin.Secp256k1": "3.1.6",
+package_lock	MagicalCryptoWallet.Daemon/packages.lock.json	189	"NBitcoin": "[10.0.13, )",
+package_lock	MagicalCryptoWallet.Daemon/packages.lock.json	205	"NBitcoin.Secp256k1": "[3.1.6, )"
+package_lock	MagicalCryptoWallet.Daemon/packages.lock.json	283	"NBitcoin": {
+package_lock	MagicalCryptoWallet.Daemon/packages.lock.json	293	"NBitcoin.Secp256k1": {
+package_lock	MagicalCryptoWallet.Daemon/packages.lock.json	313	"NBitcoin.Secp256k1": "3.1.6",
+package_lock	MagicalCryptoWallet.Fluent.Desktop/packages.lock.json	548	"NBitcoin": "[10.0.13, )",
+package_lock	MagicalCryptoWallet.Fluent.Desktop/packages.lock.json	582	"NBitcoin.Secp256k1": "[3.1.6, )"
+package_lock	MagicalCryptoWallet.Fluent.Desktop/packages.lock.json	726	"NBitcoin": {
+package_lock	MagicalCryptoWallet.Fluent.Desktop/packages.lock.json	736	"NBitcoin.Secp256k1": {
+package_lock	MagicalCryptoWallet.Fluent.Desktop/packages.lock.json	756	"NBitcoin.Secp256k1": "3.1.6",
+script_format	MagicalCryptoWallet.Fluent/Extensions/CurrencyExtensions.cs	29	x.ScriptPubKey == destination.ScriptPubKey
+script_format	MagicalCryptoWallet.Fluent/Models/Transactions/PrivacySuggestionsModel.cs	261	.Select(r => r.Destination.ScriptPubKey)
+script_format	MagicalCryptoWallet.Fluent/Models/Transactions/PrivacySuggestionsModel.cs	265	.Any(x => !destinationScripts.Contains(x.ScriptPubKey));
+script_format	MagicalCryptoWallet.Fluent/Models/Transactions/PrivacySuggestionsModel.cs	357	new TxOut(transactionInfo.Amount, transactionInfo.Destination.ScriptPubKey),
+script_format	MagicalCryptoWallet.Fluent/Models/Wallets/Address.cs	31	public ScriptType ScriptType => ScriptType.FromEnum(BitcoinAddress.ScriptPubKey.GetScriptType());
+script_format	MagicalCryptoWallet.Fluent/Models/Wallets/CoinModel.cs	31	BtcAddress = coin.ScriptPubKey.GetDestinationAddress(network)?.ToString();
+script_format	MagicalCryptoWallet.Fluent/Models/Wallets/WalletTransactionsModel.cs	150	public IEnumerable<BitcoinAddress> GetDestinationAddresses(uint256 id)
+script_format	MagicalCryptoWallet.Fluent/Models/Wallets/WalletTransactionsModel.cs	160	return GetDestinationAddresses(inputs, outputs);
+script_format	MagicalCryptoWallet.Fluent/Models/Wallets/WalletTransactionsModel.cs	163	private IEnumerable<BitcoinAddress> GetDestinationAddresses(ICollection<IInput> inputs, ICollection<Output> outputs)
+script_format	MagicalCryptoWallet.Fluent/ViewModels/SearchBar/Sources/TransactionsSearchSource.cs	118	return walletViewModel.WalletModel.Transactions.GetDestinationAddresses(txid).Contains(address);
+script_format	MagicalCryptoWallet.Fluent/ViewModels/Wallets/CoinJoinPayment/CoinJoinPaymentViewModel.cs	26	public string Address => _payment.Destination.ScriptPubKey.GetDestinationAddress(_network)?.ToString() ?? "Unknown";
+script_format	MagicalCryptoWallet.Fluent/ViewModels/Wallets/Home/History/Details/TransactionDetailsViewModel.cs	36	DestinationAddresses = wallet.Transactions.GetDestinationAddresses(model.Id).ToArray();
+script_format	MagicalCryptoWallet.Fluent/ViewModels/Wallets/Send/SendViewModel.cs	306	Address.Bitcoin bitcoin => new Destination(bitcoin.Address.ScriptPubKey),
+script_format	MagicalCryptoWallet.Fluent/ViewModels/Wallets/Send/SendViewModel.cs	307	Address.Bip21Uri { Address: Address.Bitcoin bitcoin } => new Destination(bitcoin.Address.ScriptPubKey),
+package_lock	MagicalCryptoWallet.Fluent/packages.lock.json	602	"NBitcoin": "[10.0.13, )",
+package_lock	MagicalCryptoWallet.Fluent/packages.lock.json	618	"NBitcoin.Secp256k1": "[3.1.6, )"
+package_lock	MagicalCryptoWallet.Fluent/packages.lock.json	696	"NBitcoin": {
+package_lock	MagicalCryptoWallet.Fluent/packages.lock.json	706	"NBitcoin.Secp256k1": {
+package_lock	MagicalCryptoWallet.Fluent/packages.lock.json	726	"NBitcoin.Secp256k1": "3.1.6",
+script_format	MagicalCryptoWallet.IntegrationTests/WalletTests/WalletReceiveTests.cs	55	Assert.Equal(receiveKey.P2wpkhScript, coin.ScriptPubKey);
+script_format	MagicalCryptoWallet.IntegrationTests/WalletTests/WalletReceiveTests.cs	129	Assert.All(wallet.Coins, c => Assert.Equal(receiveKey.P2wpkhScript, c.ScriptPubKey));
+script_format	MagicalCryptoWallet.IntegrationTests/WalletTests/WalletSendTests.cs	81	destinationAddress.ScriptPubKey,
+script_format	MagicalCryptoWallet.IntegrationTests/WalletTests/WalletSendTests.cs	148	new PaymentIntent(destination.ScriptPubKey, Money.Coins(0.5m)),
+script_format	MagicalCryptoWallet.IntegrationTests/WalletTests/WalletSendTests.cs	209	destinationAddress.ScriptPubKey,
+script_format	MagicalCryptoWallet.IntegrationTests/WalletTests/WalletSendTests.cs	225	.First(o => o.ScriptPubKey == destinationAddress.ScriptPubKey);
+script_format	MagicalCryptoWallet.IntegrationTests/WalletTests/WalletSendTests.cs	273	destinationAddress.ScriptPubKey,
+script_format	MagicalCryptoWallet.IntegrationTests/WalletTests/WalletSendTests.cs	331	destinationAddress.ScriptPubKey,
+package_lock	MagicalCryptoWallet.IntegrationTests/packages.lock.json	335	"NBitcoin": "[10.0.13, )",
+package_lock	MagicalCryptoWallet.IntegrationTests/packages.lock.json	343	"NBitcoin.Secp256k1": "[3.1.6, )"
+package_lock	MagicalCryptoWallet.IntegrationTests/packages.lock.json	408	"NBitcoin": {
+package_lock	MagicalCryptoWallet.IntegrationTests/packages.lock.json	418	"NBitcoin.Secp256k1": {
+package_lock	MagicalCryptoWallet.IntegrationTests/packages.lock.json	438	"NBitcoin.Secp256k1": "3.1.6",
+script_format	MagicalCryptoWallet.Tests/Helpers/AnalyzedTransaction/AnalyzedTransaction.cs	33	private static Script CreateScript(string? label = null)
+script_format	MagicalCryptoWallet.Tests/Helpers/AnalyzedTransaction/AnalyzedTransaction.cs	36	return k.PubKey.WitHash.ScriptPubKey;
+script_format	MagicalCryptoWallet.Tests/Helpers/AnalyzedTransaction/ForeignOutput.cs	9	public static ForeignOutput Create(Money amount, Script scriptPubKey)
+script_format	MagicalCryptoWallet.Tests/Helpers/BitcoinFactory.cs	154	public static Script CreateScript(Key? key = null)
+script_format	MagicalCryptoWallet.Tests/Helpers/BitcoinFactory.cs	159	return k.PubKey.GetScriptPubKey(ScriptPubKeyType.Segwit);
+script_format	MagicalCryptoWallet.Tests/Helpers/BitcoinFactory.cs	163	return key.PubKey.GetScriptPubKey(ScriptPubKeyType.Segwit);
+script_format	MagicalCryptoWallet.Tests/Helpers/WabiSabiFactory.cs	47	new TxOut(amount, key.PubKey.GetScriptPubKey(scriptPubKeyType)));
+script_format	MagicalCryptoWallet.Tests/Helpers/WabiSabiFactory.cs	66	GetOwnershipIdentifier(key.PubKey.GetScriptPubKey(scriptPubKeyType)),
+script_format	MagicalCryptoWallet.Tests/Helpers/WabiSabiFactory.cs	70	public static OwnershipIdentifier GetOwnershipIdentifier(Script scriptPubKey)
+script_format	MagicalCryptoWallet.Tests/Helpers/WabiSabiFactory.cs	254	public static OutputRegistrationRequest CreateOutputRegistrationRequest(Round round, Script? script = null, int? vsize = null)
+script_format	MagicalCryptoWallet.Tests/UnitTests/AutomaticCoinSelectionTests.cs	102	Assert.Contains(transaction.Outputs, output => output.ScriptPubKey == BitcoinAddress.Create(address, Network.RegTest).ScriptPubKey && output.Value == Money.Coins(0.005m));
+script_format	MagicalCryptoWallet.Tests/UnitTests/Blockchain/TransactionBuilding/ChangelessTransactionCoinSelectorTests.cs	33	.GroupBy(coin => coin.ScriptPubKey)
+script_format	MagicalCryptoWallet.Tests/UnitTests/Blockchain/TransactionBuilding/ChangelessTransactionCoinSelectorTests.cs	40	long[] inputCosts = coinsByScript.Select(group => group.Sum(coin => feeRate.GetFee(coin.ScriptPubKey.EstimateInputVsize()).Satoshi)).ToArray();
+script_format	MagicalCryptoWallet.Tests/UnitTests/Blockchain/TransactionBuilding/ChangelessTransactionCoinSelectorTests.cs	63	.GroupBy(coin => coin.ScriptPubKey)
+script_format	MagicalCryptoWallet.Tests/UnitTests/Blockchain/TransactionBuilding/ChangelessTransactionCoinSelectorTests.cs	70	long[] inputCosts = coinsByScript.Select(group => group.Sum(coin => feeRate.GetFee(coin.ScriptPubKey.EstimateInputVsize()).Satoshi)).ToArray();
+script_format	MagicalCryptoWallet.Tests/UnitTests/Blockchain/TransactionBuilding/ChangelessTransactionCoinSelectorTests.cs	95	.GroupBy(coin => coin.ScriptPubKey)
+script_format	MagicalCryptoWallet.Tests/UnitTests/Blockchain/TransactionBuilding/ChangelessTransactionCoinSelectorTests.cs	102	long[] inputCosts = coins.Select(x => feeRate.GetFee(x.ScriptPubKey.EstimateInputVsize()).Satoshi).ToArray();
+script_format	MagicalCryptoWallet.Tests/UnitTests/Blockchain/TransactionBuilding/ChangelessTransactionCoinSelectorTests.cs	124	// Coins with the same ScriptPubKey should be considered one coin, thus be chosen together.
+script_format	MagicalCryptoWallet.Tests/UnitTests/Blockchain/TransactionBuilding/ChangelessTransactionCoinSelectorTests.cs	149	Assert.Single(coins.GroupBy(coin => coin.ScriptPubKey));
+script_format	MagicalCryptoWallet.Tests/UnitTests/Blockchain/TransactionBuilding/ChangelessTransactionCoinSelectorTests.cs	153	if (coins.All(coin => coin.ScriptPubKey == constantHdPubKey.P2wpkhScript))  // Less-selection strategy
+script_format	MagicalCryptoWallet.Tests/UnitTests/Blockchain/TransactionBuilding/ChangelessTransactionCoinSelectorTests.cs	158	else if (coins.All(coin => coin.ScriptPubKey == constantHdPubKey2.P2wpkhScript))   // More-selection strategy
+script_format	MagicalCryptoWallet.Tests/UnitTests/Blockchain/TransactionBuilding/ChangelessTransactionCoinSelectorTests.cs	183	Assert.True(coins.All(coin => coin.ScriptPubKey == constantHdPubKey.P2wpkhScript || coin.ScriptPubKey == constantHdPubKey2.P2wpkhScript));
+script_format	MagicalCryptoWallet.Tests/UnitTests/Blockchain/TransactionOutputs/CoinsRegistryTests.cs	402	if (KeyManager.TryGetKeyForScriptPubKey(coin.ScriptPubKey, out HdPubKey? pubKey))
+script_format	MagicalCryptoWallet.Tests/UnitTests/Blockchain/TransactionOutputs/CoinsRegistryTests.cs	423	private static SmartTransaction CreateCreditingTransaction(Script scriptPubKey, Money amount, int height)
+script_format	MagicalCryptoWallet.Tests/UnitTests/Blockchain/TransactionOutputs/CoinsRegistryTests.cs	428	tx.Inputs.Add(GetRandomOutPoint(), new Script(OpcodeType.OP_0, OpcodeType.OP_0), sequence: Sequence.Final);
+script_format	MagicalCryptoWallet.Tests/UnitTests/Blockchain/TransactionOutputs/CoinsRegistryTests.cs	429	tx.Inputs.Add(GetRandomOutPoint(), new Script(OpcodeType.OP_0, OpcodeType.OP_0), sequence: Sequence.Final);
+script_format	MagicalCryptoWallet.Tests/UnitTests/Blockchain/TransactionOutputs/CoinsRegistryTests.cs	439	tx.Inputs.Add(coin.Outpoint, Script.Empty, WitScript.Empty);
+script_format	MagicalCryptoWallet.Tests/UnitTests/Crypto/Bip322SignatureTest.cs	37	var scriptPubKey = key.PubKey.GetScriptPubKey(ScriptPubKeyType.Segwit);
+script_format	MagicalCryptoWallet.Tests/UnitTests/Crypto/Bip322SignatureTest.cs	47	invalidBip322Signature = new Bip322Signature(new Script(new byte[] { 0x00 }), bip322Signature.Witness);
+script_format	MagicalCryptoWallet.Tests/UnitTests/Crypto/Bip322SignatureTest.cs	53	invalidBip322Signature = new Bip322Signature(bip322Signature.ScriptSig, new WitScript(new List<byte[]> { invalidSignature, pubKey }));
+script_format	MagicalCryptoWallet.Tests/UnitTests/Crypto/Bip322SignatureTest.cs	59	invalidBip322Signature = new Bip322Signature(bip322Signature.ScriptSig, new WitScript(new List<byte[]> { invalidSignature, pubKey }));
+script_format	MagicalCryptoWallet.Tests/UnitTests/Crypto/Bip322SignatureTest.cs	65	invalidBip322Signature = new Bip322Signature(bip322Signature.ScriptSig, new WitScript(new List<byte[]> { signature, invalidPubKey }));
+script_format	MagicalCryptoWallet.Tests/UnitTests/Crypto/Bip322SignatureTest.cs	93	var scriptPubKey = key.PubKey.GetScriptPubKey(ScriptPubKeyType.TaprootBIP86);
+script_format	MagicalCryptoWallet.Tests/UnitTests/Crypto/Bip322SignatureTest.cs	102	invalidBip322Signature = new Bip322Signature(new Script(new byte[] { 0x00 }), bip322Signature.Witness);
+script_format	MagicalCryptoWallet.Tests/UnitTests/Crypto/Bip322SignatureTest.cs	108	invalidBip322Signature = new Bip322Signature(bip322Signature.ScriptSig, new WitScript(new List<byte[]> { invalidSignature }));
+script_format	MagicalCryptoWallet.Tests/UnitTests/Crypto/Bip322SignatureTest.cs	114	invalidBip322Signature = new Bip322Signature(bip322Signature.ScriptSig, new WitScript(new List<byte[]> { invalidSignature }));
+script_format	MagicalCryptoWallet.Tests/UnitTests/Crypto/OwnershipProofTest.cs	22	var ownershipIdentifier = new OwnershipIdentifier(identificationKey, key.PubKey.GetScriptPubKey(ScriptPubKeyType.Segwit));
+script_format	MagicalCryptoWallet.Tests/UnitTests/Crypto/OwnershipProofTest.cs	40	Script scriptPubKey;
+script_format	MagicalCryptoWallet.Tests/UnitTests/Crypto/OwnershipProofTest.cs	46	scriptPubKey = Script.FromHex("0014B2F771C370CCF219CD3059CDA92BDF7F00CF2103");
+script_format	MagicalCryptoWallet.Tests/UnitTests/Crypto/OwnershipProofTest.cs	55	scriptPubKey = key.PubKey.GetScriptPubKey(ScriptPubKeyType.Segwit);
+script_format	MagicalCryptoWallet.Tests/UnitTests/Crypto/OwnershipProofTest.cs	76	var invalidScriptPubKey = invalidKey.PubKey.GetScriptPubKey(ScriptPubKeyType.Segwit);
+script_format	MagicalCryptoWallet.Tests/UnitTests/Crypto/OwnershipProofTest.cs	96	new Bip322Signature(ownershipProof.ProofSignature.ScriptSig, new WitScript(new byte[][] { invalidSignature, ownershipProof.ProofSignature.Witness[1] })));
+script_format	MagicalCryptoWallet.Tests/UnitTests/Crypto/OwnershipProofTest.cs	112	var ownershipIdentifier = new OwnershipIdentifier(identificationKey, key.PubKey.GetScriptPubKey(ScriptPubKeyType.TaprootBIP86));
+script_format	MagicalCryptoWallet.Tests/UnitTests/Crypto/OwnershipProofTest.cs	129	Script scriptPubKey;
+script_format	MagicalCryptoWallet.Tests/UnitTests/Crypto/OwnershipProofTest.cs	135	scriptPubKey = Script.FromHex("51204102897557DE0CAFEA0A8401EA5B59668ECCB753E4B100AEBE6A19609F3CC79F");
+script_format	MagicalCryptoWallet.Tests/UnitTests/Crypto/OwnershipProofTest.cs	144	scriptPubKey = key.PubKey.GetScriptPubKey(ScriptPubKeyType.TaprootBIP86);
+script_format	MagicalCryptoWallet.Tests/UnitTests/Crypto/OwnershipProofTest.cs	165	var invalidScriptPubKey = invalidKey.PubKey.GetScriptPubKey(ScriptPubKeyType.TaprootBIP86);
+script_format	MagicalCryptoWallet.Tests/UnitTests/Crypto/OwnershipProofTest.cs	184	new Bip322Signature(ownershipProof.ProofSignature.ScriptSig, new WitScript(new byte[][] { invalidSignature })));
+script_format	MagicalCryptoWallet.Tests/UnitTests/JsonConverters/DestinationJsonConverterTests.cs	19	Assert.Equal(BitcoinAddress.Create(address, Network.Main).ScriptPubKey, destination.ScriptPubKey);
+script_format	MagicalCryptoWallet.Tests/UnitTests/KeyManagerTests.cs	280	static bool IsScriptType(HdPubKey key, ScriptPubKeyType scriptType) =>
+script_format	MagicalCryptoWallet.Tests/UnitTests/KeyManagerTests.cs	283	static bool IsTaproot(HdPubKey key) => IsScriptType(key, ScriptPubKeyType.TaprootBIP86);
+script_format	MagicalCryptoWallet.Tests/UnitTests/KeyManagerTests.cs	284	static bool IsSegwit(HdPubKey key) => IsScriptType(key, ScriptPubKeyType.Segwit);
+script_format	MagicalCryptoWallet.Tests/UnitTests/NBitcoinTests.cs	65	coins = Enumerable.Range(0, 10).Select(_ => new Coin(RandomUtils.GetUInt256(), 0u, Money.Coins(10), Script.Empty)).ToArray();
+script_format	MagicalCryptoWallet.Tests/UnitTests/NBitcoinTests.cs	70	tx.Inputs.Add(coin.Outpoint, Script.Empty, WitScript.Empty);
+script_format	MagicalCryptoWallet.Tests/UnitTests/NBitcoinTests.cs	72	tx.Outputs.Add(Money.Coins(3), Script.Empty);
+script_format	MagicalCryptoWallet.Tests/UnitTests/NBitcoinTests.cs	73	tx.Outputs.Add(Money.Coins(2), Script.Empty);
+script_format	MagicalCryptoWallet.Tests/UnitTests/NBitcoinTests.cs	74	tx.Outputs.Add(Money.Coins(1), Script.Empty);
+script_format	MagicalCryptoWallet.Tests/UnitTests/RpcTests.cs	118	Sendto = new Destination(BitcoinAddress.Create("bc1q7zqqsmqx5ymhd7qn73lm96w5yqdkrmx7fdevah", Network.Main).ScriptPubKey),
+script_format	MagicalCryptoWallet.Tests/UnitTests/Services/CompactFilterBehaviorTests.cs	24	var targetScript = Script.FromHex("00141111111111111111111111111111111111111111");
+script_format	MagicalCryptoWallet.Tests/UnitTests/Services/CompactFilterBehaviorTests.cs	25	var unrelatedScript = Script.FromHex("00142222222222222222222222222222222222222222");
+script_format	MagicalCryptoWallet.Tests/UnitTests/Services/MempoolTrafficTests.cs	104	transaction.Inputs[0].WitScript = new WitScript(new byte[][] { [1, 2, 3] });
+script_format	MagicalCryptoWallet.Tests/UnitTests/SingleWalletCoinJoinTests.cs	41	var payments = new[] { new PaymentInfo { Sendto = new Destination(recipient.PubKey.GetAddress(ScriptPubKeyType.Segwit, Network.RegTest).ScriptPubKey), Amount = Money.Coins(0.01m), Label = "synthetic" } };
+script_format	MagicalCryptoWallet.Tests/UnitTests/SmartCoinTests.cs	23	tx.Outputs[0].ScriptPubKey = hdpk1.P2wpkhScript;
+script_format	MagicalCryptoWallet.Tests/UnitTests/SmartCoinTests.cs	24	tx.Outputs[1].ScriptPubKey = hdpk2.P2wpkhScript;
+script_format	MagicalCryptoWallet.Tests/UnitTests/TestWallet.cs	26	private Dictionary<Script, ExtKey> ScriptPubKeys { get; } = new();
+script_format	MagicalCryptoWallet.Tests/UnitTests/TestWallet.cs	44	var scriptPubKey = key.PrivateKey.GetScriptPubKey(ScriptPubKeyType.Segwit);
+script_format	MagicalCryptoWallet.Tests/UnitTests/TestWallet.cs	46	return scriptPubKey.GetDestinationAddress(Rpc.Network)!;
+script_format	MagicalCryptoWallet.Tests/UnitTests/TestWallet.cs	70	var scriptsToSign = inputsToSign.Select(x => x.ScriptPubKey).ToHashSet();
+script_format	MagicalCryptoWallet.Tests/UnitTests/TestWallet.cs	79	public ExtPubKey GetExtPubKey(Script scriptPubKey) =>
+script_format	MagicalCryptoWallet.Tests/UnitTests/TestWallet.cs	84	if (!ScriptPubKeys.TryGetValue(destination.ScriptPubKey, out var extKey))
+script_format	MagicalCryptoWallet.Tests/UnitTests/TestWallet.cs	92	new OwnershipIdentifier(identificationKey, destination.ScriptPubKey),
+script_format	MagicalCryptoWallet.Tests/UnitTests/TestWallet.cs	99	if (!ScriptPubKeys.TryGetValue(coin.ScriptPubKey, out var extKey))
+script_format	MagicalCryptoWallet.Tests/UnitTests/TestWallet.cs	108	public void TrySetScriptStates(KeyState state, IEnumerable<Script> scripts)
+script_format	MagicalCryptoWallet.Tests/UnitTests/TestWallet.cs	121	.Where(x => ScriptPubKeys.ContainsKey(x.TxOut.ScriptPubKey))
+script_format	MagicalCryptoWallet.Tests/UnitTests/Transactions/AllTransactionStoreTests.cs	23	tx.Inputs.Add(new OutPoint(RandomUtils.GetUInt256(), 0), new Script(OpcodeType.OP_0, OpcodeType.OP_0), sequence: Sequence.Final);
+script_format	MagicalCryptoWallet.Tests/UnitTests/Transactions/AllTransactionStoreTests.cs	24	tx.Outputs.Add(Money.Coins(1), Script.Empty);
+script_format	MagicalCryptoWallet.Tests/UnitTests/Transactions/SmartTransactionTests.cs	51	Assert.Equal(WitScript.Empty, input.WitScript);
+script_format	MagicalCryptoWallet.Tests/UnitTests/Transactions/SmartTransactionTests.cs	55	Assert.NotNull(input.WitScript);
+script_format	MagicalCryptoWallet.Tests/UnitTests/Transactions/SmartTransactionTests.cs	56	Assert.NotEqual(WitScript.Empty, input.WitScript);
+script_format	MagicalCryptoWallet.Tests/UnitTests/Transactions/SmartTransactionTests.cs	63	Assert.NotNull(input.WitScript);
+script_format	MagicalCryptoWallet.Tests/UnitTests/Transactions/SmartTransactionTests.cs	64	Assert.NotEqual(WitScript.Empty, input.WitScript);
+script_format	MagicalCryptoWallet.Tests/UnitTests/Transactions/SmartTransactionTests.cs	68	Assert.NotNull(input.WitScript);
+script_format	MagicalCryptoWallet.Tests/UnitTests/Transactions/SmartTransactionTests.cs	69	Assert.NotEqual(WitScript.Empty, input.WitScript);
+script_format	MagicalCryptoWallet.Tests/UnitTests/Transactions/SmartTransactionTests.cs	104	Script samePubScript1 = hdPubKey.PubKey.GetAddress(ScriptPubKeyType.Segwit, network).ScriptPubKey;
+script_format	MagicalCryptoWallet.Tests/UnitTests/Transactions/SmartTransactionTests.cs	105	Script samePubScript2 = hdPubKey.PubKey.GetAddress(ScriptPubKeyType.Legacy, network).ScriptPubKey;
+script_format	MagicalCryptoWallet.Tests/UnitTests/Transactions/TransactionFactoryTests.cs	317	var changeOutput = Assert.Single<TxOut>(tx.Outputs, x => x.ScriptPubKey == changeKey.PubKey.ScriptPubKey);
+script_format	MagicalCryptoWallet.Tests/UnitTests/Transactions/TransactionFactoryTests.cs	318	Assert.False(transactionFactory.KeyManager.TryGetKeyForScriptPubKey(changeOutput.ScriptPubKey, out _));
+script_format	MagicalCryptoWallet.Tests/UnitTests/Transactions/TransactionFactoryTests.cs	351	var destination2Output = Assert.Single<TxOut>(tx.Outputs, x => x.ScriptPubKey == key2.GetScriptPubKey(ScriptPubKeyType.Legacy));
+script_format	MagicalCryptoWallet.Tests/UnitTests/Transactions/TransactionFactoryTests.cs	354	var changeOutput = Assert.Single(tx.Outputs, x => transactionFactory.KeyManager.TryGetKeyForScriptPubKey(x.ScriptPubKey, out _));
+script_format	MagicalCryptoWallet.Tests/UnitTests/Transactions/TransactionFactoryTests.cs	411	Assert.Equal(destination.ScriptPubKey, destinationOutput.ScriptPubKey);
+script_format	MagicalCryptoWallet.Tests/UnitTests/Transactions/TransactionFactoryTests.cs	518	var destinationOutput = Assert.Single(tx.Outputs, x => x.ScriptPubKey == destination.ScriptPubKey);
+script_format	MagicalCryptoWallet.Tests/UnitTests/Transactions/TransactionProcessorTests.cs	87	var tx = CreateCreditingTransaction(keys.First().PubKey.GetScriptPubKey(ScriptPubKeyType.Legacy), Money.Coins(1.0m));
+script_format	MagicalCryptoWallet.Tests/UnitTests/Transactions/TransactionProcessorTests.cs	104	var tx = CreateCreditingTransaction(key.PubKey.Hash.ScriptPubKey, Money.Coins(1.0m));
+script_format	MagicalCryptoWallet.Tests/UnitTests/Transactions/TransactionProcessorTests.cs	122	var tx = CreateCreditingTransaction(key.PubKey.Hash.ScriptPubKey, Money.Coins(1.0m), height: 54321);
+script_format	MagicalCryptoWallet.Tests/UnitTests/Transactions/TransactionProcessorTests.cs	141	var tx1 = CreateCreditingTransaction(hdPubKey.PubKey.GetScriptPubKey(ScriptPubKeyType.Segwit), Money.Coins(1.0m));
+script_format	MagicalCryptoWallet.Tests/UnitTests/Transactions/TransactionProcessorTests.cs	219	var tx = CreateCreditingTransaction(hdPubKey.PubKey.GetScriptPubKey(ScriptPubKeyType.Segwit), Money.Coins(1.0m));
+script_format	MagicalCryptoWallet.Tests/UnitTests/Transactions/TransactionProcessorTests.cs	265	Script changeScript = transactionProcessor.NewKey("B").P2wpkhScript;
+script_format	MagicalCryptoWallet.Tests/UnitTests/Transactions/TransactionProcessorTests.cs	268	SmartTransaction tx1 = CreateSpendingTransaction(new[] { coinA.Coin }, key.PubKey.ScriptPubKey, changeScript, height: 55555);
+script_format	MagicalCryptoWallet.Tests/UnitTests/Transactions/TransactionProcessorTests.cs	350	Assert.Equal(keys[1].GetAssumedScriptPubKey(), coin.ScriptPubKey);
+script_format	MagicalCryptoWallet.Tests/UnitTests/Transactions/TransactionProcessorTests.cs	365	case 0: Assert.Equal(keys[0].GetAssumedScriptPubKey(), c.ScriptPubKey); break;
+script_format	MagicalCryptoWallet.Tests/UnitTests/Transactions/TransactionProcessorTests.cs	366	case 1: Assert.Equal(keys[1].GetAssumedScriptPubKey(), c.ScriptPubKey); break;
+script_format	MagicalCryptoWallet.Tests/UnitTests/Transactions/TransactionProcessorTests.cs	367	case 2: Assert.Equal(keys[2].GetAssumedScriptPubKey(), c.ScriptPubKey); break;
+script_format	MagicalCryptoWallet.Tests/UnitTests/Transactions/TransactionProcessorTests.cs	616	var tx1 = CreateCreditingTransaction(keys[0].PubKey.GetScriptPubKey(ScriptPubKeyType.Segwit), Money.Coins(1.0m));
+script_format	MagicalCryptoWallet.Tests/UnitTests/Transactions/TransactionProcessorTests.cs	685	Script NewScript(string label) => transactionProcessor.NewKey(label).P2wpkhScript;
+script_format	MagicalCryptoWallet.Tests/UnitTests/Transactions/TransactionProcessorTests.cs	747	Script NewScript(string label) => transactionProcessor.NewKey(label).P2wpkhScript;
+script_format	MagicalCryptoWallet.Tests/UnitTests/Transactions/TransactionProcessorTests.cs	841	var tx1 = CreateSpendingTransaction(createdCoin, key.PubKey.ScriptPubKey);
+script_format	MagicalCryptoWallet.Tests/UnitTests/Transactions/TransactionProcessorTests.cs	879	var tx1 = CreateSpendingTransaction(createdCoin, key.PubKey.ScriptPubKey);
+script_format	MagicalCryptoWallet.Tests/UnitTests/Transactions/TransactionProcessorTests.cs	1021	destinationKey.GetScriptPubKey(ScriptPubKeyType.Legacy),
+script_format	MagicalCryptoWallet.Tests/UnitTests/Transactions/TransactionProcessorTests.cs	1073	tx.Inputs.Add(createdCoin.Outpoint, Script.Empty, WitScript.Empty);
+script_format	MagicalCryptoWallet.Tests/UnitTests/Transactions/TransactionProcessorTests.cs	1106	var tx1 = CreateSpendingTransaction(new[] { createdCoin.Coin }, key.PubKey.ScriptPubKey, changeScript1);
+script_format	MagicalCryptoWallet.Tests/UnitTests/Transactions/TransactionProcessorTests.cs	1159	var tx3 = CreateSpendingTransaction(coins, key1.PubKey.ScriptPubKey, changeScript);
+script_format	MagicalCryptoWallet.Tests/UnitTests/Transactions/TransactionProcessorTests.cs	1173	var tx5 = CreateSpendingTransaction(coins, key2.PubKey.ScriptPubKey, changeScript);
+script_format	MagicalCryptoWallet.Tests/UnitTests/Transactions/TransactionProcessorTests.cs	1215	var paymentCoin = Assert.Single(transactionProcessor.Coins, c => c.ScriptPubKey == myself);
+script_format	MagicalCryptoWallet.Tests/UnitTests/Transactions/TransactionProcessorTests.cs	1220	Assert.Equal(2, transactionProcessor.Coins.Count(c => c.ScriptPubKey == myself));
+script_format	MagicalCryptoWallet.Tests/UnitTests/Transactions/TransactionProcessorTests.cs	1287	var paymentCoin = Assert.Single(transactionProcessor.Coins, c => c.ScriptPubKey == myself);
+script_format	MagicalCryptoWallet.Tests/UnitTests/Transactions/TransactionProcessorTests.cs	1294	paymentCoin = Assert.Single(transactionProcessor.Coins, c => c.ScriptPubKey == myself);
+script_format	MagicalCryptoWallet.Tests/UnitTests/Transactions/TransactionProcessorTests.cs	1333	var paymentCoin = Assert.Single(transactionProcessor.Coins, c => c.ScriptPubKey == myself);
+script_format	MagicalCryptoWallet.Tests/UnitTests/Transactions/TransactionProcessorTests.cs	1345	paymentCoin = Assert.Single(transactionProcessor.Coins, c => c.ScriptPubKey == myself);
+script_format	MagicalCryptoWallet.Tests/UnitTests/Transactions/TransactionProcessorTests.cs	1381	var tx3 = CreateSpendingTransaction(coins, key.PubKey.ScriptPubKey, changeScript, height: 55555);
+script_format	MagicalCryptoWallet.Tests/UnitTests/Transactions/TransactionProcessorTests.cs	1421	coinjoinTransaction.Inputs.Add(GetRandomOutPoint(), Script.Empty, WitScript.Empty);
+script_format	MagicalCryptoWallet.Tests/UnitTests/Transactions/TransactionProcessorTests.cs	1427	coinjoinTransaction.Inputs.Add(receivedCoin.Outpoint, Script.Empty, WitScript.Empty);
+script_format	MagicalCryptoWallet.Tests/UnitTests/Transactions/TransactionProcessorTests.cs	1529	private static SmartTransaction CreateSpendingTransaction(Coin coin, Script? scriptPubKey = null, uint height = 0)
+script_format	MagicalCryptoWallet.Tests/UnitTests/Transactions/TransactionProcessorTests.cs	1532	tx.Inputs.Add(coin.Outpoint, Script.Empty, WitScript.Empty);
+script_format	MagicalCryptoWallet.Tests/UnitTests/Transactions/TransactionProcessorTests.cs	1533	tx.Outputs.Add(coin.Amount, scriptPubKey ?? Script.Empty);
+script_format	MagicalCryptoWallet.Tests/UnitTests/Transactions/TransactionProcessorTests.cs	1537	private static SmartTransaction CreateSpendingTransaction(IEnumerable<Coin> coins, Script scriptPubKey, Script scriptPubKeyChange, bool replaceable = false, uint height = 0)
+script_format	MagicalCryptoWallet.Tests/UnitTests/Transactions/TransactionProcessorTests.cs	1543	tx.Inputs.Add(coin.Outpoint, Script.Empty, WitScript.Empty, replaceable ? Sequence.MAX_BIP125_RBF_SEQUENCE : Sequence.SEQUENCE_FINAL);
+script_format	MagicalCryptoWallet.Tests/UnitTests/Transactions/TransactionProcessorTests.cs	1546	tx.Outputs.Add(amount.Percentage(60), scriptPubKey ?? Script.Empty);
+script_format	MagicalCryptoWallet.Tests/UnitTests/Transactions/TransactionProcessorTests.cs	1551	private static SmartTransaction CreateCreditingTransaction(Script scriptPubKey, Money amount, uint height = 0)
+script_format	MagicalCryptoWallet.Tests/UnitTests/Transactions/TransactionProcessorTests.cs	1556	tx.Inputs.Add(GetRandomOutPoint(), new Script(OpcodeType.OP_0, OpcodeType.OP_0), sequence: Sequence.Final);
+script_format	MagicalCryptoWallet.Tests/UnitTests/Transactions/TransactionProcessorTests.cs	1557	tx.Inputs.Add(GetRandomOutPoint(), new Script(OpcodeType.OP_0, OpcodeType.OP_0), sequence: Sequence.Final);
+script_format	MagicalCryptoWallet.Tests/UnitTests/Transactions/TransactionProcessorTests.cs	1609	inputs.Add(new TxIn(GetRandomOutPoint(), Script.Empty));
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Backend/CoordinatorOutputTests.cs	89	private static TxOut GetCoordinatorOutput(ConstructionState coinjoin, Script coordinatorScript) =>
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Backend/CoordinatorOutputTests.cs	90	Assert.Single(coinjoin.Outputs, x => x.ScriptPubKey == coordinatorScript);
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Backend/CoordinatorOutputTests.cs	96	private static (Round Round, ConstructionState Coinjoin, Script CoordinatorScript) CreateCoinjoin(
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Backend/PhaseStepping/StepOutputRegistrationTests.cs	49	destinationKey1.PubKey.GetScriptPubKey(ScriptPubKeyType.Segwit),
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Backend/PhaseStepping/StepOutputRegistrationTests.cs	56	destinationKey2.PubKey.GetScriptPubKey(ScriptPubKeyType.Segwit),
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Backend/PhaseStepping/StepOutputRegistrationTests.cs	101	destinationKey.PubKey.GetScriptPubKey(ScriptPubKeyType.Segwit),
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Backend/PhaseStepping/StepOutputRegistrationTests.cs	113	Assert.Contains(round.CoordinatorScript, tx.Outputs.Select(x => x.ScriptPubKey));
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Backend/PhaseStepping/StepOutputRegistrationTests.cs	145	destinationKey1.PubKey.GetScriptPubKey(ScriptPubKeyType.Segwit),
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Backend/PhaseStepping/StepOutputRegistrationTests.cs	151	destinationKey2.PubKey.GetScriptPubKey(ScriptPubKeyType.Segwit),
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Backend/PhaseStepping/StepOutputRegistrationTests.cs	172	Assert.DoesNotContain(round.CoordinatorScript, tx.Outputs.Select(x => x.ScriptPubKey));
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Backend/PhaseStepping/StepOutputRegistrationTests.cs	200	destinationKey.PubKey.GetScriptPubKey(ScriptPubKeyType.Segwit),
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Backend/PhaseStepping/StepOutputRegistrationTests.cs	338	out1a.PubKey.GetScriptPubKey(ScriptPubKeyType.Segwit),
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Backend/PhaseStepping/StepOutputRegistrationTests.cs	344	out1b.PubKey.GetScriptPubKey(ScriptPubKeyType.Segwit),
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Backend/PhaseStepping/StepOutputRegistrationTests.cs	361	out1a.PubKey.GetScriptPubKey(ScriptPubKeyType.Segwit),
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Backend/PhaseStepping/StepTransactionSigningTests.cs	306	destKey1.PubKey.GetScriptPubKey(ScriptPubKeyType.Segwit),
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Backend/PhaseStepping/StepTransactionSigningTests.cs	312	destKey2.PubKey.GetScriptPubKey(ScriptPubKeyType.Segwit),
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Backend/PostRequests/RegisterInputFailureTests.cs	308	await TestOwnershipProofAsync((key, roundId) => OwnershipProof.GenerateCoinJoinInputProof(key, new OwnershipIdentifier(key, key.PubKey.GetScriptPubKey(ScriptPubKeyType.Segwit)), new CoinJoinInputCommitmentData("test", roundId), ScriptPubKeyType.Segwit));
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Backend/PostRequests/RegisterInputFailureTests.cs	315	var txOut = new TxOut(Money.Coins(1.0m), key.GetScriptPubKey(ScriptPubKeyType.Segwit));
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Backend/PostRequests/RegisterInputSuccessTests.cs	70	var ownershipProof = OwnershipProof.GenerateCoinJoinInputProof(key, new OwnershipIdentifier(key, key.PubKey.GetScriptPubKey(ScriptPubKeyType.Segwit)), new CoinJoinInputCommitmentData("test", round.Id), ScriptPubKeyType.Segwit);
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Backend/PostRequests/RegisterOutputTests.cs	44	var pkhScript = privKey0.PubKey.GetScriptPubKey(ScriptPubKeyType.Legacy);
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Backend/PostRequests/RegisterOutputTests.cs	51	var shScript = privKey1.PubKey.ScriptPubKey.Hash.ScriptPubKey;
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Backend/PostRequests/RegisterOutputTests.cs	68	var req = WabiSabiFactory.CreateOutputRegistrationRequest(round, privKey.PubKey.GetScriptPubKey(ScriptPubKeyType.TaprootBIP86), Constants.P2trOutputVirtualSize);
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Backend/PostRequests/RegisterOutputTests.cs	85	var req = WabiSabiFactory.CreateOutputRegistrationRequest(round, privKey.PubKey.GetScriptPubKey(ScriptPubKeyType.TaprootBIP86), Constants.P2trOutputVirtualSize);
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Backend/PostRequests/RegisterOutputTests.cs	109	var outputScript = key.PubKey.GetAddress(ScriptPubKeyType.Legacy, Network.Main).ScriptPubKey;
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Backend/PostRequests/RegisterOutputTests.cs	132	var sha256Bounty = Script.FromHex("aa20000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f87");
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Backend/PostRequests/SignTransactionTests.cs	33	var req = new TransactionSignaturesRequest(round.Id, 0, aliceSignedCoinJoin.Inputs[0].WitScript);
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Backend/PostRequests/SignTransactionTests.cs	54	var req = new TransactionSignaturesRequest(round.Id, 0, aliceSignedCoinJoin.Inputs[0].WitScript);
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Backend/PostRequests/SignTransactionTests.cs	64	var req = new TransactionSignaturesRequest(uint256.Zero, 0, WitScript.Empty);
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Backend/PostRequests/SignTransactionTests.cs	78	var req = new TransactionSignaturesRequest(round.Id, 0, WitScript.Empty);
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Client/AmountDecomposerTests.cs	85	var script = key.GetScriptPubKey(ScriptPubKeyType.Segwit);
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Client/AmountDecomposerTests.cs	93	private static Coin CreateCoin(Script scriptPubKey, long amount)
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Client/ArenaClientTests.cs	197	var scriptSize = (long)destinationKey1.PubKey.GetScriptPubKey(scriptPubKeyType).EstimateOutputVsize();
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Client/ArenaClientTests.cs	266	destinationKey1.PubKey.GetScriptPubKey(scriptPubKeyType),
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Client/ArenaClientTests.cs	273	destinationKey2.PubKey.GetScriptPubKey(scriptPubKeyType),
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Client/BobClientTests.cs	80	var destination = destinationKey.PubKey.GetScriptPubKey(ScriptPubKeyType.Segwit);
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Client/BobClientTests.cs	91	Assert.Equal(destination, bob.Script);
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Client/CoinJoinClientTests.cs	97	var victimOutput = new TxOut(Money.Satoshis(victimCoin.Amount.Satoshi - 105), victimOutputKey.PubKey.GetScriptPubKey(ScriptPubKeyType.Segwit));
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Client/CoinJoinClientTests.cs	106	.AddOutput(new TxOut(Money.Satoshis(otherCoin.Amount.Satoshi - 105), otherOutputKey.PubKey.GetScriptPubKey(ScriptPubKeyType.Segwit)));
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Client/CoinJoinClientTests.cs	250	static TxOut AddSats(long sats, TxOut output) => new(output.Value + sats, output.ScriptPubKey);
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Client/CoinJoinClientTests.cs	287	Assert.Distinct(txOuts.Select(x => x.ScriptPubKey));
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Client/CoinJoinClientTests.cs	293	var foundTxOut = toCheck.First(txout => txout.ScriptPubKey.IsScriptType(output.ScriptType) && txout.Value == output.Amount);
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Client/CoinjoinCostsTests.cs	123	var chargedForOutput = feeRate.GetFee(myOutput.ScriptPubKey.EstimateOutputVsize());
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Client/CoinjoinCostsTests.cs	146	private static Script NewScript()
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Client/CoinjoinCostsTests.cs	149	return key.PubKey.GetScriptPubKey(ScriptPubKeyType.Segwit);
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Client/PaymentAwareOutputProviderTests.cs	95	Assert.Equal(x.Output.ScriptPubKey, x.Destination.ScriptPubKey);
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Client/PaymentBatchTests.cs	41	var signedTxId = CreateTransactionWithOutput(destination.ScriptPubKey, amount).GetHash();
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Client/PaymentBatchTests.cs	68	var tx = CreateTransactionWithOutput(destination.ScriptPubKey, amount);
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Client/PaymentBatchTests.cs	104	var signedTx = CreateTransactionWithOutput(destination.ScriptPubKey, amount);
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Client/PaymentBatchTests.cs	114	var differentTx = CreateTransactionWithOutput(destination.ScriptPubKey, Money.Coins(0.2m));
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Client/PaymentBatchTests.cs	134	paymentBatch.MovePaymentsToSigned(CreateTransactionWithOutput(destination.ScriptPubKey, amount).GetHash());
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Client/PaymentBatchTests.cs	158	tx.Outputs.Add(new TxOut(amount1, destination1.ScriptPubKey));
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Client/PaymentBatchTests.cs	159	tx.Outputs.Add(new TxOut(amount2, destination2.ScriptPubKey));
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Client/PaymentBatchTests.cs	198	var signedTxId = CreateTransactionWithOutput(uncertainDestination.ScriptPubKey, amount).GetHash();
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Client/PaymentBatchTests.cs	213	Assert.Equal(pendingDestination.ScriptPubKey, bestPaymentSet.Payments.Single().Destination.ScriptPubKey);
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Client/PaymentBatchTests.cs	243	var signedTxId = CreateTransactionWithOutput(destination.ScriptPubKey, amount).GetHash();
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Client/PaymentBatchTests.cs	265	private static Transaction CreateTransactionWithOutput(Script scriptPubKey, Money amount)
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Client/WalletInputValidationTests.cs	44	alteration == "script" ? otherCoin.ScriptPubKey : registeredCoin.ScriptPubKey);
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Crypto/OwnershipProofTests.cs	41	new OwnershipIdentifier(key, key.PubKey.GetScriptPubKey(ScriptPubKeyType.Segwit)),
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Integration/Participant.cs	64	var effectiveOutputValue = amount - feeRate.GetFee(outputAddress.ScriptPubKey.EstimateOutputVsize());
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Integration/Participant.cs	93	.Select(x => (IndexedTxOut: x, HdPubKey: Wallet.GetExtPubKey(x.TxOut.ScriptPubKey)))
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Integration/Startup.cs	40	options.ModelMetadataDetailsProviders.Add(new SuppressChildValidationMetadataProvider(typeof(Script)));
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Integration/WabiSabiHttpApiIntegrationTests.cs	141	.SelectMany(key => new[] { key.PubKey.GetScriptPubKey(ScriptPubKeyType.Segwit), key.PubKey.GetScriptPubKey(ScriptPubKeyType.TaprootBIP86) }).ToImmutableArray();
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Integration/WabiSabiHttpApiIntegrationTests.cs	451	fromTxOut: new TxOut(Money.Coins(1), signingKey.PubKey.GetScriptPubKey(ScriptPubKeyType.Segwit)));
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/ConstructionStateTests.cs	30	state = state.AddOutput(new TxOut(roundParameters.AllowedInputAmounts.Min, new Script("0 bf3593d140d512eb607b3ddb5c5ee085f1e3a210")));
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/InputRegistrationRequestTests.cs	128	new OwnershipIdentifier(Key.Parse("5KbdaBwc9Eit2LrmDp1WfZd815StNstwHanbRrPpGGN6wWJKyHe", Network.Main), key.PubKey.GetScriptPubKey(ScriptPubKeyType.Segwit)),
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/MultipartyTransactionTests.cs	72	var bob1 = new TxOut(Money.Coins(1), alice1Coin.ScriptPubKey);
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/MultipartyTransactionTests.cs	78	var bob2 = new TxOut(Money.Coins(1), alice2Coin.ScriptPubKey);
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/MultipartyTransactionTests.cs	87	Assert.Contains(alice1Coin.ScriptPubKey, tx.Outputs.Select(x => x.ScriptPubKey));
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/MultipartyTransactionTests.cs	88	Assert.Contains(alice2Coin.ScriptPubKey, tx.Outputs.Select(x => x.ScriptPubKey));
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/MultipartyTransactionTests.cs	94	var alice1Sig = noFeeTx.AddWitness(alice1SignedInput.Index, alice1SignedInput.Input.WitScript);
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/MultipartyTransactionTests.cs	104	var alice2Sig = alice1Sig.AddWitness(alice2SignedInput.Index, alice2SignedInput.Input.WitScript);
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/MultipartyTransactionTests.cs	129	Assert.Equal(script, output.ScriptPubKey);
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/MultipartyTransactionTests.cs	145	var bob1 = new TxOut(Money.Coins(1), alice1Coin.ScriptPubKey);
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/MultipartyTransactionTests.cs	148	var bob2 = new TxOut(Money.Coins(1), alice2Coin.ScriptPubKey);
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/MultipartyTransactionTests.cs	170	ThrowsProtocolException(WabiSabiProtocolErrorCode.WrongCoinjoinSignature, () => noFeeTx.AddWitness(invalidSignature.Index, invalidSignature.Input.WitScript));
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/MultipartyTransactionTests.cs	174	var alice1Sig = noFeeTx.AddWitness(alice1SignedInput.Index, alice1SignedInput.Input.WitScript);
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/MultipartyTransactionTests.cs	178	var alice2Sig = alice1Sig.AddWitness(alice2SignedInput.Index, alice2SignedInput.Input.WitScript);
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/MultipartyTransactionTests.cs	182	ThrowsProtocolException(WabiSabiProtocolErrorCode.WitnessAlreadyProvided, () => alice1Sig.AddWitness(alice1SignedInput.Index, alice1SignedInput.Input.WitScript));
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/MultipartyTransactionTests.cs	192	var bob1 = new TxOut(Money.Coins(1), alice1Coin.ScriptPubKey);
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/MultipartyTransactionTests.cs	193	var bob2 = new TxOut(Money.Coins(1), alice2Coin.ScriptPubKey);
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/MultipartyTransactionTests.cs	209	var alice1Sig = noFeeTx.AddWitness(alice1SignedInput.Index, alice1SignedInput.Input.WitScript);
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/MultipartyTransactionTests.cs	223	var alice2Sig = alice1SigPub.AddWitness(alice2SignedInput.Index, alice2SignedInput.Input.WitScript);
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/MultipartyTransactionTests.cs	233	var alice3Sig = alice1Sig.AddWitness(alice2SignedInput.Index, alice2SignedInput.Input.WitScript);
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/MultipartyTransactionTests.cs	261	var bob1 = new TxOut(Money.Coins(1), alice1Coin.ScriptPubKey);
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/MultipartyTransactionTests.cs	267	var bob2 = new TxOut(Money.Coins(1), alice2Coin.ScriptPubKey);
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/MultipartyTransactionTests.cs	270	bob2 = new TxOut(Money.Coins(0.9999m), alice2Coin.ScriptPubKey);
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/MultipartyTransactionTests.cs	278	Assert.Contains(alice1Coin.ScriptPubKey, tx.Outputs.Select(x => x.ScriptPubKey));
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/MultipartyTransactionTests.cs	279	Assert.Contains(alice2Coin.ScriptPubKey, tx.Outputs.Select(x => x.ScriptPubKey));
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/MultipartyTransactionTests.cs	285	var alice1Sig = generousFeeTx.AddWitness(alice1SignedInput.Index, alice1SignedInput.Input.WitScript);
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/MultipartyTransactionTests.cs	293	var alice2Sig = alice1Sig.AddWitness(alice2SignedInput.Index, alice2SignedInput.Input.WitScript);
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/MultipartyTransactionTests.cs	349	var inputVsize = alice1Coin.ScriptPubKey.EstimateInputVsize();
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/MultipartyTransactionTests.cs	351	Assert.Equal(new Money(1000L), feeRate.GetFee(alice1Coin.ScriptPubKey.EstimateInputVsize()));
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/MultipartyTransactionTests.cs	364	var sha256Bounty = new TxOut(Money.Coins(1), Script.FromHex("aa20000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f87"));
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/OutputRegistrationRequestTests.cs	23	Script script = Script.FromHex(
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/OutputRegistrationRequestTests.cs	35	Script: script,
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/OutputRegistrationRequestTests.cs	43	Script: script,
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/OutputRegistrationRequestTests.cs	53	Script: script,
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/OutputRegistrationRequestTests.cs	63	Script: Script.FromHex($"{script.ToHex()[..^8]}8d000000"), // Intentionally changed; lock time: 140 -> 141.
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/OutputRegistrationRequestTests.cs	73	Script: script,
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/OutputRegistrationRequestTests.cs	83	Script: script,
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/SerializationTests.cs	130	var message = new TransactionSignaturesRequest(BitcoinFactory.CreateUint256(), 1, new WitScript(Op.GetPushOp(key1.PubKey.ToBytes())));
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/TransactionSignaturesRequestTests.cs	25	Witness: new WitScript(Op.GetPushOp(key1.PubKey.ToBytes())));
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/TransactionSignaturesRequestTests.cs	31	Witness: new WitScript(Op.GetPushOp(key1.PubKey.ToBytes())));
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/TransactionSignaturesRequestTests.cs	39	Witness: new WitScript(Op.GetPushOp(key1.PubKey.ToBytes())));
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/TransactionSignaturesRequestTests.cs	47	Witness: new WitScript(Op.GetPushOp(key1.PubKey.ToBytes())));
+script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/TransactionSignaturesRequestTests.cs	55	Witness: new WitScript(Op.GetPushOp(key2.PubKey.ToBytes()))); // Intentionally changed.
+script_format	MagicalCryptoWallet.Tests/UnitTests/Wallet/SmartCoinSelectorTests.cs	132	Assert.Equal(coinsToSpend[0].ScriptPubKey, coinsToSpend[1].ScriptPubKey);
+script_format	MagicalCryptoWallet.Tests/UnitTests/WalletOperationAuthorizationTests.cs	54	var preview = wallet.BuildTransaction(new Destination(destination.ScriptPubKey), Money.Coins(0.005m), "reviewed", new FeeRate(2m), wallet.Coins, subtractFee: false);
+script_format	MagicalCryptoWallet.Tests/UnitTests/WalletOperationAuthorizationTests.cs	68	var payments = new[] { new PaymentInfo { Sendto = new Destination(destination.ScriptPubKey), Amount = Money.Coins(0.005m), Label = "test" } };
+package_lock	MagicalCryptoWallet.Tests/packages.lock.json	813	"NBitcoin": "[10.0.13, )",
+package_lock	MagicalCryptoWallet.Tests/packages.lock.json	856	"NBitcoin": "[10.0.13, )",
+package_lock	MagicalCryptoWallet.Tests/packages.lock.json	863	"NBitcoin.Secp256k1": "[3.1.6, )"
+package_lock	MagicalCryptoWallet.Tests/packages.lock.json	1013	"NBitcoin": {
+package_lock	MagicalCryptoWallet.Tests/packages.lock.json	1023	"NBitcoin.Secp256k1": {
+package_lock	MagicalCryptoWallet.Tests/packages.lock.json	1043	"NBitcoin.Secp256k1": "3.1.6",
+script_format	MagicalCryptoWallet/Blockchain/Keys/HdPubKey.cs	11	private readonly Lazy<Script> _p2wpkhScript;
+script_format	MagicalCryptoWallet/Blockchain/Keys/HdPubKey.cs	12	private readonly Lazy<Script> _p2Taproot;
+script_format	MagicalCryptoWallet/Blockchain/Keys/HdPubKey.cs	23	_p2wpkhScript = new Lazy<Script>(() => PubKey.GetScriptPubKey(ScriptPubKeyType.Segwit), isThreadSafe: true);
+script_format	MagicalCryptoWallet/Blockchain/Keys/HdPubKey.cs	24	_p2Taproot = new Lazy<Script>(() => PubKey.GetScriptPubKey(ScriptPubKeyType.TaprootBIP86), isThreadSafe: true);
+script_format	MagicalCryptoWallet/Blockchain/Keys/HdPubKey.cs	68	public Script P2wpkhScript => _p2wpkhScript.Value;
+script_format	MagicalCryptoWallet/Blockchain/Keys/HdPubKey.cs	69	public Script P2Taproot => _p2Taproot.Value;
+script_format	MagicalCryptoWallet/Blockchain/Keys/HdPubKey.cs	110	public bool ContainsScript(Script scriptPubKey)
+script_format	MagicalCryptoWallet/Blockchain/Keys/HdPubKeyCache.cs	8	private Dictionary<Script, HdPubKey> HdPubKeyIndexedByScriptPubKey { get; } = new(1_000);
+script_format	MagicalCryptoWallet/Blockchain/Keys/HdPubKeyCache.cs	15	public bool TryGetPubKey(Script destination, [NotNullWhen(true)] out HdPubKey? hdPubKey) =>
+script_format	MagicalCryptoWallet/Blockchain/Keys/HdPubKeyCache.cs	35	HdPubKeyIndexedByScriptPubKey[info.ScriptPubKey] = info.HdPubKey;
+script_format	MagicalCryptoWallet/Blockchain/Keys/HdPubKeyInfo.cs	7	public Script ScriptPubKey { get; } = HdPubKey.PubKey.GetScriptPubKey(ScriptPubKeyType);
+script_format	MagicalCryptoWallet/Blockchain/Keys/HdPubKeyInfo.cs	8	public byte[] ScriptPubKeyBytes => ScriptPubKey.ToBytes(@unsafe: true);
+script_format	MagicalCryptoWallet/Blockchain/Keys/KeyManager.cs	257	?? throw new NotSupportedException($"Script type '{scriptPubKeyType}' is not supported.");
+script_format	MagicalCryptoWallet/Blockchain/Keys/KeyManager.cs	277	_ => throw new NotSupportedException($"Script type '{scriptPubKeyType}' is not supported.")
+script_format	MagicalCryptoWallet/Blockchain/Keys/KeyManager.cs	371	public bool TryGetKeyForScriptPubKey(Script scriptPubKey, [NotNullWhen(true)] out HdPubKey? hdPubKey)
+script_format	MagicalCryptoWallet/Blockchain/Keys/KeyManager.cs	379	public IEnumerable<Key> GetSecrets(string password, params Script[] scripts)
+script_format	MagicalCryptoWallet/Blockchain/Keys/KeyManager.cs	684	public static Script GetAssumedScriptPubKey(this HdPubKey me) =>
+script_format	MagicalCryptoWallet/Blockchain/Keys/KeyManager.cs	685	me.PubKey.GetScriptPubKey(me.FullKeyPath.GetScriptTypeFromKeyPath());
+script_format	MagicalCryptoWallet/Blockchain/TransactionBuilding/ChangelessTransactionCoinSelector.cs	25	long target = txOut.Value.Satoshi + feeRate.GetFee(txOut.ScriptPubKey.EstimateOutputVsize()).Satoshi;
+script_format	MagicalCryptoWallet/Blockchain/TransactionBuilding/ChangelessTransactionCoinSelector.cs	29	IOrderedEnumerable<IGrouping<Script, SmartCoin>> coinsByScript = availableCoins
+script_format	MagicalCryptoWallet/Blockchain/TransactionBuilding/ChangelessTransactionCoinSelector.cs	30	.GroupBy(coin => coin.ScriptPubKey)
+script_format	MagicalCryptoWallet/Blockchain/TransactionBuilding/ChangelessTransactionCoinSelector.cs	34	long[] inputCosts = coinsByScript.Select(group => group.Sum(coin => feeRate.GetFee(coin.ScriptPubKey.EstimateInputVsize()).Satoshi)).ToArray();
+script_format	MagicalCryptoWallet/Blockchain/TransactionBuilding/DestinationRequest.cs	6	public sealed record Destination(Script ScriptPubKey)
+script_format	MagicalCryptoWallet/Blockchain/TransactionBuilding/DestinationRequest.cs	8	public static implicit operator Destination(BitcoinAddress address) => new(address.ScriptPubKey);
+script_format	MagicalCryptoWallet/Blockchain/TransactionBuilding/DestinationRequest.cs	9	public static implicit operator Destination(Script scriptPubKey) => new(scriptPubKey);
+script_format	MagicalCryptoWallet/Blockchain/TransactionBuilding/DestinationRequest.cs	12	ScriptPubKey.GetDestinationAddress(network)?.ToString()
+script_format	MagicalCryptoWallet/Blockchain/TransactionBuilding/DestinationRequest.cs	18	public DestinationRequest(Script scriptPubKey, Money amount, bool subtractFee = false, LabelsArray? labels = null)
+script_format	MagicalCryptoWallet/Blockchain/TransactionBuilding/DestinationRequest.cs	23	public DestinationRequest(Script scriptPubKey, MoneyRequest amount, LabelsArray? labels = null)
+script_format	MagicalCryptoWallet/Blockchain/TransactionBuilding/DestinationRequest.cs	29	: this(new Destination(destination.ScriptPubKey), MoneyRequest.Create(amount, subtractFee), labels)
+script_format	MagicalCryptoWallet/Blockchain/TransactionBuilding/DestinationRequest.cs	34	: this(new Destination(destination.ScriptPubKey), amount, labels)
+script_format	MagicalCryptoWallet/Blockchain/TransactionBuilding/PaymentIntent.cs	12	public PaymentIntent(Script scriptPubKey, Money amount, bool subtractFee = false, LabelsArray? label = null)
+script_format	MagicalCryptoWallet/Blockchain/TransactionBuilding/PaymentIntent.cs	17	public PaymentIntent(Script scriptPubKey, MoneyRequest amount, LabelsArray? label = null)
+script_format	MagicalCryptoWallet/Blockchain/TransactionBuilding/PaymentIntent.cs	33	: this(new DestinationRequest(destination.ScriptPubKey, amount, label))
+script_format	MagicalCryptoWallet/Blockchain/TransactionBuilding/SmartCoinSelector.cs	95	.GroupBy(c => c.ScriptPubKey)
+script_format	MagicalCryptoWallet/Blockchain/TransactionBuilding/SmartCoinSelector.cs	96	.Select(group => (ScriptPubKey: group.Key, Coins: group.ToList()))
+script_format	MagicalCryptoWallet/Blockchain/TransactionBuilding/SmartCoinSelector.cs	102	.Concat(coinsInBestClusterByScript.Scan(ImmutableList<(Script ScriptPubKey, List<SmartCoin> Coins)>.Empty, (acc, coinGroup) => acc.Add(coinGroup)));
+script_format	MagicalCryptoWallet/Blockchain/TransactionBuilding/TransactionBuilderWalletExtensions.cs	80	var intent = new PaymentIntent(destination.ScriptPubKey, MoneyRequest.CreateAllRemaining(subtractFee: true), label);
+script_format	MagicalCryptoWallet/Blockchain/TransactionBuilding/TransactionModifierWalletExtensions.cs	41	var destination = ownOutput?.Coin.ScriptPubKey.GetDestinationAddress(network) ?? keyManager.GetNextChangeKey().GetAssumedScriptPubKey().GetDestinationAddress(network);
+script_format	MagicalCryptoWallet/Blockchain/TransactionBuilding/TransactionModifierWalletExtensions.cs	157	scriptPubKey: coin.ScriptPubKey,
+script_format	MagicalCryptoWallet/Blockchain/TransactionBuilding/TransactionModifierWalletExtensions.cs	164	scriptPubKey: coin.ScriptPubKey,
+script_format	MagicalCryptoWallet/Blockchain/TransactionBuilding/TransactionModifierWalletExtensions.cs	180	scriptPubKey: largestForeignOutput.TxOut.ScriptPubKey,
+script_format	MagicalCryptoWallet/Blockchain/TransactionBuilding/TransactionModifierWalletExtensions.cs	190	scriptPubKey: output.TxOut.ScriptPubKey,
+script_format	MagicalCryptoWallet/Blockchain/TransactionBuilding/TransactionModifierWalletExtensions.cs	288	var destination = keyManager.GetNextChangeKey().GetAssumedScriptPubKey().GetDestinationAddress(network);
+script_format	MagicalCryptoWallet/Blockchain/TransactionOutputs/SmartCoin.cs	38	public Script ScriptPubKey => TxOut.ScriptPubKey;
+script_format	MagicalCryptoWallet/Blockchain/TransactionOutputs/SmartCoin.cs	39	public ScriptType ScriptType => ScriptPubKey.GetScriptType();
+script_format	MagicalCryptoWallet/Blockchain/TransactionOutputs/SmartCoin.cs	97	public override string ToString() => $"{TransactionId.ToString()[..7]}.. - {Index}, {ScriptPubKey.ToString()[..7]}.. - {Amount} BTC";
+script_format	MagicalCryptoWallet/Blockchain/TransactionProcessing/TransactionProcessor.cs	195	if (KeyManager.TryGetKeyForScriptPubKey(output.ScriptPubKey, out HdPubKey? foundKey))
+script_format	MagicalCryptoWallet/Blockchain/TransactionProcessing/TransactionProcessor.cs	279	if (KeyManager.TryGetKeyForScriptPubKey(representative.ScriptPubKey, out HdPubKey? ownKey)
+script_format	MagicalCryptoWallet/Blockchain/Transactions/SmartTransaction.cs	142	.GroupBy(o => o.TxOut.ScriptPubKey.ExtractKeyId(), new ByteArrayEqualityComparer())
+script_format	MagicalCryptoWallet/Blockchain/Transactions/SmartTransaction.cs	203	if (keyManager.TryGetKeyForScriptPubKey(coin.ScriptPubKey, out _))
+script_format	MagicalCryptoWallet/Blockchain/Transactions/SmartTransaction.cs	214	if (keyManager.TryGetKeyForScriptPubKey(coin.ScriptPubKey, out _))
+script_format	MagicalCryptoWallet/Blockchain/Transactions/SmartTransaction.cs	371	if ((input.WitScript is null || input.WitScript == WitScript.Empty) && (otherInput.WitScript is not null && otherInput.WitScript != WitScript.Empty))
+script_format	MagicalCryptoWallet/Blockchain/Transactions/SmartTransaction.cs	373	input.WitScript = otherInput.WitScript;
+script_format	MagicalCryptoWallet/Blockchain/Transactions/SmartTransaction.cs	407	public bool IsSegwitWithoutWitness => !Transaction.HasWitness && Transaction.Inputs.Any(x => x.ScriptSig == Script.Empty);
+script_format	MagicalCryptoWallet/Blockchain/Transactions/SmartTransactionExtensions.cs	14	var address = coin.TxOut.ScriptPubKey.GetDestinationAddress(network)!;
+script_format	MagicalCryptoWallet/Blockchain/Transactions/SmartTransactionExtensions.cs	20	var address = coin.TxOut.ScriptPubKey.GetDestinationAddress(network)!;
+script_format	MagicalCryptoWallet/Blockchain/Transactions/TransactionFactory.cs	84	var allScripts = allowedSmartCoinInputs.Select(x => x.ScriptPubKey).ToHashSet();
+script_format	MagicalCryptoWallet/Blockchain/Transactions/TransactionFactory.cs	92	if (allScripts.Contains(coin.ScriptPubKey))
+script_format	MagicalCryptoWallet/Blockchain/Transactions/TransactionFactory.cs	109	builder.Send(request.Destination.ScriptPubKey, request.Amount.Amount);
+script_format	MagicalCryptoWallet/Blockchain/Transactions/TransactionFactory.cs	120	var changeScript = customChange.Destination.ScriptPubKey;
+script_format	MagicalCryptoWallet/Blockchain/Transactions/TransactionFactory.cs	127	builder.SetChange(customChange.Destination.ScriptPubKey);
+script_format	MagicalCryptoWallet/Blockchain/Transactions/TransactionFactory.cs	131	builder.SendAllRemaining(customChange.Destination.ScriptPubKey);
+script_format	MagicalCryptoWallet/Blockchain/Transactions/TransactionFactory.cs	170	amount: psbt.Outputs.FirstOrDefault(o => o.ScriptPubKey == t.Destination.ScriptPubKey)?.Value))
+script_format	MagicalCryptoWallet/Blockchain/Transactions/TransactionFactory.cs	197	totalOutgoingAmountNoFee = realToSend.Where(x => !changeHdPubKey.ContainsScript(x.destination.ScriptPubKey)).Sum(x => x.amount);
+script_format	MagicalCryptoWallet/Blockchain/Transactions/TransactionFactory.cs	235	IEnumerable<Key> signingKeys = _authorization?.GetSecrets(spentCoins.Select(x => x.ScriptPubKey).ToArray()) ?? KeyManager.GetSecrets(_password, spentCoins.Select(x => x.ScriptPubKey).ToArray());
+script_format	MagicalCryptoWallet/Blockchain/Transactions/TransactionFactory.cs	261	if (KeyManager.TryGetKeyForScriptPubKey(output.ScriptPubKey, out HdPubKey? foundKey))
+script_format	MagicalCryptoWallet/Blockchain/Transactions/TransactionFactory.cs	274	var foundPaymentRequest = payments.Requests.FirstOrDefault(x => x.Destination.ScriptPubKey == coin.ScriptPubKey);
+script_format	MagicalCryptoWallet/Crypto/Bip322Signature.cs	8	private Script _scriptSig = Script.Empty;
+script_format	MagicalCryptoWallet/Crypto/Bip322Signature.cs	10	public Bip322Signature(Script scriptSig, WitScript witness)
+script_format	MagicalCryptoWallet/Crypto/Bip322Signature.cs	20	public Script ScriptSig => _scriptSig;
+script_format	MagicalCryptoWallet/Crypto/Bip322Signature.cs	22	public WitScript Witness { get; private set; } = WitScript.Empty;
+script_format	MagicalCryptoWallet/Crypto/Bip322Signature.cs	33	Witness = WitScript.Load(bitcoinStream);
+script_format	MagicalCryptoWallet/Crypto/Bip322Signature.cs	40	public bool Verify(uint256 hash, Script scriptPubKey) =>
+script_format	MagicalCryptoWallet/Crypto/Bip322Signature.cs	52	Script.Empty,
+script_format	MagicalCryptoWallet/Crypto/Bip322Signature.cs	53	PayToWitPubKeyHashTemplate.Instance.GenerateWitScript(
+script_format	MagicalCryptoWallet/Crypto/Bip322Signature.cs	57	Script.Empty,
+script_format	MagicalCryptoWallet/Crypto/Bip322Signature.cs	58	PayToTaprootTemplate.Instance.GenerateWitScript(
+script_format	MagicalCryptoWallet/Crypto/Bip322Signature.cs	63	private bool VerifyP2wpkh(uint256 hash, Script scriptPubKey)
+script_format	MagicalCryptoWallet/Crypto/Bip322Signature.cs	65	if (ScriptSig != Script.Empty)
+script_format	MagicalCryptoWallet/Crypto/Bip322Signature.cs	72	if (PayToWitPubKeyHashTemplate.Instance.ExtractWitScriptParameters(Witness) is not { } witnessParameters)
+script_format	MagicalCryptoWallet/Crypto/Bip322Signature.cs	77	if (witnessParameters.PublicKey.GetScriptPubKey(ScriptPubKeyType.Segwit) != scriptPubKey)
+script_format	MagicalCryptoWallet/Crypto/Bip322Signature.cs	95	private bool VerifyP2tr(uint256 hash, Script scriptPubKey)
+script_format	MagicalCryptoWallet/Crypto/Bip322Signature.cs	97	if (ScriptSig != Script.Empty)
+script_format	MagicalCryptoWallet/Crypto/Bip322Signature.cs	104	if (PayToTaprootTemplate.Instance.ExtractWitScriptParameters(Witness) is not { } witnessParameters)
+script_format	MagicalCryptoWallet/Crypto/Bip322Signature.cs	109	if (PayToTaprootTemplate.Instance.ExtractScriptPubKeyParameters(scriptPubKey) is not { } publicKey)
+script_format	MagicalCryptoWallet/Crypto/OwnershipIdentifier.cs	12	public OwnershipIdentifier(Key identificationKey, Script scriptPubKey)
+script_format	MagicalCryptoWallet/Crypto/OwnershipProof.cs	47	Bip322Signature.Generate(key, proofBody.SignatureHash(key.PubKey.GetScriptPubKey(scriptPubKeyType), commitmentData), scriptPubKeyType));
+script_validation	MagicalCryptoWallet/Crypto/OwnershipProof.cs	47	Bip322Signature.Generate(key, proofBody.SignatureHash(key.PubKey.GetScriptPubKey(scriptPubKeyType), commitmentData), scriptPubKeyType));
+script_format	MagicalCryptoWallet/Crypto/OwnershipProof.cs	49	public bool VerifyOwnership(Script scriptPubKey, byte[] commitmentData, bool requireUserConfirmation) =>
+script_format	MagicalCryptoWallet/Crypto/OwnershipProof.cs	56	private bool VerifyOwnershipProof(Script scriptPubKey, byte[] commitmentData, bool requireUserConfirmation)
+script_validation	MagicalCryptoWallet/Crypto/OwnershipProof.cs	63	var hash = _proofBody.SignatureHash(scriptPubKey, commitmentData);
+script_format	MagicalCryptoWallet/Crypto/OwnershipProof.cs	71	public static bool VerifyCoinJoinInputProof(OwnershipProof ownershipProofBytes, Script scriptPubKey, CoinJoinInputCommitmentData coinJoinInputsCommitmentData) =>
+script_format	MagicalCryptoWallet/Crypto/ProofBody.cs	50	public uint256 SignatureHash(Script scriptPubKey, byte[] commitmentData) =>
+script_validation	MagicalCryptoWallet/Crypto/ProofBody.cs	50	public uint256 SignatureHash(Script scriptPubKey, byte[] commitmentData) =>
+script_format	MagicalCryptoWallet/Crypto/ProofBody.cs	53	private static IEnumerable<byte> ProofFooter(Script scriptPubKey, byte[] commitmentData)
+script_format	MagicalCryptoWallet/Exceptions/UnknownRoundEndingException.cs	9	public UnknownRoundEndingException(ImmutableList<SmartCoin> coins, ImmutableList<Script> outputScripts, Exception exception) :
+script_format	MagicalCryptoWallet/Exceptions/UnknownRoundEndingException.cs	19	public ImmutableList<Script> OutputScripts { get; }
+script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	66	me.Inputs.Any(i => Script.IsNullOrEmpty(i.ScriptSig)) ||
+script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	67	me.Outputs.Any(o => o.ScriptPubKey.IsScriptType(ScriptType.Witness));
+script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	82	bool notNull = me.WitScript is not null;
+script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	83	bool notEmpty = me.WitScript != WitScript.Empty;
+script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	226	throw new ArgumentNullException($"{nameof(i.WitnessUtxo)} was null, can't get it's ScriptPubKey type.");
+script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	229	if (i.WitnessUtxo.ScriptPubKey.IsScriptType(ScriptType.P2WPKH))
+script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	234	if (i.WitnessUtxo.ScriptPubKey.IsScriptType(ScriptType.P2SH) &&
+script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	236	witness.ToScript().IsScriptType(ScriptType.P2WPKH))
+script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	254	foreach (var script in psbt.Inputs.Select(x => x.WitnessUtxo?.ScriptPubKey).ToArray())
+script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	266	foreach (var script in psbt.Outputs.Select(x => x.ScriptPubKey).ToArray())
+script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	276	public static void AddKeyPath(this PSBT psbt, HDFingerprint fp, HdPubKey hdPubKey, Script script)
+script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	312	public static int EstimateOutputVsize(this Script scriptPubKey) =>
+script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	315	public static int EstimateInputVsize(this Script scriptPubKey) =>
+script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	341	output.Value + feeRate.GetFee(output.ScriptPubKey.EstimateOutputVsize());
+script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	344	=> EffectiveValue(coin.TxOut.Value, virtualSize: coin.TxOut.ScriptPubKey.EstimateInputVsize(), feeRate);
+script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	371	public static byte[] ExtractKeyId(this Script scriptPubKey)
+script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	375	ScriptType.P2WPKH => PayToWitPubKeyHashTemplate.Instance.ExtractScriptPubKeyParameters(scriptPubKey)!.ToBytes(),
+script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	376	ScriptType.P2PKH => PayToPubkeyHashTemplate.Instance.ExtractScriptPubKeyParameters(scriptPubKey)!.ToBytes(),
+script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	377	ScriptType.P2PK => PayToPubkeyTemplate.Instance.ExtractScriptPubKeyParameters(scriptPubKey)!.ToBytes(),
+script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	382	public static ScriptType GetScriptType(this Script script)
+script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	387	public static ScriptType? TryGetScriptType(this Script script)
+script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	391	if (script.IsScriptType(scriptType))
+script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	400	public static BitcoinSecret GetBitcoinSecret(this Key key, Network network, Script scriptPubKey)
+script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	403	public static BitcoinSecret GetBitcoinSecret(Network network, Key privateKey, Script scriptPubKey)
+script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	407	_ when scriptPubKey.IsScriptType(ScriptType.P2WPKH) => ScriptPubKeyType.Segwit,
+script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	408	_ when scriptPubKey.IsScriptType(ScriptType.Taproot) => ScriptPubKeyType.TaprootBIP86,
+script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	412	if (privateKey.PubKey.GetScriptPubKey(derivedScriptPubKeyType) != scriptPubKey)
+script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	420	public static OwnershipProof GetOwnershipProof(Key masterKey, BitcoinSecret secret, Script scriptPubKey, CoinJoinInputCommitmentData commitmentData)
+script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	431	scriptPubKey.IsScriptType(ScriptType.P2WPKH)
+script_format	MagicalCryptoWallet/Helpers/TxOutEqualityComparer.cs	10	public bool Equals(TxOut? x, TxOut? y) => (x?.Value, x?.ScriptPubKey) == (y?.Value, y?.ScriptPubKey);
+script_format	MagicalCryptoWallet/Helpers/TxOutEqualityComparer.cs	12	public int GetHashCode(TxOut txOut) => (txOut.Value, txOut.ScriptPubKey).GetHashCode();
+package	MagicalCryptoWallet/MagicalCryptoWallet.csproj	32	<PackageReference Include="NBitcoin" />
+script_format	MagicalCryptoWallet/Rpc/JsonConverters/DestinationJsonConverter.cs	10	writer.WriteValue(value?.ScriptPubKey.GetDestinationAddress(network)?.ToString());
+script_format	MagicalCryptoWallet/Serialization/Bitcoin.cs	24	private static JsonNode Script(Script script) =>
+script_format	MagicalCryptoWallet/Serialization/Bitcoin.cs	35	("ScriptPubKey", Script(txo.ScriptPubKey)),
+script_format	MagicalCryptoWallet/Serialization/Bitcoin.cs	48	private static JsonNode WitScript(WitScript witScript) =>
+script_format	MagicalCryptoWallet/Serialization/Bitcoin.cs	91	private static Decoder<WitScript> WitScript =>
+script_format	MagicalCryptoWallet/Serialization/Bitcoin.cs	92	Hexadecimal.Map(hex => new WitScript(hex)).Catch();
+script_format	MagicalCryptoWallet/Serialization/Bitcoin.cs	102	private static Decoder<Script> Script =>
+script_format	MagicalCryptoWallet/Serialization/Bitcoin.cs	103	String.Map(s => new Script(s)).Catch();
+script_format	MagicalCryptoWallet/Serialization/Bitcoin.cs	108	get.Required("ScriptPubKey", Script)
+script_format	MagicalCryptoWallet/Serialization/Coordination.cs	159	("Witnesses", Dictionary(ss.Witnesses.ToDictionary(x => x.Key.ToString(), x => WitScript(x.Value)))),
+script_format	MagicalCryptoWallet/Serialization/Coordination.cs	223	("Script", Script(rr.Script)),
+script_format	MagicalCryptoWallet/Serialization/Coordination.cs	281	("Witness", WitScript(sr.Witness)),
+script_format	MagicalCryptoWallet/Serialization/Coordination.cs	485	get.Required("Script", Script),
+script_format	MagicalCryptoWallet/Serialization/Coordination.cs	535	get.Required("Witness", WitScript)
+script_format	MagicalCryptoWallet/WabiSabi/Client/Batching/Payment.cs	25	public TxOut ToTxOut() => new(Amount, Destination.ScriptPubKey);
+script_format	MagicalCryptoWallet/WabiSabi/Client/Batching/Payment.cs	28	Amount + feeRate.GetFee(Destination.ScriptPubKey.EstimateOutputVsize());
+script_format	MagicalCryptoWallet/WabiSabi/Client/Batching/Payment.cs	31	allowedOutputTypes.Contains(Destination.ScriptPubKey.GetScriptType()) &&
+script_format	MagicalCryptoWallet/WabiSabi/Client/Batching/PaymentBatch.cs	30	Logger.LogInfo($"Payment {payment.Id} for {payment.Amount} BTC to {payment.Destination.ScriptPubKey}.");
+script_format	MagicalCryptoWallet/WabiSabi/Client/Batching/PaymentBatch.cs	43	Logger.LogInfo($"Payment {payment.Id} for {payment.Amount} BTC to {payment.Destination.ScriptPubKey} was canceled.");
+script_format	MagicalCryptoWallet/WabiSabi/Client/Batching/PaymentBatch.cs	161	Logger.LogInfo($"Id {payment.Id} to {payment.Destination.ScriptPubKey}  {payment.Amount.ToDecimal(MoneyUnit.BTC)} BTC.");
+script_format	MagicalCryptoWallet/WabiSabi/Client/Batching/PaymentSet.cs	10	public int TotalVSize { get; } = Payments.Sum(x => x.Destination.ScriptPubKey.EstimateOutputVsize());
+script_format	MagicalCryptoWallet/WabiSabi/Client/CoinJoin/Client/AliceClient.cs	107	long[] vsizesToRequest = { _maxVsizeAllocationPerAlice - SmartCoin.ScriptPubKey.EstimateInputVsize() };
+script_format	MagicalCryptoWallet/WabiSabi/Client/CoinJoin/Client/ArenaClient.cs	57	Script scriptPubKey,
+script_validation	MagicalCryptoWallet/WabiSabi/Client/CoinJoin/Client/ArenaClient.cs	195	if (!txInput.VerifyScript(coin, ScriptVerify.Standard, unsignedCoinJoin.PrecomputedTransactionData, out var error))
+script_format	MagicalCryptoWallet/WabiSabi/Client/CoinJoin/Client/ArenaClient.cs	200	await RequestHandler.SignTransactionAsync(new TransactionSignaturesRequest(roundId, txInput.Index, txInput.WitScript), cancellationToken).ConfigureAwait(false);
+script_format	MagicalCryptoWallet/WabiSabi/Client/CoinJoin/Client/BobClient.cs	14	public async Task RegisterOutputAsync(Script scriptPubKey, IEnumerable<Credential> amountCredentials, IEnumerable<Credential> vsizeCredentials, CancellationToken cancellationToken)
+script_format	MagicalCryptoWallet/WabiSabi/Client/CoinJoin/Client/CoinJoinClient.cs	285	outputTxOuts.Select(o => o.ScriptPubKey).ToImmutableList(), ex);
+script_format	MagicalCryptoWallet/WabiSabi/Client/CoinJoin/Client/CoinJoinClient.cs	324	OutputScripts: outputTxOuts.Select(o => o.ScriptPubKey).ToImmutableList(),
+script_format	MagicalCryptoWallet/WabiSabi/Client/CoinJoin/Client/CoinJoinClient.cs	604	var myOutputScripts = myOutputs.Select(output => output.ScriptPubKey).ToHashSet();
+script_format	MagicalCryptoWallet/WabiSabi/Client/CoinJoin/Client/CoinJoinClient.cs	605	var myRegisteredOutputs = signingState.Outputs.Where(output => myOutputScripts.Contains(output.ScriptPubKey)).ToArray();
+script_format	MagicalCryptoWallet/WabiSabi/Client/CoinJoin/Client/CoinJoinClient.cs	608	myInputsArray.Sum(coin => miningFeeRate.GetFee(coin.ScriptPubKey.EstimateInputVsize())) +
+script_format	MagicalCryptoWallet/WabiSabi/Client/CoinJoin/Client/CoinJoinClient.cs	609	myRegisteredOutputs.Sum(output => miningFeeRate.GetFee(output.ScriptPubKey.EstimateOutputVsize()));
+script_format	MagicalCryptoWallet/WabiSabi/Client/CoinJoin/Client/CoinJoinClient.cs	619	.GroupBy(x => x.ScriptPubKey)
+script_format	MagicalCryptoWallet/WabiSabi/Client/CoinJoin/Client/CoinJoinClient.cs	625	.Select(x => x.ScriptPubKey)
+script_format	MagicalCryptoWallet/WabiSabi/Client/CoinJoin/Client/CoinJoinClient.cs	626	.IsSuperSetOf(consolidatedOutputs.Select(x => x.ScriptPubKey));
+script_format	MagicalCryptoWallet/WabiSabi/Client/CoinJoin/Client/CoinJoinClient.cs	632	x => x.ScriptPubKey,
+script_format	MagicalCryptoWallet/WabiSabi/Client/CoinJoin/Client/CoinJoinClient.cs	633	x => x.ScriptPubKey,
+script_format	MagicalCryptoWallet/WabiSabi/Client/CoinJoin/Client/CoinJoinClient.cs	716	var totalEffectiveOutputAmount = Money.Satoshis(myOutputs.Sum(a => a.Value - feeRate.GetFee(a.ScriptPubKey.EstimateOutputVsize())));
+script_format	MagicalCryptoWallet/WabiSabi/Client/CoinJoin/Client/CoinJoinClient.cs	723	var inputNetworkFee = Money.Satoshis(registeredAliceClients.Sum(alice => feeRate.GetFee(alice.SmartCoin.Coin.ScriptPubKey.EstimateInputVsize())));
+script_format	MagicalCryptoWallet/WabiSabi/Client/CoinJoin/Client/CoinJoinClient.cs	724	var outputNetworkFee = Money.Satoshis(myOutputs.Sum(output => feeRate.GetFee(output.ScriptPubKey.EstimateOutputVsize())));
+script_format	MagicalCryptoWallet/WabiSabi/Client/CoinJoin/Client/CoinJoinClient.cs	799	ourCoin.TxOut.ScriptPubKey.Hash == registeredCoin.TxOut.ScriptPubKey.Hash &&
+script_format	MagicalCryptoWallet/WabiSabi/Client/CoinJoin/Client/CoinJoinClient.cs	850	Logger.LogInfo(FormatLog($"Script ({s.ScriptPubKey}) registration failed by unknown reasons. Continuing...", roundState));
+script_format	MagicalCryptoWallet/WabiSabi/Client/CoinJoin/Client/CoinJoinClient.cs	854	_outputProvider.DestinationProvider.TrySetScriptStates(KeyState.Used, [s.ScriptPubKey]);
+script_format	MagicalCryptoWallet/WabiSabi/Client/CoinJoin/Client/CoinJoinClient.cs	855	Logger.LogInfo(FormatLog($"Script ({s.ScriptPubKey}) was already registered. Continuing...", roundState));
+script_format	MagicalCryptoWallet/WabiSabi/Client/CoinJoin/Client/CoinJoinCoinSelector.cs	234	.Where(x => winner.Any(y => y.ScriptPubKey == x.ScriptPubKey))
+script_format	MagicalCryptoWallet/WabiSabi/Client/CoinJoin/Client/CoinJoinCoinSelector.cs	235	.GroupBy(x => x.ScriptPubKey)
+script_format	MagicalCryptoWallet/WabiSabi/Client/CoinJoin/Client/CoinJoinResult.cs	7	ImmutableList<Script> OutputScripts,
+script_format	MagicalCryptoWallet/WabiSabi/Client/CoinJoin/Client/DependencyGraphTaskScheduler.cs	143	public record UnknownError(Script ScriptPubKey) : OutputRegistrationError;
+script_format	MagicalCryptoWallet/WabiSabi/Client/CoinJoin/Client/DependencyGraphTaskScheduler.cs	144	public record AlreadyRegisteredScriptError(Script ScriptPubKey) : OutputRegistrationError;
+script_format	MagicalCryptoWallet/WabiSabi/Client/CoinJoin/Client/DependencyGraphTaskScheduler.cs	177	await smartRequestNode.StartOutputRegistrationAsync(bobClientFactory(), txOut.ScriptPubKey, cancellationToken).ConfigureAwait(false);
+script_format	MagicalCryptoWallet/WabiSabi/Client/CoinJoin/Client/DependencyGraphTaskScheduler.cs	183	return new AlreadyRegisteredScriptError(txOut.ScriptPubKey);
+script_format	MagicalCryptoWallet/WabiSabi/Client/CoinJoin/Client/DependencyGraphTaskScheduler.cs	188	return new UnknownError(txOut.ScriptPubKey);
+script_format	MagicalCryptoWallet/WabiSabi/Client/CoinJoin/Manager/CoinJoinManager.cs	481	private static void MarkDestinationsUsed(IDestinationProvider provider, ImmutableList<Script> outputs) => provider.TrySetScriptStates(KeyState.Used, outputs);
+script_format	MagicalCryptoWallet/WabiSabi/Client/CredentialDependencies/DependencyGraph.cs	42	var outputSizes = outputs.Select(x => (long)x.ScriptPubKey.EstimateOutputVsize());
+script_format	MagicalCryptoWallet/WabiSabi/Client/IDestinationProvider.cs	9	public void TrySetScriptStates(KeyState state, IEnumerable<Script> scripts);
+script_format	MagicalCryptoWallet/WabiSabi/Client/InternalDestinationProvider.cs	35	public void TrySetScriptStates(KeyState state, IEnumerable<Script> scripts)
+script_format	MagicalCryptoWallet/WabiSabi/Client/KeyChain.cs	14	Key key = _authorization.GetSecrets(destination.ScriptPubKey).SingleOrDefault()
+script_format	MagicalCryptoWallet/WabiSabi/Client/KeyChain.cs	15	?? throw new InvalidOperationException($"The signing key for '{destination.ScriptPubKey}' was not found.");
+script_format	MagicalCryptoWallet/WabiSabi/Client/KeyChain.cs	17	BitcoinSecret secret = key.GetBitcoinSecret(_authorization.KeyManager.GetNetwork(), destination.ScriptPubKey);
+script_format	MagicalCryptoWallet/WabiSabi/Client/KeyChain.cs	19	return NBitcoinExtensions.GetOwnershipProof(masterKey, secret, destination.ScriptPubKey, commitmentData);
+script_format	MagicalCryptoWallet/WabiSabi/Client/KeyChain.cs	33	Key key = _authorization.GetSecrets(coin.ScriptPubKey).SingleOrDefault()
+script_format	MagicalCryptoWallet/WabiSabi/Client/KeyChain.cs	34	?? throw new InvalidOperationException($"The signing key for '{coin.ScriptPubKey}' was not found.");
+script_format	MagicalCryptoWallet/WabiSabi/Client/KeyChain.cs	35	BitcoinSecret secret = key.GetBitcoinSecret(_authorization.KeyManager.GetNetwork(), coin.ScriptPubKey);
+script_format	MagicalCryptoWallet/WabiSabi/Client/OutputProvider.cs	54	var txOut = new TxOut(output.Amount, destination.ScriptPubKey);
+script_format	MagicalCryptoWallet/WabiSabi/Client/SmartRequestNode.cs	71	Script scriptPubKey,
+script_format	MagicalCryptoWallet/WabiSabi/Coordinator/Models/Alice.cs	21	public int TotalInputVsize => Coin.ScriptPubKey.EstimateInputVsize();
+script_format	MagicalCryptoWallet/WabiSabi/Coordinator/Models/Bob.cs	6	public record Bob(Script Script, long CredentialAmount)
+script_format	MagicalCryptoWallet/WabiSabi/Coordinator/Models/Bob.cs	9	=> Script.EstimateOutputVsize();
+script_format	MagicalCryptoWallet/WabiSabi/Coordinator/Rounds/Round.cs	76	public Script? CoordinatorScript { get; set; }
+script_format	MagicalCryptoWallet/WabiSabi/Coordinator/Rounds/Round.cs	143	public SigningState AddWitness(int index, WitScript witness)
+script_format	MagicalCryptoWallet/WabiSabi/Coordinator/Statistics/CoinJoinScriptStore.cs	12	public CoinJoinScriptStore(IEnumerable<Script> scripts)
+script_format	MagicalCryptoWallet/WabiSabi/Coordinator/Statistics/CoinJoinScriptStore.cs	14	_scripts = new HashSet<Script>(scripts);
+script_format	MagicalCryptoWallet/WabiSabi/Coordinator/Statistics/CoinJoinScriptStore.cs	17	private readonly HashSet<Script> _scripts = new();
+script_format	MagicalCryptoWallet/WabiSabi/Coordinator/Statistics/CoinJoinScriptStore.cs	19	public void AddRange(IEnumerable<Script> scripts)
+script_format	MagicalCryptoWallet/WabiSabi/Coordinator/Statistics/CoinJoinScriptStore.cs	27	public bool Contains(Script script)
+script_format	MagicalCryptoWallet/WabiSabi/Coordinator/Statistics/CoinJoinScriptStore.cs	35	? File.ReadAllLines(filePath).Select(x => Script.FromHex(x))
+script_format	MagicalCryptoWallet/WabiSabi/Coordinator/Statistics/CoinJoinScriptStore.cs	36	: Enumerable.Empty<Script>();
+script_format	MagicalCryptoWallet/WabiSabi/Coordinator/WabiSabiConfig.cs	121	public Script GetNextCleanCoordinatorScript() => DeriveCoordinatorScript(CoordinatorExtPubKeyCurrentDepth);
+script_format	MagicalCryptoWallet/WabiSabi/Coordinator/WabiSabiConfig.cs	123	public Script DeriveCoordinatorScript(int index) =>
+script_format	MagicalCryptoWallet/WabiSabi/Coordinator/WabiSabiConfig.cs	125	.Derive(0, false).Derive(index, false).PubKey.GetScriptPubKey(ScriptPubKeyType.Segwit);
+script_format	MagicalCryptoWallet/WabiSabi/Models/MultipartyTransaction/ConstructionState.cs	15	if (!OwnershipProof.VerifyCoinJoinInputProof(ownershipProof, coin.TxOut.ScriptPubKey, coinJoinInputCommitmentData))
+script_format	MagicalCryptoWallet/WabiSabi/Models/MultipartyTransaction/ConstructionState.cs	20	if (!StandardScripts.IsStandardScriptPubKey(prevout.ScriptPubKey))
+script_format	MagicalCryptoWallet/WabiSabi/Models/MultipartyTransaction/ConstructionState.cs	25	if (!Parameters.AllowedInputTypes.Any(x => prevout.ScriptPubKey.IsScriptType(x)))
+script_format	MagicalCryptoWallet/WabiSabi/Models/MultipartyTransaction/ConstructionState.cs	40	if (prevout.Value <= Parameters.MiningFeeRate.GetFee(prevout.ScriptPubKey.EstimateInputVsize()))
+script_format	MagicalCryptoWallet/WabiSabi/Models/MultipartyTransaction/ConstructionState.cs	83	if (!StandardScripts.IsStandardScriptPubKey(output.ScriptPubKey))
+script_format	MagicalCryptoWallet/WabiSabi/Models/MultipartyTransaction/ConstructionState.cs	91	if (!Parameters.AllowedOutputTypes.Any(x => output.ScriptPubKey.IsScriptType(x)))
+script_format	MagicalCryptoWallet/WabiSabi/Models/MultipartyTransaction/MultipartyTransactionState.cs	24	public int EstimatedInputsVsize => Inputs.Sum(x => x.TxOut.ScriptPubKey.EstimateInputVsize());
+script_format	MagicalCryptoWallet/WabiSabi/Models/MultipartyTransaction/MultipartyTransactionState.cs	25	public int OutputsVsize => Outputs.Sum(x => x.ScriptPubKey.EstimateOutputVsize());
+script_format	MagicalCryptoWallet/WabiSabi/Models/MultipartyTransaction/MultipartyTransactionState.cs	60	events.OfType<InputAdded>().Any(x => !OwnershipProof.VerifyCoinJoinInputProof(x.OwnershipProof, x.Coin.ScriptPubKey, coinJoinInputCommitData));
+script_format	MagicalCryptoWallet/WabiSabi/Models/MultipartyTransaction/SigningState.cs	11	public ImmutableDictionary<int, WitScript> Witnesses { get; init; } = ImmutableDictionary<int, WitScript>.Empty;
+script_format	MagicalCryptoWallet/WabiSabi/Models/MultipartyTransaction/SigningState.cs	13	private ImmutableDictionary<int, WitScript> UnpublishedWitnesses { get; init; } = ImmutableDictionary<int, WitScript>.Empty;
+script_format	MagicalCryptoWallet/WabiSabi/Models/MultipartyTransaction/SigningState.cs	23	.GroupBy(x => x.ScriptPubKey)
+script_format	MagicalCryptoWallet/WabiSabi/Models/MultipartyTransaction/SigningState.cs	26	.ThenBy(x => x.ScriptPubKey.ToBytes(true), ByteArrayComparer.Comparer)
+script_format	MagicalCryptoWallet/WabiSabi/Models/MultipartyTransaction/SigningState.cs	35	public SigningState AddWitness(int index, WitScript witness)
+script_format	MagicalCryptoWallet/WabiSabi/Models/MultipartyTransaction/SigningState.cs	47	if (VirtualSizeHelpers.VirtualSize(Constants.InputBaseSizeInBytes, witness.ToBytes().Length) > registeredCoin.ScriptPubKey.EstimateInputVsize())
+script_format	MagicalCryptoWallet/WabiSabi/Models/MultipartyTransaction/SigningState.cs	56	cjCopy.Inputs[index].WitScript = witness;
+script_validation	MagicalCryptoWallet/WabiSabi/Models/MultipartyTransaction/SigningState.cs	63	if (!currentIndexedInput.VerifyScript(registeredCoin, ScriptVerify.Standard, precomputedTransactionData, out ScriptError error))
+script_format	MagicalCryptoWallet/WabiSabi/Models/MultipartyTransaction/SigningState.cs	75	UnpublishedWitnesses = ImmutableDictionary<int, WitScript>.Empty
+script_format	MagicalCryptoWallet/WabiSabi/Models/MultipartyTransaction/SigningState.cs	104	tx.Inputs[index].WitScript = witness;
+script_format	MagicalCryptoWallet/WabiSabi/Models/OutputRegistrationRequest.cs	5	Script Script,
+script_format	MagicalCryptoWallet/WabiSabi/Models/TransactionSignaturesRequest.cs	3	public record TransactionSignaturesRequest(uint256 RoundId, uint InputIndex, WitScript Witness);
+script_format	MagicalCryptoWallet/Wallets/WalletAuthorization.cs	32	public IEnumerable<Key> GetSecrets(params Script[] scripts) => KeyManager.GetKeys(x => scripts.Contains(x.P2wpkhScript) || scripts.Contains(x.P2Taproot)).Select(x => MasterKey.Derive(x.FullKeyPath).PrivateKey);
+script_format	MagicalCryptoWallet/Wallets/WalletAuthorization.cs	38	builder.AddKeys(GetSecrets(preview.SpentCoins.Select(x => x.ScriptPubKey).ToArray()).ToArray());
+package_lock	MagicalCryptoWallet/packages.lock.json	73	"NBitcoin": {
+package_lock	MagicalCryptoWallet/packages.lock.json	91	"NBitcoin.Secp256k1": "3.1.6",
+package_lock	MagicalCryptoWallet/packages.lock.json	275	"NBitcoin.Secp256k1": "[3.1.6, )"
+package_lock	MagicalCryptoWallet/packages.lock.json	278	"NBitcoin.Secp256k1": {
+package_lock	ThirdParty/WabiSabi/csharp/WabiSabi.Tests/packages.lock.json	163	"NBitcoin.Secp256k1": "[3.1.6, )"
+package_lock	ThirdParty/WabiSabi/csharp/WabiSabi.Tests/packages.lock.json	166	"NBitcoin.Secp256k1": {
+package	ThirdParty/WabiSabi/csharp/WabiSabi/WabiSabi.csproj	13	<PackageReference Include="NBitcoin.Secp256k1" />
+package_lock	ThirdParty/WabiSabi/csharp/WabiSabi/packages.lock.json	5	"NBitcoin.Secp256k1": {
+script_format	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/OwnershipProofInteropTests.cs	27	private static (Key key, Script spk, OwnershipIdentifier id, byte[] idBytes) MakeFixture(ScriptPubKeyType type)
+script_format	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/OwnershipProofInteropTests.cs	31	var spk = key.PubKey.GetScriptPubKey(type);
+script_format	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/OwnershipProofInteropTests.cs	98	var otherSpk = otherKey.PubKey.GetScriptPubKey(type);
+script_format	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/Reference/Bip322Signature.cs	10	private Script _scriptSig = Script.Empty;
+script_format	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/Reference/Bip322Signature.cs	12	public Bip322Signature(Script scriptSig, WitScript witness)
+script_format	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/Reference/Bip322Signature.cs	22	public Script ScriptSig => _scriptSig;
+script_format	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/Reference/Bip322Signature.cs	24	public WitScript Witness { get; private set; } = WitScript.Empty;
+script_format	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/Reference/Bip322Signature.cs	35	Witness = WitScript.Load(bitcoinStream);
+script_format	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/Reference/Bip322Signature.cs	42	public bool Verify(uint256 hash, Script scriptPubKey) =>
+script_format	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/Reference/Bip322Signature.cs	54	Script.Empty,
+script_format	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/Reference/Bip322Signature.cs	55	PayToWitPubKeyHashTemplate.Instance.GenerateWitScript(
+script_format	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/Reference/Bip322Signature.cs	59	Script.Empty,
+script_format	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/Reference/Bip322Signature.cs	60	PayToTaprootTemplate.Instance.GenerateWitScript(
+script_format	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/Reference/Bip322Signature.cs	65	private bool VerifyP2wpkh(uint256 hash, Script scriptPubKey)
+script_format	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/Reference/Bip322Signature.cs	67	if (ScriptSig != Script.Empty)
+script_format	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/Reference/Bip322Signature.cs	74	if (PayToWitPubKeyHashTemplate.Instance.ExtractWitScriptParameters(Witness) is not { } witnessParameters)
+script_format	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/Reference/Bip322Signature.cs	79	if (witnessParameters.PublicKey.GetScriptPubKey(ScriptPubKeyType.Segwit) != scriptPubKey)
+script_format	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/Reference/Bip322Signature.cs	97	private bool VerifyP2tr(uint256 hash, Script scriptPubKey)
+script_format	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/Reference/Bip322Signature.cs	99	if (ScriptSig != Script.Empty)
+script_format	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/Reference/Bip322Signature.cs	106	if (PayToTaprootTemplate.Instance.ExtractWitScriptParameters(Witness) is not { } witnessParameters)
+script_format	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/Reference/Bip322Signature.cs	111	if (PayToTaprootTemplate.Instance.ExtractScriptPubKeyParameters(scriptPubKey) is not { } publicKey)
+script_format	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/Reference/OwnershipIdentifier.cs	16	public OwnershipIdentifier(Key identificationKey, Script scriptPubKey)
+script_format	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/Reference/OwnershipProof.cs	49	Bip322Signature.Generate(key, proofBody.SignatureHash(key.PubKey.GetScriptPubKey(scriptPubKeyType), commitmentData), scriptPubKeyType));
+script_validation	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/Reference/OwnershipProof.cs	49	Bip322Signature.Generate(key, proofBody.SignatureHash(key.PubKey.GetScriptPubKey(scriptPubKeyType), commitmentData), scriptPubKeyType));
+script_format	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/Reference/OwnershipProof.cs	51	public bool VerifyOwnership(Script scriptPubKey, byte[] commitmentData, bool requireUserConfirmation) =>
+script_format	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/Reference/OwnershipProof.cs	58	private bool VerifyOwnershipProof(Script scriptPubKey, byte[] commitmentData, bool requireUserConfirmation)
+script_validation	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/Reference/OwnershipProof.cs	65	var hash = _proofBody.SignatureHash(scriptPubKey, commitmentData);
+script_format	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/Reference/OwnershipProof.cs	73	public static bool VerifyCoinJoinInputProof(OwnershipProof ownershipProofBytes, Script scriptPubKey, CoinJoinInputCommitmentData coinJoinInputsCommitmentData) =>
+script_format	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/Reference/ProofBody.cs	52	public uint256 SignatureHash(Script scriptPubKey, byte[] commitmentData) =>
+script_validation	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/Reference/ProofBody.cs	52	public uint256 SignatureHash(Script scriptPubKey, byte[] commitmentData) =>
+script_format	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/Reference/ProofBody.cs	55	private static IEnumerable<byte> ProofFooter(Script scriptPubKey, byte[] commitmentData)
+script_format	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/Reference/ReferenceExtensions.cs	24	public static ScriptType? TryGetScriptType(this Script script)
+script_format	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/Reference/ReferenceExtensions.cs	28	if (script.IsScriptType(scriptType))
+package	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/WabiSabiInterop.Tests.csproj	13	<PackageReference Include="NBitcoin" />
+package_lock	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/packages.lock.json	5	"NBitcoin": {
+package_lock	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/packages.lock.json	150	"NBitcoin.Secp256k1": "[3.1.6, )"
+package_lock	ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/packages.lock.json	153	"NBitcoin.Secp256k1": {
+package_lock	ThirdParty/WabiSabi/interop/packages.lock.json	8	"NBitcoin.Secp256k1": "[3.1.6, )"
+package_lock	ThirdParty/WabiSabi/interop/packages.lock.json	11	"NBitcoin.Secp256k1": {

@@ -4,7 +4,6 @@ using MagicalCryptoWallet.Fluent.ViewModels.HelpAndSupport;
 using MagicalCryptoWallet.Fluent.ViewModels.OpenDirectory;
 using MagicalCryptoWallet.Fluent.ViewModels.Scheme;
 using MagicalCryptoWallet.Fluent.ViewModels.Settings;
-using MagicalCryptoWallet.Fluent.ViewModels.TransactionBroadcasting;
 
 namespace MagicalCryptoWallet.Fluent.ViewModels;
 
@@ -41,7 +40,6 @@ public static class MainViewModelExtensions
 		});
 
 		AboutViewModel.RegisterLazy(() => new AboutViewModel(uiContext));
-		BroadcasterViewModel.RegisterLazy(() => new BroadcasterViewModel(uiContext));
 		OpenDataFolderViewModel.RegisterLazy(() => new OpenDataFolderViewModel(uiContext));
 		OpenWalletsFolderViewModel.RegisterLazy(() => new OpenWalletsFolderViewModel(uiContext));
 		OpenLogsViewModel.RegisterLazy(() => new OpenLogsViewModel(uiContext));

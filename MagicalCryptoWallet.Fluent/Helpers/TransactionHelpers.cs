@@ -1,7 +1,5 @@
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using NBitcoin;
 using MagicalCryptoWallet.Blockchain.Keys;
 using MagicalCryptoWallet.Blockchain.TransactionBuilding;
@@ -11,7 +9,6 @@ using MagicalCryptoWallet.Exceptions;
 using MagicalCryptoWallet.Extensions;
 using MagicalCryptoWallet.Fluent.Models.Transactions;
 using MagicalCryptoWallet.Fluent.ViewModels.Wallets.Send;
-using MagicalCryptoWallet.Logging;
 using MagicalCryptoWallet.Models;
 using MagicalCryptoWallet.Wallets;
 
@@ -113,12 +110,6 @@ public static class TransactionHelpers
 		}
 
 		return false;
-	}
-
-	public static async Task<SmartTransaction> ParseTransactionAsync(string path, Network network)
-	{
-		var text = (await File.ReadAllTextAsync(path)).Trim();
-		return new SmartTransaction(Transaction.Parse(text, network), Height.Unknown);
 	}
 
 	internal static PaymentIntent BuildPayToManyIntent(TransactionInfo transactionInfo)
