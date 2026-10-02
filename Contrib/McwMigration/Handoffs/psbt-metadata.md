@@ -1,6 +1,6 @@
 # Bounded PSBT metadata caller replacement
 
-This assignment replaces the live wallet's `AddKeyPaths`, `AddKeyPath`, and
+This prepared assignment replaces the live wallet's `AddKeyPaths`, `AddKeyPath`, and
 `AddPrevTxs` helpers. The two calls in `TransactionFactory.BuildTransaction` become
 one typed `McwPsbtMetadata.Enrich` call. Construction, selection, fees, signing,
 finalization, script/policy checks, wallet state, and result types retain their
@@ -11,11 +11,22 @@ and excluded from publication. No removed import/export UI is restored.
 
 Owned leaves are `mcw/src/psbt_metadata.rs`, `psbt_metadata_service.rs`,
 `mcw/tests/psbt_metadata_*`, `MagicalCryptoWallet/Mcw/Psbt/`, this handoff and its
-host patch. Existing caller edits are restricted to the three helpers and the two
+activation patches. Existing caller edits are restricted to the three helpers and the two
 factory call sites. The QR integrator owns `mcw/src/lib.rs`, `app.rs`, bridge,
 Cargo, CLI, platform, packaging, and the migration ledger. The prepared
-`psbt-metadata-host.patch` is for idle shared-owner incorporation; it does not
-change the active host checkout or the 1 MiB bridge frame ceiling.
+`psbt-metadata-host.patch` is for idle shared-owner incorporation.
+`psbt-metadata-caller.patch` contains the factory change and helper deletion;
+`psbt-metadata-activation.patch` combines both. Host routing, caller activation,
+and the integrator's real-host managed-test fixture must be incorporated
+atomically. The patches do not change the active host checkout or the 1 MiB
+bridge frame ceiling.
+
+Component publication `a7d07f383ab75a7b7b7fbd9493000b46eb38ad0a` activated the
+caller too early. Narrow repair `1bdd57f1639c8e77e9f346c85f08e420b0584fee`
+restored only the two call sites and three helper bodies. Current runnable
+`master` retains those original helpers; the new adapter is unused until the
+complete activation is integrated. This temporary retention is not a runtime
+fallback in the replacement adapter.
 
 The managed adapter reads native input outpoints/WITNESS_UTXO scripts and output
 scripts, asks the existing KeyManager and transaction store for their own data,
@@ -24,7 +35,7 @@ bytes. Rust distributes origins, writes PSBT records, verifies supplied parent
 hashes, output indexes and matching witness UTXOs, and preserves other records.
 The resulting packet is loaded into NBitcoin solely for the retained typed
 signer/result boundary; packet network and every PSBT setting are preserved.
-There is no old-helper fallback or unused validation shadow.
+The replacement adapter has no old-helper fallback or validation shadow.
 
 ## Compatibility
 
@@ -111,6 +122,8 @@ finalized/part-finalized inputs, origin replacement, v2 and witnessed parents.
 ./mcw/tests/psbt_metadata_host_patch.ps1
 ./mcw/tests/psbt_metadata_host_verify.ps1 -BuildOnly
 ./mcw/tests/psbt_metadata_host_verify.ps1 -NativeApplication <fresh-integrated-mcw.exe>
+# Before shared activation, select a tracked-source snapshot with the complete patch:
+./mcw/tests/psbt_metadata_host_verify.ps1 -CoreSourceRoot <activation-snapshot> -NativeApplication <snapshot-mcw.exe>
 ```
 
 Verifiers hold a shared build slot only during actual compilation/testing,
@@ -123,6 +136,13 @@ The real-host probe compiles the actual modified managed core and actual
 ManagedApplicationHost with a synthetic child. It compares old/new packet bytes,
 fees, settings, unsigned bytes and complete parents, then exercises the actual
 factory's unsigned and signed paths and the retained signer/policy validator.
+The child uses the host's supported GUI executable name
+`MagicalCryptoWallet.Fluent.Desktop` to avoid colliding with the core assembly
+on Windows; normal host disposal sends the empty shutdown payload.
+The verifier refuses execution if its selected factory source still contains
+the old call sites. `-BuildOnly` may validate the inactive core and records that
+state explicitly. An isolated activation snapshot proves the candidate only;
+the exact published integration must pass again before completion.
 It uses no real wallet or broadcaster. Until the shared routing patch is
 incorporated and that exact native application passes this probe, production
 host integration remains pending. Existing managed transaction tests also need
@@ -131,8 +151,8 @@ the integrator's shared real-host fixture; there is no test-only legacy fallback
 NBitcoin remains a required managed package for builders, signer, keys, scripts,
 typed PSBT results and other live callers. This leaf adds no external Rust
 dependency or shipping executable and makes no package-removal or platform
-release claim. Verification/publication IDs and evidence will be added only
-after successful checks and remote verification.
+release claim. Further verification/publication IDs and evidence are recorded
+only after successful checks and remote verification.
 
 Current native debug and optimized evidence:
 `.artifacts/mcw-psbt/.artifacts/psbt-metadata-validation/20261002-204142-575-3b142ecf/evidence.json`
@@ -143,3 +163,19 @@ warnings denied passed. This is component evidence; actual-host validation is
 still pending. The actual modified managed core and synthetic host child also
 build with zero warnings/errors; build evidence is
 `.artifacts/mcw-psbt/.artifacts/psbt-metadata-host/20261002-205531-076-3c836481/evidence.json`.
+
+The combined activation snapshot based on published repair `1bdd57f` now passes
+the actual GUI host/managed IPC probe: two old/new packet comparisons (one with
+a complete parent above 1 MiB), unsigned and signed factory builds, unchanged
+fees/settings/unsigned bytes, retained signing/policy validation, and clean
+shutdown. The native application compiles with warnings denied, and the managed
+core/child build has zero warnings/errors. Candidate source/archive/patch hashes
+are in `.artifacts/mcw-psbt/.artifacts/psbt-evidence/metadata-candidate-source-1bdd57f.json`;
+probe evidence is
+`.artifacts/mcw-psbt/.artifacts/psbt-metadata-host/20261002-211644-273-e6b953da/evidence.json`.
+Only tracked source plus the complete activation patch was used; the existing
+managed WabiSabi build-output DLL was copied from the shared checkout and its
+hash recorded. No source-graph stubs or removed daemon mode were used.
+This is candidate integration evidence. Published shared routing, the managed
+suite fixture, and verification of that exact published application remain
+pending; the currently published caller still uses its original helpers.

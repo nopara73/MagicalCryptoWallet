@@ -1,6 +1,12 @@
-param([string]$NativeApplication, [switch]$BuildOnly, [ValidateRange(0,300)][int]$WaitForSlotSeconds = 0)
+param([string]$NativeApplication, [string]$CoreSourceRoot, [switch]$BuildOnly, [ValidateRange(0,300)][int]$WaitForSlotSeconds = 0)
 $ErrorActionPreference = 'Stop'
 $metadataRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
+$metadataBuildSource = if ($CoreSourceRoot) { [IO.Path]::GetFullPath($CoreSourceRoot) } else { $metadataRoot }
+$metadataFactorySource = Join-Path $metadataBuildSource 'MagicalCryptoWallet/Blockchain/Transactions/TransactionFactory.cs'
+$metadataCallerActive = [IO.File]::ReadAllText($metadataFactorySource).Contains('psbt = MagicalCryptoWallet.Mcw.Psbt.McwPsbtMetadata.Enrich(')
+if (-not $BuildOnly -and -not $metadataCallerActive) {
+    throw 'The selected factory still uses the original helpers. Apply the complete activation patch in an isolated validation snapshot or use the atomically integrated published checkout before claiming native factory verification.'
+}
 $metadataCommon = & git -C $metadataRoot rev-parse --path-format=absolute --git-common-dir
 if ($LASTEXITCODE -ne 0) { throw 'Cannot locate shared root.' }
 $metadataShared = Split-Path -Parent ($metadataCommon | Select-Object -First 1)
@@ -8,12 +14,12 @@ $metadataRun = (Get-Date -Format 'yyyyMMdd-HHmmss-fff') + '-' + [guid]::NewGuid(
 $metadataOutput = Join-Path $metadataRoot ".artifacts/psbt-metadata-host/$metadataRun"
 New-Item -ItemType Directory -Path $metadataOutput -Force | Out-Null
 $metadataProject = Join-Path $metadataOutput 'metadata-child.csproj'
-$metadataCoreProject = [Security.SecurityElement]::Escape((Join-Path $metadataRoot 'MagicalCryptoWallet/MagicalCryptoWallet.csproj'))
+$metadataCoreProject = [Security.SecurityElement]::Escape((Join-Path $metadataBuildSource 'MagicalCryptoWallet/MagicalCryptoWallet.csproj'))
 $metadataHostSource = [Security.SecurityElement]::Escape((Join-Path $metadataRoot 'MagicalCryptoWallet.Client/Application/ManagedApplicationHost.cs'))
 $metadataTestSource = [Security.SecurityElement]::Escape((Join-Path $PSScriptRoot 'psbt_metadata_host_reference.cs'))
 $metadataProjectText = @"
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup><OutputType>Exe</OutputType><AssemblyName>magicalcryptowallet</AssemblyName><TargetFramework>net10.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable><EnableDefaultCompileItems>false</EnableDefaultCompileItems><IsPackable>false</IsPackable><TreatWarningsAsErrors>true</TreatWarningsAsErrors></PropertyGroup>
+  <PropertyGroup><OutputType>Exe</OutputType><AssemblyName>MagicalCryptoWallet.Fluent.Desktop</AssemblyName><TargetFramework>net10.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable><EnableDefaultCompileItems>false</EnableDefaultCompileItems><IsPackable>false</IsPackable><TreatWarningsAsErrors>true</TreatWarningsAsErrors></PropertyGroup>
   <ItemGroup><ProjectReference Include="$metadataCoreProject" /><Compile Include="$metadataHostSource" Link="ManagedApplicationHost.cs" /><Compile Include="$metadataTestSource" Link="MetadataReference.cs" /></ItemGroup>
 </Project>
 "@
@@ -38,7 +44,7 @@ try {
     & dotnet build $metadataProject -c Release -m:1 /p:UseSharedCompilation=false 2>&1 | Tee-Object -FilePath (Join-Path $metadataOutput 'managed-build.log')
     if ($LASTEXITCODE -ne 0) { throw 'Actual managed core/metadata caller build failed.' }
     $metadataEvidence = [ordered]@{
-        core_build='passed';factory_sha256=(Get-FileHash (Join-Path $metadataRoot 'MagicalCryptoWallet/Blockchain/Transactions/TransactionFactory.cs')).Hash.ToLowerInvariant();adapter_sha256=(Get-FileHash (Join-Path $metadataRoot 'MagicalCryptoWallet/Mcw/Psbt/McwPsbtMetadata.cs')).Hash.ToLowerInvariant();host_source_sha256=(Get-FileHash (Join-Path $metadataRoot 'MagicalCryptoWallet.Client/Application/ManagedApplicationHost.cs')).Hash.ToLowerInvariant();native_host_verified=$false;product_release=$false
+        core_build='passed';core_source_root=$metadataBuildSource;source_selection=$(if ($CoreSourceRoot) { 'isolated_candidate' } else { 'checkout' });factory_native_activation=$metadataCallerActive;factory_sha256=(Get-FileHash $metadataFactorySource).Hash.ToLowerInvariant();adapter_sha256=(Get-FileHash (Join-Path $metadataBuildSource 'MagicalCryptoWallet/Mcw/Psbt/McwPsbtMetadata.cs')).Hash.ToLowerInvariant();host_source_sha256=(Get-FileHash (Join-Path $metadataRoot 'MagicalCryptoWallet.Client/Application/ManagedApplicationHost.cs')).Hash.ToLowerInvariant();probe_source_sha256=(Get-FileHash (Join-Path $PSScriptRoot 'psbt_metadata_host_reference.cs')).Hash.ToLowerInvariant();native_host_verified=$false;product_release=$false
     }
     if (-not $BuildOnly) {
         if (-not $NativeApplication -or -not (Test-Path -LiteralPath $NativeApplication -PathType Leaf)) { throw 'A freshly integrated actual mcw application is required.' }

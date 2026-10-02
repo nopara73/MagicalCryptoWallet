@@ -53,13 +53,11 @@ public static class PsbtMetadataHostReference
 			FactoryUsesNativeMetadata(tryToSign: false);
 			FactoryUsesNativeMetadata(tryToSign: true);
 			Console.Error.WriteLine("MCW_PSBT_HOST_VERIFIED metadata=2 factory=2 signing=retained packets=synthetic");
-			host.Handoff(ManagedApplicationHost.ShutdownOperation, []);
 			return 0;
 		}
 		catch (Exception error)
 		{
 			Console.Error.WriteLine(error);
-			host.Handoff(ManagedApplicationHost.ShutdownOperation, []);
 			return 1;
 		}
 	}
