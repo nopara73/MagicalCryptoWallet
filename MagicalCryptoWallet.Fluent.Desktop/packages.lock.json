@@ -554,8 +554,7 @@
         "type": "Project",
         "dependencies": {
           "MagicalCryptoWallet": "[99.99.99, )",
-          "Microsoft.Extensions.Caching.Memory": "[10.0.12, )",
-          "NScheme": "[0.0.1, )"
+          "Microsoft.Extensions.Caching.Memory": "[10.0.12, )"
         }
       },
       "magicalcryptowallet.fluent": {
@@ -568,7 +567,6 @@
           "Avalonia.Themes.Fluent": "[11.3.22, )",
           "MagicalCryptoWallet.Client": "[99.99.99, )",
           "Markdown.Avalonia": "[11.0.3, )",
-          "NScheme": "[0.0.1, )",
           "QRackers": "[1.1.0, )",
           "ReactiveUI.Avalonia": "[11.3.8, )",
           "SkiaSharp": "[3.119.4, )",
@@ -756,12 +754,6 @@
           "NBitcoin.Secp256k1": "3.1.6",
           "System.Interactive.Async": "6.0.1"
         }
-      },
-      "NScheme": {
-        "type": "CentralTransitive",
-        "requested": "[0.0.1, )",
-        "resolved": "0.0.1",
-        "contentHash": "sFGydpttLN0bx8US2vRio7mFhqpqdQOAAQL9lABPi50epQ1bVcEdUgpFd3olvEMf6zyn1G3TErUsKyZGA19TeQ=="
       },
       "QRackers": {
         "type": "CentralTransitive",

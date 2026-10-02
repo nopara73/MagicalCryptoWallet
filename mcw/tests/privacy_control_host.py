@@ -42,9 +42,9 @@ def main():
         shutil.copytree(source, work, dirs_exist_ok=True)
         host = work / ("mcw" + suffix)
         shutil.copy2(binary, host)
-        for name in ("magicalcryptowallet", "magicalcryptowalletd"):
+        for name in ("magicalcryptowallet",):
             shutil.copy2(work / ("PrivacyControlProbe" + suffix), work / (name + suffix))
-        for mode in ("gui", "daemon"):
+        for mode in ("gui",):
             report = work / (mode + ".json")
             result = subprocess.run([str(host), mode, str(report), str(ROOT / "mcw/tests/privacy_control_fixtures/replies.tsv")], capture_output=True, timeout=150)
             assert result.returncode == 0, (mode, result.returncode, result.stderr.decode(errors="replace")[-4000:])

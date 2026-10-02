@@ -247,7 +247,6 @@ backend's
 Cpfp
 writelog
 substractasync
-jsonrpc
 Xunit
 bitcoind
 datadir
@@ -273,7 +272,6 @@ splitted
 onlybinaries
 generatekeys
 appleid
-magicalcryptowalletd
 bitcoind'
 optin
 getfeerates

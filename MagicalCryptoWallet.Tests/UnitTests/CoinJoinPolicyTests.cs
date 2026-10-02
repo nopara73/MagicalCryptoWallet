@@ -6,9 +6,7 @@ using NBitcoin;
 using Newtonsoft.Json.Linq;
 using MagicalCryptoWallet.Blockchain.Keys;
 using MagicalCryptoWallet.Client.Configuration;
-using MagicalCryptoWallet.Client.Rpc;
 using MagicalCryptoWallet.Helpers;
-using MagicalCryptoWallet.Rpc;
 using MagicalCryptoWallet.Tests.Helpers;
 using MagicalCryptoWallet.Wallets;
 using RuntimeWallet = MagicalCryptoWallet.Wallets.Wallet;
@@ -38,31 +36,17 @@ public class CoinJoinPolicyTests
 		Assert.Null(typeof(CoinJoinSnapshot).GetProperty("StopWhenAllMixed"));
 		Assert.Null(typeof(KeyManager).Assembly.GetType("MagicalCryptoWallet.CoinJoinProfiles.PrivacyProfiles"));
 	}
-	[Theory]
-	[InlineData("[false]")]
-	[InlineData("[true]")]
-	[InlineData("[null,false,true]")]
-	[InlineData("{\"stopWhenAllMixed\":true}")]
-	[InlineData("{\"overridePlebStop\":true}")]
-	[InlineData("{\"password\":false}")]
-	public async Task RemovedRpcParametersAreInvalidAsync(string parameters)
-	{
-		await using var app = new SingleWalletTests.SyntheticApplication(await Common.GetEmptyWorkDirAsync());
-		var handler = new JsonRpcRequestHandler<MagicalCryptoWalletJsonRpcService>(new(app.Global), Network.RegTest);
-		var response = JObject.Parse(await handler.HandleAsync("/", $$"""{"jsonrpc":"2.0","id":1,"method":"startcoinjoin","params":{{parameters}}}""", CancellationToken.None));
-		Assert.Equal((int)JsonRpcErrorCodes.InvalidParams, response["error"]!["code"]!.Value<int>());
-	}
-
 	[Fact]
-	public async Task WalletInfoReportsFixedPolicyAsync()
+	public async Task WalletServiceReportsFixedPolicyAsync()
 	{
 		await using var app = new SingleWalletTests.SyntheticApplication(await Common.GetEmptyWorkDirAsync());
 		app.Session.Configure(app.NewKeys());
-		var info = new MagicalCryptoWalletJsonRpcService(app.Global).WalletInfo();
-		Assert.Equal(2, info["anonScoreTarget"]);
-		Assert.Equal(true, info["isAutoCoinjoin"]);
-		Assert.Equal(false, info["isNonPrivateCoinIsolation"]);
-		Assert.Equal(false, info["onlyUsePrivateFundsForPayments"]);
+		await app.InitializeAsync();
+		await SingleWalletTests.WaitForAsync(() => app.Session.Snapshot.IsSynchronized);
+		var wallet = app.Session.GetWallet()!;
+		Assert.Equal(2, wallet.AnonScoreTarget);
+		Assert.False(app.Session.Snapshot.CoinJoinRequiresAuthorization);
+		Assert.NotNull(app.Session.CoinJoinKeyChain);
 	}
 
 	[Theory]

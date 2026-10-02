@@ -1,35 +1,5 @@
 [
   {
-    "path": "Contrib/Tests/test-single-wallet-process.py",
-    "line": 168,
-    "line_sha256": "65095ab5ede43fe5b6d33b7e4ab21727a29a10e940d8e0d7d3bb88870467d304",
-    "reason": "Packaged-process negative-interface assertion or Bitcoin Core synthetic miner."
-  },
-  {
-    "path": "Contrib/Tests/test-single-wallet-process.py",
-    "line": 169,
-    "line_sha256": "71c823c0e356c16f26bec10b397ddef0c874e705e7fb3473dda4c81cf3170218",
-    "reason": "Packaged-process negative-interface assertion or Bitcoin Core synthetic miner."
-  },
-  {
-    "path": "MagicalCryptoWallet.Documentation/SingleWallet.md",
-    "line": 22,
-    "line_sha256": "587007fce09958c9806ddbf9736306abb16e6ecb96bab31f8503cbcb9b52d18d",
-    "reason": "API migration documentation explicitly identifies a retired interface."
-  },
-  {
-    "path": "MagicalCryptoWallet.Documentation/SingleWallet.md",
-    "line": 23,
-    "line_sha256": "bedfdfdac498bfaa3e3dee0b5344cb692f415d3b5caff1046349de95f12e85f8",
-    "reason": "API migration documentation explicitly identifies a retired interface."
-  },
-  {
-    "path": "MagicalCryptoWallet.Documentation/SingleWallet.md",
-    "line": 50,
-    "line_sha256": "9feee4825d8c0ffd50ff27c3f95dcc55cf15267ad1ad1738520a1c3fc7c4ea3b",
-    "reason": "API migration documentation explicitly identifies a retired interface."
-  },
-  {
     "path": "MagicalCryptoWallet.IntegrationTests/BitcoinCore/Tests/P2pBasedTests.cs",
     "line": 36,
     "line_sha256": "341fb7a62cb5e910de9c76a3e8fa95b1f79eb64492c225a02c2fc11fddb3c654",
@@ -51,30 +21,6 @@
     "path": "MagicalCryptoWallet.Tests/UnitTests/SingleWalletTests.cs",
     "line": 137,
     "line_sha256": "bb19c980fd4ee7dd7728618f01d19ba1531ca882e758825d0077d83bef879bc8",
-    "reason": "Synthetic negative-interface test or independent Bitcoin Core test participant."
-  },
-  {
-    "path": "MagicalCryptoWallet.Tests/UnitTests/SingleWalletTests.cs",
-    "line": 294,
-    "line_sha256": "a0737eef3fe3c5028552cdd552fd05fae62d813022b15f09582dc05e28f7b366",
-    "reason": "Synthetic negative-interface test or independent Bitcoin Core test participant."
-  },
-  {
-    "path": "MagicalCryptoWallet.Tests/UnitTests/SingleWalletTests.cs",
-    "line": 299,
-    "line_sha256": "a8a134751d28cc058182a9dd42a543f6ffb7bf0988bf8a767e2e2b3a99b65c28",
-    "reason": "Synthetic negative-interface test or independent Bitcoin Core test participant."
-  },
-  {
-    "path": "MagicalCryptoWallet.Tests/UnitTests/SingleWalletTests.cs",
-    "line": 304,
-    "line_sha256": "9ee24bd7827fb9a7b3962961933f95bb38767246031ec5c5539eb727e4f1b71a",
-    "reason": "Synthetic negative-interface test or independent Bitcoin Core test participant."
-  },
-  {
-    "path": "MagicalCryptoWallet.Tests/UnitTests/WalletOperationAuthorizationTests.cs",
-    "line": 89,
-    "line_sha256": "f52835feda894fd2040c8535516570cda6eb213cacabdcb1e0e96970d2f6a9fa",
     "reason": "Synthetic negative-interface test or independent Bitcoin Core test participant."
   },
   {
@@ -342,40 +288,10 @@
     "reason": "Synthetic rejection or obsolete-field/API absence regression; no compatibility implementation."
   },
   {
-    "path": "MagicalCryptoWallet.Tests/UnitTests/SoftwareWalletTests.cs",
-    "line": 149,
-    "line_sha256": "0c7f64a64079a69947cc5f8d1fc90a3180fababeda5e356b20910ae6063011ab",
-    "reason": "Synthetic rejection or obsolete-field/API absence regression; no compatibility implementation."
-  },
-  {
-    "path": "MagicalCryptoWallet.Tests/UnitTests/SoftwareWalletTests.cs",
-    "line": 150,
-    "line_sha256": "cd6bddfa1eab8b0072a9a6ae94cea38625f227e880b96cae1610c675654d6cd7",
-    "reason": "Synthetic rejection or obsolete-field/API absence regression; no compatibility implementation."
-  },
-  {
-    "path": "MagicalCryptoWallet.Tests/UnitTests/SoftwareWalletTests.cs",
-    "line": 153,
-    "line_sha256": "7c8a3fa8a1e54ae3fb97ce88eb280c1181a952e2dd9a84a062f6d6115122a937",
-    "reason": "Synthetic rejection or obsolete-field/API absence regression; no compatibility implementation."
-  },
-  {
     "path": "MagicalCryptoWallet.Documentation/SoftwareWallet.md",
     "line": 5,
     "line_sha256": "17d1c40ee652eb9cf00f78783a58cf3b23fcd8050477b54ecf5dee8066269295",
     "reason": "Migration documentation identifying removed fields and Scheme predicates."
-  },
-  {
-    "path": "MagicalCryptoWallet.Documentation/SoftwareWallet.md",
-    "line": 13,
-    "line_sha256": "e7ade0eb8a3d943e548dddfb34537a8e8600fc5259bbc134fa1c29bd09c4bcb2",
-    "reason": "Migration documentation identifying removed fields and Scheme predicates."
-  },
-  {
-    "path": "Contrib/Tests/test-single-wallet-process.py",
-    "line": 308,
-    "line_sha256": "84e7d5238193c363fcf305c34157888f4a17f93a6174b2687c054cf2c0398aad",
-    "reason": "Bitcoin Core harness-only mining wallet reload; no application wallet-selection support."
   },
   {
     "path": "Contrib/SingleWallet/negative-fixtures.json",
@@ -438,22 +354,10 @@
     "reason": "Historical shared-checkout migration inventory; the hardware parser is absent from active source."
   },
   {
-    "path": "mcw/tests/json_caller_inventory.json",
-    "line": 72,
-    "line_sha256": "adbfd1d2e31e195cea8923e925b78e124807afee00b7a0d82dacb1a18091ec9f",
-    "reason": "Archived shared-checkout caller inventory records a removed hardware parser, not a runtime caller."
-  },
-  {
     "path": "mcw/tests/json_vectors/application/rpc-request.json",
     "line": 1,
     "line_sha256": "ef02f8d104f053ea2167d95858f8ba91a3463fc8cae05c3f531d3147e54d59e8",
     "reason": "Frozen legacy RPC JSON conformance input preserves its recorded hash; it does not restore wallet selection."
-  },
-  {
-    "path": "mcw/tests/bitcoin_block_fixtures/managed_callers.tsv",
-    "line": 202,
-    "line_sha256": "c1fd85e2dd80bb5a3c3b11ea22efdaa7da13ec36918d87ce2efc077003e28f24",
-    "reason": "Source provenance: immutable managed-caller inventory at 748a961c78980c42bba293ff7ad1b9ca696566ec records the removed adapter; it is not active application source."
   },
   {
     "path": "Contrib/Mcw/dependencies.py",

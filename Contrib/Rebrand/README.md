@@ -8,6 +8,6 @@ Use `--artifacts <directory> ...` to inspect published or extracted payloads. Th
 
 Run `python Contrib/Rebrand/inspect-packages.py --rid <rid>` on the target operating system after packaging. It extracts archives and installers, checks the platform application identity, compares every Windows MSI payload file with published output, and applies the same audit to the extracted application. Inspection reports are retained under `.artifacts/package-inspection` and uploaded by CI.
 
-The Windows coexistence script is intended for an ephemeral CI runner. It downloads the checksum-pinned baseline recorded in `coexist-baseline.json`, installs both products, and checks independent product and upgrade identities plus execution of the new daemon. Do not run this installation test on a development machine with an existing installation.
+The Windows coexistence script is intended for an ephemeral CI runner. It downloads the checksum-pinned baseline recorded in `coexist-baseline.json`, installs both products, and checks independent product and upgrade identities plus execution of the desktop. Do not run this installation test on a development machine with an existing installation.
 
 Each permitted occurrence in `exceptions.json` has a category, exact path, original text and line hash. Editing an allowed line requires reviewing and updating its exception. Generic compatibility aliases are not permitted.

@@ -13,8 +13,6 @@ HiddenWallet's ports (3712x) are chosen within a long range of unassigned IANA p
 | 38125 | Tor control port used by NTumbleBit               |
 | 38126 | Magical Crypto Wallet Coordinator                         |
 | 38127 | Magical Crypto Wallet Backend                             |
-| 38128 | Magical Crypto Wallet RPC Server                          |
-| 38129 | Magical Crypto Wallet Local Client TCPListener on MainNet |
 | 38130 | Magical Crypto Wallet Local Client TCPListener on TestNet |
 | 38131 | Magical Crypto Wallet Local Client TCPListener on RegTest |
 | 38150 | Tor socks port used by Magical Crypto Wallet              |

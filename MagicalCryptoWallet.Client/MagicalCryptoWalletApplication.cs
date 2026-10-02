@@ -42,15 +42,21 @@ public class MagicalCryptoWalletApplication
 		if (AppConfig.Arguments.Contains("--version"))
 		{
 			Console.WriteLine($"{AppConfig.AppName} {Constants.ClientVersion}");
-			Environment.Exit((int)ExitCode.Ok);
+			CompleteCommandAndExit();
 		}
 
 		if (AppConfig.Arguments.Contains("--help") || AppConfig.Arguments.Contains("-h"))
 		{
 			ShowHelp();
-			Environment.Exit((int)ExitCode.Ok);
+			CompleteCommandAndExit();
 		}
 
+	}
+
+	private static void CompleteCommandAndExit()
+	{
+		Application.ManagedApplicationHost.Current?.Dispose();
+		Environment.Exit((int)ExitCode.Ok);
 	}
 
 	public ExitCode Run(Action afterStarting)
@@ -80,39 +86,12 @@ public class MagicalCryptoWalletApplication
 		}
 	}
 
-	public async Task<ExitCode> RunAsync(Func<Task> afterStarting)
-	{
-		var exitCode = ProcessAppArguments();
-		if (exitCode is not null)
-		{
-			return exitCode.Value;
-		}
-
-		try
-		{
-			TerminateService.Activate();
-			BeforeStarting();
-
-			await afterStarting();
-			return ExitCode.Ok;
-		}
-		catch (Exception e)
-		{
-			Logger.LogInfo("Exception occurred while the application was starting or running", e);
-			throw;
-		}
-		finally
-		{
-			BeforeStopping();
-		}
-	}
-
 	private ExitCode? ProcessAppArguments()
 	{
 		if (AppConfig.MustCheckSingleInstance && !SingleInstanceChecker.IsFirstInstance())
 		{
 			var network = ResolveRequestedNetwork();
-			if (AppConfig.IsDesktop && DesktopActivation.RequestAsync(DataDirectory, network,
+			if (DesktopActivation.RequestAsync(DataDirectory, network,
 				AppConfig.Arguments.Contains("startsilent", StringComparer.Ordinal)).GetAwaiter().GetResult()) { return ExitCode.Ok; }
 			Console.Error.WriteLine("This data directory is already in use by another process or network.");
 			return ExitCode.FailedAlreadyRunningError;
@@ -122,7 +101,7 @@ public class MagicalCryptoWalletApplication
 			SetupLogger();
 			_config = new Config(LoadOrCreateConfigs(), AppConfig.Arguments);
 			_global = new Global(DataDirectory, Config);
-			if (AppConfig.IsDesktop) { Activation = new DesktopActivation(DataDirectory, Config.Network); }
+			Activation = new DesktopActivation(DataDirectory, Config.Network);
 			return null;
 		}
 		catch { SingleInstanceChecker.Dispose(); throw; }

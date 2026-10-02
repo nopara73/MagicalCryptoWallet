@@ -337,6 +337,19 @@
           "System.Linq.Async": "[7.0.1, )"
         }
       },
+      "magicalcryptowallet.client": {
+        "type": "Project",
+        "dependencies": {
+          "MagicalCryptoWallet": "[99.99.99, )",
+          "Microsoft.Extensions.Caching.Memory": "[10.0.12, )"
+        }
+      },
+      "magicalcryptowallet.coordinator": {
+        "type": "Project",
+        "dependencies": {
+          "MagicalCryptoWallet": "[99.99.99, )"
+        }
+      },
       "MagicalCryptoWallet.WabiSabi": {
         "type": "Project",
         "dependencies": {

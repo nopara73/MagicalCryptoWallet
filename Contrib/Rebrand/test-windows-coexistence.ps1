@@ -43,7 +43,7 @@ if ($taskOldState -ne 5 -or $taskNewState -ne 5) {
 }
 if (-not (Test-Path "$taskNewFolder/magicalcryptowallet.exe") -or -not (Test-Path $taskOldFolder)) { throw 'Missing independent installation' }
 $taskData = Join-Path $taskWork 'synthetic-client'
-& "$taskNewFolder/magicalcryptowalletd.exe" '--help' "--datadir=$taskData" '--network=RegTest' | Out-File (Join-Path $taskWork 'help.txt')
-if ($LASTEXITCODE -ne 0) { throw 'Installed daemon could not display help' }
+& "$taskNewFolder/magicalcryptowallet.exe" '--help' "--datadir=$taskData" '--network=RegTest' | Out-File (Join-Path $taskWork 'help.txt')
+if ($LASTEXITCODE -ne 0) { throw 'Installed desktop could not display help' }
 @{ baseline_product=$taskOldCode; new_product=$taskNewCode; both_installed=$true; data_directory=$taskData } | ConvertTo-Json | Set-Content (Join-Path $taskReports 'windows-coexistence.json')
-Write-Output 'Both installers coexist independently; installed daemon executes with isolated synthetic regtest storage.'
+Write-Output 'Both installers coexist independently; installed desktop executes with isolated synthetic regtest storage.'

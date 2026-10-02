@@ -55,7 +55,7 @@ public class Program
 	[STAThread]
 	public static int Main(string[] args)
 	{
-		if (ManagedApplicationHost.TryDelegate("gui", args, out var delegatedExitCode))
+		if (ManagedApplicationHost.TryDelegate(args, out var delegatedExitCode))
 		{
 			return delegatedExitCode;
 		}
@@ -87,7 +87,6 @@ public class Program
 			var app = MagicalCryptoWalletAppBuilder
 				.Create("Magical Crypto Wallet GUI", args)
 				.EnsureSingleInstance()
-				.WithDesktopActivation()
 				.OnUnhandledExceptions(LogUnhandledException)
 				.OnUnobservedTaskExceptions(LogUnobservedTaskException)
 				.OnTermination(TerminateApplication)
@@ -245,7 +244,7 @@ public static class MagicalCryptoWalletAppExtensions
 					backendInitializeAsync: async () =>
 					{
 						// macOS require that Avalonia is started with the UI thread. Hence this call must be delayed to this point.
-						await app.Global.InitializeAsync(initializeSleepInhibitor: true, app.TerminateService, stopLoadingCts.Token).ConfigureAwait(false);
+						await app.Global.InitializeAsync(stopLoadingCts.Token).ConfigureAwait(false);
 
 						// Make sure that wallet startup set correctly regarding RunOnSystemStartup
 						if (uiConfig.RunOnSystemStartup)

@@ -78,6 +78,7 @@ if (!coinJoinOnly)
 {
     PasswordBoxChecks.Run();
     LurkingWifeModeChecks.Initialize(context, destination);
+    AutomationRemovalChecks.Run(context);
     SingleWalletChecks.Run(context);
     AutomaticCoinSelectionChecks.Run(context);
     SoftwareWalletChecks.Run(context, destination);

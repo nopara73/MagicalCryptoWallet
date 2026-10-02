@@ -74,12 +74,6 @@
         "resolved": "4.14.0",
         "contentHash": "gSWJlDWwmDhtbrEJGiHqvEjz9KthIiFD0qYB8zZ6a7z+xpMSPEtM9yTYELSa58iFWYlzSRqP9FXO6KoT3+ZMtg=="
       },
-      "NScheme": {
-        "type": "Direct",
-        "requested": "[0.0.1, )",
-        "resolved": "0.0.1",
-        "contentHash": "sFGydpttLN0bx8US2vRio7mFhqpqdQOAAQL9lABPi50epQ1bVcEdUgpFd3olvEMf6zyn1G3TErUsKyZGA19TeQ=="
-      },
       "QRackers": {
         "type": "Direct",
         "requested": "[1.1.0, )",
@@ -608,8 +602,7 @@
         "type": "Project",
         "dependencies": {
           "MagicalCryptoWallet": "[99.99.99, )",
-          "Microsoft.Extensions.Caching.Memory": "[10.0.12, )",
-          "NScheme": "[0.0.1, )"
+          "Microsoft.Extensions.Caching.Memory": "[10.0.12, )"
         }
       },
       "MagicalCryptoWallet.WabiSabi": {

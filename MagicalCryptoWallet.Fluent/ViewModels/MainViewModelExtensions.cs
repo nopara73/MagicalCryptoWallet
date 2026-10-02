@@ -2,7 +2,6 @@ using MagicalCryptoWallet.Fluent.Models.UI;
 using MagicalCryptoWallet.Fluent.ViewModels.AddWallet;
 using MagicalCryptoWallet.Fluent.ViewModels.HelpAndSupport;
 using MagicalCryptoWallet.Fluent.ViewModels.OpenDirectory;
-using MagicalCryptoWallet.Fluent.ViewModels.Scheme;
 using MagicalCryptoWallet.Fluent.ViewModels.Settings;
 
 namespace MagicalCryptoWallet.Fluent.ViewModels;
@@ -46,10 +45,5 @@ public static class MainViewModelExtensions
 		OpenTorLogsViewModel.RegisterLazy(() => new OpenTorLogsViewModel(uiContext));
 		OpenConfigFileViewModel.RegisterLazy(() => new OpenConfigFileViewModel(uiContext));
 
-		if (uiContext.ApplicationSettings.ExperimentalFeatures.Contains("scripting", StringComparer.InvariantCultureIgnoreCase))
-		{
-			ArgumentNullException.ThrowIfNull(uiContext.Scheme, nameof(uiContext.Scheme));
-			SchemeConsoleViewModel.Register(new SchemeConsoleViewModel(uiContext, uiContext.Scheme));
-		}
 	}
 }

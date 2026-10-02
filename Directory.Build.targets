@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
-    <BuildMcwHost Condition="'$(BuildMcwHost)' == '' and ('$(MSBuildProjectName)' == 'MagicalCryptoWallet.Fluent.Desktop' or '$(MSBuildProjectName)' == 'MagicalCryptoWallet.Daemon')">true</BuildMcwHost>
+    <BuildMcwHost Condition="'$(BuildMcwHost)' == '' and '$(MSBuildProjectName)' == 'MagicalCryptoWallet.Fluent.Desktop'">true</BuildMcwHost>
     <McwRuntimeIdentifier Condition="'$(RuntimeIdentifier)' != ''">$(RuntimeIdentifier)</McwRuntimeIdentifier>
     <McwRuntimeIdentifier Condition="'$(McwRuntimeIdentifier)' == ''">$(NETCoreSdkRuntimeIdentifier)</McwRuntimeIdentifier>
   </PropertyGroup>

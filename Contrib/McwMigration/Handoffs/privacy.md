@@ -79,7 +79,7 @@ Verified on native Windows x64, Rust 1.99.0/edition 2024, .NET 10:
   passed.
 - The full production core/client/probe compiled with zero warnings/errors.
   The **actual shipping Rust host**, with the integration patches applied,
-  passed 102 assertions in GUI mode and 102 in daemon mode. This covers
+  passed 102 assertions in GUI mode. This covers
   byte-by-byte fragments, segmented/coalesced pipes, normal pipe backpressure,
   exact replies/errors, event/synchronous routing, cancellation, bridge shutdown,
   no-service rejection and malformed-response rejection.

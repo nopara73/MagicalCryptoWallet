@@ -23,6 +23,8 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\MagicalCryptoWallet\MagicalCryptoWallet.csproj" />
+		<ProjectReference Include="..\MagicalCryptoWallet.Client\MagicalCryptoWallet.Client.csproj" />
+		<ProjectReference Include="..\MagicalCryptoWallet.Coordinator\MagicalCryptoWallet.Coordinator.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

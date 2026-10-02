@@ -30,6 +30,15 @@
         "resolved": "11.3.2",
         "contentHash": "qHDToxto1e3hci5YqbG9n0Ty8mlp3zBUN5wT66wKqaDVzXyQ0do3EnRILd4Ke9jpvsktaPpgE0YjEk7hornryQ=="
       },
+      "Avalonia.Controls.ColorPicker": {
+        "type": "Transitive",
+        "resolved": "11.3.22",
+        "contentHash": "cssRcc/nkhz6oUP0dx3UICY9Jw9E5eFMOCEXeP6nMyy87/9PF8/w/LIVGh9CIaqQvSyMOHmlgizdJf+M5WUATQ==",
+        "dependencies": {
+          "Avalonia": "11.3.22",
+          "Avalonia.Remote.Protocol": "11.3.22"
+        }
+      },
       "Avalonia.Remote.Protocol": {
         "type": "Transitive",
         "resolved": "11.3.22",
@@ -42,6 +51,14 @@
         "dependencies": {
           "Avalonia": "11.0.0",
           "Svg.Model": "1.0.0"
+        }
+      },
+      "Avalonia.Themes.Simple": {
+        "type": "Transitive",
+        "resolved": "11.3.22",
+        "contentHash": "SsAQb6TilpCPKhY6GOPNfjDEuvR8dUxmozDi5Ws49X/CZmtfbsPSVFuEtCapxucwn1jFtNJYjvakDiHjxw6Sbw==",
+        "dependencies": {
+          "Avalonia": "11.3.22"
         }
       },
       "ColorDocument.Avalonia": {
@@ -493,8 +510,7 @@
         "type": "Project",
         "dependencies": {
           "MagicalCryptoWallet": "[99.99.99, )",
-          "Microsoft.Extensions.Caching.Memory": "[10.0.12, )",
-          "NScheme": "[0.0.1, )"
+          "Microsoft.Extensions.Caching.Memory": "[10.0.12, )"
         }
       },
       "magicalcryptowallet.fluent": {
@@ -502,12 +518,12 @@
         "dependencies": {
           "Avalonia": "[11.3.22, )",
           "Avalonia.Controls.TreeDataGrid": "[11.1.1, )",
+          "Avalonia.Diagnostics": "[11.3.22, )",
           "Avalonia.Fonts.Inter": "[11.3.22, )",
           "Avalonia.Skia": "[11.3.22, )",
           "Avalonia.Themes.Fluent": "[11.3.22, )",
           "MagicalCryptoWallet.Client": "[99.99.99, )",
           "Markdown.Avalonia": "[11.0.3, )",
-          "NScheme": "[0.0.1, )",
           "QRackers": "[1.1.0, )",
           "ReactiveUI.Avalonia": "[11.3.8, )",
           "SkiaSharp": "[3.119.4, )",
@@ -540,6 +556,17 @@
         "dependencies": {
           "Avalonia": "11.0.0",
           "System.Reactive": "5.0.0"
+        }
+      },
+      "Avalonia.Diagnostics": {
+        "type": "CentralTransitive",
+        "requested": "[11.3.22, )",
+        "resolved": "11.3.22",
+        "contentHash": "PmOhpTKwYp7wShm7yIkmlC/+RNEktNhcchQncsCroRH8MZzVYaLQYLr1l1AT3oJLmqDUEu0xHw2xOIy9Y0CXVA==",
+        "dependencies": {
+          "Avalonia": "11.3.22",
+          "Avalonia.Controls.ColorPicker": "11.3.22",
+          "Avalonia.Themes.Simple": "11.3.22"
         }
       },
       "Avalonia.Fonts.Inter": {
@@ -695,12 +722,6 @@
           "NBitcoin.Secp256k1": "3.1.6",
           "System.Interactive.Async": "6.0.1"
         }
-      },
-      "NScheme": {
-        "type": "CentralTransitive",
-        "requested": "[0.0.1, )",
-        "resolved": "0.0.1",
-        "contentHash": "sFGydpttLN0bx8US2vRio7mFhqpqdQOAAQL9lABPi50epQ1bVcEdUgpFd3olvEMf6zyn1G3TErUsKyZGA19TeQ=="
       },
       "QRackers": {
         "type": "CentralTransitive",

@@ -262,7 +262,7 @@
     "path": "mcw/tests/json_vectors/application/persistent-config.json",
     "line": 10,
     "line_sha256": "c1083cca3902b36aa98bf54e9dcb765835a491e8e3e3b7d841f6e6c5beeba820",
-    "category": "historical JSON parser fixture",
-    "text": "\"JsonRpcServerPrefixes\": [\"http://127.0.0.1:37129/\"],"
+    "category": "frozen parser conformance data",
+    "text": "Legacy endpoint syntax in a checksum-pinned configuration fixture; no runtime default or listener."
   }
 ]

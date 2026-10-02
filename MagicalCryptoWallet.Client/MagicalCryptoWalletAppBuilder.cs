@@ -12,14 +12,12 @@ public enum ExitCode
 public record MagicalCryptoWalletAppBuilder(string AppName, string[] Arguments)
 {
 	internal bool MustCheckSingleInstance { get; init; }
-	internal bool IsDesktop { get; init; }
 	internal EventHandler<Exception>? UnhandledExceptionEventHandler { get; init; }
 	internal EventHandler<AggregateException>? UnobservedTaskExceptionsEventHandler { get; init; }
 	internal Action Terminate { get; init; } = () => { };
 
 	public MagicalCryptoWalletAppBuilder EnsureSingleInstance(bool ensure = true) =>
 		this with { MustCheckSingleInstance = ensure };
-	public MagicalCryptoWalletAppBuilder WithDesktopActivation() => this with { IsDesktop = true };
 
 	public MagicalCryptoWalletAppBuilder OnUnhandledExceptions(EventHandler<Exception> handler) =>
 		this with { UnhandledExceptionEventHandler = handler };

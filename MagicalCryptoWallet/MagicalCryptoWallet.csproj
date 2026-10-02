@@ -59,9 +59,6 @@
 		<None Update="Announcements\ReleaseHighlights.md">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
-		<None Update="Scheme\Stdlib.scm">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
 	</ItemGroup>
 
 	<ItemGroup>

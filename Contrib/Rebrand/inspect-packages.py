@@ -121,10 +121,11 @@ else:
         extracted=work/'app';shutil.copytree(app,extracted,symlinks=True,dirs_exist_ok=True);payloads.append(extracted)
         identities={k:plist[k] for k in ('CFBundleIdentifier','CFBundleDisplayName','CFBundleExecutable','CFBundleVersion')}
     finally:detach_dmg(mount)
-for executable in ('mcw','magicalcryptowallet','magicalcryptowalletd','magicalcryptowallet-coordinator'):
+for executable in ('mcw','magicalcryptowallet','magicalcryptowallet-coordinator'):
     assert (dist/(executable+('.exe' if args.rid.startswith('win') else ''))).is_file()
 run(sys_executable:=__import__('sys').executable,ROOT/'Contrib/Rebrand/audit.py','--artifacts',*payloads)
 run(sys_executable,ROOT/'Contrib/SingleWallet/audit.py','--artifacts',*payloads)
+run(sys_executable,ROOT/'Contrib/AutomationRemoval/audit.py','--artifacts',*payloads)
 run('dotnet','run','--project',ROOT/'Contrib/Rebrand/AssemblyAudit','-c','Release','--',ROOT/'Contrib/Mcw/removed-encoder-policy.json',*payloads)
 for payload in payloads:
     for host in payload.rglob('mcw.exe' if args.rid.startswith('win') else 'mcw'):

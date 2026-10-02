@@ -123,7 +123,7 @@ The initial remote caller snapshot was `82127991068522210cdcf77080dc9b819502e486
 
 Managed regression callers remain in `MagicalCryptoWallet.Tests/UnitTests/WalletOperationAuthorizationTests.cs` (reviewed unsigned transaction unchanged by signing) and `MagicalCryptoWallet.Tests/UnitTests/SoftwareWalletTests.cs` (preview/signing finalization state). They are not removed or rewritten here.
 
-Hardware-wallet removal eliminated PSBT text/file import/export from the inspected managed workflows. The standalone transaction broadcaster and raw-transaction import/paste are also removed. Do not resurrect hardware wallet, PayJoin, or removed import/export flows to manufacture a production caller. Re-audit the fresh caller graph before integrating. NBitcoin 10.0.13 is still a direct dependency in the managed core lockfile; 188 C# files in the inspected core/client/Fluent directories reference NBitcoin, and test/daemon/coordinator uses remain as well. This module does **not** justify removing the package.
+Hardware-wallet removal eliminated PSBT text/file import/export from the inspected managed workflows. The standalone transaction broadcaster and raw-transaction import/paste are also removed. Do not resurrect hardware wallet, PayJoin, or removed import/export flows to manufacture a production caller. Re-audit the fresh caller graph before integrating. NBitcoin 10.0.13 is still a direct dependency in the managed core lockfile; 188 C# files in the inspected core/client/Fluent directories reference NBitcoin, and test/coordinator uses remain as well. This module does **not** justify removing the package.
 
 Inventory commands:
 

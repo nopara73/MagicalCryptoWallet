@@ -1,18 +1,9 @@
 {
-  "scope": "source caller inventory; shared working checkout can contain pending peer removals",
+  "scope": "Retained managed JSON callers after wallet automation removal; baseline lists exclude deleted interfaces.",
   "implementation_baseline": "82127991068522210cdcf77080dc9b819502e486",
   "baseline_callers": {
     "newtonsoft_runtime": [
-      "MagicalCryptoWallet.Client/Bootstrap.cs",
       "MagicalCryptoWallet/BitcoinRpc/RpcClientBase.cs",
-      "MagicalCryptoWallet/Rpc/JsonConverters/BitcoinAddressJsonConverter.cs",
-      "MagicalCryptoWallet/Rpc/JsonConverters/DestinationJsonConverter.cs",
-      "MagicalCryptoWallet/Rpc/JsonConverters/OutPointAsTxoRefJsonConverter.cs",
-      "MagicalCryptoWallet/Rpc/JsonConverters/SmartTransactionJsonConverter.cs",
-      "MagicalCryptoWallet/Rpc/JsonConverters/Uint256JsonConverter.cs",
-      "MagicalCryptoWallet/Rpc/JsonRpcRequest.cs",
-      "MagicalCryptoWallet/Rpc/JsonRpcRequestHandler.cs",
-      "MagicalCryptoWallet/Rpc/JsonRpcResponse.cs",
       "MagicalCryptoWallet/Wallets/Exchange/ExchangeRateProvider.cs"
     ],
     "managed_json_runtime": [
@@ -21,7 +12,6 @@
       "MagicalCryptoWallet.Coordinator/MagicalCryptoWalletJsonOutputFormatter.cs",
       "MagicalCryptoWallet.Fluent/UiConfig/Serialization.cs",
       "MagicalCryptoWallet.Fluent/UiConfig/UiConfig.cs",
-      "MagicalCryptoWallet.Fluent/ViewModels/Scheme/SchemeConsoleViewModel.cs",
       "MagicalCryptoWallet/Blockchain/Keys/KeyManager.cs",
       "MagicalCryptoWallet/Extensions/HttpContentExtensions.cs",
       "MagicalCryptoWallet/Extensions/HttpResponseMessageExtensions.cs",
@@ -44,19 +34,9 @@
   },
   "shared_working_checkout_callers": {
     "newtonsoft_runtime": [
-      "MagicalCryptoWallet.Client/Bootstrap.cs",
       "MagicalCryptoWallet/BitcoinRpc/RpcClientBase.cs",
       "MagicalCryptoWallet/Helpers/ImportWalletHelper.cs",
-      "MagicalCryptoWallet/Rpc/JsonConverters/BitcoinAddressJsonConverter.cs",
-      "MagicalCryptoWallet/Rpc/JsonConverters/DestinationJsonConverter.cs",
-      "MagicalCryptoWallet/Rpc/JsonConverters/OutPointAsTxoRefJsonConverter.cs",
-      "MagicalCryptoWallet/Rpc/JsonConverters/SmartTransactionJsonConverter.cs",
-      "MagicalCryptoWallet/Rpc/JsonConverters/Uint256JsonConverter.cs",
-      "MagicalCryptoWallet/Rpc/JsonRpcRequest.cs",
-      "MagicalCryptoWallet/Rpc/JsonRpcRequestHandler.cs",
-      "MagicalCryptoWallet/Rpc/JsonRpcResponse.cs",
-      "MagicalCryptoWallet/Wallets/Exchange/ExchangeRateProvider.cs",
-      "MagicalCryptoWallet/WebClients/PayJoin/PayjoinClient.cs"
+      "MagicalCryptoWallet/Wallets/Exchange/ExchangeRateProvider.cs"
     ],
     "managed_json_runtime": [
       "MagicalCryptoWallet.Client/Configuration/PersistentConfigManager.cs",
@@ -64,12 +44,10 @@
       "MagicalCryptoWallet.Coordinator/MagicalCryptoWalletJsonOutputFormatter.cs",
       "MagicalCryptoWallet.Fluent/UiConfig/Serialization.cs",
       "MagicalCryptoWallet.Fluent/UiConfig/UiConfig.cs",
-      "MagicalCryptoWallet.Fluent/ViewModels/Scheme/SchemeConsoleViewModel.cs",
       "MagicalCryptoWallet/Blockchain/Keys/KeyManager.cs",
       "MagicalCryptoWallet/Extensions/HttpContentExtensions.cs",
       "MagicalCryptoWallet/Extensions/HttpResponseMessageExtensions.cs",
       "MagicalCryptoWallet/FeeRateEstimation/FeeRateProviders.cs",
-      "MagicalCryptoWallet/Hwi/Parsers/HwiParser.cs",
       "MagicalCryptoWallet/Models/SerializableException.cs",
       "MagicalCryptoWallet/Serialization/Bitcoin.cs",
       "MagicalCryptoWallet/Serialization/Client.cs",

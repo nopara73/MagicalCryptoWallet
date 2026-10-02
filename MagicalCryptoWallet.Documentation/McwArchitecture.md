@@ -1,12 +1,12 @@
 # mcw is the application
 
-`mcw` is the permanent Rust application, built as one Cargo package and one shipping executable. Its first owned service is QR generation. During migration it hosts the existing managed GUI or daemon over one private, persistent pair of anonymous pipes. The coordinator remains an external service.
+`mcw` is the permanent Rust application, built as one Cargo package and one shipping executable. Its first owned service is QR generation. During migration it hosts the existing managed GUI over one private, persistent pair of anonymous pipes. The coordinator remains an external service.
 
 ```mermaid
 flowchart LR
     User --> Host["mcw: commands and application lifetime"]
     Host --> QR["portable QR service"]
-    Host <-->|"bridge v1: inherited private pipes"| Managed["temporary managed GUI/daemon"]
+    Host <-->|"bridge v1: inherited private pipes"| Managed["temporary managed GUI"]
     Managed --> State["existing wallet state and storage"]
     Managed --> Network["existing Bitcoin, Tor and coordinator clients"]
 ```
@@ -15,7 +15,7 @@ The eventual native UI calls the same portable Rust services directly. Delete th
 
 ## Ownership and dependencies
 
-- `command` owns public command dispatch: default/`gui`, `daemon`, `qr encode --ecc L|M|Q|H`, help and version.
+- `command` owns public command dispatch: default/`gui`, `qr encode --ecc L|M|Q|H`, help and version.
 - `app` owns the managed child's lifetime, exit status, restart, verified-update installation and crash-report handoff. Child arguments are preserved without a shell; executable lookup stays beside the host. Managed single-instance activation, data paths, silent startup and wallet locking retain their existing implementation.
 - `qr` owns Model 2 versions 1–40, all correction levels, numeric/alphanumeric/UTF-8 byte modes, ECI 26 for non-ASCII input, Reed-Solomon interleaving, function patterns and deterministic minimum-penalty masking. It preserves the exact text, including whitespace and an explicitly supplied BOM.
 - `bridge` translates typed frames into service calls. Domain code is independent of the transport and has `forbid(unsafe_code)`.
@@ -117,9 +117,9 @@ The host reaps its child on normal exit and every error path. Windows puts the c
 
 ## Launch, build and packages
 
-Users launch `mcw`; `mcw daemon` selects the managed daemon. Old `magicalcryptowallet` and `magicalcryptowalletd` launchers delegate to it. Windows MSI shortcuts/install-on-finish, Linux desktop/AppRun/bin links, macOS bundle metadata, startup registration and restart paths use `mcw`. App identity, icons, data-directory rules and installer/update identity are preserved.
+Users launch `mcw`; the `magicalcryptowallet` compatibility launcher delegates to the same desktop. Windows MSI shortcuts/install-on-finish, Linux desktop/AppRun/bin links, macOS bundle metadata, startup registration and restart paths use `mcw`. App identity, icons, data-directory rules and installer/update identity are preserved.
 
-`python Contrib/Releases/setup-tools.py --rid <rid>` provisions the checksum-verified Rust toolchain plus existing release tools into the build workspace. `Contrib/Mcw/build.py` verifies Cargo metadata, builds and audits the binary; `--test` also runs formatting, strict Clippy and Rust tests. Desktop/daemon MSBuild output copies the release host beside the apphost; set `BuildMcwHost=false` only when an outer package build supplies the host. Standalone QR mode works without any managed files.
+`python Contrib/Releases/setup-tools.py --rid <rid>` provisions the checksum-verified Rust toolchain plus existing release tools into the build workspace. `Contrib/Mcw/build.py` verifies Cargo metadata, builds and audits the binary; `--test` also runs formatting, strict Clippy and Rust tests. Desktop MSBuild output copies the release host beside the apphost; set `BuildMcwHost=false` only when an outer package build supplies the host. Standalone QR mode works without any managed files.
 
 `Contrib/Releases/package.py` builds Rust alongside the managed/native application and keeps required transitional components. CI runs native Rust tests, an actual host/managed pipe probe with independent QR decoding, receive-control/PNG pixel checks, synthetic wallet process tests and extracted package audits on all five platforms. `Contrib/Mcw/audit.py` records binary SHA/version/imports; Cargo metadata alone is never dependency-removal evidence.
 

@@ -1,8 +1,6 @@
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
-using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Security;
 using System.Security.Cryptography;
 using System.Text.Json;
@@ -16,10 +14,8 @@ using MagicalCryptoWallet.Blockchain.Mempool;
 using MagicalCryptoWallet.Blockchain.Transactions;
 using MagicalCryptoWallet.Client;
 using MagicalCryptoWallet.Client.Configuration;
-using MagicalCryptoWallet.Client.Rpc;
 using MagicalCryptoWallet.Helpers;
 using MagicalCryptoWallet.Models;
-using MagicalCryptoWallet.Rpc;
 using MagicalCryptoWallet.Services;
 using MagicalCryptoWallet.Stores;
 using MagicalCryptoWallet.Tests.Helpers;
@@ -305,14 +301,14 @@ public class SingleWalletTests
 	[Theory]
 	[InlineData(false)]
 	[InlineData(true)]
-	public async Task RpcSetupPasswordAuthorizesCoinJoinOnlyForTheCurrentRunAsync(bool recover)
+	public async Task SetupPasswordAuthorizesCoinJoinOnlyForTheCurrentRunAsync(bool recover)
 	{
 		string root = await Common.GetEmptyWorkDirAsync();
 		await using (var app = new SyntheticApplication(root))
 		{
-			var service = new MagicalCryptoWalletJsonRpcService(app.Global);
-			if (recover) { service.RecoverWallet(SyntheticMnemonic, "secret"); }
-			else { service.CreateWallet("secret"); }
+			var generator = new WalletGenerator(app.Session.WalletDirectories.WalletsDir, Network.RegTest);
+			var keys = generator.GenerateDraft("secret", recover ? new Mnemonic(SyntheticMnemonic) : null).KeyManager;
+			app.Session.Configure(keys, "secret");
 			Assert.False(app.Session.Snapshot.CoinJoinRequiresAuthorization);
 			Assert.NotNull(app.Session.CoinJoinKeyChain);
 			Assert.Throws<SecurityException>(() => WalletAuthorization.Create(app.Session.GetWallet()!.KeyManager, "wrong"));
@@ -324,26 +320,13 @@ public class SingleWalletTests
 		Assert.True(restarted.Session.Snapshot.CoinJoinRequiresAuthorization);
 	}
 	[Fact]
-	public async Task RpcStatusWorksBeforeSetupAndRetiredCommandsFailExplicitlyAsync()
+	public async Task SessionReportsUnconfiguredBeforeSetupAsync()
 	{
 		await using var app = new SyntheticApplication(await Common.GetEmptyWorkDirAsync());
-		var service = new MagicalCryptoWalletJsonRpcService(app.Global);
-		var handler = new JsonRpcRequestHandler<MagicalCryptoWalletJsonRpcService>(service, Network.RegTest);
-		var initial = service.WalletInfo();
-		Assert.Equal("Unconfigured", initial["state"]);
-		Assert.Null(initial["balance"]);
-		Assert.False(initial.ContainsKey("walletName"));
-		Assert.False(initial.ContainsKey("loaded"));
-		service.RecoverWallet(SyntheticMnemonic);
-		Assert.Throws<InvalidOperationException>(() => service.Initialize("/other", true));
-		Assert.Throws<InvalidOperationException>(() => service.CreateWallet(""));
-		foreach (var method in new[] { "loadwallet", "listwallets", "startcoinjoinsweep" })
-		{
-			var response = JObject.Parse(await handler.HandleAsync("/", $$$"""{"jsonrpc":"2.0","id":1,"method":"{{{method}}}"}""", CancellationToken.None));
-			Assert.Equal((int)JsonRpcErrorCodes.MethodNotFound, response["error"]!["code"]!.Value<int>());
-		}
-		var extraArgument = JObject.Parse(await handler.HandleAsync("/", """{"jsonrpc":"2.0","id":1,"method":"createwallet","params":{"walletName":"retired","password":""}}""", CancellationToken.None));
-		Assert.Equal((int)JsonRpcErrorCodes.InvalidParams, extraArgument["error"]!["code"]!.Value<int>());
+		Assert.Equal(WalletSessionState.Unconfigured, app.Session.Snapshot.State);
+		Assert.False(app.Session.Snapshot.HasCachedData);
+		Assert.Null(app.Session.GetWallet());
+		Assert.Null(app.Session.Snapshot.SyncHeight);
 	}
 	[Fact]
 	public void SelectionCliOptionsAreRejected()
@@ -377,7 +360,6 @@ public class SingleWalletTests
 		private readonly AllTransactionStore _transactions;
 		private readonly FilterStore _filters;
 		private readonly MailboxProcessor<CpfpInfoMessage> _cpfp;
-		private readonly HostedServices _hosted = new();
 		public SyntheticApplication(string root, Network? network = null)
 		{
 			network ??= Network.RegTest;
@@ -395,15 +377,7 @@ public class SingleWalletTests
 			BlockProvider blocks = (_, _) => throw new InvalidOperationException("No block requests are allowed in this test.");
 			var factory = MagicalCryptoWallet.Wallets.Wallet.CreateFactory(network, _filters, _transactions, Headers, new MempoolService(Events), config.ServiceConfiguration, blocks, Events, new CpfpInfoProvider(_cpfp));
 			Session = new WalletSession(network, new WalletDirectories(network, root), factory, () => Connected);
-			Global = (Global)RuntimeHelpers.GetUninitializedObject(typeof(Global));
-			SetGlobalProperty(nameof(Global.DataDir), root);
-			SetGlobalProperty(nameof(Global.Config), config);
-			SetGlobalProperty(nameof(Global.FilterHeaders), Headers);
-			SetGlobalProperty(nameof(Global.WalletSession), Session);
-			SetGlobalProperty(nameof(Global.TransactionStore), _transactions);
-			SetGlobalProperty(nameof(Global.HostedServices), _hosted);
 		}
-		public Global Global { get; }
 		public WalletSession Session { get; }
 		public EventBus Events { get; }
 		public FilterHeaderChain Headers { get; }
@@ -418,8 +392,7 @@ public class SingleWalletTests
 		public async ValueTask DisposeAsync()
 		{
 			await Session.StopAsync(CancellationToken.None);
-			_cpfp.Dispose(); _filters.Dispose(); _transactions.Dispose(); _hosted.Dispose();
+			_cpfp.Dispose(); _filters.Dispose(); _transactions.Dispose();
 		}
-		private void SetGlobalProperty(string name, object value) => typeof(Global).GetField($"<{name}>k__BackingField", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(Global, value);
 	}
 }

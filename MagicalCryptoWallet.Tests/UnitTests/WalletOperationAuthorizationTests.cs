@@ -8,8 +8,6 @@ using MagicalCryptoWallet.Blockchain.Keys;
 using MagicalCryptoWallet.Blockchain.TransactionBuilding;
 using MagicalCryptoWallet.Blockchain.Transactions;
 using MagicalCryptoWallet.Client;
-using MagicalCryptoWallet.Client.Rpc;
-using MagicalCryptoWallet.Rpc;
 using MagicalCryptoWallet.Tests.Helpers;
 using MagicalCryptoWallet.Wallets;
 using Xunit;
@@ -64,15 +62,13 @@ public class WalletOperationAuthorizationTests
 		Assert.True(Network.RegTest.CreateTransactionBuilder().AddCoins(coins.Select(x => x.Coin)).Verify(signed.Transaction.Transaction));
 		authorization.Dispose();
 		Assert.Throws<ObjectDisposedException>(() => authorization.Sign(preview));
-		var rpc = new MagicalCryptoWalletJsonRpcService(app.Global);
-		var payments = new[] { new PaymentInfo { Sendto = new Destination(destination.ScriptPubKey), Amount = Money.Coins(0.005m), Label = "test" } };
-		Assert.Throws<SecurityException>(() => rpc.BuildTransaction(payments, feeRate: 2m, password: "wrong"));
+		Assert.Throws<SecurityException>(() => WalletOperationTestHelper.SignPayment(app.Session, destination.ScriptPubKey, Money.Coins(0.005m), "wrong"));
 		app.Connected = false;
 		await SingleWalletTests.WaitForAsync(() => app.Session.Snapshot.State == WalletSessionState.Offline);
-		Assert.Single(rpc.GetUnspentCoinList());
-		Assert.False((bool)rpc.WalletInfo()["synchronized"]!);
-		Assert.NotNull(rpc.WalletInfo()["balance"]);
-		Assert.Throws<InvalidOperationException>(() => rpc.BuildTransaction(payments, feeRate: 2m, password: password));
+		Assert.Single(wallet.Coins);
+		Assert.False(app.Session.Snapshot.IsSynchronized);
+		Assert.True(app.Session.Snapshot.HasCachedData);
+		Assert.Throws<InvalidOperationException>(() => WalletOperationTestHelper.SignPayment(app.Session, destination.ScriptPubKey, Money.Coins(0.005m), password));
 	}
 
 	[Fact]
@@ -99,14 +95,4 @@ public class WalletOperationAuthorizationTests
 		Assert.NotNull(KeyManager.FromFile(keys.FilePath!).TaprootExtPubKey);
 	}
 
-	[Fact]
-	public async Task SchemeStatusWorksBeforeSetupAndRetiredExportsFailAsync()
-	{
-		await using var app = new SingleWalletTests.SyntheticApplication(await Common.GetEmptyWorkDirAsync());
-		var scheme = new Scheme(app.Global);
-		var status = JObject.Parse(scheme.ToJson(await scheme.ExecuteAsync("(wallet-info)")));
-		Assert.Equal("Unconfigured", status["state"]!.Value<string>());
-		foreach (var expression in new[] { "(open-wallet)", "(__start_wallet)", "(wallet-name (wallet))" })
-		{ await Assert.ThrowsAnyAsync<Exception>(() => scheme.ExecuteAsync(expression)); }
-	}
 }

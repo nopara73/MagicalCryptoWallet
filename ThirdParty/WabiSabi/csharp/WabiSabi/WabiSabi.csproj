@@ -14,7 +14,9 @@
     <None Include="../../LICENSE" Pack="true" PackagePath="" />
     <None Include="../../README.md" Pack="true" PackagePath="" />
     <!-- Native binaries come exclusively from the C sources, before tests or packaging. -->
-    <None Include="../../c/build/libwabisabi.*" Condition="'$(NativeLibraryPath)' == ''"
+    <None Include="../../c/build/libwabisabi.*" Condition="'$(NativeLibraryPath)' == '' And '$(OS)' != 'Windows_NT'"
+          Link="%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <None Include="../../c/build-win/libwabisabi.dll" Condition="'$(NativeLibraryPath)' == '' And '$(OS)' == 'Windows_NT'"
           Link="%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
     <None Include="$(NativeLibraryPath)" Condition="'$(NativeLibraryPath)' != ''"
           Link="%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />

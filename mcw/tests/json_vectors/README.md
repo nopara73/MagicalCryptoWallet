@@ -25,9 +25,8 @@ the encoders/callers at application source baseline
 - `MagicalCryptoWallet/Blockchain/Keys/KeyManager.cs`,
   `MagicalCryptoWallet/Serialization/Client.cs` and `Bitcoin.cs`: wallet-shaped
   fields, base64/hex/key paths, labels, string heights and integer satoshi amounts.
-- `MagicalCryptoWallet/Rpc/JsonRpcRequest.cs`, `JsonRpcResponse.cs` and
-  `Rpc/JsonConverters/OutPointAsTxoRefJsonConverter.cs`: single/batch RPC,
-  null/absent/string/numeric IDs, ordered response fields and uint32 outpoint index.
+- Frozen single/batch JSON protocol payloads cover the syntax also used by
+  retained Bitcoin Core RPC: null/absent/string/numeric IDs, ordered response fields and uint32 outpoint index.
 - `MagicalCryptoWallet/Serialization/Coordination.cs`: round state/credential
   fields, date strings, signed integer deltas and discriminated objects.
 - `MagicalCryptoWallet/Wallets/Exchange/ExchangeRateProvider.cs` and
@@ -39,3 +38,7 @@ not valid wallets, signing material, credentials, a payment test or execution of
 the application DTO/domain validators. Managed differential verification uses
 cached Newtonsoft 13.0.4 and native .NET System.Text.Json in a temporary test
 project only. Neither is a dependency of the Rust implementation.
+
+The persistent configuration vector retains obsolete version-4 fields solely as
+frozen legacy input for the generic JSON parser. It does not enable those fields
+or restore the removed wallet automation runtime.

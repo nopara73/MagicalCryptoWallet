@@ -69,8 +69,6 @@ public partial class ApplicationSettings : ReactiveObject
 	// Non-persistent
 	[AutoNotify] private bool _doUpdateOnClose;
 
-	// Experimental
-	[AutoNotify] private string[] _experimentalFeatures;
 
 	public ApplicationSettings(IServices services, PersistentConfig persistentConfig, Config config, UiConfig uiConfig)
 	{
@@ -107,8 +105,6 @@ public partial class ApplicationSettings : ReactiveObject
 		_downloadNewVersion = persistentConfig.DownloadNewVersion;
 		_enableGpu = persistentConfig.EnableGpu;
 
-		// Experimental
-		_experimentalFeatures = persistentConfig.ExperimentalFeatures.ToArray();
 
 		// Privacy Mode
 		_privacyMode = uiConfig.PrivacyMode;
@@ -148,8 +144,6 @@ public partial class ApplicationSettings : ReactiveObject
 		DownloadNewVersion = persistentConfig.DownloadNewVersion;
 		EnableGpu = persistentConfig.EnableGpu;
 
-		// Experimental
-		ExperimentalFeatures = persistentConfig.ExperimentalFeatures.ToArray();
 
 		// Privacy Mode
 		PrivacyMode = uiConfig.PrivacyMode;

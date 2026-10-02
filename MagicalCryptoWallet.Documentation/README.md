@@ -28,7 +28,7 @@ Download packages from [GitHub Releases](https://github.com/nopara73/MagicalCryp
 | Backend | `%APPDATA%\MagicalCryptoWallet\Backend` | `~/.magicalcryptowallet/backend` |
 | Coordinator | `%APPDATA%\MagicalCryptoWallet\Coordinator` | `~/.magicalcryptowallet/coordinator` |
 
-The application ID is `io.github.nopara73.magicalcryptowallet`. Launch **`mcw`** for the GUI or **`mcw daemon`** for background operation. The old `magicalcryptowallet`/`magicalcryptowalletd` paths delegate to the Rust host; `magicalcryptowallet-coordinator` remains an external service. Use `mcw --help` for public modes and `mcw gui --help`/`mcw daemon --help` for retained managed options. Environment overrides use `MAGICALCRYPTOWALLET_`, for example `MAGICALCRYPTOWALLET_DATADIR`. See [the architecture and pipe contract](McwArchitecture.md) and [migration ledger](McwMigration.md).
+The application ID is `io.github.nopara73.magicalcryptowallet`. Launch **`mcw`** for the desktop; `magicalcryptowallet` delegates to the same host and `magicalcryptowallet-coordinator` remains an external service. Use `mcw --help` for public modes and `mcw gui --help` for desktop options. Environment overrides use `MAGICALCRYPTOWALLET_`, for example `MAGICALCRYPTOWALLET_DATADIR`. See [the architecture and pipe contract](McwArchitecture.md) and [migration ledger](McwMigration.md).
 
 ## Wallet import
 
@@ -46,7 +46,7 @@ Coordinator fee collection is disabled by default. To enable it, set `CollectCoo
 
 ## Ports
 
-Application-specific defaults use the `381xx` range: coordinator 38126, backend 38127, client JSON-RPC 38128, RPC onion service 38129, Tor SOCKS/control 38150/38151, fallback Tor 38152/38153, and coordinator Tor 38155/38156. Standard Bitcoin peer/RPC and system Tor ports retain their existing values.
+Application-specific defaults use the `381xx` range: coordinator 38126, backend 38127, Tor SOCKS/control 38150/38151, fallback Tor 38152/38153, and coordinator Tor 38155/38156. Standard Bitcoin peer/RPC and system Tor ports retain their existing values.
 
 ## Support
 

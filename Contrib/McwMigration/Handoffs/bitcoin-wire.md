@@ -352,7 +352,6 @@ leaves remain excluded from integration scope.
 
 | Path | Retained behavior |
 | --- | --- |
-| `MagicalCryptoWallet.Client/Rpc/MagicalCryptoWalletJsonRpcService.cs` | `Transaction.Parse` at 373/424; transaction hex at 244/272/399/417; RPC serializers also expose transaction/hash objects. |
 | `MagicalCryptoWallet/Stores/TransactionSqliteStorage.cs` | Binary `ToBytes` at 187; `Transaction.Load` at 416; txids stored in raw little-endian/digest order. |
 | `MagicalCryptoWallet/Blockchain/TransactionBroadcasting/TransactionBroadcaster.cs` | Broadcast transaction hex at 104. |
 | `MagicalCryptoWallet/Blockchain/Transactions/TransactionSummary.cs` | Transaction hex at 22. |
@@ -360,7 +359,6 @@ leaves remain excluded from integration scope.
 | `MagicalCryptoWallet/Blockchain/Transactions/TransactionBroadcastEntry.cs` | Witness transaction hash matching at 59. |
 | `MagicalCryptoWallet/Blockchain/Mempool/MempoolService.cs` | Witness transaction hash comparison at 33. |
 | `MagicalCryptoWallet/Blockchain/Transactions/SmartTransaction.cs` | Delegated txid at 190 and transaction identity throughout wallet metadata. |
-| `MagicalCryptoWallet/Rpc/JsonConverters/SmartTransactionJsonConverter.cs` | Managed serializer delegates the NBitcoin `Transaction` object at 17. |
 | `MagicalCryptoWallet/Serialization/Bitcoin.cs` | Binary outpoints at 22/94-100 and scriptWitness at 48-49/91-92, plus script/value objects. |
 | `MagicalCryptoWallet/Serialization/Coordination.cs` | Witness/state and transaction-signature request serialization/decoding via the preceding helpers. |
 | `MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs` | Generic exact binary `IBitcoinSerializable` decoding at 355-366; includes unrelated serialized types. |

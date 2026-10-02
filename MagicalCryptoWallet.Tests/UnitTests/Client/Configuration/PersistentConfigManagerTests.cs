@@ -37,29 +37,21 @@ public class PersistentConfigManagerTests
 
 		// Check that JSON strings are equal as well.
 		{
-			// JsonRpcUser and JsonRpcPassword are randomly generated, so we use the actual values
-			string expected = GetConfigString(actualConfig.JsonRpcUser, actualConfig.JsonRpcPassword);
+			string expected = GetConfigString();
 			string actual = JsonEncoder.ToReadableString(readConfig, PersistentConfigEncode.PersistentConfig);
 
 			AssertJsonStringsEqual(expected, actual);
 			AssertJsonStringsEqual(expected, storedJson);
 		}
 
-		static string GetConfigString(string jsonRpcUser, string jsonRpcPassword)
-			=> $$"""
+		static string GetConfigString()
+			=> """
 			{
 			  "CoordinatorUri": "",
 			  "UseTor": "Enabled",
 			  "TerminateTorOnExit": false,
 			  "TorBridges": [],
 			  "DownloadNewVersion": true,
-			  "JsonRpcServerEnabled": false,
-			  "JsonRpcUser": "{{jsonRpcUser}}",
-			  "JsonRpcPassword": "{{jsonRpcPassword}}",
-			  "JsonRpcServerPrefixes": [
-			    "http://127.0.0.1:38128/",
-			    "http://localhost:38128/"
-			  ],
 			  "DustThreshold": "0.00001",
 			  "EnableGpu": true,
 			  "CoordinatorIdentifier": "CoinJoinCoordinatorIdentifier",
@@ -68,7 +60,6 @@ public class PersistentConfigManagerTests
 			  "ExternalTransactionBroadcaster": "MempoolSpace",
 			  "MaxCoinJoinMiningFeeRate": 50.0,
 			  "MaxDaysInMempool": 30,
-			  "ExperimentalFeatures": [],
 			  "ConfigVersion": 4
 			}
 			""";
@@ -89,10 +80,7 @@ public class PersistentConfigManagerTests
 			CoordinatorUri = "http://coordinator.invalid/",
 			UseTor = "Disabled",
 			DustThreshold = Money.Coins(0.00002m),
-			FeeRateEstimationProvider = "None",
-			JsonRpcServerEnabled = true,
-			JsonRpcUser = "synthetic-user",
-			JsonRpcPassword = "synthetic-password"
+			FeeRateEstimationProvider = "None"
 		};
 		var path = Path.Combine(await Common.GetEmptyWorkDirAsync(), fileName);
 		var legacy = JsonNode.Parse(JsonEncoder.ToReadableString(expected, PersistentConfigEncode.PersistentConfig))!;

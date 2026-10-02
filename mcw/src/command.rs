@@ -8,7 +8,7 @@ use std::{
     io::{self, Read, Write},
 };
 
-pub const HELP: &str = "Magical Crypto Wallet\n\nUsage: mcw [gui] [application arguments]\n       mcw daemon [application arguments]\n       mcw qr encode [--ecc L|M|Q|H]\n       mcw --help | --version\n\nQR text is read verbatim from UTF-8 stdin. Output is the width followed by\nrows of 0/1 modules, without a quiet zone. Correction defaults to M.\nGUI and daemon currently host the managed application; mcw owns its lifetime.\n";
+pub const HELP: &str = "Magical Crypto Wallet\n\nUsage: mcw [gui] [application arguments]\n       mcw qr encode [--ecc L|M|Q|H]\n       mcw --help | --version\n\nQR text is read verbatim from UTF-8 stdin. Output is the width followed by\nrows of 0/1 modules, without a quiet zone. Correction defaults to M.\nThe desktop currently hosts the managed application; mcw owns its lifetime.\n";
 
 pub fn run(mut args: Vec<OsString>) -> Result<i32, String> {
     match args.first().and_then(|arg| arg.to_str()) {
@@ -44,16 +44,16 @@ pub fn run(mut args: Vec<OsString>) -> Result<i32, String> {
             out.flush().map_err(|_| "cannot write stdout")?;
             Ok(0)
         }
-        Some("daemon") => {
-            platform::attach_console();
-            args.remove(0);
-            app::run(app::Mode::Daemon, args)
-        }
         Some("gui") => {
             args.remove(0);
-            app::run(app::Mode::Gui, args)
+            app::run(args)
         }
-        _ => app::run(app::Mode::Gui, args),
+        Some(value)
+            if !value.starts_with('-') && value != "startsilent" && value != "crashreport" =>
+        {
+            Err("Unknown application command. Use --help for supported options.".into())
+        }
+        _ => app::run(args),
     }
 }
 

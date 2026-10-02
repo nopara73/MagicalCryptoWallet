@@ -46,11 +46,6 @@ public class Config
 			[nameof(TorBridges)] = GetStringArrayValue("TorBridges", PersistentConfig.TorBridges.ToArray(), cliArgs),
 			[nameof(TerminateTorOnExit)] = GetBoolValue("TerminateTorOnExit", PersistentConfig.TerminateTorOnExit, cliArgs),
 			[nameof(DownloadNewVersion)] = GetBoolValue("DownloadNewVersion", PersistentConfig.DownloadNewVersion, cliArgs),
-			[nameof(JsonRpcServerEnabled)] = GetBoolValue("JsonRpcServerEnabled", PersistentConfig.JsonRpcServerEnabled, cliArgs),
-			[nameof(JsonRpcUser)] = GetStringValue("JsonRpcUser", PersistentConfig.JsonRpcUser, cliArgs),
-			[nameof(JsonRpcPassword)] = GetStringValue("JsonRpcPassword", PersistentConfig.JsonRpcPassword, cliArgs),
-			[nameof(JsonRpcServerPrefixes)] = GetStringArrayValue("JsonRpcServerPrefixes", PersistentConfig.JsonRpcServerPrefixes.ToArray(), cliArgs),
-			[nameof(RpcOnionEnabled)] = GetBoolValue("RpcOnionEnabled", value: false, cliArgs),
 			[nameof(DustThreshold)] = GetMoneyValue("DustThreshold", PersistentConfig.DustThreshold, cliArgs),
 			[nameof(BlockOnlyMode)] = GetBoolValue("BlockOnly", value: false, cliArgs),
 			[nameof(LogLevel)] = GetStringValue("LogLevel", value: "", cliArgs),
@@ -62,7 +57,6 @@ public class Config
 			[nameof(FeeRateEstimationProvider)] = GetStringValue("FeeRateEstimationProvider", PersistentConfig.FeeRateEstimationProvider, cliArgs),
 			[nameof(ExternalTransactionBroadcaster)] = GetStringValue("ExternalTransactionBroadcaster", PersistentConfig.ExternalTransactionBroadcaster, cliArgs),
 			[nameof(DropUnconfirmedTransactionsAfterDays)] = GetLongValue("MaxDaysInMempool", PersistentConfig.MaxDaysInMempool, cliArgs),
-			[nameof(ExperimentalFeatures)] = GetStringArrayValue("ExperimentalFeatures", PersistentConfig.ExperimentalFeatures.ToArray(), cliArgs)
 		};
 
 		// Check if any config value is overridden (either by an environment value, or by a CLI argument).
@@ -96,11 +90,6 @@ public class Config
 			[nameof(TorBridges)] = "Tor is started with the set of specified bridges",
 			[nameof(TerminateTorOnExit)] = "Stop the Tor process when Magical Crypto Wallet is closed",
 			[nameof(DownloadNewVersion)] = "Automatically download any new released version of MagicalCryptoWallet",
-			[nameof(JsonRpcServerEnabled)] = "Start the Json RPC Server and accept requests",
-			[nameof(JsonRpcUser)] = "The user name that is authorized to make requests to the Json RPC server",
-			[nameof(JsonRpcPassword)] = "The user password that is authorized to make requests to the Json RPC server",
-			[nameof(JsonRpcServerPrefixes)] = "The Json RPC server prefixes",
-			[nameof(RpcOnionEnabled)] = "Publish the Json RPC Server as a Tor Onion service",
 			[nameof(DustThreshold)] = "The amount threshold under which coins received from others to already used addresses are considered a dust attack",
 			[nameof(BlockOnlyMode)] = "Magical Crypto Wallet listens only for blocks and not for transactions",
 			[nameof(LogLevel)] = "The level of detail in the logs: trace, debug, info, warning, error, or critical",
@@ -112,7 +101,6 @@ public class Config
 			[nameof(FeeRateEstimationProvider)] = "The mining fee rate estimation provider. Available providers are MempoolSpace (default), BlockstreamInfo, BlockXyz or None",
 			[nameof(ExternalTransactionBroadcaster)] = "Third party transaction broadcaster. Available broadcasters are MempoolSpace (default) and BlockstreamInfo",
 			[nameof(DropUnconfirmedTransactionsAfterDays)] = "The number of days that unconfirmed wallet transactions will be remembered by Magical Crypto Wallet before dropping them",
-			[nameof(ExperimentalFeatures)] = "Colon-separated list of experimental features to enable. (features available: scripting)",
 		};
 	private Dictionary<string, IValue> Data { get; }
 	public PersistentConfig PersistentConfig { get; }
@@ -127,11 +115,6 @@ public class Config
 	public string[] TorBridges => GetEffectiveValue<string[]>(nameof(TorBridges));
 	public bool TerminateTorOnExit => GetEffectiveValue<bool>(nameof(TerminateTorOnExit));
 	public bool DownloadNewVersion => GetEffectiveValue<bool>(nameof(DownloadNewVersion));
-	public bool JsonRpcServerEnabled => GetEffectiveValue<bool>(nameof(JsonRpcServerEnabled));
-	public string JsonRpcUser => GetEffectiveValue<string>(nameof(JsonRpcUser));
-	public string JsonRpcPassword => GetEffectiveValue<string>(nameof(JsonRpcPassword));
-	public string[] JsonRpcServerPrefixes => GetEffectiveValue<string[]>(nameof(JsonRpcServerPrefixes));
-	public bool RpcOnionEnabled => GetEffectiveValue<bool>(nameof(RpcOnionEnabled));
 	public Money DustThreshold => GetEffectiveValue<Money>(nameof(DustThreshold));
 	public bool BlockOnlyMode => GetEffectiveValue<bool>(nameof(BlockOnlyMode));
 	public string ExchangeRateProvider => GetEffectiveValue<string>(nameof(ExchangeRateProvider));
@@ -142,8 +125,6 @@ public class Config
 	public bool EnableGpu => GetEffectiveValue<bool>(nameof(EnableGpu));
 	public string CoordinatorIdentifier => GetEffectiveValue<string>(nameof(CoordinatorIdentifier));
 	public decimal MaxCoinjoinMiningFeeRate => GetEffectiveValue<decimal>(nameof(MaxCoinjoinMiningFeeRate));
-
-	public string[] ExperimentalFeatures => GetEffectiveValue<string[]>(nameof(ExperimentalFeatures));
 
 	public ServiceConfiguration ServiceConfiguration { get; }
 

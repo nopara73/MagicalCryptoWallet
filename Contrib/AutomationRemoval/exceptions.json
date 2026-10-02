@@ -1,0 +1,102 @@
+[
+  {
+    "path": "MagicalCryptoWallet.Tests/UnitTests/WalletAutomationRemovalTests.cs",
+    "line_sha256": "7d280f9510a475690f1bdafff15d6fcd10b8e0cdb14329fce481ebf2241568f3",
+    "reason": "Legacy compatibility fixture or absent runtime assertion"
+  },
+  {
+    "path": "MagicalCryptoWallet.Tests/UnitTests/WalletAutomationRemovalTests.cs",
+    "line_sha256": "9dacfc1cf317e8300b3ad888417c623da10fead6b61d72a9b49eb29e549abadb",
+    "reason": "Legacy compatibility fixture or absent runtime assertion"
+  },
+  {
+    "path": "MagicalCryptoWallet.Tests/UnitTests/WalletAutomationRemovalTests.cs",
+    "line_sha256": "685e3e9676ea88446320e15ca0bd988f06f35ccdf32b892f401cd1cee2f323e3",
+    "reason": "Legacy compatibility fixture or absent runtime assertion"
+  },
+  {
+    "path": "MagicalCryptoWallet.Tests/UnitTests/WalletAutomationRemovalTests.cs",
+    "line_sha256": "00ef54a03d5972bad39177de7b92f17c3d5573bf0d98bae11dcd30e6982110c6",
+    "reason": "Legacy compatibility fixture or absent runtime assertion"
+  },
+  {
+    "path": "MagicalCryptoWallet.Tests/UnitTests/WalletAutomationRemovalTests.cs",
+    "line_sha256": "038efacfeb2543dd5968b38544f93f6301bab3f559d5c7ff529c86eec12f86d4",
+    "reason": "Legacy compatibility fixture or absent runtime assertion"
+  },
+  {
+    "path": "MagicalCryptoWallet.Tests/UnitTests/WalletAutomationRemovalTests.cs",
+    "line_sha256": "6f8b8d615ce3b13e9361c5b89cfabeec71fb0f48de0329b883bb822ead90ee62",
+    "reason": "Legacy compatibility fixture or absent runtime assertion"
+  },
+  {
+    "path": "MagicalCryptoWallet.Tests/UnitTests/WalletAutomationRemovalTests.cs",
+    "line_sha256": "89bf6d7ea16c72691d26de952acdd618de18daa0303f9204e5e24e97a073e8de",
+    "reason": "Legacy compatibility fixture or absent runtime assertion"
+  },
+  {
+    "path": "MagicalCryptoWallet.Tests/UnitTests/WalletAutomationRemovalTests.cs",
+    "line_sha256": "aa1923b2b81542e84117c4526b6f3a15a05e26c5a3d6d499a5e684206a910427",
+    "reason": "Legacy compatibility fixture or absent runtime assertion"
+  },
+  {
+    "path": "MagicalCryptoWallet.Tests/UnitTests/WalletAutomationRemovalTests.cs",
+    "line_sha256": "bfe6766df6d1c099269f490523539826812f13a35a62a2931c4a960900947774",
+    "reason": "Legacy compatibility fixture or absent runtime assertion"
+  },
+  {
+    "path": "MagicalCryptoWallet.Tests/UnitTests/WalletAutomationRemovalTests.cs",
+    "line_sha256": "b7e7b78f911f252119cfbd2a51c0cff6d8b05d876cf66ec76056f4871de4a003",
+    "reason": "Legacy compatibility fixture or absent runtime assertion"
+  },
+  {
+    "path": "MagicalCryptoWallet.Tests/UnitTests/WalletAutomationRemovalTests.cs",
+    "line_sha256": "cf8ce31eac859853bf73d410fc802cc147a74ce7c9994da41e1af71efc8f8274",
+    "reason": "Legacy compatibility fixture or absent runtime assertion"
+  },
+  {
+    "path": "MagicalCryptoWallet.Tests/UnitTests/WalletAutomationRemovalTests.cs",
+    "line_sha256": "262ee21023eb71a2656869e8f4cfb9e4007eae259fcb2a0db1e5a50380c404f1",
+    "reason": "Legacy compatibility fixture or absent runtime assertion"
+  },
+  {
+    "path": "MagicalCryptoWallet.Documentation/AutomationRemoval.md",
+    "line_sha256": "11ae418c00f3b4bd8c3776ee7600c19580415b102bd2cc408678bc80d84c4355",
+    "reason": "Migration documentation lists removed interfaces"
+  },
+  {
+    "path": "MagicalCryptoWallet.Documentation/AutomationRemoval.md",
+    "line_sha256": "f5de9d53bf1183982c48a4e44b4c7805a10438101045409eddb2d98cbf9443e1",
+    "reason": "Migration documentation lists removed interfaces"
+  },
+  {
+    "path": "Contrib/Tests/test-single-wallet-process.py",
+    "line_sha256": "dfbe3a33a14907d194103d94373b91bb3c6993aa0769579e1ac77a2873950144",
+    "reason": "Negative assertion for packaged desktop help"
+  },
+  {
+    "path": "mcw/tests/json_vectors/application/persistent-config.json",
+    "line_sha256": "5a840f2d93449933346722d964ab539cebebbea703f58dd8a2fad1a93b4978fb",
+    "reason": "Frozen version-4 legacy input for the generic JSON parser; no automation runtime."
+  },
+  {
+    "path": "mcw/tests/json_vectors/application/persistent-config.json",
+    "line_sha256": "b7959a2cecaa2300c8bb6b75ec2e55ba0c4e2a8274e55afa4a35df19d078631a",
+    "reason": "Frozen version-4 legacy input for the generic JSON parser; no automation runtime."
+  },
+  {
+    "path": "mcw/tests/json_vectors/application/persistent-config.json",
+    "line_sha256": "04d7482886d5cb12429c5d41e0774c01617550b182fcbaa9714d4685a2d7a03a",
+    "reason": "Frozen version-4 legacy input for the generic JSON parser; no automation runtime."
+  },
+  {
+    "path": "mcw/tests/json_vectors/application/persistent-config.json",
+    "line_sha256": "c1083cca3902b36aa98bf54e9dcb765835a491e8e3e3b7d841f6e6c5beeba820",
+    "reason": "Frozen version-4 legacy input for the generic JSON parser; no automation runtime."
+  },
+  {
+    "path": "mcw/tests/json_vectors/application/persistent-config.json",
+    "line_sha256": "2baa2f29fab325bf52b1974a8a4f54c2309790d4240ad295df8e1bf5441ef522",
+    "reason": "Frozen version-4 legacy input for the generic JSON parser; no automation runtime."
+  }
+]

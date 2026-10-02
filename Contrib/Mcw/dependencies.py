@@ -9,7 +9,6 @@ DEST=ROOT/"Contrib/McwMigration/dependencies.json"
 def group(name):
     if any(word in name for word in ("Avalonia","Reactive","DynamicData","Skia","HarfBuzz","Markdown","FlashCap","QRackers","MicroCom")): return "native-ui"
     if any(word in name for word in ("Sqlite","SQLite")): return "storage"
-    if name=="NScheme": return "scripting"
     if any(word in name for word in ("Json","Newtonsoft")): return "formats"
     if any(word in name for word in ("NBitcoin","Secp","WabiSabi")): return "wallet-cryptography"
     if any(word in name for word in ("Nostr","Http","WebUtilities")): return "network-privacy"

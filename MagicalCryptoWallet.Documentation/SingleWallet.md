@@ -1,8 +1,8 @@
-# Single-wallet storage and API migration
+# Single-wallet storage and desktop startup
 
 MCW opens and synchronizes its configured wallet whenever the application starts, including silent desktop startup. The dashboard opens directly, shows placeholders until local data is known, then shows cached balance/history while synchronization continues. Detailed progress and retry appear in the expandable status surface. Protected operations validate their own passphrases. Any successful authorization also authorizes CoinJoin for this application run; automatic CoinJoin starts when synchronization and send/shutdown restrictions allow. This never skips authorization for later spending or private information. Chinese password masking and Lurking Wife Mode remain supported.
 
-Passwords supplied during creation or recovery also authorize CoinJoin for that run, through both the desktop and RPC setup paths. Importing an encrypted file without entering its password leaves CoinJoin awaiting authorization. Restarting always discards retained authorization.
+Passwords supplied during creation or recovery also authorize CoinJoin for that run, through desktop setup. Importing an encrypted file without entering its password leaves CoinJoin awaiting authorization. Restarting always discards retained authorization.
 
 ## Storage and setup
 
@@ -12,45 +12,14 @@ Existing filenames and the `.wallet` marker stay unchanged. A compatibility read
 
 Filenames are storage details. There is no naming, renaming, switching, replacement, or manual loading UI. Use a fresh explicit `--datadir=<path>` and first-run setup for an independently configured wallet. Mainnet uses `Wallets/`; other networks use `Wallets/<network>/`.
 
-## RPC
+## Desktop configuration and operation
 
-Every application wallet operation uses the root endpoint, such as `http://127.0.0.1:38128/`. Retired methods, old name arguments, and named endpoint paths fail explicitly.
+Use the desktop for setup, public wallet information, sending, recovery, and CoinJoin payments. Basic startup arguments such as `--datadir`, `--network`, `--config`, logging options, and `startsilent` remain supported. Environment overrides use the `MAGICALCRYPTOWALLET_` prefix.
 
-| Interface | Current contract |
-|---|---|
-| `createwallet` | Required `password`; configure and start automatically. |
-| `recoverwallet` | Required `mnemonicStr`, optional `password`; configure and start automatically. |
-| `getwalletinfo` | Works before setup and during startup; reports state, cached-data availability, synchronization, heights, account coverage, and CoinJoin authorization. |
-| `loadwallet` | Removed. Observe readiness instead. |
-| `walletName`, `loaded` | Removed from wallet information. |
-| Wallet URL paths and CLI selection arguments | Removed. The configured session is implicit. |
-| Signing/private operations | Validate the supplied passphrase for each operation. CoinJoin authorization cannot authorize unrelated requests. |
+The desktop owns one session even when its window is hidden. Closing with background operation enabled preserves synchronization and automatic CoinJoin. A foreground launch reopens the existing window; a repeated silent launch exits quietly. Quit stops services and releases the data-directory lock. Restart discards operation and CoinJoin authorization.
 
-An initial status response includes:
+The scripting console, wallet automation interfaces, payment shell tools, and separate background executable have been removed. Existing wallet files and user-written scripts remain untouched. Configuration version 4 is retained; retired settings are ignored on loading and omitted on saving, without resetting other preferences.
 
-```json
-{
-  "state": "Unconfigured",
-  "hasCachedData": false,
-  "synchronized": false,
-  "syncHeight": null,
-  "targetHeight": null,
-  "coinJoinRequiresAuthorization": false,
-  "publicMetadataRequiresAuthorization": false,
-  "error": null,
-  "balance": null,
-  "accounts": []
-}
-```
+Bitcoin Core retains its own wallet-management commands in isolated test infrastructure, the backend, and the coordinator. Regtest CoinJoin participants have independent encrypted wallets and data directories.
 
-`balance` is in satoshis and remains `null` until public local state is initialized. A numeric balance with `synchronized: false` is cached. Heights may be unavailable. `Ready` means known accounts have caught up; a legacy account needing metadata authorization never reports complete synchronization. Mutations fail clearly while unready, offline, or unauthorized. CoinJoin authorization lasts until process shutdown and does not cause hidden startup prompts.
-
-Scripts should poll status with a deadline, stop on `Unconfigured`, `Faulted`, or `Stopping`, and fail on timeout. The bundled payment helpers use a two-minute readiness deadline, prompt without echo for protected operations, and check RPC errors. `wcli.sh --json` reads a sensitive JSON request from stdin so passphrases need not enter command history or process arguments. Use `MAGICALCRYPTOWALLET_DATADIR` or `MAGICALCRYPTOWALLET_CONFIG` to choose the explicit context.
-
-## Scheme and diagnostics
-
-`(wallet)` accesses the configured wallet. `(wallet-status)` exposes the session snapshot and `(wallet-info)` works before setup. `open-wallet`, `__start_wallet`, and wallet-name accessors are removed. Diagnostics no longer take wallet-name arguments. Transaction graph generation still takes its transaction ID.
-
-Bitcoin Core retains its own wallet-management commands in test infrastructure. Regtest CoinJoin participants are independent single-wallet clients, each with its own data directory and RPC port; they do not represent multiple wallets in one MCW process.
-
-See [architecture and deletion summary](SingleWalletArchitecture.md) for lifecycle, authorization, CoinJoin coordination, and activation behavior.
+See [architecture](SingleWalletArchitecture.md) and [automation removal](AutomationRemoval.md) for the retained lifecycle and verification contracts.

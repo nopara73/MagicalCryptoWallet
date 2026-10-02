@@ -21,8 +21,9 @@ public class EventBus
 	private readonly SubscriptionRegistry _subscriptions = new();
 	private readonly Lock _syncObj = new();
 
-	public IDisposable Subscribe(Type eventType, Action<object> action)
+	public IDisposable Subscribe<TEvent>(Action<TEvent> action) where TEvent : notnull
 	{
+		var eventType = typeof(TEvent);
 		lock (_syncObj)
 		{
 			if (!_subscriptions.ContainsKey(eventType))
@@ -30,14 +31,11 @@ public class EventBus
 				_subscriptions.Add(eventType, []);
 			}
 
-			var subscription = Subscription.Create(eventType, action, this);
+			var subscription = Subscription.Create(action, this);
 			_subscriptions[eventType].Add(subscription);
 			return subscription;
 		}
 	}
-
-	public IDisposable Subscribe<TEvent>(Action<TEvent> action) where TEvent : notnull
-		=> Subscribe(typeof(TEvent), arg => action((TEvent)arg));
 
 	private void Unsubscribe(Subscription subscription)
 	{
@@ -86,9 +84,6 @@ public class EventBus
 		public Type Type { get; }
 		private readonly Action<object> _action;
 		private readonly EventBus _eventBus;
-
-		public static Subscription Create(Type eventType, Action<object> action, EventBus eventBus) =>
-			new(action, eventType, eventBus);
 
 		public static Subscription Create<TEvent>(Action<TEvent> action, EventBus eventBus) =>
 			new(o => action((TEvent)o), typeof(TEvent), eventBus);

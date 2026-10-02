@@ -23,10 +23,6 @@ public static class PersistentConfigEncode
 			("TerminateTorOnExit", Bool(cfg.TerminateTorOnExit)),
 			("TorBridges", Array(cfg.TorBridges.Select(String))),
 			("DownloadNewVersion", Bool(cfg.DownloadNewVersion)),
-			("JsonRpcServerEnabled", Bool(cfg.JsonRpcServerEnabled)),
-			("JsonRpcUser", String(cfg.JsonRpcUser)),
-			("JsonRpcPassword", String(cfg.JsonRpcPassword)),
-			("JsonRpcServerPrefixes", Array(cfg.JsonRpcServerPrefixes.Select(String))),
 			("DustThreshold", MoneyBitcoins(cfg.DustThreshold)),
 			("EnableGpu", Bool(cfg.EnableGpu)),
 			("CoordinatorIdentifier", String(cfg.CoordinatorIdentifier)),
@@ -35,7 +31,6 @@ public static class PersistentConfigEncode
 			("ExternalTransactionBroadcaster", String(cfg.ExternalTransactionBroadcaster)),
 			("MaxCoinJoinMiningFeeRate", Decimal(cfg.MaxCoinJoinMiningFeeRate)),
 			("MaxDaysInMempool", Int(cfg.MaxDaysInMempool)),
-			("ExperimentalFeatures", Array(cfg.ExperimentalFeatures.Select(String))),
 			("ConfigVersion", Int(4))
 		]);
 }
@@ -70,10 +65,6 @@ public static class PersistentConfigDecode
 					TerminateTorOnExit: get.Required("TerminateTorOnExit", Decode.Bool),
 					TorBridges: get.Required("TorBridges", ValueList(Decode.String)),
 					DownloadNewVersion: get.Required("DownloadNewVersion", Decode.Bool),
-					JsonRpcServerEnabled: get.Required("JsonRpcServerEnabled", Decode.Bool),
-					JsonRpcUser: get.Required("JsonRpcUser", Decode.String),
-					JsonRpcPassword: get.Required("JsonRpcPassword", Decode.String),
-					JsonRpcServerPrefixes: get.Required("JsonRpcServerPrefixes", ValueList(Decode.String)),
 					DustThreshold: get.Required("DustThreshold", Decode.MoneyBitcoins),
 					EnableGpu: get.Required("EnableGpu", Decode.Bool),
 					ExchangeRateProvider: get.Optional("ExchangeRateProvider", ExchangeRateProvider) ?? "MempoolSpace",
@@ -84,8 +75,6 @@ public static class PersistentConfigDecode
 					CoordinatorIdentifier: get.Required("CoordinatorIdentifier", Decode.String),
 					MaxCoinJoinMiningFeeRate: get.Required("MaxCoinJoinMiningFeeRate", Decode.Decimal),
 					MaxDaysInMempool: get.Optional("MaxDaysInMempool", Decode.Int, Constants.DefaultMaxDaysInMempool),
-					ExperimentalFeatures: get.Optional("ExperimentalFeatures", ValueList(Decode.String)) ??
-					                      Helpers.ValueList<string>.Empty,
 					ConfigVersion: get.Required("ConfigVersion", Decode.Int)
 				);
 			}

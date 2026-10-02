@@ -460,11 +460,6 @@
     "hash": "sha256-hgVW/Xy29yWGpbVop5yH6d1yTLaOcWZJW6P+6aOUi/Y="
   },
   {
-    "pname": "NScheme",
-    "version": "0.0.1",
-    "hash": "sha256-kD2/DqDORKEM7cQGBbnPQ8kH7R3Kk0qFT5tpKVmdtK8="
-  },
-  {
     "pname": "Newtonsoft.Json",
     "version": "13.0.3",
     "hash": "sha256-hy/BieY4qxBWVVsDqqOPaLy1QobiIapkbrESm6v2PHc="

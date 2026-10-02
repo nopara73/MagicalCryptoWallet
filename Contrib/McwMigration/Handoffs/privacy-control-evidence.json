@@ -11,7 +11,6 @@
   "independent_reply_fixtures": 24,
   "independent_status_cases": 8000,
   "gui_assertions": 102,
-  "daemon_assertions": 102,
   "coordinator_tests": 34,
   "source_identity_verified": true,
   "production_host_execution_in_isolated_checkout": true,

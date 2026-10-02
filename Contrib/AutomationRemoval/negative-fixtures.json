@@ -1,0 +1,19 @@
+[
+  "using NScheme;",
+  "new SchemeConsoleViewModel(context);",
+  "class SchemeEditorTextBox {}",
+  "new MagicalCryptoWalletLibGenerator();",
+  "config.ExperimentalFeatures = [\"scripting\"];",
+  "config.JsonRpcServerEnabled = true;",
+  "config.JsonRpcUser = \"user\";",
+  "config.JsonRpcPassword = \"password\";",
+  "config.RpcOnionEnabled = true;",
+  "new MagicalCryptoWallet.Client.Rpc.MagicalCryptoWalletJsonRpcService();",
+  "new MagicalCryptoWallet.Rpc.JsonRpcServer();",
+  "magicalcryptowalletd.exe",
+  "MagicalCryptoWallet.Daemon.dll",
+  "MagicalCryptoWallet/Scheme/Stdlib.scm",
+  "Mode::Daemon",
+  "mcw daemon",
+  "Some(\"daemon\")"
+]

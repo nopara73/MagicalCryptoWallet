@@ -19,7 +19,6 @@ using MagicalCryptoWallet.Blockchain.Mempool;
 using MagicalCryptoWallet.Blockchain.TransactionBroadcasting;
 using MagicalCryptoWallet.Blockchain.Transactions;
 using MagicalCryptoWallet.Client.Configuration;
-using MagicalCryptoWallet.Client.Rpc;
 using MagicalCryptoWallet.Discoverability;
 using MagicalCryptoWallet.Extensions;
 using MagicalCryptoWallet.FeeRateEstimation;
@@ -27,13 +26,10 @@ using MagicalCryptoWallet.Helpers;
 using MagicalCryptoWallet.Io;
 using MagicalCryptoWallet.Logging;
 using MagicalCryptoWallet.Models;
-using MagicalCryptoWallet.Rpc;
 using MagicalCryptoWallet.Services;
 using MagicalCryptoWallet.Services.NodesManagement;
-using MagicalCryptoWallet.Services.Terminate;
 using MagicalCryptoWallet.Stores;
 using MagicalCryptoWallet.Tor;
-using MagicalCryptoWallet.Tor.Control;
 using MagicalCryptoWallet.Tor.StatusChecker;
 using MagicalCryptoWallet.WabiSabi.Client;
 using MagicalCryptoWallet.WabiSabi.Client.Banning;
@@ -118,8 +114,6 @@ public class Global
 		var broadcasters = CreateBroadcasters(p2PNodeListProvider: () => _p2pConnectionManager.Nodes, _mempoolService);
 		TransactionBroadcaster = new TransactionBroadcaster(broadcasters.ToArray(), _mempoolService);
 
-		Scheme = new Scheme(this);
-
 		_ticker = new Timer(_ => EventBus.Publish(new Tick(DateTime.UtcNow)));
 		_ticker.DisposeUsing(_disposables);
 
@@ -159,10 +153,7 @@ public class Global
 	public TransactionBroadcaster TransactionBroadcaster { get; }
 	public HostedServices HostedServices { get; }
 	public Network Network => Config.Network;
-	public JsonRpcServer? RpcServer { get; private set; }
-	public Uri? OnionServiceUri { get; private set; }
 	public EventBus EventBus { get; }
-	public Scheme Scheme { get; }
 
 	private string GetBitcoinP2PNetworkDirectory() => Path.Combine(DataDir, "BitcoinP2pNetwork");
 
@@ -494,12 +485,12 @@ public class Global
 		return (ChainHeight) Height.Min(checkpointHeight, ((ChainHeight?[]) [transactionHeight, birthHeight, worstBestHeight]).DropNulls());
 	}
 
-	public Task InitializeAsync(bool initializeSleepInhibitor, TerminateService terminateService, CancellationToken cancellationToken)
+	public Task InitializeAsync(CancellationToken cancellationToken)
 	{
 		cancellationToken.ThrowIfCancellationRequested();
-		lock (_initializationGate) { return _initializationTask ??= InitializeCoreAsync(initializeSleepInhibitor, terminateService, cancellationToken); }
+		lock (_initializationGate) { return _initializationTask ??= InitializeCoreAsync(cancellationToken); }
 	}
-	private async Task InitializeCoreAsync(bool initializeSleepInhibitor, TerminateService terminateService, CancellationToken cancellationToken)
+	private async Task InitializeCoreAsync(CancellationToken cancellationToken)
 	{
 		using CancellationTokenSource linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _stoppingCts.Token);
 		CancellationToken linkedCtsToken = linkedCts.Token;
@@ -514,7 +505,6 @@ public class Global
 		{
 			Logger.LogTrace("Initialization started.");
 
-			await StartRpcServerAsync(terminateService, linkedCtsToken).ConfigureAwait(false);
 			var storage = InitializeBitcoinStoreAsync(linkedCtsToken);
 			try { await StartTorProcessManagerAsync(linkedCtsToken).ConfigureAwait(false); }
 			catch (Exception ex) when (ex is not OperationCanceledException) { Logger.LogWarning(ex); }
@@ -527,13 +517,9 @@ public class Global
 
 			try
 			{
-				if (Config.TryGetCoordinatorUri(out var coordinatorUri))
+				if (Config.TryGetCoordinatorUri(out _))
 				{
-
-					if (initializeSleepInhibitor)
-					{
-						await CreateSleepInhibitorAsync().ConfigureAwait(false);
-					}
+					await CreateSleepInhibitorAsync().ConfigureAwait(false);
 				}
 
 				await HostedServices.StartAllAsync(linkedCtsToken).ConfigureAwait(false);
@@ -561,32 +547,6 @@ public class Global
 		}
 	}
 
-	private async Task StartRpcServerAsync(TerminateService terminateService, CancellationToken cancel)
-	{
-		// HttpListener doesn't support onion services as prefix and for that reason we have no alternative
-		// other than using
-		var prefixes = Config is { RpcOnionEnabled: true, JsonRpcServerEnabled: true } && Config.UseTor != TorMode.Disabled && !string.IsNullOrEmpty(Config.JsonRpcUser) && !string.IsNullOrEmpty(Config.JsonRpcPassword)
-			? Config.JsonRpcServerPrefixes.Append($"http://+:38129/").ToArray()
-			: Config.JsonRpcServerPrefixes;
-
-		var jsonRpcServerConfig = new JsonRpcServerConfiguration(Config.JsonRpcServerEnabled, Config.JsonRpcUser, Config.JsonRpcPassword, prefixes, Config.Network);
-		if (jsonRpcServerConfig.IsEnabled)
-		{
-			var magicalcryptowalletJsonRpcService = new MagicalCryptoWalletJsonRpcService(global: this);
-			RpcServer = new JsonRpcServer(magicalcryptowalletJsonRpcService, jsonRpcServerConfig, terminateService);
-			RpcServer.DisposeUsing(_disposables);
-			try
-			{
-				await RpcServer.StartAsync(cancel).ConfigureAwait(false);
-				RpcServer.DisposeUsing(_disposables);
-			}
-			catch (HttpListenerException e)
-			{
-				Logger.LogWarning($"Failed to start {nameof(JsonRpcServer)} with error: {e.Message}.");
-				RpcServer = null;
-			}
-		}
-	}
 
 	private async Task StartTorProcessManagerAsync(CancellationToken cancellationToken)
 	{
@@ -598,22 +558,7 @@ public class Global
 			await _torManager.StartAsync(attempts: 3, cancellationToken).ConfigureAwait(false);
 			Logger.LogInfo($"{nameof(TorManager)} is initialized.");
 
-			var (_, torControlClient) = await _torManager.WaitForNextAttemptAsync(cancellationToken).ConfigureAwait(false);
-			if (Config is { JsonRpcServerEnabled: true, RpcOnionEnabled: true } && torControlClient is { } nonNullTorControlClient)
-			{
-				var anonymousAccessAllowed = string.IsNullOrEmpty(Config.JsonRpcUser) || string.IsNullOrEmpty(Config.JsonRpcPassword);
-				if (!anonymousAccessAllowed)
-				{
-					var onionServiceId = await nonNullTorControlClient.CreateEphemeralOnionServiceAsync(80, 38129, cancellationToken).ConfigureAwait(false);
-					OnionServiceUri = new Uri($"http://{onionServiceId}.onion");
-					Logger.LogInfo($"RPC server listening on {OnionServiceUri}");
-				}
-				else
-				{
-					Logger.LogInfo("Anonymous access RPC server cannot be exposed as onion service.");
-				}
-			}
-
+			await _torManager.WaitForNextAttemptAsync(cancellationToken).ConfigureAwait(false);
 		}
 	}
 
@@ -712,7 +657,7 @@ public class Global
 		}
 	}
 
-	public ImmutableArray<Node> GetNodes() => ReferenceEquals(_p2pConnectionManager, _publicConnectionManager)
+	private ImmutableArray<Node> GetNodes() => ReferenceEquals(_p2pConnectionManager, _publicConnectionManager)
 		? _p2pConnectionManager.Nodes
 		: _p2pConnectionManager.Nodes.AddRange(_publicConnectionManager.Nodes);
 	public uint GetBlockHeadersTipHeight() => (uint)(_blockHeaders.Tip?.Height ?? 0);
@@ -753,14 +698,6 @@ public class Global
 					Logger.LogInfo("Block headers saved.");
 				}
 
-				if (RpcServer is { } rpcServer)
-				{
-					using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(21));
-					try { await rpcServer.StopAsync(cts.Token).ConfigureAwait(false); }
-					catch (Exception ex) { Logger.LogWarning(ex); }
-					Logger.LogInfo($"{nameof(RpcServer)} is stopped.");
-				}
-
 				if (HostedServices is { } backgroundServices)
 				{
 					using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(21));
@@ -778,36 +715,6 @@ public class Global
 				catch (Exception ex)
 				{
 					Logger.LogError($"Error during {nameof(WalletSession.StopAsync)}: {ex}");
-				}
-
-				if (_torManager is not null)
-				{
-					using CancellationTokenSource cts = new(TimeSpan.FromSeconds(5));
-
-					var torControlClient =
-						Result<(CancellationToken, TorControlClient), Exception>
-						.Catch(async () => await _torManager.WaitForNextAttemptAsync(cts.Token).ConfigureAwait(false))
-						.Map(x => x.Result.Item2)
-						.AsNullable();
-
-					if (OnionServiceUri is { } nonNullOnionServiceUri && torControlClient is { } nonNullTorControlClient)
-					{
-						try
-						{
-							var isDestroyedSuccessfully = await nonNullTorControlClient
-								.DestroyOnionServiceAsync(nonNullOnionServiceUri.Host, cts.Token).ConfigureAwait(false);
-							if (!isDestroyedSuccessfully)
-							{
-								Logger.LogInfo($"Onion service '{nonNullOnionServiceUri.Host}' failed to be destroyed.");
-							}
-						}
-						catch (OperationCanceledException)
-						{
-							Logger.LogInfo($"'{nonNullOnionServiceUri.Host}' failed to be stopped in allotted time.");
-						}
-					}
-
-					Logger.LogInfo("TorManager is stopped.");
 				}
 
 				_disposables.Dispose();

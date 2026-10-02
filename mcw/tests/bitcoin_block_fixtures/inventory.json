@@ -1,17 +1,17 @@
 {
-  "revision": "748a961c78980c42bba293ff7ad1b9ca696566ec",
+  "revision": "1120219c417e31b90864040e1f5f8849b29775a4",
   "counts": {
     "block_header_merkle": {
       "lines": 145,
       "files": 27
     },
     "nbitcoin_import": {
-      "lines": 451,
-      "files": 381
+      "lines": 440,
+      "files": 371
     },
     "nbitcoin_package": {
-      "lines": 62,
-      "files": 19
+      "lines": 57,
+      "files": 18
     }
   },
   "direct_partial_merkle_callers": 0,

@@ -17,10 +17,6 @@ public record PersistentConfig(
 	bool TerminateTorOnExit,
 	ValueList<string> TorBridges,
 	bool DownloadNewVersion,
-	bool JsonRpcServerEnabled,
-	string JsonRpcUser,
-	string JsonRpcPassword,
-	ValueList<string> JsonRpcServerPrefixes,
 	Money DustThreshold,
 	bool EnableGpu,
 	string CoordinatorIdentifier,
@@ -29,7 +25,6 @@ public record PersistentConfig(
 	string ExternalTransactionBroadcaster,
 	decimal MaxCoinJoinMiningFeeRate,
 	int MaxDaysInMempool,
-	ValueList<string> ExperimentalFeatures,
 	int ConfigVersion
 	) : IPersistentConfig
 {

@@ -13,11 +13,6 @@ use std::{
     time::{Duration, Instant},
 };
 
-#[derive(Clone, Copy, Debug)]
-pub enum Mode {
-    Gui,
-    Daemon,
-}
 struct ManagedChild {
     process: Child,
     _lifetime: platform::ChildLifetime,
@@ -30,7 +25,7 @@ impl Drop for ManagedChild {
         let _ = self.process.wait();
     }
 }
-pub fn run(mut mode: Mode, mut args: Vec<OsString>) -> Result<i32, String> {
+pub fn run(mut args: Vec<OsString>) -> Result<i32, String> {
     platform::initialize()?;
     let directory = std::env::current_exe()
         .map_err(|_| "cannot locate mcw")?
@@ -40,7 +35,7 @@ pub fn run(mut mode: Mode, mut args: Vec<OsString>) -> Result<i32, String> {
     let mut bootstrap = Vec::new();
     loop {
         let (status, handoff) =
-            host(&directory, mode, &args, &bootstrap).map_err(|error| error.to_string())?;
+            host(&directory, &args, &bootstrap).map_err(|error| error.to_string())?;
         if platform::shutdown_requested() {
             return Ok(status);
         }
@@ -50,7 +45,6 @@ pub fn run(mut mode: Mode, mut args: Vec<OsString>) -> Result<i32, String> {
                 bootstrap.clear();
             }
             Some((bridge::CRASH, arguments)) => {
-                mode = Mode::Gui;
                 args = vec!["crashreport".into()];
                 bootstrap = bridge::encode_strings(&arguments);
             }
@@ -67,14 +61,10 @@ pub fn run(mut mode: Mode, mut args: Vec<OsString>) -> Result<i32, String> {
 type Handoff = Option<(u16, Vec<String>)>;
 fn host(
     directory: &std::path::Path,
-    mode: Mode,
     args: &[OsString],
     bootstrap: &[u8],
 ) -> io::Result<(i32, Handoff)> {
-    let names = match mode {
-        Mode::Gui => ["magicalcryptowallet", "MagicalCryptoWallet.Fluent.Desktop"],
-        Mode::Daemon => ["magicalcryptowalletd", "MagicalCryptoWallet.Daemon"],
-    };
+    let names = ["magicalcryptowallet", "MagicalCryptoWallet.Fluent.Desktop"];
     let extension = if cfg!(windows) { ".exe" } else { "" };
     let path: PathBuf = names
         .iter()

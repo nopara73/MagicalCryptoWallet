@@ -15,7 +15,7 @@ using MagicalCryptoWallet.Fluent.ViewModels.HelpAndSupport;
 using MagicalCryptoWallet.Fluent.ViewModels.NavBar;
 using MagicalCryptoWallet.Fluent.ViewModels.OpenDirectory;
 using MagicalCryptoWallet.Fluent.ViewModels.Settings;
-using MagicalCryptoWallet.Fluent.ViewModels.Scheme;
+
 using MagicalCryptoWallet.Fluent.ViewModels.Wallets;
 using MagicalCryptoWallet.Fluent.ViewModels.Wallets.Advanced;
 using MagicalCryptoWallet.Fluent.ViewModels.Wallets.CoinJoinPayment;
@@ -232,10 +232,6 @@ public partial class FluentNavigate
 		UiContext.Navigate(navigationTarget).To(new OpenWalletsFolderViewModel(UiContext), navigationMode);
 	}
 
-	public void SchemeConsole(Client.Scheme schemeInterpreter, NavigationTarget navigationTarget = NavigationTarget.DialogScreen, NavigationMode navigationMode = NavigationMode.Normal)
-	{
-		UiContext.Navigate(navigationTarget).To(new SchemeConsoleViewModel(UiContext, schemeInterpreter), navigationMode);
-	}
 
 	public FluentDialog<ResyncWalletDialogResult?> ResyncWallet(uint birthHeight, int minGapLimit, NavigationTarget navigationTarget = NavigationTarget.CompactDialogScreen, NavigationMode navigationMode = NavigationMode.Normal)
 	{

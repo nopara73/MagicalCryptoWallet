@@ -61,7 +61,6 @@ public class Services : IServices
 		_hostedServices = global.HostedServices;
 		_terminateService = terminateService;
 		_status = global.Status;
-		Scheme = global.Scheme;
 		DataDir = global.DataDir;
 		PersistentConfig = global.Config.PersistentConfig;
 		WalletSession = global.WalletSession;
@@ -77,7 +76,6 @@ public class Services : IServices
 	public UiConfig UiConfig { get; }
 	public Config Config { get; }
 	public EventBus EventBus { get; }
-	public Client.Scheme Scheme { get; }
 
 	// Chain info
 	public uint GetTipHeight() => _filterHeaders.TipHeight;

@@ -14,7 +14,7 @@ using MagicalCryptoWallet.Blockchain.TransactionBuilding;
 using MagicalCryptoWallet.Blockchain.TransactionOutputs;
 using MagicalCryptoWallet.Blockchain.Transactions;
 using MagicalCryptoWallet.Client;
-using MagicalCryptoWallet.Client.Rpc;
+
 using MagicalCryptoWallet.Helpers;
 using MagicalCryptoWallet.Models;
 using MagicalCryptoWallet.Tests.Helpers;
@@ -142,21 +142,6 @@ public class SoftwareWalletTests
 		Assert.Equal(keys.EncryptedSecret, KeyManager.FromFile(path).EncryptedSecret);
 	}
 
-	[Fact]
-	public async Task RpcAndSchemeExposeOnlySoftwareWalletInformationAsync()
-	{
-		await using var app = new SingleWalletTests.SyntheticApplication(await Common.GetEmptyWorkDirAsync());
-		app.Session.Configure(app.NewKeys("secret"));
-		var info = new MagicalCryptoWalletJsonRpcService(app.Global).WalletInfo();
-		Assert.False(info.ContainsKey("isHardwareWallet"));
-		Assert.False(info.ContainsKey("isWatchOnly"));
-		Assert.NotNull(info["masterKeyFingerprint"]);
-		var scheme = new Scheme(app.Global);
-		foreach (var predicate in new[] { "wallet-hardware-wallet?", "wallet-watch-only?" })
-		{
-			Assert.NotNull(await Record.ExceptionAsync(() => scheme.ExecuteAsync($"({predicate} (wallet))")));
-		}
-	}
 
 	[Fact]
 	public void UnsignedPreviewNeedsNoPassphraseAndSigningStillRequiresAuthorization()

@@ -15,7 +15,7 @@ with tempfile.TemporaryDirectory(prefix="mcw spaces 你好 ", dir=ROOT / ".artif
     work=Path(temporary);shutil.copytree(source,work,dirs_exist_ok=True)
     suffix=".exe" if os.name=="nt" else ""
     shutil.copy2(binary,work / ("mcw"+suffix))
-    for child in ("magicalcryptowallet","magicalcryptowalletd"):
+    for child in ("magicalcryptowallet",):
         shutil.copy2(work / ("BridgeProbe"+suffix),work / (child+suffix))
     host=work / ("mcw"+suffix)
     results={}
@@ -25,7 +25,7 @@ with tempfile.TemporaryDirectory(prefix="mcw spaces 你好 ", dir=ROOT / ".artif
         assert result.returncode==expected, (action,result.returncode,result.stderr.decode(errors="replace")[-2000:])
         results[action]={"exit":result.returncode,"report":report.read_text() if report.exists() else None}
     run("qr")
-    run("exit-7",7,mode="daemon")
+    run("exit-7",7)
     run("restart",7)
     run("crash",7)
     crash=json.loads(results["crash"]["report"])

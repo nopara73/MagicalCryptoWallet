@@ -177,10 +177,6 @@ public class TorControlClient : IAsyncDisposable
 		return reply;
 	}
 
-	public Task<string> CreateEphemeralOnionServiceAsync(int virtualPort, int remotePort, CancellationToken cancellationToken)
-	{
-		return CreateOnionServiceAsync("NEW:BEST", "Flags=DiscardPK", virtualPort, remotePort, cancellationToken);
-	}
 
 	public async Task<(string, string)> CreateKeylessOnionServiceAsync(int virtualPort, int remotePort, CancellationToken cancellationToken)
 	{
@@ -236,11 +232,6 @@ public class TorControlClient : IAsyncDisposable
 		return reply;
 	}
 
-	public async Task<bool> DestroyOnionServiceAsync(string serviceId, CancellationToken cancellationToken)
-	{
-		var reply = await SendCommandAsync($"DEL_ONION {serviceId}\r\n", cancellationToken).ConfigureAwait(false);
-		return reply.Success;
-	}
 
 	/// <summary>
 	/// Causes Tor to stop polling for the existence of a process with its owning controller's PID.

@@ -238,7 +238,6 @@ Managed mapping for the integrator:
 | --- | --- |
 | Userfacing/AddressParser.ParseBitcoinAddress and Extensions/NBitcoinExtensions.TryParseBitcoinAddressForNetwork | address_decode(text, explicit network); managed result/error adapter remains |
 | Userfacing/Bip21/Bip21UriParser; send/recipient/CoinJoin payment/paste/camera callers of AddressParser | payment-uri worker owns URI parsing; feed its isolated address string to address_decode |
-| Rpc/JsonConverters/BitcoinAddressJsonConverter and DestinationJsonConverter; search transaction address query | address_decode and address_encode; preserve or deliberately adapt existing network-selection policy in managed boundary |
 | Fluent/Models/Wallets/Address.Text and receive address presentation | witness/legacy encoding from existing managed hash/program bytes; HD/curve derivation stays managed |
 | HdPubKey.GetP2wpkhAddress and KeyManager's HdPubKey GetAddress extension | replace only final payload-to-text encoding after existing key/hash/taproot computation |
 | CoinModel, wallet transaction/destination display, SmartTransactionExtensions, Client/Bootstrap script-to-address | managed script inspection remains; encode extracted standard legacy/witness payloads |

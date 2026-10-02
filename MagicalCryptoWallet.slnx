@@ -28,7 +28,6 @@
     <Project Path="ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests/WabiSabiInterop.Tests.csproj" />
   </Folder>
   <Project Path="MagicalCryptoWallet.Coordinator/MagicalCryptoWallet.Coordinator.csproj" />
-  <Project Path="MagicalCryptoWallet.Daemon/MagicalCryptoWallet.Daemon.csproj" />
   <Project Path="MagicalCryptoWallet.Fluent.Desktop/MagicalCryptoWallet.Fluent.Desktop.csproj" />
   <Project Path="MagicalCryptoWallet.Fluent.Generators/MagicalCryptoWallet.Fluent.Generators.csproj" />
   <Project Path="MagicalCryptoWallet.Fluent/MagicalCryptoWallet.Fluent.csproj" />

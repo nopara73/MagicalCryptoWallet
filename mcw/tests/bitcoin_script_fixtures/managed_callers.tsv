@@ -1,26 +1,22 @@
-# snapshot_revision=748a961c78980c42bba293ff7ad1b9ca696566ec
+# snapshot_revision=1120219c417e31b90864040e1f5f8849b29775a4
 # category	path	line	source
 package	Contrib/Releases/Publisher/MagicalCryptoWallet.ReleaseTools.csproj	9	<PackageReference Include="NBitcoin" />
 package_lock	Contrib/Releases/Publisher/packages.lock.json	5	"NBitcoin": {
 package_lock	Contrib/Releases/Publisher/packages.lock.json	23	"NBitcoin.Secp256k1": "3.1.6",
 package_lock	Contrib/Releases/Publisher/packages.lock.json	55	"NBitcoin.Secp256k1": {
 script_format	Contrib/VisualPreview/AutomaticCoinSelectionChecks.cs	131	var info = new TransactionInfo(new Destination(destination.ScriptPubKey), 50);
-package_lock	Contrib/VisualPreview/packages.lock.json	487	"NBitcoin": "[10.0.13, )",
-package_lock	Contrib/VisualPreview/packages.lock.json	521	"NBitcoin.Secp256k1": "[3.1.6, )"
-package_lock	Contrib/VisualPreview/packages.lock.json	665	"NBitcoin": {
-package_lock	Contrib/VisualPreview/packages.lock.json	675	"NBitcoin.Secp256k1": {
-package_lock	Contrib/VisualPreview/packages.lock.json	695	"NBitcoin.Secp256k1": "3.1.6",
+package_lock	Contrib/VisualPreview/packages.lock.json	504	"NBitcoin": "[10.0.13, )",
+package_lock	Contrib/VisualPreview/packages.lock.json	537	"NBitcoin.Secp256k1": "[3.1.6, )"
+package_lock	Contrib/VisualPreview/packages.lock.json	692	"NBitcoin": {
+package_lock	Contrib/VisualPreview/packages.lock.json	702	"NBitcoin.Secp256k1": {
+package_lock	Contrib/VisualPreview/packages.lock.json	722	"NBitcoin.Secp256k1": "3.1.6",
 package	Directory.Packages.props	31	<PackageVersion Include="NBitcoin.Secp256k1" Version="3.1.6" />
 package	Directory.Packages.props	32	<PackageVersion Include="NBitcoin" Version="10.0.13" />
-script_format	MagicalCryptoWallet.Client/Bootstrap.cs	58	RegisterNativeFunction<Script>("script->address", s => s.GetDestinationAddress(global.Network)!);
-script_format	MagicalCryptoWallet.Client/MagicalCryptoWalletLibGenerator.cs	126	DefineAccessor("coin-script-pubkey", (SmartCoin c) => c.ScriptPubKey);
-script_format	MagicalCryptoWallet.Client/Rpc/MagicalCryptoWalletJsonRpcService.cs	296	["destination"] = x.Destination.ScriptPubKey.ToHex()
-script_format	MagicalCryptoWallet.Client/Rpc/MagicalCryptoWalletJsonRpcService.cs	345	if (x.Destination.ScriptPubKey.GetDestinationAddress(activeWallet.Network) is { } address)
-package_lock	MagicalCryptoWallet.Client/packages.lock.json	208	"NBitcoin": "[10.0.13, )",
-package_lock	MagicalCryptoWallet.Client/packages.lock.json	216	"NBitcoin.Secp256k1": "[3.1.6, )"
-package_lock	MagicalCryptoWallet.Client/packages.lock.json	281	"NBitcoin": {
-package_lock	MagicalCryptoWallet.Client/packages.lock.json	291	"NBitcoin.Secp256k1": {
-package_lock	MagicalCryptoWallet.Client/packages.lock.json	311	"NBitcoin.Secp256k1": "3.1.6",
+package_lock	MagicalCryptoWallet.Client/packages.lock.json	202	"NBitcoin": "[10.0.13, )",
+package_lock	MagicalCryptoWallet.Client/packages.lock.json	210	"NBitcoin.Secp256k1": "[3.1.6, )"
+package_lock	MagicalCryptoWallet.Client/packages.lock.json	275	"NBitcoin": {
+package_lock	MagicalCryptoWallet.Client/packages.lock.json	285	"NBitcoin.Secp256k1": {
+package_lock	MagicalCryptoWallet.Client/packages.lock.json	305	"NBitcoin.Secp256k1": "3.1.6",
 script_format	MagicalCryptoWallet.Coordinator/Startup.cs	53	options.ModelMetadataDetailsProviders.Add(new SuppressChildValidationMetadataProvider(typeof(Script)));
 script_format	MagicalCryptoWallet.Coordinator/WabiSabi/Arena.Partial.cs	240	if (_coinJoinScriptStore?.Contains(request.Script) is true)
 script_format	MagicalCryptoWallet.Coordinator/WabiSabi/Arena.Partial.cs	249	.Select(x => x.Script)
@@ -38,35 +34,32 @@ package_lock	MagicalCryptoWallet.Coordinator/packages.lock.json	75	"NBitcoin.Sec
 package_lock	MagicalCryptoWallet.Coordinator/packages.lock.json	95	"NBitcoin": {
 package_lock	MagicalCryptoWallet.Coordinator/packages.lock.json	104	"NBitcoin.Secp256k1": {
 package_lock	MagicalCryptoWallet.Coordinator/packages.lock.json	124	"NBitcoin.Secp256k1": "3.1.6",
-package_lock	MagicalCryptoWallet.Daemon/packages.lock.json	189	"NBitcoin": "[10.0.13, )",
-package_lock	MagicalCryptoWallet.Daemon/packages.lock.json	205	"NBitcoin.Secp256k1": "[3.1.6, )"
-package_lock	MagicalCryptoWallet.Daemon/packages.lock.json	283	"NBitcoin": {
-package_lock	MagicalCryptoWallet.Daemon/packages.lock.json	293	"NBitcoin.Secp256k1": {
-package_lock	MagicalCryptoWallet.Daemon/packages.lock.json	313	"NBitcoin.Secp256k1": "3.1.6",
 package_lock	MagicalCryptoWallet.Fluent.Desktop/packages.lock.json	548	"NBitcoin": "[10.0.13, )",
-package_lock	MagicalCryptoWallet.Fluent.Desktop/packages.lock.json	582	"NBitcoin.Secp256k1": "[3.1.6, )"
-package_lock	MagicalCryptoWallet.Fluent.Desktop/packages.lock.json	726	"NBitcoin": {
-package_lock	MagicalCryptoWallet.Fluent.Desktop/packages.lock.json	736	"NBitcoin.Secp256k1": {
-package_lock	MagicalCryptoWallet.Fluent.Desktop/packages.lock.json	756	"NBitcoin.Secp256k1": "3.1.6",
+package_lock	MagicalCryptoWallet.Fluent.Desktop/packages.lock.json	580	"NBitcoin.Secp256k1": "[3.1.6, )"
+package_lock	MagicalCryptoWallet.Fluent.Desktop/packages.lock.json	724	"NBitcoin": {
+package_lock	MagicalCryptoWallet.Fluent.Desktop/packages.lock.json	734	"NBitcoin.Secp256k1": {
+package_lock	MagicalCryptoWallet.Fluent.Desktop/packages.lock.json	754	"NBitcoin.Secp256k1": "3.1.6",
 script_format	MagicalCryptoWallet.Fluent/Extensions/CurrencyExtensions.cs	29	x.ScriptPubKey == destination.ScriptPubKey
 script_format	MagicalCryptoWallet.Fluent/Models/Transactions/PrivacySuggestionsModel.cs	261	.Select(r => r.Destination.ScriptPubKey)
 script_format	MagicalCryptoWallet.Fluent/Models/Transactions/PrivacySuggestionsModel.cs	265	.Any(x => !destinationScripts.Contains(x.ScriptPubKey));
 script_format	MagicalCryptoWallet.Fluent/Models/Transactions/PrivacySuggestionsModel.cs	357	new TxOut(transactionInfo.Amount, transactionInfo.Destination.ScriptPubKey),
 script_format	MagicalCryptoWallet.Fluent/Models/Wallets/Address.cs	31	public ScriptType ScriptType => ScriptType.FromEnum(BitcoinAddress.ScriptPubKey.GetScriptType());
 script_format	MagicalCryptoWallet.Fluent/Models/Wallets/CoinModel.cs	31	BtcAddress = coin.ScriptPubKey.GetDestinationAddress(network)?.ToString();
-script_format	MagicalCryptoWallet.Fluent/Models/Wallets/WalletTransactionsModel.cs	150	public IEnumerable<BitcoinAddress> GetDestinationAddresses(uint256 id)
-script_format	MagicalCryptoWallet.Fluent/Models/Wallets/WalletTransactionsModel.cs	160	return GetDestinationAddresses(inputs, outputs);
-script_format	MagicalCryptoWallet.Fluent/Models/Wallets/WalletTransactionsModel.cs	163	private IEnumerable<BitcoinAddress> GetDestinationAddresses(ICollection<IInput> inputs, ICollection<Output> outputs)
+script_format	MagicalCryptoWallet.Fluent/Models/Wallets/WalletTransactionsModel.cs	143	public IEnumerable<BitcoinAddress> GetDestinationAddresses(uint256 id)
+script_format	MagicalCryptoWallet.Fluent/Models/Wallets/WalletTransactionsModel.cs	153	return GetDestinationAddresses(inputs, outputs);
+script_format	MagicalCryptoWallet.Fluent/Models/Wallets/WalletTransactionsModel.cs	156	private IEnumerable<BitcoinAddress> GetDestinationAddresses(ICollection<IInput> inputs, ICollection<Output> outputs)
 script_format	MagicalCryptoWallet.Fluent/ViewModels/SearchBar/Sources/TransactionsSearchSource.cs	118	return walletViewModel.WalletModel.Transactions.GetDestinationAddresses(txid).Contains(address);
 script_format	MagicalCryptoWallet.Fluent/ViewModels/Wallets/CoinJoinPayment/CoinJoinPaymentViewModel.cs	26	public string Address => _payment.Destination.ScriptPubKey.GetDestinationAddress(_network)?.ToString() ?? "Unknown";
 script_format	MagicalCryptoWallet.Fluent/ViewModels/Wallets/Home/History/Details/TransactionDetailsViewModel.cs	36	DestinationAddresses = wallet.Transactions.GetDestinationAddresses(model.Id).ToArray();
 script_format	MagicalCryptoWallet.Fluent/ViewModels/Wallets/Send/SendViewModel.cs	306	Address.Bitcoin bitcoin => new Destination(bitcoin.Address.ScriptPubKey),
 script_format	MagicalCryptoWallet.Fluent/ViewModels/Wallets/Send/SendViewModel.cs	307	Address.Bip21Uri { Address: Address.Bitcoin bitcoin } => new Destination(bitcoin.Address.ScriptPubKey),
-package_lock	MagicalCryptoWallet.Fluent/packages.lock.json	602	"NBitcoin": "[10.0.13, )",
-package_lock	MagicalCryptoWallet.Fluent/packages.lock.json	618	"NBitcoin.Secp256k1": "[3.1.6, )"
-package_lock	MagicalCryptoWallet.Fluent/packages.lock.json	696	"NBitcoin": {
-package_lock	MagicalCryptoWallet.Fluent/packages.lock.json	706	"NBitcoin.Secp256k1": {
-package_lock	MagicalCryptoWallet.Fluent/packages.lock.json	726	"NBitcoin.Secp256k1": "3.1.6",
+package_lock	MagicalCryptoWallet.Fluent/packages.lock.json	596	"NBitcoin": "[10.0.13, )",
+package_lock	MagicalCryptoWallet.Fluent/packages.lock.json	611	"NBitcoin.Secp256k1": "[3.1.6, )"
+package_lock	MagicalCryptoWallet.Fluent/packages.lock.json	689	"NBitcoin": {
+package_lock	MagicalCryptoWallet.Fluent/packages.lock.json	699	"NBitcoin.Secp256k1": {
+package_lock	MagicalCryptoWallet.Fluent/packages.lock.json	719	"NBitcoin.Secp256k1": "3.1.6",
+script_format	MagicalCryptoWallet.IntegrationTests/WalletTests/AutomaticCoinJoinTests.cs	85	var preview = client.Wallet.BuildTransaction(new Destination(destination.ScriptPubKey), Money.Satoshis(500_000),
+script_format	MagicalCryptoWallet.IntegrationTests/WalletTests/AutomaticCoinJoinTests.cs	140	var paidOutput = Assert.Single(firstCoinJoin.Outputs, o => o.ScriptPubKey == address.ScriptPubKey);
 script_format	MagicalCryptoWallet.IntegrationTests/WalletTests/WalletReceiveTests.cs	55	Assert.Equal(receiveKey.P2wpkhScript, coin.ScriptPubKey);
 script_format	MagicalCryptoWallet.IntegrationTests/WalletTests/WalletReceiveTests.cs	129	Assert.All(wallet.Coins, c => Assert.Equal(receiveKey.P2wpkhScript, c.ScriptPubKey));
 script_format	MagicalCryptoWallet.IntegrationTests/WalletTests/WalletSendTests.cs	81	destinationAddress.ScriptPubKey,
@@ -76,10 +69,10 @@ script_format	MagicalCryptoWallet.IntegrationTests/WalletTests/WalletSendTests.c
 script_format	MagicalCryptoWallet.IntegrationTests/WalletTests/WalletSendTests.cs	273	destinationAddress.ScriptPubKey,
 script_format	MagicalCryptoWallet.IntegrationTests/WalletTests/WalletSendTests.cs	331	destinationAddress.ScriptPubKey,
 package_lock	MagicalCryptoWallet.IntegrationTests/packages.lock.json	335	"NBitcoin": "[10.0.13, )",
-package_lock	MagicalCryptoWallet.IntegrationTests/packages.lock.json	343	"NBitcoin.Secp256k1": "[3.1.6, )"
-package_lock	MagicalCryptoWallet.IntegrationTests/packages.lock.json	408	"NBitcoin": {
-package_lock	MagicalCryptoWallet.IntegrationTests/packages.lock.json	418	"NBitcoin.Secp256k1": {
-package_lock	MagicalCryptoWallet.IntegrationTests/packages.lock.json	438	"NBitcoin.Secp256k1": "3.1.6",
+package_lock	MagicalCryptoWallet.IntegrationTests/packages.lock.json	356	"NBitcoin.Secp256k1": "[3.1.6, )"
+package_lock	MagicalCryptoWallet.IntegrationTests/packages.lock.json	421	"NBitcoin": {
+package_lock	MagicalCryptoWallet.IntegrationTests/packages.lock.json	431	"NBitcoin.Secp256k1": {
+package_lock	MagicalCryptoWallet.IntegrationTests/packages.lock.json	451	"NBitcoin.Secp256k1": "3.1.6",
 script_format	MagicalCryptoWallet.Tests/Helpers/AnalyzedTransaction/AnalyzedTransaction.cs	33	private static Script CreateScript(string? label = null)
 script_format	MagicalCryptoWallet.Tests/Helpers/AnalyzedTransaction/AnalyzedTransaction.cs	36	return k.PubKey.WitHash.ScriptPubKey;
 script_format	MagicalCryptoWallet.Tests/Helpers/AnalyzedTransaction/ForeignOutput.cs	9	public static ForeignOutput Create(Money amount, Script scriptPubKey)
@@ -90,7 +83,9 @@ script_format	MagicalCryptoWallet.Tests/Helpers/WabiSabiFactory.cs	47	new TxOut(
 script_format	MagicalCryptoWallet.Tests/Helpers/WabiSabiFactory.cs	66	GetOwnershipIdentifier(key.PubKey.GetScriptPubKey(scriptPubKeyType)),
 script_format	MagicalCryptoWallet.Tests/Helpers/WabiSabiFactory.cs	70	public static OwnershipIdentifier GetOwnershipIdentifier(Script scriptPubKey)
 script_format	MagicalCryptoWallet.Tests/Helpers/WabiSabiFactory.cs	254	public static OutputRegistrationRequest CreateOutputRegistrationRequest(Round round, Script? script = null, int? vsize = null)
-script_format	MagicalCryptoWallet.Tests/UnitTests/AutomaticCoinSelectionTests.cs	102	Assert.Contains(transaction.Outputs, output => output.ScriptPubKey == BitcoinAddress.Create(address, Network.RegTest).ScriptPubKey && output.Value == Money.Coins(0.005m));
+script_format	MagicalCryptoWallet.Tests/Helpers/WalletOperationTestHelper.cs	10	public static BuildTransactionResult SignPayment(WalletSession session, Script destination, Money amount, string password, string label = "synthetic")
+script_format	MagicalCryptoWallet.Tests/UnitTests/AutomaticCoinSelectionTests.cs	66	var signed = WalletOperationTestHelper.SignPayment(app.Session, BitcoinAddress.Create(address, Network.RegTest).ScriptPubKey, Money.Coins(0.005m), "", "synthetic-payment");
+script_format	MagicalCryptoWallet.Tests/UnitTests/AutomaticCoinSelectionTests.cs	70	Assert.Contains(transaction.Outputs, output => output.ScriptPubKey == BitcoinAddress.Create(address, Network.RegTest).ScriptPubKey && output.Value == Money.Coins(0.005m));
 script_format	MagicalCryptoWallet.Tests/UnitTests/Blockchain/TransactionBuilding/ChangelessTransactionCoinSelectorTests.cs	33	.GroupBy(coin => coin.ScriptPubKey)
 script_format	MagicalCryptoWallet.Tests/UnitTests/Blockchain/TransactionBuilding/ChangelessTransactionCoinSelectorTests.cs	40	long[] inputCosts = coinsByScript.Select(group => group.Sum(coin => feeRate.GetFee(coin.ScriptPubKey.EstimateInputVsize()).Satoshi)).ToArray();
 script_format	MagicalCryptoWallet.Tests/UnitTests/Blockchain/TransactionBuilding/ChangelessTransactionCoinSelectorTests.cs	63	.GroupBy(coin => coin.ScriptPubKey)
@@ -128,7 +123,6 @@ script_format	MagicalCryptoWallet.Tests/UnitTests/Crypto/OwnershipProofTest.cs	1
 script_format	MagicalCryptoWallet.Tests/UnitTests/Crypto/OwnershipProofTest.cs	144	scriptPubKey = key.PubKey.GetScriptPubKey(ScriptPubKeyType.TaprootBIP86);
 script_format	MagicalCryptoWallet.Tests/UnitTests/Crypto/OwnershipProofTest.cs	165	var invalidScriptPubKey = invalidKey.PubKey.GetScriptPubKey(ScriptPubKeyType.TaprootBIP86);
 script_format	MagicalCryptoWallet.Tests/UnitTests/Crypto/OwnershipProofTest.cs	184	new Bip322Signature(ownershipProof.ProofSignature.ScriptSig, new WitScript(new byte[][] { invalidSignature })));
-script_format	MagicalCryptoWallet.Tests/UnitTests/JsonConverters/DestinationJsonConverterTests.cs	19	Assert.Equal(BitcoinAddress.Create(address, Network.Main).ScriptPubKey, destination.ScriptPubKey);
 script_format	MagicalCryptoWallet.Tests/UnitTests/KeyManagerTests.cs	280	static bool IsScriptType(HdPubKey key, ScriptPubKeyType scriptType) =>
 script_format	MagicalCryptoWallet.Tests/UnitTests/KeyManagerTests.cs	283	static bool IsTaproot(HdPubKey key) => IsScriptType(key, ScriptPubKeyType.TaprootBIP86);
 script_format	MagicalCryptoWallet.Tests/UnitTests/KeyManagerTests.cs	284	static bool IsSegwit(HdPubKey key) => IsScriptType(key, ScriptPubKeyType.Segwit);
@@ -137,11 +131,10 @@ script_format	MagicalCryptoWallet.Tests/UnitTests/NBitcoinTests.cs	70	tx.Inputs.
 script_format	MagicalCryptoWallet.Tests/UnitTests/NBitcoinTests.cs	72	tx.Outputs.Add(Money.Coins(3), Script.Empty);
 script_format	MagicalCryptoWallet.Tests/UnitTests/NBitcoinTests.cs	73	tx.Outputs.Add(Money.Coins(2), Script.Empty);
 script_format	MagicalCryptoWallet.Tests/UnitTests/NBitcoinTests.cs	74	tx.Outputs.Add(Money.Coins(1), Script.Empty);
-script_format	MagicalCryptoWallet.Tests/UnitTests/RpcTests.cs	118	Sendto = new Destination(BitcoinAddress.Create("bc1q7zqqsmqx5ymhd7qn73lm96w5yqdkrmx7fdevah", Network.Main).ScriptPubKey),
 script_format	MagicalCryptoWallet.Tests/UnitTests/Services/CompactFilterBehaviorTests.cs	24	var targetScript = Script.FromHex("00141111111111111111111111111111111111111111");
 script_format	MagicalCryptoWallet.Tests/UnitTests/Services/CompactFilterBehaviorTests.cs	25	var unrelatedScript = Script.FromHex("00142222222222222222222222222222222222222222");
 script_format	MagicalCryptoWallet.Tests/UnitTests/Services/MempoolTrafficTests.cs	104	transaction.Inputs[0].WitScript = new WitScript(new byte[][] { [1, 2, 3] });
-script_format	MagicalCryptoWallet.Tests/UnitTests/SingleWalletCoinJoinTests.cs	41	var payments = new[] { new PaymentInfo { Sendto = new Destination(recipient.PubKey.GetAddress(ScriptPubKeyType.Segwit, Network.RegTest).ScriptPubKey), Amount = Money.Coins(0.01m), Label = "synthetic" } };
+script_format	MagicalCryptoWallet.Tests/UnitTests/SingleWalletCoinJoinTests.cs	39	var destination = recipient.PubKey.GetAddress(ScriptPubKeyType.Segwit, Network.RegTest).ScriptPubKey;
 script_format	MagicalCryptoWallet.Tests/UnitTests/SmartCoinTests.cs	23	tx.Outputs[0].ScriptPubKey = hdpk1.P2wpkhScript;
 script_format	MagicalCryptoWallet.Tests/UnitTests/SmartCoinTests.cs	24	tx.Outputs[1].ScriptPubKey = hdpk2.P2wpkhScript;
 script_format	MagicalCryptoWallet.Tests/UnitTests/TestWallet.cs	26	private Dictionary<Script, ExtKey> ScriptPubKeys { get; } = new();
@@ -318,14 +311,15 @@ script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/TransactionSig
 script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/TransactionSignaturesRequestTests.cs	47	Witness: new WitScript(Op.GetPushOp(key1.PubKey.ToBytes())));
 script_format	MagicalCryptoWallet.Tests/UnitTests/WabiSabi/Models/TransactionSignaturesRequestTests.cs	55	Witness: new WitScript(Op.GetPushOp(key2.PubKey.ToBytes()))); // Intentionally changed.
 script_format	MagicalCryptoWallet.Tests/UnitTests/Wallet/SmartCoinSelectorTests.cs	132	Assert.Equal(coinsToSpend[0].ScriptPubKey, coinsToSpend[1].ScriptPubKey);
-script_format	MagicalCryptoWallet.Tests/UnitTests/WalletOperationAuthorizationTests.cs	54	var preview = wallet.BuildTransaction(new Destination(destination.ScriptPubKey), Money.Coins(0.005m), "reviewed", new FeeRate(2m), wallet.Coins, subtractFee: false);
-script_format	MagicalCryptoWallet.Tests/UnitTests/WalletOperationAuthorizationTests.cs	68	var payments = new[] { new PaymentInfo { Sendto = new Destination(destination.ScriptPubKey), Amount = Money.Coins(0.005m), Label = "test" } };
-package_lock	MagicalCryptoWallet.Tests/packages.lock.json	813	"NBitcoin": "[10.0.13, )",
-package_lock	MagicalCryptoWallet.Tests/packages.lock.json	856	"NBitcoin": "[10.0.13, )",
-package_lock	MagicalCryptoWallet.Tests/packages.lock.json	863	"NBitcoin.Secp256k1": "[3.1.6, )"
-package_lock	MagicalCryptoWallet.Tests/packages.lock.json	1013	"NBitcoin": {
-package_lock	MagicalCryptoWallet.Tests/packages.lock.json	1023	"NBitcoin.Secp256k1": {
-package_lock	MagicalCryptoWallet.Tests/packages.lock.json	1043	"NBitcoin.Secp256k1": "3.1.6",
+script_format	MagicalCryptoWallet.Tests/UnitTests/WalletOperationAuthorizationTests.cs	52	var preview = wallet.BuildTransaction(new Destination(destination.ScriptPubKey), Money.Coins(0.005m), "reviewed", new FeeRate(2m), wallet.Coins, subtractFee: false);
+script_format	MagicalCryptoWallet.Tests/UnitTests/WalletOperationAuthorizationTests.cs	65	Assert.Throws<SecurityException>(() => WalletOperationTestHelper.SignPayment(app.Session, destination.ScriptPubKey, Money.Coins(0.005m), "wrong"));
+script_format	MagicalCryptoWallet.Tests/UnitTests/WalletOperationAuthorizationTests.cs	71	Assert.Throws<InvalidOperationException>(() => WalletOperationTestHelper.SignPayment(app.Session, destination.ScriptPubKey, Money.Coins(0.005m), password));
+package_lock	MagicalCryptoWallet.Tests/packages.lock.json	830	"NBitcoin": "[10.0.13, )",
+package_lock	MagicalCryptoWallet.Tests/packages.lock.json	872	"NBitcoin": "[10.0.13, )",
+package_lock	MagicalCryptoWallet.Tests/packages.lock.json	879	"NBitcoin.Secp256k1": "[3.1.6, )"
+package_lock	MagicalCryptoWallet.Tests/packages.lock.json	1040	"NBitcoin": {
+package_lock	MagicalCryptoWallet.Tests/packages.lock.json	1050	"NBitcoin.Secp256k1": {
+package_lock	MagicalCryptoWallet.Tests/packages.lock.json	1070	"NBitcoin.Secp256k1": "3.1.6",
 script_format	MagicalCryptoWallet/Blockchain/Keys/HdPubKey.cs	11	private readonly Lazy<Script> _p2wpkhScript;
 script_format	MagicalCryptoWallet/Blockchain/Keys/HdPubKey.cs	12	private readonly Lazy<Script> _p2Taproot;
 script_format	MagicalCryptoWallet/Blockchain/Keys/HdPubKey.cs	23	_p2wpkhScript = new Lazy<Script>(() => PubKey.GetScriptPubKey(ScriptPubKeyType.Segwit), isThreadSafe: true);
@@ -455,7 +449,6 @@ script_format	MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs	431	scriptPub
 script_format	MagicalCryptoWallet/Helpers/TxOutEqualityComparer.cs	10	public bool Equals(TxOut? x, TxOut? y) => (x?.Value, x?.ScriptPubKey) == (y?.Value, y?.ScriptPubKey);
 script_format	MagicalCryptoWallet/Helpers/TxOutEqualityComparer.cs	12	public int GetHashCode(TxOut txOut) => (txOut.Value, txOut.ScriptPubKey).GetHashCode();
 package	MagicalCryptoWallet/MagicalCryptoWallet.csproj	32	<PackageReference Include="NBitcoin" />
-script_format	MagicalCryptoWallet/Rpc/JsonConverters/DestinationJsonConverter.cs	10	writer.WriteValue(value?.ScriptPubKey.GetDestinationAddress(network)?.ToString());
 script_format	MagicalCryptoWallet/Serialization/Bitcoin.cs	24	private static JsonNode Script(Script script) =>
 script_format	MagicalCryptoWallet/Serialization/Bitcoin.cs	35	("ScriptPubKey", Script(txo.ScriptPubKey)),
 script_format	MagicalCryptoWallet/Serialization/Bitcoin.cs	48	private static JsonNode WitScript(WitScript witScript) =>

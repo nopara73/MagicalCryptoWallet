@@ -71,8 +71,6 @@ public static class Constants
 	public const string AlphaNumericCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 	public const string CapitalAlphaNumericCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
-	/// <summary>Executable file name of Magical Crypto Wallet Daemon application (without extension).</summary>
-	public const string DaemonExecutableName = $"{ExecutableName}d";
 
 	/// <summary>Executable file name of Magical Crypto Wallet UI application (without extension).</summary>
 	public const string ExecutableName = "magicalcryptowallet";

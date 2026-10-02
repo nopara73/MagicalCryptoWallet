@@ -46,12 +46,11 @@ candidate for the QR-owned core PackageReference, central PackageVersion and
 affected release lock files. Applying it is a separate integration step; the
 source contract commit alone does not remove the package.
 
-The patch touches two manifests and nine lock roles: wallet core, Client,
-Fluent, desktop, daemon, integration tests, unit tests, VisualPreview and the
-existing Mcw BridgeProbe. Nine restored release graphs remove 57 unused
-package nodes in total, with no added packages or changed versions. The probe
-role was introduced by the published host foundation and is audited separately
-from the earlier eight-role inventory.
+The patch targets two manifests and eight remaining lock roles: wallet core,
+Client, Fluent, desktop, integration tests, unit tests, VisualPreview and the
+existing Mcw BridgeProbe. The retired application role has been pruned; no
+packages are added and retained versions remain unchanged. The probe role was
+introduced by the published host foundation.
 
 Before applying a checked-out patch on Windows, normalize its line endings to LF
 in memory or in a temporary copy. Git's default text checkout may turn the patch

@@ -78,7 +78,7 @@ def linux_packages(dist: Path, work: Path, output: Path, version: str, rid: str,
     deb = work / "deb"; clean(deb)
     shutil.copytree(dist, deb / "opt/magicalcryptowallet", dirs_exist_ok=True)
     (deb / "usr/bin").mkdir(parents=True)
-    for executable in ("mcw", "magicalcryptowallet", "magicalcryptowalletd", "magicalcryptowallet-coordinator"):
+    for executable in ("mcw", "magicalcryptowallet", "magicalcryptowallet-coordinator"):
         (deb / "usr/bin" / executable).symlink_to("/opt/magicalcryptowallet/" + executable)
     applications = deb / "usr/share/applications"; applications.mkdir(parents=True)
     (applications / f"{APP_ID}.desktop").write_text(desktop_file("mcw"))
@@ -169,7 +169,6 @@ def main():
     shutil.copy2(mcw_binary, dist / mcw_binary.name)
     output = ROOT / "packages"; output.mkdir(exist_ok=True)
     for project, executable in (("MagicalCryptoWallet.Fluent.Desktop", "magicalcryptowallet"),
-                                ("MagicalCryptoWallet.Daemon", "magicalcryptowalletd"),
                                 ("MagicalCryptoWallet.Coordinator", "magicalcryptowallet-coordinator")):
         publish = work / project
         run("dotnet", "publish", ROOT / project / (project + ".csproj"), "-c", "Release", "-r", args.rid,
@@ -182,7 +181,7 @@ def main():
         shutil.copyfile(ROOT / source, dist / source)
     if not args.rid.startswith("win"):
         for path in dist.rglob("*"):
-            if path.is_file() and (path.name in ("mcw", "magicalcryptowallet", "magicalcryptowalletd", "magicalcryptowallet-coordinator", "tor") or path.suffix in (".so", ".dylib")): path.chmod(0o755)
+            if path.is_file() and (path.name in ("mcw", "magicalcryptowallet", "magicalcryptowallet-coordinator", "tor") or path.suffix in (".so", ".dylib")): path.chmod(0o755)
     if args.production and args.rid.startswith("win"):
         run("pwsh", "-NoProfile", "-File", ROOT / "Contrib/Signing/sign-windows.ps1", dist)
     if args.rid.startswith("osx"):

@@ -47,7 +47,7 @@ public sealed class ManagedApplicationHost : IDisposable, IMcwApplicationService
     }
 
     /// <summary>Old executable names remain compatible, but always launch mcw.</summary>
-    public static bool TryDelegate(string mode, string[] arguments, out int exitCode)
+    public static bool TryDelegate(string[] arguments, out int exitCode)
     {
         exitCode = 0;
         if (Environment.GetEnvironmentVariable("MCW_HOSTED") == "1")
@@ -62,7 +62,7 @@ public sealed class ManagedApplicationHost : IDisposable, IMcwApplicationService
             return true;
         }
         var start = new ProcessStartInfo(executable) { UseShellExecute = false };
-        start.ArgumentList.Add(mode);
+        start.ArgumentList.Add("gui");
         foreach (var argument in arguments) { start.ArgumentList.Add(argument); }
         // A compatibility launcher must not pass the host marker to a new root.
         start.Environment.Remove("MCW_HOSTED");

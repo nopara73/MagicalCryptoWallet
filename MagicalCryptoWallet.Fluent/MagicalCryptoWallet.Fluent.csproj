@@ -33,7 +33,6 @@
 		<PackageReference Include="Avalonia.Fonts.Inter" />
 		<PackageReference Include="Markdown.Avalonia" />
 		<PackageReference Include="QRackers" />
-		<PackageReference Include="NScheme" />
 	</ItemGroup>
 
 	<ItemGroup>

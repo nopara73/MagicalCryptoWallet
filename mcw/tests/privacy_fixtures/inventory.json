@@ -1,5 +1,5 @@
 {
-  "source_commit": "88bd734f82862fda5b8210cb37fd112d98705d97",
+  "source_commit": "866c0154f1996f31f1b180a108f8b6e2999e7ee3",
   "native_entries": [
     {
       "path": "MagicalCryptoWallet/BundledApps/Binaries/linux-arm64/Tor/libcrypto.so.3",
@@ -433,47 +433,37 @@
     },
     {
       "path": "MagicalCryptoWallet/Tor/Control/TorControlClient.cs",
-      "line": 180,
-      "code": "public Task<string> CreateEphemeralOnionServiceAsync(int virtualPort, int remotePort, CancellationToken cancellationToken)"
-    },
-    {
-      "path": "MagicalCryptoWallet/Tor/Control/TorControlClient.cs",
-      "line": 182,
-      "code": "return CreateOnionServiceAsync(\"NEW:BEST\", \"Flags=DiscardPK\", virtualPort, remotePort, cancellationToken);"
-    },
-    {
-      "path": "MagicalCryptoWallet/Tor/Control/TorControlClient.cs",
-      "line": 187,
+      "line": 183,
       "code": "var reply = await CreateOnionServiceCommandAsync(\"NEW:ED25519-V3\", \"\", virtualPort, remotePort, cancellationToken).ConfigureAwait(false);"
     },
     {
       "path": "MagicalCryptoWallet/Tor/Control/TorControlClient.cs",
-      "line": 207,
+      "line": 203,
       "code": "public Task<string> CreateOnionServiceAsync(string key, int virtualPort, int remotePort, CancellationToken cancellationToken)"
     },
     {
       "path": "MagicalCryptoWallet/Tor/Control/TorControlClient.cs",
-      "line": 209,
+      "line": 205,
       "code": "return CreateOnionServiceAsync(key, \"\", virtualPort, remotePort, cancellationToken);"
     },
     {
       "path": "MagicalCryptoWallet/Tor/Control/TorControlClient.cs",
-      "line": 212,
+      "line": 208,
       "code": "private async Task<string> CreateOnionServiceAsync(string key, string flags, int virtualPort, int remotePort, CancellationToken cancellationToken)"
     },
     {
       "path": "MagicalCryptoWallet/Tor/Control/TorControlClient.cs",
-      "line": 214,
+      "line": 210,
       "code": "var reply = await CreateOnionServiceCommandAsync(key, flags, virtualPort, remotePort, cancellationToken).ConfigureAwait(false);"
     },
     {
       "path": "MagicalCryptoWallet/Tor/Control/TorControlClient.cs",
-      "line": 227,
+      "line": 223,
       "code": "private async Task<TorControlReply> CreateOnionServiceCommandAsync(string key, string flags, int virtualPort,"
     },
     {
       "path": "MagicalCryptoWallet/Tor/Control/TorControlClient.cs",
-      "line": 281,
+      "line": 272,
       "code": "/// await foreach (TorControlReply reply in TorControlClient.ReadEventsAsync())"
     },
     {
@@ -522,129 +512,94 @@
       "code": "var maximumRounds = _dnsResolver is DnsSocksResolver ? 16 : 1;"
     },
     {
-      "path": "MagicalCryptoWallet.Client/Bootstrap.cs",
-      "line": 69,
-      "code": "RegisterNativeFunction(\"tor-settings\", () => global.TorSettings);"
-    },
-    {
       "path": "MagicalCryptoWallet.Client/Global.cs",
-      "line": 60,
+      "line": 56,
       "code": "TorSettings = new TorSettings("
     },
     {
       "path": "MagicalCryptoWallet.Client/Global.cs",
-      "line": 68,
+      "line": 64,
       "code": "bridges: config.TorBridges,"
     },
     {
       "path": "MagicalCryptoWallet.Client/Global.cs",
-      "line": 139,
+      "line": 133,
       "code": "private TorManager? _torManager;"
     },
     {
       "path": "MagicalCryptoWallet.Client/Global.cs",
-      "line": 149,
+      "line": 143,
       "code": "public TorSettings TorSettings { get; }"
     },
     {
       "path": "MagicalCryptoWallet.Client/Global.cs",
-      "line": 297,
+      "line": 288,
       "code": "? TorSettings.SocksEndpoint : null;"
     },
     {
       "path": "MagicalCryptoWallet.Client/Global.cs",
-      "line": 299,
+      "line": 290,
       "code": "? new DnsSocksResolver(torEndpoint){ StreamIsolation = true }"
     },
     {
       "path": "MagicalCryptoWallet.Client/Global.cs",
-      "line": 336,
+      "line": 327,
       "code": "? new OnionHttpClientFactory(TorSettings.SocksEndpoint.ToUri(\"socks5\"), config)"
     },
     {
       "path": "MagicalCryptoWallet.Client/Global.cs",
-      "line": 507,
+      "line": 498,
       "code": "ConfigureTorStatusChecker(_stoppingCts.Token);"
     },
     {
       "path": "MagicalCryptoWallet.Client/Global.cs",
-      "line": 518,
+      "line": 508,
       "code": "try { await StartTorProcessManagerAsync(linkedCtsToken).ConfigureAwait(false); }"
     },
     {
       "path": "MagicalCryptoWallet.Client/Global.cs",
-      "line": 590,
+      "line": 550,
       "code": "private async Task StartTorProcessManagerAsync(CancellationToken cancellationToken)"
     },
     {
       "path": "MagicalCryptoWallet.Client/Global.cs",
-      "line": 594,
+      "line": 554,
       "code": "TorProcessManager processManager = new(TorSettings, EventBus);"
     },
     {
       "path": "MagicalCryptoWallet.Client/Global.cs",
-      "line": 595,
+      "line": 555,
       "code": "_torManager = new TorManager(TorSettings, processManager);"
     },
     {
       "path": "MagicalCryptoWallet.Client/Global.cs",
-      "line": 598,
+      "line": 558,
       "code": "Logger.LogInfo($\"{nameof(TorManager)} is initialized.\");"
     },
     {
       "path": "MagicalCryptoWallet.Client/Global.cs",
-      "line": 601,
-      "code": "if (Config is { JsonRpcServerEnabled: true, RpcOnionEnabled: true } && torControlClient is { } nonNullTorControlClient)"
-    },
-    {
-      "path": "MagicalCryptoWallet.Client/Global.cs",
-      "line": 606,
-      "code": "var onionServiceId = await nonNullTorControlClient.CreateEphemeralOnionServiceAsync(80, 38129, cancellationToken).ConfigureAwait(false);"
-    },
-    {
-      "path": "MagicalCryptoWallet.Client/Global.cs",
-      "line": 619,
+      "line": 564,
       "code": "private void ConfigureTorStatusChecker(CancellationToken cancellationToken)"
     },
     {
       "path": "MagicalCryptoWallet.Client/Global.cs",
-      "line": 624,
+      "line": 569,
       "code": "var torStatusChecker = Spawn(\"TorStatusChecker\","
     },
     {
       "path": "MagicalCryptoWallet.Client/Global.cs",
-      "line": 628,
+      "line": 573,
       "code": "TorStatusChecker.CreateChecker(torStatusHttpClient, EventBus)),"
     },
     {
       "path": "MagicalCryptoWallet.Client/Global.cs",
-      "line": 631,
+      "line": 576,
       "code": "EventBus.Subscribe<Tick>(_ => torStatusChecker.Post(new TorStatusChecker.CheckMessage()))"
     },
     {
       "path": "MagicalCryptoWallet.Client/Global.cs",
-      "line": 633,
+      "line": 578,
       "code": "torStatusChecker.Post(new TorStatusChecker.CheckMessage());"
-    },
-    {
-      "path": "MagicalCryptoWallet.Client/Global.cs",
-      "line": 787,
-      "code": "Result<(CancellationToken, TorControlClient), Exception>"
-    },
-    {
-      "path": "MagicalCryptoWallet.Client/Global.cs",
-      "line": 792,
-      "code": "if (OnionServiceUri is { } nonNullOnionServiceUri && torControlClient is { } nonNullTorControlClient)"
-    },
-    {
-      "path": "MagicalCryptoWallet.Client/Global.cs",
-      "line": 796,
-      "code": "var isDestroyedSuccessfully = await nonNullTorControlClient"
-    },
-    {
-      "path": "MagicalCryptoWallet.Client/Global.cs",
-      "line": 809,
-      "code": "Logger.LogInfo(\"TorManager is stopped.\");"
     },
     {
       "path": "MagicalCryptoWallet.Client/Configuration/Config.cs",
@@ -663,12 +618,12 @@
     },
     {
       "path": "MagicalCryptoWallet.Client/Configuration/Config.cs",
-      "line": 96,
+      "line": 90,
       "code": "[nameof(TorBridges)] = \"Tor is started with the set of specified bridges\","
     },
     {
       "path": "MagicalCryptoWallet.Client/Configuration/Config.cs",
-      "line": 127,
+      "line": 115,
       "code": "public string[] TorBridges => GetEffectiveValue<string[]>(nameof(TorBridges));"
     },
     {
@@ -678,7 +633,7 @@
     },
     {
       "path": "MagicalCryptoWallet.Client/Configuration/PersistentConfigManager.cs",
-      "line": 21,
+      "line": 18,
       "code": "TorBridges : [],"
     },
     {
@@ -688,7 +643,7 @@
     },
     {
       "path": "MagicalCryptoWallet.Client/Configuration/Serialization.cs",
-      "line": 71,
+      "line": 66,
       "code": "TorBridges: get.Required(\"TorBridges\", ValueList(Decode.String)),"
     },
     {
@@ -758,12 +713,12 @@
     },
     {
       "path": "MagicalCryptoWallet.Fluent/Models/UI/UiContext.cs",
-      "line": 45,
+      "line": 44,
       "code": "TorStatusChecker = torStatusChecker ?? throw new ArgumentNullException(nameof(torStatusChecker));"
     },
     {
       "path": "MagicalCryptoWallet.Fluent/Models/UI/UiContext.cs",
-      "line": 62,
+      "line": 60,
       "code": "public TorStatusCheckerModel TorStatusChecker { get; }"
     },
     {

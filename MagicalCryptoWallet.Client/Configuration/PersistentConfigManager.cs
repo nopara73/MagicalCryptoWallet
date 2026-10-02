@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using System.Text;
 using NBitcoin;
-using MagicalCryptoWallet.Crypto.Randomness;
 using MagicalCryptoWallet.Helpers;
 using MagicalCryptoWallet.Logging;
 using MagicalCryptoWallet.Serialization;
@@ -11,8 +10,6 @@ namespace MagicalCryptoWallet.Client.Configuration;
 
 public static class PersistentConfigManager
 {
-	private static readonly RandomStringGenerator GenerateRandomString = RandomnessProviders.Secure.CreateRandomStringGenerator();
-
 	public static readonly PersistentConfig DefaultMainNetConfig = new (
 		Network : Network.Main,
 		CoordinatorUri : Constants.CoordinatorUri,
@@ -20,10 +17,6 @@ public static class PersistentConfigManager
 		TerminateTorOnExit : false,
 		TorBridges : [],
 		DownloadNewVersion : true,
-		JsonRpcServerEnabled : false,
-		JsonRpcUser : GenerateRandomString(12),
-		JsonRpcPassword : GenerateRandomString(12),
-		JsonRpcServerPrefixes : new (["http://127.0.0.1:38128/", "http://localhost:38128/"]),
 		DustThreshold : Money.Coins(Constants.DefaultDustThreshold),
 		EnableGpu : true,
 		CoordinatorIdentifier : "CoinJoinCoordinatorIdentifier",
@@ -32,15 +25,12 @@ public static class PersistentConfigManager
 		ExternalTransactionBroadcaster : Constants.DefaultExternalTransactionBroadcaster,
 		MaxCoinJoinMiningFeeRate : Constants.DefaultMaxCoinJoinMiningFeeRate,
 		MaxDaysInMempool : Constants.DefaultMaxDaysInMempool,
-		ExperimentalFeatures: [],
 		ConfigVersion : 4);
 
 	public static readonly PersistentConfig DefaultTestNetConfig = DefaultMainNetConfig with
 	{
 		Network = Network.TestNet,
 		CoordinatorUri = Constants.TestnetCoordinatorUri,
-		JsonRpcServerEnabled = true,
-		ExperimentalFeatures = new ValueList<string>(["scripting"]),
 	};
 
 	public static readonly PersistentConfig DefaultRegTestConfig = DefaultTestNetConfig with

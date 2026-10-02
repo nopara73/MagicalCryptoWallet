@@ -102,26 +102,24 @@ jobs:
         run: python Contrib/Mcw/test-host.py --binary .artifacts/packages/${{ matrix.rid }}/MagicalCryptoWallet/mcw${{ matrix.rid == 'win-x64' && '.exe' || '' }}
       - name: Wallet integration tests against isolated Bitcoin Core
         run: dotnet test --project MagicalCryptoWallet.IntegrationTests -c Release --no-progress --no-ansi --output Normal
-      - name: Packaged application lifetime, encrypted background startup, offline recovery and process locking
-        shell: bash
+      - name: Packaged Windows desktop hidden synchronization, activation and normal shutdown
+        if: matrix.rid == 'win-x64'
+        env:
+          MCW_DESKTOP_PACKAGE: ${{ github.workspace }}/.artifacts/packages/win-x64/MagicalCryptoWallet
         run: |
           python -m pip install pillow
-          bitcoin_rid='${{ matrix.rid }}'
-          suffix=''
-          case "$bitcoin_rid" in osx-*) bitcoin_rid=osx64 ;; win-*) suffix=.exe ;; esac
-          python Contrib/Tests/test-single-wallet-process.py --package '.artifacts/packages/${{ matrix.rid }}/MagicalCryptoWallet' --bitcoind "MagicalCryptoWallet.IntegrationTests/bin/Release/net10.0/BundledApps/Binaries/$bitcoin_rid/bitcoind$suffix"
-      - name: Send authorizes automatic CoinJoin across independent encrypted clients
-        if: matrix.rid == 'linux-x64'
-        run: python Contrib/Tests/test-single-wallet-coinjoin.py --package .artifacts/packages/linux-x64/MagicalCryptoWallet --bitcoind MagicalCryptoWallet.IntegrationTests/bin/Release/net10.0/BundledApps/Binaries/linux-x64/bitcoind
+          dotnet test --project MagicalCryptoWallet.IntegrationTests -c Release --filter-class '*DesktopLifecycleTests' --no-progress --no-ansi --output Normal
+      - name: Retired scripting, wallet automation, generated code, dependencies and package contents
+        run: python Contrib/AutomationRemoval/audit.py --artifacts .artifacts/packages/${{ matrix.rid }}/MagicalCryptoWallet
       - name: Retired single-wallet interfaces, generated code, symbols and package contents
         run: python Contrib/SingleWallet/audit.py --artifacts .artifacts/packages/${{ matrix.rid }}/MagicalCryptoWallet
       - name: Retired client Bitcoin Core interfaces, generated bindings and test-only adapters
         run: dotnet run --project Contrib/Rebrand/AssemblyAudit -c Release -- Contrib/Tests/client-core-policy.json .artifacts/packages/${{ matrix.rid }}/MagicalCryptoWallet
-      - name: Removal audit negative fixtures and CLI syntax
+      - name: Removal audit negative fixtures
         shell: bash
         run: |
           python Contrib/SingleWallet/test-audit.py
-          bash -n Contrib/CLI/rpc-common.sh Contrib/CLI/wcli.sh Contrib/CLI/PayInCoinjoin/wcj.sh Contrib/CLI/PayInCoinjoin/wpay.sh Contrib/CLI/PayInCoinjoin/wcancel.sh Contrib/Tests/regtest-coinjoin-test.sh
+          python Contrib/AutomationRemoval/audit.py --self-test
       - name: Forked managed cryptography and published vectors
         run: dotnet test --project ThirdParty/WabiSabi/csharp/WabiSabi.Tests -c Release --no-progress --no-ansi --output Normal
       - name: Native and managed wire interoperability
@@ -154,11 +152,9 @@ jobs:
             .artifacts/package-inspection/*.json
             .artifacts/mcw-evidence/*
             .artifacts/installed-coexistence/*.log
-            .artifacts/single-wallet/process/**/*.log
-            .artifacts/single-wallet/process/**/results.json
-            .artifacts/single-wallet/process/**/*.png
-            .artifacts/single-wallet/coinjoin/**/*.log
-            .artifacts/single-wallet/coinjoin/**/results.json
+            .artifacts/desktop-lifecycle/**/*.log
+            .artifacts/desktop-lifecycle/**/results.json
+            .artifacts/desktop-lifecycle/**/*.png
           compression-level: 0
           if-no-files-found: error
   container:

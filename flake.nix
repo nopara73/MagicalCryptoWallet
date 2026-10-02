@@ -96,7 +96,6 @@
           pname = "MagicalCryptoWallet";
           projectFile = [
              "MagicalCryptoWallet.Coordinator/MagicalCryptoWallet.Coordinator.csproj"
-             "MagicalCryptoWallet.Daemon/MagicalCryptoWallet.Daemon.csproj"
              "MagicalCryptoWallet.Tests/MagicalCryptoWallet.Tests.csproj"
              "MagicalCryptoWallet.IntegrationTests/MagicalCryptoWallet.IntegrationTests.csproj"
              "ThirdParty/WabiSabi/csharp/WabiSabi.Tests/WabiSabi.Tests.csproj"
@@ -104,7 +103,6 @@
              "MagicalCryptoWallet.Fluent.Desktop/MagicalCryptoWallet.Fluent.Desktop.csproj"];
           executables = [
             "MagicalCryptoWallet.Coordinator"
-            "MagicalCryptoWallet.Daemon"
             "MagicalCryptoWallet.Fluent.Desktop" ];
           runtimeDeps = with pkgs; [
              pkgs.openssl pkgs.zlib
@@ -123,18 +121,15 @@
             ln -s $out/lib/${pname}/mcw $out/bin/mcw
             wrapDotnetProgram $out/lib/${pname}/MagicalCryptoWallet.Fluent.Desktop $out/bin/magicalcryptowallet
             wrapDotnetProgram $out/lib/${pname}/MagicalCryptoWallet.Coordinator $out/bin/magicalcryptowallet-coordinator
-            wrapDotnetProgram $out/lib/${pname}/MagicalCryptoWallet.Daemon $out/bin/magicalcryptowalletd
             cp $out/bin/magicalcryptowallet $out/lib/${pname}/magicalcryptowallet
-            cp $out/bin/magicalcryptowalletd $out/lib/${pname}/magicalcryptowalletd
           '';
 
           binaries = "BundledApps/Binaries/linux-x64";
           bundledApps = "./MagicalCryptoWallet/${binaries}";
           bundledAppsIntegrationTest = "./MagicalCryptoWallet.IntegrationTests/${binaries}";
           preBuild = ''
-            mkdir -p MagicalCryptoWallet.Fluent.Desktop/bin/Release/net10.0/linux-x64 MagicalCryptoWallet.Daemon/bin/Release/net10.0/linux-x64
+            mkdir -p MagicalCryptoWallet.Fluent.Desktop/bin/Release/net10.0/linux-x64
             cp ${mcwHost}/bin/mcw MagicalCryptoWallet.Fluent.Desktop/bin/Release/net10.0/linux-x64/
-            cp ${mcwHost}/bin/mcw MagicalCryptoWallet.Daemon/bin/Release/net10.0/linux-x64/
             mkdir -p ${bundledApps}/Tor ${bundledAppsIntegrationTest}
             cp -r ${pkgs.tor}/bin/tor ${bundledApps}/Tor/tor
             cp ${pkgs.bitcoind}/bin/bitcoind ${bundledAppsIntegrationTest}/bitcoind

@@ -4,7 +4,7 @@ using MagicalCryptoWallet.Client;
 using MagicalCryptoWallet.Tests.Helpers;
 using Xunit;
 
-namespace MagicalCryptoWallet.Tests.UnitTests.Daemon;
+namespace MagicalCryptoWallet.Tests.UnitTests.Client;
 
 /// <seealso cref="XunitConfiguration.SerialCollectionDefinition"/>
 [Collection("Serial unit tests collection")]

@@ -72,7 +72,7 @@ jobs:
           git diff --name-only "$BUILD_COMMIT" "$ARTIFACT_COMMIT" > .artifacts/artifact-changes.txt
           python - <<'PY'
           from pathlib import Path
-          allowed = {'.github/workflows/verify-software-snapshot.yml', 'Contrib/Tests/test-single-wallet-coinjoin.py'}
+          allowed = {'.github/workflows/verify-software-snapshot.yml'}
           assert set(Path('.artifacts/verification-changes.txt').read_text().splitlines()) <= allowed, 'Application source changed.'
           assert set(Path('.artifacts/artifact-changes.txt').read_text().splitlines()) <= allowed, 'Input application source changed.'
           PY
@@ -85,7 +85,7 @@ jobs:
           with zipfile.ZipFile('.artifacts/built-snapshot.zip') as archive:
               assert archive.testzip() is None
               for name in archive.namelist():
-                  if name.endswith('/') or not name.startswith(('packages/', '.artifacts/single-wallet/process/', '.artifacts/single-wallet/coinjoin/')):
+                  if name.endswith('/') or not name.startswith(('packages/', '.artifacts/desktop-lifecycle/')):
                       continue
                   destination = (root / name).resolve()
                   assert destination.is_relative_to(root)
@@ -95,15 +95,6 @@ jobs:
           destination.mkdir(parents=True)
           with tarfile.open('packages/MagicalCryptoWallet-99.99.99-linux-x64.tar.gz') as archive:
               archive.extractall(destination, filter='data')
-          reports = list(Path('.artifacts/single-wallet/coinjoin').glob('*/results.json'))
-          for path in reports:
-              result = json.loads(path.read_text())
-              assert result['independent_clients'] == 5 and result['coinjoin_transactions']
-              assert all(result[key] is True for key in ('encrypted_startup_without_authorization',
-                  'send_authorizes_automatic_coinjoin', 'later_wrong_password_rejected',
-                  'every_client_received_confirmed_mixed_outputs'))
-          with open(os.environ['GITHUB_OUTPUT'], 'a') as stream:
-              stream.write('coinjoin_verified=' + ('true' if reports else 'false') + '\n')
           Path('.artifacts/software-snapshot-provenance.json').write_text(json.dumps({
               'package_build_commit': os.environ['BUILD_COMMIT'],
               'input_artifact_commit': os.environ['ARTIFACT_COMMIT'],
@@ -111,19 +102,22 @@ jobs:
               'input_workflow_run_id': int(os.environ['BUILD_RUN']),
               'input_archive_sha256': os.environ['ARCHIVE_SHA256'],
               'application_source_unchanged': True,
-              'reused_coinjoin_reports': [str(path) for path in reports]}, indent=2))
+              'reused_coinjoin_reports': []}, indent=2))
           PY
           echo "LD_LIBRARY_PATH=$GITHUB_WORKSPACE/.artifacts/packages/linux-x64/MagicalCryptoWallet${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" >> "$GITHUB_ENV"
           echo "NativeLibraryPath=$GITHUB_WORKSPACE/.artifacts/packages/linux-x64/MagicalCryptoWallet/libwabisabi.so" >> "$GITHUB_ENV"
           chmod +x MagicalCryptoWallet.IntegrationTests/BundledApps/Binaries/linux-x64/bitcoind
-      - name: Five encrypted clients automatically complete CoinJoin after Send
-        if: steps.snapshot.outputs.coinjoin_verified != 'true'
-        run: python Contrib/Tests/test-single-wallet-coinjoin.py --package .artifacts/packages/linux-x64/MagicalCryptoWallet --bitcoind MagicalCryptoWallet.IntegrationTests/BundledApps/Binaries/linux-x64/bitcoind
+      - name: Seven encrypted wallets confirm CoinJoin and exactly-once payments
+        run: |
+          mkdir -p .artifacts/snapshot-verification
+          dotnet test --project MagicalCryptoWallet.IntegrationTests -c Release --filter-class '*AutomaticCoinJoinTests' --no-progress --no-ansi --output Normal | tee .artifacts/snapshot-verification/coinjoin.log
       - name: Source, generated code, assemblies, resources and symbols
         run: |
           python Contrib/SingleWallet/audit.py --artifacts .artifacts/packages/linux-x64/MagicalCryptoWallet
+          python Contrib/AutomationRemoval/audit.py --artifacts .artifacts/packages/linux-x64/MagicalCryptoWallet
           dotnet run --project Contrib/Rebrand/AssemblyAudit -c Release -- Contrib/Tests/client-core-policy.json .artifacts/packages/linux-x64/MagicalCryptoWallet
           python Contrib/SingleWallet/test-audit.py
+          python Contrib/AutomationRemoval/audit.py --self-test
           python Contrib/Rebrand/audit.py --artifacts .artifacts/packages/linux-x64/MagicalCryptoWallet
           python Contrib/Rebrand/test-audit.py
       - name: Managed cryptography and native wire interoperability
@@ -134,7 +128,7 @@ jobs:
       - name: Extracted packages and both-theme UI matrix
         run: |
           python Contrib/Rebrand/inspect-packages.py --rid linux-x64
-          dotnet run --project Contrib/VisualPreview -c Release -- .artifacts/screenshots
+          python Contrib/Mcw/run-managed-tool.py --host .artifacts/packages/linux-x64/MagicalCryptoWallet/mcw --project Contrib/VisualPreview -- .artifacts/screenshots
       - name: Verified packages and evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -147,7 +141,6 @@ jobs:
             .artifacts/screenshots/*.png
             .artifacts/package-inspection/*.json
             .artifacts/software-snapshot-provenance.json
-            .artifacts/single-wallet/process/**/*.log
-            .artifacts/single-wallet/process/**/results.json
-            .artifacts/single-wallet/coinjoin/**/*.log
-            .artifacts/single-wallet/coinjoin/**/results.json
+            .artifacts/desktop-lifecycle/**/*.log
+            .artifacts/desktop-lifecycle/**/results.json
+            .artifacts/snapshot-verification/*.log

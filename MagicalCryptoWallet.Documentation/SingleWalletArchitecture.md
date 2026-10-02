@@ -1,6 +1,6 @@
 # Application lifetime wallet
 
-The desktop and daemon share one `WalletSession`, configured for one Bitcoin network and one data directory. The session starts after local stores initialize. A window, navigation entry, and passphrase are unnecessary for public synchronization.
+The desktop owns one `WalletSession`, configured for one Bitcoin network and one data directory. The session starts after local stores initialize. A window, navigation entry, and passphrase are unnecessary for public synchronization.
 
 ```mermaid
 flowchart LR
@@ -12,7 +12,6 @@ flowchart LR
   session --> public[Public wallet state and synchronization]
   session --> snapshot[Current snapshot and changes]
   snapshot --> dashboard[Dashboard and status surface]
-  snapshot --> rpc[RPC and Scheme status]
   authorization[Scoped authorization] --> sign[Reviewed transaction signing or private information]
   authorization --> cj[Process-lifetime CoinJoin authorization]
   cj --> actor[CoinJoin command processor]
@@ -35,7 +34,7 @@ Startup is idempotent and cancellation-aware. Unavailable peers or blocks produc
 
 There is no application-wide password or logged-in shortcut. Wallet Info opens with public data and obtains private data only after authorization. Chinese masking and compatibility passwords remain in the dialogs. Empty-passphrase authorization actually verifies the wallet instead of inspecting an empty in-memory field.
 
-Every successful passphrase authorization, including Send, private information, and RPC signing, also retains a separate CoinJoin scope for the current process. CoinJoin starts immediately when synchronization and send/shutdown restrictions allow. Each later operation still validates its own passphrase. Pause lasts for the current run. Hiding and showing a window retains CoinJoin authorization; restarting does not. Hidden startup opens no authorization dialog. Empty-passphrase wallets can start automatically without a startup delay.
+Every successful passphrase authorization, including Send and private information, also retains a separate CoinJoin scope for the current process. CoinJoin starts immediately when synchronization and send/shutdown restrictions allow. Each later operation still validates its own passphrase. Pause lasts for the current run. Hiding and showing a window retains CoinJoin authorization; restarting does not. Hidden startup opens no authorization dialog. Empty-passphrase wallets can start automatically without a startup delay.
 
 One fixed strategy aims for anonymity score **at least 2**, batches eligible unmixed coins up to ten inputs per wallet, and includes pending payments from the first round or from already-private funds. Normal rounds, blame rounds, and actual transactions must have at least **21 inputs**. The configured mining fee ceiling and balance safeguard remain; their defaults are 50 sat/vB and 0.005 BTC. Explicit continuation can bypass the balance safeguard. It cannot bypass the fee ceiling or round size.
 
@@ -45,7 +44,7 @@ RPC `startcoinjoin(password = null)` authorizes and resumes CoinJoin, including 
 
 ## Desktop lifetime
 
-The lock is acquired before constructing wallet services or mutable stores. A current-user-only named pipe accepts a fixed activation message for the locked data directory and exact network. Foreground launching activates the existing desktop; duplicate silent launching exits quietly. Requests arriving during initialization queue for the UI. A daemon or another network produces an explicit conflict.
+The lock is acquired before constructing wallet services or mutable stores. A current-user-only named pipe accepts a fixed activation message for the locked data directory and exact network. Foreground launching activates the existing desktop; duplicate silent launching exits quietly. Requests arriving during initialization queue for the UI. Another network produces an explicit conflict.
 
 Startup registration contains the current executable, resolved data directory, network, and exactly parsed `startsilent` argument. Arguments are quoted for each operating system. Reading settings does not modify startup registration; an enabled registration is refreshed and user preference changes apply normally. Lurking Wife Mode is configured before balance rendering and suppresses private search and transaction notifications.
 
@@ -58,7 +57,7 @@ Closing a window with hide-on-close enabled keeps the session. Reopening present
 - Wallet-selection adapters, hardware lookup for opening an existing wallet, redundant service forwarding, and unused generated navigation entries.
 - Global passphrase/decrypted-key caches and Boolean authorization shortcuts.
 - Wallet-indexed CoinJoin dictionaries, aggregated state, and UI automatic-start ownership.
-- Explicit application load commands, named endpoint routes, and obsolete Scheme exports.
+- Explicit application load commands and wallet automation interfaces.
 
 Software-wallet file formats, recovery and multi-share backup formats, transaction selection, read-only coin presentation, Bitcoin Core test-wallet commands, and independent regtest participants remain supported. Hardware and watch-only wallets and external PSBT signing are removed; internal PSBTs still support previews and local signing. WabiSabi cryptographic algorithms, wire formats, domain-separation constants, and published vectors are unchanged.
 
