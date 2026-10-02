@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Reproducible migration inventory of NuGet graphs, source and bundled payloads."""
-import argparse, hashlib, json, re, xml.etree.ElementTree as ET
+import argparse, difflib, hashlib, itertools, json, re, sys, xml.etree.ElementTree as ET
 from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[2]
@@ -108,7 +108,11 @@ if __name__=="__main__":
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument("--check",action="store_true");args=parser.parse_args()
     text=json.dumps(inventory(),indent=2,ensure_ascii=False)+"\n"
     if args.check:
-        if not DEST.exists() or DEST.read_text(encoding="utf-8")!=text: raise SystemExit("Dependency inventory is stale; run python Contrib/Mcw/dependencies.py")
+        saved=DEST.read_text(encoding="utf-8") if DEST.exists() else ""
+        if saved!=text:
+            sys.stderr.writelines(itertools.islice(difflib.unified_diff(saved.splitlines(True),text.splitlines(True),
+                fromfile="recorded inventory",tofile="current inventory"),120))
+            raise SystemExit("Dependency inventory is stale; run python Contrib/Mcw/dependencies.py")
     else:
         DEST.parent.mkdir(parents=True,exist_ok=True);DEST.write_text(text,encoding="utf-8")
     print("Dependency inventory verified" if args.check else str(DEST))

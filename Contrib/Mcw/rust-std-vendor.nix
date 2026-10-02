@@ -41,6 +41,9 @@ in pkgs.stdenvNoCC.mkDerivation {
   version = "1";
   srcs = archives;
   sourceRoot = ".";
+  unpackPhase = ''
+    for archive in $srcs; do tar -xzf "$archive"; done
+  '';
   dontConfigure = true;
   dontBuild = true;
   installPhase = ''
