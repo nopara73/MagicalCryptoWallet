@@ -1,12 +1,21 @@
 #!/usr/bin/env python3
 """Observe a packaged Windows desktop using an isolated, preseeded encrypted wallet."""
+import faulthandler
+import os
+
+_lifecycle_trace = None
+if _trace_path := os.environ.get("MCW_LIFECYCLE_TRACE"):
+    _lifecycle_trace = open(_trace_path, "w", encoding="utf-8")
+    _lifecycle_trace.write("Harness entered before imports.\n")
+    _lifecycle_trace.flush()
+    faulthandler.dump_traceback_later(30, repeat=True, file=_lifecycle_trace)
+
 import argparse
 import base64
 import ctypes
 from ctypes import wintypes
 from contextlib import contextmanager
 import json
-import os
 from pathlib import Path
 import socket
 import sqlite3
@@ -341,5 +350,10 @@ def main():
 
 
 if __name__ == "__main__":
-    with regtest_p2p_port_lease():
-        main()
+    try:
+        with regtest_p2p_port_lease():
+            main()
+    finally:
+        if _lifecycle_trace is not None:
+            faulthandler.cancel_dump_traceback_later()
+            _lifecycle_trace.close()

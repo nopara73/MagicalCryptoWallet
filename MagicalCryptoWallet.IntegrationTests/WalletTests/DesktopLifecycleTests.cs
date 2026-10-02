@@ -24,14 +24,21 @@ public class DesktopLifecycleTests(ITestOutputHelper output)
 		while (root is not null && !File.Exists(Path.Combine(root.FullName, "Contrib", "Tests", "test-single-wallet-process.py"))) { root = root.Parent; }
 		Assert.NotNull(root);
 		var run = Path.Combine(root.FullName, ".artifacts", "desktop-lifecycle", "synthetic " + Guid.NewGuid().ToString("N"));
+		Directory.CreateDirectory(run);
+		void Stage(string name) => File.AppendAllText(Path.Combine(run, "fixture-stage.log"), $"{DateTimeOffset.UtcNow:O} {name}{Environment.NewLine}");
+		Stage("synthetic setup started");
 		// SQLite's native Windows path limit is independent of .NET long-path support.
 		var data = Path.Combine(Path.GetTempPath(), "MCW synthetic lifecycle " + Guid.NewGuid().ToString("N"));
 		Directory.CreateDirectory(data);
 		var directories = new WalletDirectories(Network.RegTest, data);
+		Stage("creating synthetic encrypted wallet");
 		var keys = KeyManager.CreateNew(new Mnemonic("abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about"),
 			"synthetic lifecycle password", Network.RegTest, directories.NewWalletFilePath);
+		Stage("synthetic encrypted wallet created");
 		var address = keys.GetNextReceiveKey("synthetic funding").GetP2wpkhAddress(Network.RegTest);
+		Stage("saving synthetic wallet");
 		keys.ToFile();
+		Stage("synthetic wallet saved");
 		await File.WriteAllTextAsync(directories.ConfiguredWalletFilePath, Path.GetFileNameWithoutExtension(keys.FilePath));
 		PersistentConfigManager.ToFile(Path.Combine(data, "Config.RegTest.json"), PersistentConfigManager.DefaultRegTestConfig with
 		{
@@ -51,9 +58,14 @@ public class DesktopLifecycleTests(ITestOutputHelper output)
 		}));
 		var bitcoin = Path.Combine(AppContext.BaseDirectory, "BundledApps", "Binaries", "win-x64", "bitcoind.exe");
 		Assert.True(File.Exists(bitcoin), "Integration tests must provide their isolated Bitcoin Core binary.");
-		var start = new ProcessStartInfo("python") { WorkingDirectory = root.FullName, RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false, CreateNoWindow = true };
+		Stage("launching packaged desktop harness");
+		var start = new ProcessStartInfo("python") { WorkingDirectory = root.FullName, RedirectStandardInput = true, RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false, CreateNoWindow = true };
+		start.Environment["MCW_LIFECYCLE_TRACE"] = Path.Combine(run, "harness-stack.log");
 		foreach (var argument in new[] { "Contrib/Tests/test-single-wallet-process.py", "--package", Path.GetFullPath(package!), "--data-dir", data, "--bitcoind", bitcoin, "--output", run }) { start.ArgumentList.Add(argument); }
 		using var process = Process.Start(start)!;
+		// The harness never consumes input and must not inherit the test host's
+		// private application-service pipe during Python console initialization.
+		process.StandardInput.Close();
 		var stdout = process.StandardOutput.ReadToEndAsync();
 		var stderr = process.StandardError.ReadToEndAsync();
 		try { await process.WaitForExitAsync(TestContext.Current.CancellationToken); }
@@ -64,6 +76,9 @@ public class DesktopLifecycleTests(ITestOutputHelper output)
 				process.Kill(entireProcessTree: true);
 				await process.WaitForExitAsync();
 			}
+			await File.WriteAllTextAsync(Path.Combine(run, "harness-stdout.log"), await stdout);
+			await File.WriteAllTextAsync(Path.Combine(run, "harness-stderr.log"), await stderr);
+			Stage($"packaged desktop harness exited {process.ExitCode}");
 		}
 		output.WriteLine(await stdout);
 		output.WriteLine(await stderr);
