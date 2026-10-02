@@ -56,7 +56,7 @@ $ ./wcli.sh getwalletinfo
   "publicMetadataRequiresAuthorization": false,
   "error": null,
   "masterKeyFingerprint": "d415c529",
-  "anonScoreTarget": 5,
+  "anonScoreTarget": 2,
   "isAutoCoinjoin": true,
   "isNonPrivateCoinIsolation": false,
   "accounts": [
@@ -117,3 +117,7 @@ $ ./wcli.sh getnewaddress "Ricardo"
   "scriptPubKey": "00146199764e093298edcf9b564629eac5a6ce0c7a77"
 }
 ```
+
+CoinJoin uses one automatic strategy with an anonymity target of at least 2 and a fixed minimum of 21 inputs. Wallet batches can contain up to ten eligible inputs and pending payments can join the first round. The mining fee ceiling (default 50 sat/vB) and wallet balance safeguard (default 0.005 BTC) remain configurable.
+
+`startcoinjoin` accepts only an optional password (`[]`, `[null]`, or `["password"]`). It authorizes/resumes CoinJoin and permits explicit continuation below the balance safeguard. `stopcoinjoin` pauses automatic CoinJoin for this application run. Retired options and old positional booleans return invalid-parameter errors. Automatic operation resumes immediately after authorization or release of send/shutdown restrictions. All-private wallets wait for funds or payments; only failures add a 30-second backoff.

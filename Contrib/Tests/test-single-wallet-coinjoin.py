@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-"""Verify Send authorizes automatic CoinJoin in five independent encrypted regtest clients."""
+"""Verify Send authorizes automatic CoinJoin in seven independent encrypted regtest clients."""
 import argparse
+from functools import partial
 import json
 import os
 from pathlib import Path
@@ -12,7 +13,9 @@ import uuid
 
 ROOT = Path(__file__).resolve().parents[2]
 helpers = runpy.run_path(str(Path(__file__).with_name("test-single-wallet-process.py")))
-free_port, wait_for, wait_for_rpc_start, rpc, require_regtest_p2p_port = (helpers[name] for name in ("free_port", "wait_for", "wait_for_rpc_start", "rpc", "require_regtest_p2p_port"))
+free_port, wait_for, wait_for_rpc_start = (helpers[name] for name in ("free_port", "wait_for", "wait_for_rpc_start"))
+rpc = partial(helpers["rpc"], timeout=60)
+require_regtest_p2p_port = helpers["require_regtest_p2p_port"]
 regtest_p2p_port_lease = helpers["regtest_p2p_port_lease"]
 PASSWORD = "synthetic CoinJoin passphrase"
 
@@ -36,27 +39,28 @@ def main():
     node_url = f"http://127.0.0.1:{node_rpc}/"
     coordinator_url = f"http://127.0.0.1:{coordinator_port}/"
     config = dict(Network="RegTest", MainNetBitcoinRpcUri=node_url, TestNetBitcoinRpcUri=node_url,
-        RegTestBitcoinRpcUri=node_url, BitcoinRpcConnectionString="synthetic:synthetic", ConfirmationTarget=108,
+        # Regtest uses a deterministic fee curve; the seven-day target advertises 1 sat/vB.
+        RegTestBitcoinRpcUri=node_url, BitcoinRpcConnectionString="synthetic:synthetic", ConfirmationTarget=1008,
         DoSSeverity="0.10", DoSMinTimeForFailedToVerify="31d 0h 0m 0s", DoSMinTimeForCheating="1d 0h 0m 0s",
         DoSPenaltyFactorForDisruptingConfirmation=.2, DoSPenaltyFactorForDisruptingSignalReadyToSign=1,
         DoSPenaltyFactorForDisruptingSigning=1, DoSPenaltyFactorForDisruptingByDoubleSpending=3,
         DoSMinTimeInPrison="0d 0h 20m 0s", MinRegistrableAmount="0.00005", MaxRegistrableAmount="43000",
-        AllowNotedInputRegistration=True, MaxInputCountByRound=10, MinInputCountByRoundMultiplier=.5,
+        AllowNotedInputRegistration=True, MaxInputCountByRound=42, MinInputCountByRoundMultiplier=.5,
         StandardInputRegistrationTimeout="0d 0h 2m 0s",
-        BlameInputRegistrationTimeout="0d 0h 1m 0s", ConnectionConfirmationTimeout="0d 0h 1m 0s",
-        OutputRegistrationTimeout="0d 0h 1m 0s", TransactionSigningTimeout="0d 0h 1m 0s",
-        FailFastOutputRegistrationTimeout="0d 0h 1m 0s", FailFastTransactionSigningTimeout="0d 0h 1m 0s",
-        RoundExpiryTimeout="0d 0h 5m 0s", MinInputCountByBlameRoundMultiplier=.4, RoundDestroyerThreshold=375,
+        BlameInputRegistrationTimeout="0d 0h 1m 0s", ConnectionConfirmationTimeout="0d 0h 2m 0s",
+        OutputRegistrationTimeout="0d 0h 2m 0s", TransactionSigningTimeout="0d 0h 2m 0s",
+        FailFastOutputRegistrationTimeout="0d 0h 2m 0s", FailFastTransactionSigningTimeout="0d 0h 2m 0s",
+        RoundExpiryTimeout="0d 0h 5m 0s", MinInputCountByBlameRoundMultiplier=.5, RoundDestroyerThreshold=375,
         MaxSuggestedAmountBase="100", CollectCoordinatorFees=False, CoordinatorExtPubKey=None,
         CoordinatorExtPubKeyCurrentDepth=1, RoundParallelization=1, CoordinatorIdentifier="CoinJoinCoordinatorIdentifier",
         AllowP2wpkhInputs=True, AllowP2trInputs=True, AllowP2wpkhOutputs=True, AllowP2trOutputs=True,
         AllowP2pkhOutputs=False, AllowP2shOutputs=False, AllowP2wshOutputs=False, DelayTransactionSigning=False,
         AnnouncerConfig=dict(CoordinatorName="Synthetic", IsEnabled=False, CoordinatorDescription="Local test",
-            CoordinatorUri=coordinator_url, AbsoluteMinInputCount=5, ReadMoreUri=coordinator_url, RelayUris=[], Key=""),
+            CoordinatorUri=coordinator_url, AbsoluteMinInputCount=21, ReadMoreUri=coordinator_url, RelayUris=[], Key=""),
         PublishAsOnionService=False)
     (coordinator_data / "Config.json").write_text(json.dumps(config), encoding="utf-8")
     env = {key: value for key, value in os.environ.items() if not key.startswith("MAGICALCRYPTOWALLET_")}
-    children, logs, clients, sends = [], [], [], []
+    children, logs, clients, sends, payments = [], [], [], [], []
 
     def launch(executable, arguments, name):
         log = (run / (name + ".log")).open("wb"); logs.append(log)
@@ -80,55 +84,68 @@ def main():
         mining_address = rpc(miner_url, "getnewaddress")
         rpc(node_url, "generatetoaddress", [150, mining_address], timeout=60)
         wait_for(lambda: (indexes := rpc(node_url, "getindexinfo")) and all(index["synced"] for index in indexes.values()))
-        for index in range(5):
+        for index in range(7):
             data = run / ("client " + str(index)); data.mkdir()
             url = f"http://127.0.0.1:{free_port()}/"
             cli = [f"--datadir={data}", "--network=RegTest", "--jsonrpcserverenabled=true", "--jsonrpcuser=synthetic",
                 "--jsonrpcpassword=synthetic", f"--jsonrpcserverprefixes={url}", f"--coordinatoruri={coordinator_url}",
                 "--usetor=Disabled", "--exchangerateprovider=None", "--feerateestimationprovider=None", "--downloadnewversion=false",
-                "--maxcoinjoinminingfeerate=500", "--absolutemininputcount=4", "--enablegpu=false"]
+                "--maxcoinjoinminingfeerate=50", "--enablegpu=false"]
             process = launch(daemon, cli, f"setup-{index}")
             wait_for_rpc_start(process, run / f"setup-{index}.log")
             wait_for(lambda: rpc(url, "getwalletinfo"))
-            rpc(url, "createwallet", [PASSWORD], timeout=60)
+            rpc(url, "createwallet", [PASSWORD])
             wait_for(lambda: ready(url), timeout=360)
             rpc(url, "stop")
             assert process.wait(timeout=40) == 0
-            wallet_file = data / "Wallets/RegTest/Wallet.json"
-            wallet = json.loads(wallet_file.read_text(encoding="utf-8-sig"))
-            wallet.update(AutoCoinJoin=True, AnonScoreTarget=5)
-            wallet_file.write_text(json.dumps(wallet), encoding="utf-8")
             process = launch(daemon, cli, f"client-{index}")
             wait_for_rpc_start(process, run / f"client-{index}.log")
             info = wait_for(lambda: ready(url), timeout=360)
             assert info["coinJoinRequiresAuthorization"] and info["coinjoinStatus"] == "Idle"
-            for _ in range(4):
-                address = rpc(url, "getnewaddress", ["synthetic funding"])["address"]
-                rpc(miner_url, "sendtoaddress", [address, 1.0])
+            assert info["anonScoreTarget"] == 2 and info["isAutoCoinjoin"]
+            assert not info["isNonPrivateCoinIsolation"] and not info["onlyUsePrivateFundsForPayments"]
+            if index == 0:
+                for removed in ([False], [None, False, True], {"stopWhenAllMixed": True}, {"overridePlebStop": True}):
+                    response = rpc(url, "startcoinjoin", removed, allow_error=True)
+                    assert response.get("error", {}).get("code") == -32602, response
+            address = rpc(url, "getnewaddress", ["synthetic funding"])["address"]
+            rpc(miner_url, "sendtoaddress", [address, 1.0])
             clients.append((process, url))
             print(f"Client {index}: encrypted startup synchronized without authorization.", flush=True)
         rpc(node_url, "generatetoaddress", [1, mining_address], timeout=60)
         for process, url in clients:
-            wait_for(lambda: ready(url, 400_000_000), timeout=360)
+            wait_for(lambda: ready(url, 100_000_000), timeout=360)
             assert process.poll() is None and rpc(url, "getwalletinfo")["coinJoinRequiresAuthorization"]
             destination = rpc(miner_url, "getnewaddress")
             payment = [dict(Sendto=destination, Amount=500_000, Label="synthetic send", SubtractFee=False)]
-            sends.append(rpc(url, "send", [payment, None, 2, PASSWORD], timeout=60)["txid"])
+            sends.append(rpc(url, "send", [payment, None, 2, PASSWORD])["txid"])
             assert not rpc(url, "getwalletinfo")["coinJoinRequiresAuthorization"]
-            wrong = rpc(url, "build", [payment, None, 2, "incorrect passphrase"], allow_error=True, timeout=60)
+            wrong = rpc(url, "build", [payment, None, 2, "incorrect passphrase"], allow_error=True)
             assert "error" in wrong, "A previous Send skipped a later passphrase check."
             print(f"Client {len(sends) - 1}: Send authorized automatic CoinJoin; later wrong password rejected.", flush=True)
+        # Send may consume the setup inputs. Fund each client independently again so at least
+        # 28 confirmed, below-target inputs are available under the fixed 21-input policy.
+        for _, url in clients:
+            for _ in range(4):
+                address = rpc(url, "getnewaddress", ["synthetic round funding"])["address"]
+                rpc(miner_url, "sendtoaddress", [address, 1.0])
         rpc(node_url, "generatetoaddress", [1, mining_address], timeout=60)
-        target_height = rpc(node_url, "getblockcount")
+        confirmation_height = rpc(node_url, "getblockcount")
+        for _, url in clients:
+            wait_for(lambda: (info := ready(url)) and info["syncHeight"] == info["targetHeight"] == confirmation_height, timeout=360)
+            wait_for(lambda: ready(url) and len([coin for coin in rpc(url, "listcoins") if coin["confirmed"] and coin["anonymityScore"] < 2]) >= 4, timeout=360)
+            destination = rpc(miner_url, "getnewaddress")
+            payment_id = rpc(url, "payincoinjoin", [destination, 500_000, PASSWORD])
+            payments.append((url, payment_id, destination))
         def waiting_for_round(url):
             info = rpc(url, "getwalletinfo")
-            return info if (info["synchronized"] and info["syncHeight"] >= target_height
+            return info if (info["synchronized"] and info["syncHeight"] >= confirmation_height
                 and info["coinjoinStatus"] == "InProgress") else False
         for index, (_, url) in enumerate(clients):
             wait_for(lambda: waiting_for_round(url), timeout=360)
-            print(f"Client {index}: synchronized at {target_height}; automatic CoinJoin is waiting for a round.", flush=True)
-        # InSchedule includes the randomized 60-180 second startup delay. Wait for
-        # every tracker to reach InProgress before opening the short synthetic round.
+            print(f"Client {index}: synchronized at {confirmation_height}; automatic CoinJoin is waiting for a round.", flush=True)
+        # Finish P2P broadcast cooldowns and wait for every tracker to actively
+        # await a round before opening the short synthetic registration window.
         service = launch(coordinator, [f"--datadir={coordinator_data}", f"--urls={coordinator_url}"], "coordinator")
         def coordinator_ready():
             assert service.poll() is None, "The isolated coordinator exited before becoming ready."
@@ -138,32 +155,43 @@ def main():
                 return response.status == 200
         wait_for(coordinator_ready)
         started = time.monotonic()
-        coinjoins = []
+        coinjoins, coinjoin_blocks = [], {}
         while time.monotonic() - started < args.timeout:
             assert service.poll() is None and all(process.poll() is None for process, _ in clients)
             for txid in rpc(node_url, "getrawmempool"):
                 if txid in sends or txid in coinjoins: continue
                 transaction = rpc(node_url, "getrawtransaction", [txid, True])
-                if len(transaction["vin"]) >= 5 and len(transaction["vout"]) >= 5:
+                if len(transaction["vin"]) >= 21 and len(transaction["vout"]) >= 7:
                     coinjoins.append(txid)
-                    # Confirm the coordinator broadcast and verify it through client P2P filters.
-                    rpc(node_url, "generatetoaddress", [1, mining_address], timeout=60)
-            if coinjoins and all(any(coin["anonymityScore"] > 1 for coin in rpc(url, "listcoins")) for _, url in clients):
+                    # Confirm the coordinator broadcast and verify the clients' confirmed outputs.
+                    coinjoin_blocks[txid] = rpc(node_url, "generatetoaddress", [1, mining_address], timeout=60)[0]
+            if coinjoins and all(any(coin["anonymityScore"] >= 2 for coin in rpc(url, "listcoins")) for _, url in clients) and all(any(payment["id"] == payment_id and payment["state"][0]["status"] == "Finished" for payment in rpc(url, "listpaymentsincoinjoin")) for url, payment_id, _ in payments):
                 break
             time.sleep(.5)
         assert coinjoins, "No CoinJoin broadcast before the deadline."
         rpc(node_url, "generatetoaddress", [1, mining_address], timeout=60)
         for _, url in clients:
             wait_for(lambda: ready(url), timeout=360)
-            wait_for(lambda: any(coin["anonymityScore"] > 1 and coin["confirmed"] for coin in rpc(url, "listcoins")))
+            wait_for(lambda: any(coin["anonymityScore"] >= 2 and coin["confirmed"] for coin in rpc(url, "listcoins")))
             rpc(url, "stopcoinjoin")
+        for url, payment_id, address in payments:
+            payment = next(payment for payment in rpc(url, "listpaymentsincoinjoin") if payment["id"] == payment_id)
+            assert payment["state"][0]["status"] == "Finished", payment
+            txid = payment["state"][0]["txid"]
+            assert txid == coinjoins[0], "Queued payments must be included in the first CoinJoin."
+            transaction = rpc(node_url, "getrawtransaction", [txid, True, coinjoin_blocks[txid]])
+            assert len(transaction["vin"]) >= 21 and transaction["confirmations"] >= 1
+            assert sum(output["scriptPubKey"].get("address") == address and round(output["value"] * 100_000_000) == 500_000 for output in transaction["vout"]) == 1, "Payment must be included exactly once."
+        measured_scores = [max(coin["anonymityScore"] for coin in rpc(url, "listcoins") if coin["confirmed"]) for _, url in clients]
+        input_counts = [len(rpc(node_url, "getrawtransaction", [txid, True, coinjoin_blocks[txid]])["vin"]) for txid in coinjoins]
         for process, url in clients:
             rpc(url, "stop")
             assert process.wait(timeout=45) == 0
         rpc(node_url, "stop"); assert node.wait(timeout=20) == 0
-        results = dict(independent_clients=5, encrypted_startup_without_authorization=True,
+        results = dict(independent_clients=7, fixed_target=2, fixed_minimum_inputs=21, first_round_payments_reconciled=True, encrypted_startup_without_authorization=True,
             send_authorizes_automatic_coinjoin=True, later_wrong_password_rejected=True,
-            every_client_received_confirmed_mixed_outputs=True, coinjoin_transactions=coinjoins)
+            every_client_received_confirmed_mixed_outputs=True, measured_anonymity_scores=measured_scores,
+            round_input_counts=input_counts, coinjoin_transactions=coinjoins)
         (run / "results.json").write_text(json.dumps(results, indent=2), encoding="utf-8")
         print(json.dumps(dict(results=results, artifacts=str(run))))
     finally:

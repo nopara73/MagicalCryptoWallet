@@ -323,26 +323,23 @@ public static class WabiSabiFactory
 			apiClientFactory,
 			new SyntheticKeyChain(keyManager, ""),
 			new OutputProvider(new InternalDestinationProvider(keyManager), RandomnessProviders.Insecure),
-			roundStateProvider,
-			keyManager.NonPrivateCoinIsolation);
+			roundStateProvider);
 	}
 
 	public static CoinJoinClient CreateTestCoinJoinClient(
 		Func<string, IWabiSabiApiRequestHandler> apiClientFactory,
 		IKeyChain keyChain,
 		OutputProvider outputProvider,
-		RoundStateProvider roundStateProvider,
-		bool redCoinIsolation)
+		RoundStateProvider roundStateProvider)
 	{
-		var semiPrivateThreshold = redCoinIsolation ? Constants.SemiPrivateThreshold : 0;
-		var coinSelector = new CoinJoinCoinSelector(consolidationMode: true, anonScoreTarget: int.MaxValue, semiPrivateThreshold: semiPrivateThreshold);
+		var coinSelector = new CoinJoinCoinSelector();
 		var coinjoinClient = new TestableCoinJoinClient(
 			apiClientFactory,
 			keyChain,
 			outputProvider,
 			roundStateProvider,
 			coinSelector,
-			new CoinJoinConfiguration("CoinJoinCoordinatorIdentifier", 150.0m, 1, AllowSoloCoinjoining: true),
+			new CoinJoinConfiguration("CoinJoinCoordinatorIdentifier", 150.0m),
 			new LiquidityClueProvider(),
 			TimeSpan.Zero);
 

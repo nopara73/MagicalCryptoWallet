@@ -29,6 +29,10 @@ public class Config
 		{
 			throw new ArgumentException("Wallet selection is no longer supported. The configured wallet opens automatically.", nameof(cliArgs));
 		}
+		if (cliArgs.Any(arg => arg.Equals("--absolutemininputcount", StringComparison.OrdinalIgnoreCase)) || GetOverrideValue("AbsoluteMinInputCount", cliArgs, out _, out _))
+		{
+			throw new ArgumentException("CoinJoin requires 21 inputs; minimum-input overrides are no longer supported.", nameof(cliArgs));
+		}
 		PersistentConfig = persistentConfig;
 		CliArgs = cliArgs;
 
@@ -36,7 +40,6 @@ public class Config
 			[nameof(Network)] = GetNetworkValue("Network", PersistentConfig.Network.ToString(), []),
 			[nameof(CoordinatorUri)] = GetStringValue("CoordinatorUri", PersistentConfig.CoordinatorUri, cliArgs),
 			[nameof(UseTor)] = GetTorModeValue("UseTor", PersistentConfig.UseTor, cliArgs),
-			[nameof(UseTorForPublicData)] = GetBoolValue("UseTorForPublicData", PersistentConfig.UseTorForPublicData, cliArgs),
 			[nameof(TorFolder)] = GetNullableStringValue("TorFolder", null, cliArgs),
 			[nameof(TorSocksPort)] = GetLongValue("TorSocksPort", TorSettings.DefaultSocksPort, cliArgs),
 			[nameof(TorControlPort)] = GetLongValue("TorControlPort", TorSettings.DefaultControlPort, cliArgs),
@@ -55,7 +58,6 @@ public class Config
 			[nameof(EnableGpu)] = GetBoolValue("EnableGpu", PersistentConfig.EnableGpu, cliArgs),
 			[nameof(CoordinatorIdentifier)] = GetStringValue("CoordinatorIdentifier", PersistentConfig.CoordinatorIdentifier, cliArgs),
 			[nameof(MaxCoinjoinMiningFeeRate)] = GetDecimalValue("MaxCoinjoinMiningFeeRate", PersistentConfig.MaxCoinJoinMiningFeeRate, cliArgs),
-			[nameof(AbsoluteMinInputCount)] = GetLongValue("AbsoluteMinInputCount", PersistentConfig.AbsoluteMinInputCount, cliArgs),
 			[nameof(ExchangeRateProvider)] = GetStringValue("ExchangeRateProvider", PersistentConfig.ExchangeRateProvider, cliArgs),
 			[nameof(FeeRateEstimationProvider)] = GetStringValue("FeeRateEstimationProvider", PersistentConfig.FeeRateEstimationProvider, cliArgs),
 			[nameof(ExternalTransactionBroadcaster)] = GetStringValue("ExternalTransactionBroadcaster", PersistentConfig.ExternalTransactionBroadcaster, cliArgs),
@@ -87,8 +89,7 @@ public class Config
 		{
 			[nameof(Network)] = "The Bitcoin network to use: main, testnet, signet, or regtest",
 			[nameof(CoordinatorUri)] = "The coordinator server's URL to connect to",
-			[nameof(UseTor)] = "Route wallet transactions, CoinJoin, and remote payment requests through Tor",
-			[nameof(UseTorForPublicData)] = "Also route public prices, fees, updates, and blockchain synchronization through Tor",
+			[nameof(UseTor)] = "Route transaction broadcasting, CoinJoin, and transaction-specific lookups through Tor",
 			[nameof(TorFolder)] = "Folder where Tor binary is located",
 			[nameof(TorSocksPort)] = "Tor is started to listen with the specified SOCKS5 port",
 			[nameof(TorControlPort)] = "Tor is started to listen with the specified control port",
@@ -107,7 +108,6 @@ public class Config
 			[nameof(EnableGpu)] = "Use a GPU to render the user interface",
 			[nameof(CoordinatorIdentifier)] = "-",
 			[nameof(MaxCoinjoinMiningFeeRate)] = "Max mining fee rate in sat/vb the client is willing to pay to participate into a round",
-			[nameof(AbsoluteMinInputCount)] = "Minimum number of inputs the client is willing to accept to participate into a round",
 			[nameof(ExchangeRateProvider)] = "The BTC/USD exchange rate provider. Available providers are MempoolSpace (default), Gemini, BlockchainInfo, CoinGecko or None",
 			[nameof(FeeRateEstimationProvider)] = "The mining fee rate estimation provider. Available providers are MempoolSpace (default), BlockstreamInfo, BlockXyz or None",
 			[nameof(ExternalTransactionBroadcaster)] = "Third party transaction broadcaster. Available broadcasters are MempoolSpace (default) and BlockstreamInfo",
@@ -121,8 +121,6 @@ public class Config
 
 	public string CoordinatorUri => GetEffectiveValue<string>(nameof(CoordinatorUri));
 	public TorMode UseTor => Network == Network.RegTest ? TorMode.Disabled : GetEffectiveValue<TorMode>(nameof(UseTor));
-	public bool UseTorForPublicData => GetEffectiveValue<bool>(nameof(UseTorForPublicData)) || PlatformInformation.IsTailsOS() || PlatformInformation.IsWhonix();
-	public bool UseSeparatePublicPeerPool => UseTor != TorMode.Disabled && !UseTorForPublicData;
 	public string? TorFolder => GetEffectiveValue<string?>(nameof(TorFolder));
 	public int TorSocksPort => GetEffectiveValue<int>(nameof(TorSocksPort));
 	public int TorControlPort => GetEffectiveValue<int>(nameof(TorControlPort));
@@ -144,9 +142,6 @@ public class Config
 	public bool EnableGpu => GetEffectiveValue<bool>(nameof(EnableGpu));
 	public string CoordinatorIdentifier => GetEffectiveValue<string>(nameof(CoordinatorIdentifier));
 	public decimal MaxCoinjoinMiningFeeRate => GetEffectiveValue<decimal>(nameof(MaxCoinjoinMiningFeeRate));
-	public int AbsoluteMinInputCount => int.Max(
-		GetEffectiveValue<int>(nameof(AbsoluteMinInputCount)),
-		Constants.AbsoluteMinInputCount);
 
 	public string[] ExperimentalFeatures => GetEffectiveValue<string[]>(nameof(ExperimentalFeatures));
 

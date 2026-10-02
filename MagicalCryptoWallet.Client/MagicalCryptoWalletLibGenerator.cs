@@ -7,6 +7,7 @@ using MagicalCryptoWallet.Blockchain.Blocks;
 using MagicalCryptoWallet.Blockchain.Keys;
 using MagicalCryptoWallet.Blockchain.TransactionOutputs;
 using MagicalCryptoWallet.Blockchain.Transactions;
+using MagicalCryptoWallet.Helpers;
 using MagicalCryptoWallet.Wallets;
 
 namespace MagicalCryptoWallet.Client;
@@ -75,9 +76,9 @@ public static class MagicalCryptoWalletLibGenerator
 
 		// KeyManager accessors (chained via wallet-keymanager)
 		DefineAccessorWithGetter("wallet-path", (KeyManager km) => km.FilePath, "wallet-keymanager");
-		DefineAccessorWithGetter("wallet-auto-coinjoin?", (KeyManager km) => km.AutoCoinJoin, "wallet-keymanager");
-		DefineAccessorWithGetter("wallet-non-private-coin-isolation?", (KeyManager km) => km.NonPrivateCoinIsolation, "wallet-keymanager");
-		DefineAccessorWithGetter("wallet-anonscore-target", (KeyManager km) => km.AnonScoreTarget, "wallet-keymanager");
+		accessorLines.Add("(define (wallet-auto-coinjoin? wallet) #t)");
+		accessorLines.Add("(define (wallet-non-private-coin-isolation? wallet) #f)");
+		accessorLines.Add($"(define (wallet-anonscore-target wallet) {MagicalCryptoWallet.Helpers.Constants.AnonymityScoreTarget})");
 
 		// Additional KeyManager accessors (chained via wallet-keymanager)
 		DefineAccessorWithGetter("wallet-master-fingerprint", (KeyManager km) => km.MasterFingerprint, "wallet-keymanager");

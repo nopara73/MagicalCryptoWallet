@@ -4,6 +4,7 @@ using NBitcoin.Protocol.Behaviors;
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using MagicalCryptoWallet.Blockchain.Mempool;
 using MagicalCryptoWallet.Blockchain.Transactions;
@@ -17,15 +18,22 @@ public class P2pBehavior : NodeBehavior
 	private const int MaxInvSize = 50000;
 
 	private static readonly ConcurrentDictionary<Node, FeeRate> PeerFeeFilters = new();
+	private readonly ConcurrentDictionary<uint256, (InventoryVector Inventory, DateTimeOffset Expires)> _pending = new();
+	private readonly Guid _requestOwner = Guid.NewGuid();
+	private CancellationTokenSource? _lifetime;
+	private Timer? _retryTimer;
+	private int _requesting;
 
-	public P2pBehavior(MempoolService mempoolService, bool listenForTransactions = true)
+	public P2pBehavior(MempoolService mempoolService, bool listenForTransactions = true, bool serveBroadcasts = true)
 	{
 		MempoolService = mempoolService;
 		ListenForTransactions = listenForTransactions;
+		ServeBroadcasts = serveBroadcasts;
 	}
 
 	public MempoolService MempoolService { get; }
 	public bool ListenForTransactions { get; }
+	public bool ServeBroadcasts { get; }
 
 	public static FeeRate? GetMinPeerFeeFilter() =>
 		PeerFeeFilters.Select(x => x.Value).MinOrDefault();
@@ -40,20 +48,32 @@ public class P2pBehavior : NodeBehavior
 	protected override void AttachCore()
 	{
 		AttachedNode.MessageReceived += AttachedNode_MessageReceivedAsync;
-		PeerFeeFilters[AttachedNode] = new FeeRate(1m);
+		if (ServeBroadcasts) { PeerFeeFilters[AttachedNode] = new FeeRate(1m); }
+		if (ListenForTransactions)
+		{
+			_lifetime = new CancellationTokenSource();
+			var token = _lifetime.Token;
+			var node = AttachedNode;
+			_retryTimer = new Timer(_ => _ = RequestPendingAsync(node, token), null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
+		}
 	}
 
 	protected override void DetachCore()
 	{
 		AttachedNode.MessageReceived -= AttachedNode_MessageReceivedAsync;
 		PeerFeeFilters.TryRemove(AttachedNode, out _);
+		_retryTimer?.Dispose();
+		_lifetime?.Cancel();
+		_lifetime?.Dispose();
+		MempoolService.Requests.ReleaseOwner(_requestOwner);
+		_pending.Clear();
 	}
 
 	private async void AttachedNode_MessageReceivedAsync(Node node, IncomingMessage message)
 	{
 		try
 		{
-			if (message.Message.Payload is GetDataPayload getDataPayload)
+			if (ServeBroadcasts && message.Message.Payload is GetDataPayload getDataPayload)
 			{
 				await ProcessGetDataAsync(node, getDataPayload).ConfigureAwait(false);
 			}
@@ -61,13 +81,21 @@ public class P2pBehavior : NodeBehavior
 			{
 				ProcessTx(txPayload);
 			}
-			else if (message.Message.Payload is FeeFilterPayload feeFilterPayload)
+			else if (ServeBroadcasts && message.Message.Payload is FeeFilterPayload feeFilterPayload)
 			{
 				PeerFeeFilters[node] = feeFilterPayload.FeeRate;
 			}
 			else if (message.Message.Payload is InvPayload invPayload)
 			{
 				await ProcessInventoryAsync(node, invPayload).ConfigureAwait(false);
+			}
+			else if (ListenForTransactions && message.Message.Payload is NotFoundPayload notFound)
+			{
+				foreach (var inv in notFound.Inventory)
+				{
+					_pending.TryRemove(inv.Hash, out _);
+					MempoolService.Requests.Release(inv.Hash, _requestOwner);
+				}
 			}
 		}
 		catch (OperationCanceledException ex)
@@ -83,27 +111,62 @@ public class P2pBehavior : NodeBehavior
 
 	private async Task ProcessInventoryAsync(Node node, InvPayload invPayload)
 	{
-		var getDataPayload = new GetDataPayload();
+		if (invPayload.Inventory.Count > MaxInvSize) { return; }
 		foreach (var inv in invPayload.Inventory)
 		{
 			if (ProcessInventoryVector(inv, node.RemoteSocketEndpoint))
 			{
-				getDataPayload.Inventory.Add(new InventoryVector(node.AddSupportedOptions(inv.Type), inv.Hash));
+				if (_pending.Count < MaxInvSize) { _pending.TryAdd(inv.Hash, (inv, DateTimeOffset.UtcNow.AddMinutes(2))); }
 			}
 		}
-		if (getDataPayload.Inventory.Count != 0 && node.IsConnected)
+		if (_lifetime is { } lifetime) { await RequestPendingAsync(node, lifetime.Token).ConfigureAwait(false); }
+	}
+
+	private async Task RequestPendingAsync(Node node, CancellationToken cancellationToken)
+	{
+		if (Interlocked.CompareExchange(ref _requesting, 1, 0) != 0) { return; }
+		var getDataPayload = new GetDataPayload();
+		try
 		{
-			await node.SendMessageAsync(getDataPayload).ConfigureAwait(false);
+			if (!node.IsConnected || cancellationToken.IsCancellationRequested) { return; }
+			var now = DateTimeOffset.UtcNow;
+			foreach (var (hash, pending) in _pending)
+			{
+				if (MempoolService.IsProcessed(hash) || pending.Expires <= now)
+				{
+					_pending.TryRemove(hash, out _);
+					MempoolService.Requests.Release(hash, _requestOwner);
+				}
+				else if (MempoolService.Requests.TryRequest(hash, _requestOwner, now))
+				{
+					getDataPayload.Inventory.Add(new InventoryVector(node.AddSupportedOptions(pending.Inventory.Type), hash));
+				}
+			}
+			if (getDataPayload.Inventory.Count != 0)
+			{
+				await node.SendMessageAsync(getDataPayload).WaitAsync(cancellationToken).ConfigureAwait(false);
+			}
+		}
+		catch (Exception ex)
+		{
+			foreach (var inv in getDataPayload.Inventory) { MempoolService.Requests.Release(inv.Hash, _requestOwner); }
+			if (ex is not OperationCanceledException) { Logger.LogDebug(ex); }
+		}
+		finally
+		{
+			if (cancellationToken.IsCancellationRequested) { MempoolService.Requests.ReleaseOwner(_requestOwner); }
+			Interlocked.Exchange(ref _requesting, 0);
 		}
 	}
 
-	private bool ProcessInventoryVector(InventoryVector inv, EndPoint remoteSocketEndpoint)
+	internal bool ProcessInventoryVector(InventoryVector inv, EndPoint remoteSocketEndpoint)
 	{
-		if (inv.Type.HasFlag(InventoryType.MSG_TX))
+		if ((inv.Type & ~InventoryType.MSG_WITNESS_FLAG) is InventoryType.MSG_TX or InventoryType.MSG_WTX)
 		{
-			if (MempoolService.TryGetFromBroadcastStore(inv.Hash, out TransactionBroadcastEntry? entry)) // If we have the transaction then adjust confirmation.
+			if (ServeBroadcasts && MempoolService.TryGetFromBroadcastStore(inv.Hash, out TransactionBroadcastEntry? entry))
 			{
 				entry.ConfirmPropagationOnce(remoteSocketEndpoint);
+				return false;
 			}
 
 			if (!ListenForTransactions) { return false; }
@@ -154,5 +217,5 @@ public class P2pBehavior : NodeBehavior
 		MempoolService.Process(transaction);
 	}
 
-	public override object Clone() => new P2pBehavior(MempoolService, ListenForTransactions);
+	public override object Clone() => new P2pBehavior(MempoolService, ListenForTransactions, ServeBroadcasts);
 }

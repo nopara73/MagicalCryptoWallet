@@ -20,7 +20,6 @@ public static class PersistentConfigEncode
 		Object([
 			("CoordinatorUri", String(cfg.CoordinatorUri)),
 			("UseTor", UseTor(cfg.UseTor)),
-			("UseTorForPublicData", Bool(cfg.UseTorForPublicData)),
 			("TerminateTorOnExit", Bool(cfg.TerminateTorOnExit)),
 			("TorBridges", Array(cfg.TorBridges.Select(String))),
 			("DownloadNewVersion", Bool(cfg.DownloadNewVersion)),
@@ -35,7 +34,6 @@ public static class PersistentConfigEncode
 			("FeeRateEstimationProvider", String(cfg.FeeRateEstimationProvider)),
 			("ExternalTransactionBroadcaster", String(cfg.ExternalTransactionBroadcaster)),
 			("MaxCoinJoinMiningFeeRate", Decimal(cfg.MaxCoinJoinMiningFeeRate)),
-			("AbsoluteMinInputCount", Int(cfg.AbsoluteMinInputCount)),
 			("MaxDaysInMempool", Int(cfg.MaxDaysInMempool)),
 			("ExperimentalFeatures", Array(cfg.ExperimentalFeatures.Select(String))),
 			("ConfigVersion", Int(4))
@@ -69,7 +67,6 @@ public static class PersistentConfigDecode
 					Network: Network.Main, // Network is not part of the config
 					CoordinatorUri: get.Required("CoordinatorUri", Decode.String),
 					UseTor: get.Required("UseTor", UseTor),
-					UseTorForPublicData: get.Optional("UseTorForPublicData", Decode.Bool, false),
 					TerminateTorOnExit: get.Required("TerminateTorOnExit", Decode.Bool),
 					TorBridges: get.Required("TorBridges", ValueList(Decode.String)),
 					DownloadNewVersion: get.Required("DownloadNewVersion", Decode.Bool),
@@ -86,7 +83,6 @@ public static class PersistentConfigDecode
 					                                "MempoolSpace",
 					CoordinatorIdentifier: get.Required("CoordinatorIdentifier", Decode.String),
 					MaxCoinJoinMiningFeeRate: get.Required("MaxCoinJoinMiningFeeRate", Decode.Decimal),
-					AbsoluteMinInputCount: get.Required("AbsoluteMinInputCount", Decode.Int),
 					MaxDaysInMempool: get.Optional("MaxDaysInMempool", Decode.Int, Constants.DefaultMaxDaysInMempool),
 					ExperimentalFeatures: get.Optional("ExperimentalFeatures", ValueList(Decode.String)) ??
 					                      Helpers.ValueList<string>.Empty,

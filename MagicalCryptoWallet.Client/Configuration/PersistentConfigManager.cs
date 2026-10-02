@@ -31,7 +31,6 @@ public static class PersistentConfigManager
 		FeeRateEstimationProvider : Constants.DefaultFeeRateEstimationProvider,
 		ExternalTransactionBroadcaster : Constants.DefaultExternalTransactionBroadcaster,
 		MaxCoinJoinMiningFeeRate : Constants.DefaultMaxCoinJoinMiningFeeRate,
-		AbsoluteMinInputCount : Constants.DefaultAbsoluteMinInputCount,
 		MaxDaysInMempool : Constants.DefaultMaxDaysInMempool,
 		ExperimentalFeatures: [],
 		ConfigVersion : 4);
@@ -41,7 +40,6 @@ public static class PersistentConfigManager
 		Network = Network.TestNet,
 		CoordinatorUri = Constants.TestnetCoordinatorUri,
 		JsonRpcServerEnabled = true,
-		AbsoluteMinInputCount = Constants.AbsoluteMinInputCount,
 		ExperimentalFeatures = new ValueList<string>(["scripting"]),
 	};
 

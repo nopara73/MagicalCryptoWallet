@@ -28,10 +28,59 @@ using Xunit;
 
 namespace MagicalCryptoWallet.Tests.UnitTests.WabiSabi.Client;
 
+[Collection("Serial unit tests collection")]
 public class CoinJoinClientTests
 {
-	[Fact]
-	public async Task ClientRefusesToSignWhenActualInputCountBelowConfiguredMinimumAsync()
+	[Theory]
+	[InlineData(20, 50)]
+	[InlineData(21, 51)]
+	public async Task WaitForRoundEnforcesAdvertisedSizeAndFeeCeilingAsync(int minimum, int fee)
+	{
+		RoundState CreateState(int min, int rate) => RoundState.FromRound(WabiSabiFactory.CreateRound(
+			WabiSabiFactory.CreateRoundParameters(new WabiSabiConfig()) with { MinInputCountByRound = min, MiningFeeRate = new FeeRate((decimal)rate) }));
+		var invalid = CreateState(minimum, fee);
+		var handler = new SigningCaptureRequestHandler(invalid);
+		using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+		using var updater = RoundStateUpdaterForTesting.CreateManual(handler, timeout.Token);
+		var (keyChain, _, _) = WabiSabiFactory.CreateCoinKeyPairs();
+		var client = new CoinJoinClient(_ => handler, keyChain, null!, new RoundStateProvider(updater), new(), new("synthetic", 50m), new());
+		var method = typeof(CoinJoinClient).GetMethod("WaitForRoundAsync", BindingFlags.Instance | BindingFlags.NonPublic)!;
+		var waiting = (Task<RoundState>)method.Invoke(client, [uint256.Zero, timeout.Token])!;
+		updater.Update();
+		await handler.StatusRequested.WaitAsync(timeout.Token);
+		await Task.Delay(100, timeout.Token);
+		Assert.False(waiting.IsCompleted);
+		var valid = CreateState(21, 50);
+		handler.RoundState = valid;
+		updater.Update();
+		Assert.Equal(valid.Id, (await waiting).Id);
+	}
+
+	[Theory]
+	[InlineData(20, false)]
+	[InlineData(21, true)]
+	public async Task BlameRoundEnforcesAdvertisedSizeAsync(int minimum, bool allowed)
+	{
+		var parent = uint256.One;
+		var state = RoundState.FromRound(WabiSabiFactory.CreateRound(WabiSabiFactory.CreateRoundParameters(new WabiSabiConfig())
+			with { MinInputCountByRound = minimum, MiningFeeRate = new FeeRate(50m) })) with { BlameOf = parent };
+		var handler = new SigningCaptureRequestHandler(state);
+		using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+		using var updater = RoundStateUpdaterForTesting.CreateManual(handler, timeout.Token);
+		var (keyChain, _, _) = WabiSabiFactory.CreateCoinKeyPairs();
+		var client = new CoinJoinClient(_ => handler, keyChain, null!, new RoundStateProvider(updater), new(), new("synthetic", 50m), new());
+		var method = typeof(CoinJoinClient).GetMethod("WaitForBlameRoundAsync", BindingFlags.Instance | BindingFlags.NonPublic)!;
+		var waiting = (Task<RoundState>)method.Invoke(client, [parent, timeout.Token])!;
+		updater.Update();
+		if (allowed) { Assert.Equal(state.Id, (await waiting).Id); }
+		else { await Assert.ThrowsAsync<InvalidOperationException>(() => waiting); }
+	}
+
+	[Theory]
+	[InlineData(2)]
+	[InlineData(20)]
+	[InlineData(21)]
+	public async Task SigningRequiresAtLeastTwentyOneActualInputsAsync(int inputCount)
 	{
 		var roundParameters = WabiSabiFactory.CreateRoundParameters(new WabiSabiConfig()) with
 		{
@@ -43,29 +92,20 @@ public class CoinJoinClientTests
 
 		// Create victim's coin and coordinator's coin
 		var (keyChain, victimCoin, _) = WabiSabiFactory.CreateCoinKeyPairs();
-		var (coordinatorKeyChain, coordinatorCoin, _) = WabiSabiFactory.CreateCoinKeyPairs();
-
 		var commitment = new CoinJoinInputCommitmentData(roundParameters.CoordinationIdentifier, round.Id);
-		var victimProof = keyChain.GetOwnershipProof(victimCoin, commitment);
-		var coordinatorProof = coordinatorKeyChain.GetOwnershipProof(coordinatorCoin, commitment);
-
-		// Create outputs for both parties
 		using var victimOutputKey = new Key();
-		using var coordinatorOutputKey = new Key();
-		var victimOutput = new TxOut(
-			Money.Satoshis(victimCoin.Amount.Satoshi - 105),
-			victimOutputKey.PubKey.GetScriptPubKey(ScriptPubKeyType.Segwit));
-		var coordinatorOutput = new TxOut(
-			Money.Satoshis(coordinatorCoin.Amount.Satoshi - 105),
-			coordinatorOutputKey.PubKey.GetScriptPubKey(ScriptPubKeyType.Segwit));
-
-		// Build the signing state with only 2 inputs (victim + coordinator)
-		var signingState = new ConstructionState(roundParameters)
-			.AddInput(victimCoin.Coin, victimProof, commitment)
-			.AddInput(coordinatorCoin.Coin, coordinatorProof, commitment)
-			.AddOutput(victimOutput)
-			.AddOutput(coordinatorOutput)
-			.Finalize();
+		var victimOutput = new TxOut(Money.Satoshis(victimCoin.Amount.Satoshi - 105), victimOutputKey.PubKey.GetScriptPubKey(ScriptPubKeyType.Segwit));
+		var construction = new ConstructionState(roundParameters)
+			.AddInput(victimCoin.Coin, keyChain.GetOwnershipProof(victimCoin, commitment), commitment)
+			.AddOutput(victimOutput);
+		for (int i = 1; i < inputCount; i++)
+		{
+			var (otherKeyChain, otherCoin, _) = WabiSabiFactory.CreateCoinKeyPairs();
+			using var otherOutputKey = new Key();
+			construction = construction.AddInput(otherCoin.Coin, otherKeyChain.GetOwnershipProof(otherCoin, commitment), commitment)
+				.AddOutput(new TxOut(Money.Satoshis(otherCoin.Amount.Satoshi - 105), otherOutputKey.PubKey.GetScriptPubKey(ScriptPubKeyType.Segwit)));
+		}
+		var signingState = construction.Finalize();
 		round.CoinjoinState = signingState;
 		round.SetPhase(Phase.TransactionSigning);
 		var roundState = RoundState.FromRound(round);
@@ -76,14 +116,14 @@ public class CoinJoinClientTests
 		using var roundStateUpdater = RoundStateUpdaterForTesting.Create(requestHandler, updaterCts.Token);
 		var roundStateProvider = new RoundStateProvider(roundStateUpdater);
 
-		// Create CoinJoinClient with AbsoluteMinInputCount = 21
+		// Fixed policy applies to the actual transaction as well as the advertisement.
 		var coinJoinClient = new CoinJoinClient(
 			_ => requestHandler,
 			keyChain,
 			outputProvider: null!,
 			roundStateProvider,
-			new CoinJoinCoinSelector(consolidationMode: true, anonScoreTarget: int.MaxValue, semiPrivateThreshold: 0),
-			new CoinJoinConfiguration(roundParameters.CoordinationIdentifier, 150m, AbsoluteMinInputCount: 21, AllowSoloCoinjoining: false),
+			new CoinJoinCoinSelector(),
+			new CoinJoinConfiguration(roundParameters.CoordinationIdentifier, 150m),
 			new LiquidityClueProvider());
 
 		// Create an AliceClient for the victim
@@ -99,12 +139,9 @@ public class CoinJoinClientTests
 
 		var (_, aliceClientsThatSigned) = await signingTask;
 
-		// Assert: With the fix, hasTooFewInputs = true (2 < 21), so mustSignAllInputs = false.
-		// With only 1 alice and mustSignAllInputs = false, the client signs with
-		// RemoveAt(random) which results in 0 signatures being sent.
-		Assert.Empty(aliceClientsThatSigned);
-		Assert.Equal(0, requestHandler.SignatureRequests);
-		Assert.Null(requestHandler.CapturedSignature);
+		Assert.Equal(inputCount >= 21 ? 1 : 0, aliceClientsThatSigned.Length);
+		Assert.Equal(inputCount >= 21 ? 1 : 0, requestHandler.SignatureRequests);
+
 	}
 
 	/// <summary>
@@ -127,7 +164,7 @@ public class CoinJoinClientTests
 			? new WabiSabiProtocolException(WabiSabiProtocolErrorCode.WrongPhase, exceptionData: new WrongPhaseExceptionData(Phase.Ended))
 			: null;
 
-		// Round state (i.e. with AbortedNotEnoughAlices) to report through GetStatus API endpoint. 
+		// Round state (i.e. with AbortedNotEnoughAlices) to report through GetStatus API endpoint.
 		var getStatusRoundState = RoundState.FromRound(round);
 
 		var requestHandler = new InputRegistrationFailingRequestHandler(getStatusRoundState, inputRegistrationError);
@@ -290,8 +327,8 @@ public class CoinJoinClientTests
 			keyChain,
 			outputProvider: null!,
 			roundStateProvider,
-			new CoinJoinCoinSelector(consolidationMode: true, anonScoreTarget: int.MaxValue, semiPrivateThreshold: 0),
-			new CoinJoinConfiguration("CoinJoinCoordinatorIdentifier", 150m, AbsoluteMinInputCount: 2, AllowSoloCoinjoining: false),
+			new CoinJoinCoinSelector(),
+			new CoinJoinConfiguration("CoinJoinCoordinatorIdentifier", 150m),
 			new LiquidityClueProvider());
 }
 
@@ -340,11 +377,17 @@ file sealed class InputRegistrationFailingRequestHandler(RoundState roundState, 
 
 file sealed class SigningCaptureRequestHandler(RoundState roundState) : IWabiSabiApiRequestHandler
 {
+	public RoundState RoundState { get; set; } = roundState;
+	private readonly TaskCompletionSource _statusRequested = new(TaskCreationOptions.RunContinuationsAsynchronously);
+	public Task StatusRequested => _statusRequested.Task;
 	public int SignatureRequests { get; private set; }
 	public TransactionSignaturesRequest? CapturedSignature { get; private set; }
 
-	public Task<RoundStateResponse> GetStatusAsync(RoundStateRequest request, CancellationToken cancellationToken) =>
-		Task.FromResult(new RoundStateResponse([roundState]));
+	public Task<RoundStateResponse> GetStatusAsync(RoundStateRequest request, CancellationToken cancellationToken)
+	{
+		_statusRequested.TrySetResult();
+		return Task.FromResult(new RoundStateResponse([RoundState]));
+	}
 
 	public Task SignTransactionAsync(TransactionSignaturesRequest request, CancellationToken cancellationToken)
 	{

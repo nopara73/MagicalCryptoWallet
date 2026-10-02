@@ -31,7 +31,7 @@ permissions:
   contents: read
   actions: read
 concurrency:
-  group: build-${{ github.event.pull_request.head.ref || github.ref_name }}-${{ inputs.production || false }}
+  group: build-${{ github.event.pull_request.head.ref || github.ref_name }}-${{ inputs.production || false }}-${{ github.event_name == 'workflow_dispatch' && github.run_id || 'latest' }}
   cancel-in-progress: true
 jobs:
   platform:

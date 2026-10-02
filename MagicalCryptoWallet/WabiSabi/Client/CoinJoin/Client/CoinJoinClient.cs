@@ -29,8 +29,7 @@ public class CoinJoinClient
 		CoinJoinCoinSelector coinJoinCoinSelector,
 		CoinJoinConfiguration coinJoinConfiguration,
 		LiquidityClueProvider liquidityClueProvider,
-		TimeSpan doNotRegisterInLastMinuteTimeLimit = default,
-		int minAnonScoreForPayments = 0)
+		TimeSpan doNotRegisterInLastMinuteTimeLimit = default)
 	{
 		ArenaRequestHandlerFactory = arenaRequestHandlerFactory;
 		_keyChain = keyChain;
@@ -41,7 +40,6 @@ public class CoinJoinClient
 		_coinJoinCoinSelector = coinJoinCoinSelector;
 		_secureRandom = SecureRandom.Instance;
 		_doNotRegisterInLastMinuteTimeLimit = doNotRegisterInLastMinuteTimeLimit;
-		_minAnonScoreForPayments = minAnonScoreForPayments;
 	}
 
 	public event EventHandler<CoinJoinProgressEventArgs>? CoinJoinClientProgress;
@@ -57,7 +55,6 @@ public class CoinJoinClient
 	private readonly CoinJoinConfiguration _coinJoinConfiguration;
 	private readonly CoinJoinCoinSelector _coinJoinCoinSelector;
 	private readonly TimeSpan _doNotRegisterInLastMinuteTimeLimit;
-	private readonly int _minAnonScoreForPayments;
 	private readonly TimeSpan _maxWaitingTimeForRound = TimeSpan.FromMinutes(10);
 
 	private async Task<RoundState> WaitForRoundAsync(uint256 excludeRound, CancellationToken token)
@@ -72,6 +69,8 @@ public class CoinJoinClient
 				roundState =>
 					roundState.InputRegistrationEnd - DateTimeOffset.UtcNow > _doNotRegisterInLastMinuteTimeLimit
 					&& roundState.CoinjoinState.Parameters.AllowedOutputAmounts.Min < MinimumOutputAmountSanity
+					&& roundState.CoinjoinState.Parameters.MiningFeeRate.SatoshiPerByte <= _coinJoinConfiguration.MaxCoinJoinMiningFeeRate
+					&& roundState.CoinjoinState.Parameters.MinInputCountByRound >= Constants.CoinJoinMinimumInputCount
 					&& roundState.Phase == Phase.InputRegistration
 					&& !roundState.IsBlame
 					&& roundState.Id != excludeRound,
@@ -103,7 +102,7 @@ public class CoinJoinClient
 			throw new InvalidOperationException($"Blame Round ({roundState.Id}): Abandoning: the minimum output amount is too high.");
 		}
 
-		if (roundState.CoinjoinState.Parameters.MinInputCountByRound < _coinJoinConfiguration.AbsoluteMinInputCount)
+		if (roundState.CoinjoinState.Parameters.MinInputCountByRound < Constants.CoinJoinMinimumInputCount)
 		{
 			throw new InvalidOperationException($"Blame Round ({roundState.Id}): Abandoning: the minimum input count was too low.");
 		}
@@ -140,9 +139,9 @@ public class CoinJoinClient
 					Logger.LogInfo(FormatLog(roundSkippedMessage, currentRoundState));
 					throw new CoinJoinClientException(CoinjoinError.MiningFeeRateTooHigh, roundSkippedMessage);
 				}
-				if (roundParameters.MinInputCountByRound < _coinJoinConfiguration.AbsoluteMinInputCount)
+				if (roundParameters.MinInputCountByRound < Constants.CoinJoinMinimumInputCount)
 				{
-					string roundSkippedMessage = $"Min input count for the round was {roundParameters.MinInputCountByRound} but min allowed is {_coinJoinConfiguration.AbsoluteMinInputCount}.";
+					string roundSkippedMessage = $"Min input count for the round was {roundParameters.MinInputCountByRound} but min allowed is {Constants.CoinJoinMinimumInputCount}.";
 					Logger.LogInfo(FormatLog(roundSkippedMessage, currentRoundState));
 					throw new CoinJoinClientException(CoinjoinError.MinInputCountTooLow, roundSkippedMessage);
 				}
@@ -804,9 +803,7 @@ public class CoinJoinClient
 		}
 
 
-		var arePaymentsAllowed = registeredAliceClients.All(x => x.SmartCoin.IsPrivate(_minAnonScoreForPayments));
-
-		var outputTxOuts = _outputProvider.GetOutputs(roundId, roundParameters, registeredCoinEffectiveValues, theirCoinEffectiveValues, (int)availableVsizes.Sum(), arePaymentsAllowed).ToArray();
+		var outputTxOuts = _outputProvider.GetOutputs(roundId, roundParameters, registeredCoinEffectiveValues, theirCoinEffectiveValues, (int)availableVsizes.Sum()).ToArray();
 
 		DependencyGraph dependencyGraph = DependencyGraph.ResolveCredentialDependencies(registeredCoinEffectiveValues, outputTxOuts, roundParameters.MiningFeeRate, availableVsizes, roundParameters.MaxAmountCredentialValue, roundParameters.MaxVsizeCredentialValue);
 		DependencyGraphTaskScheduler scheduler = new(dependencyGraph);
@@ -890,16 +887,16 @@ public class CoinJoinClient
 		// see more: https://github.com/WalletWasabi/WalletWasabi/issues/8171
 		var actualInputCount = signingState.Inputs.Count();
 		var isItSoloCoinjoin = actualInputCount == registeredAliceClients.Length;
-		var isItForbiddenSoloCoinjoining = isItSoloCoinjoin && !_coinJoinConfiguration.AllowSoloCoinjoining;
+		var isItForbiddenSoloCoinjoining = isItSoloCoinjoin;
 		if (isItForbiddenSoloCoinjoining)
 		{
 			Logger.LogInfo("I am the only one in that coinjoin.", roundState);
 		}
 
-		var hasTooFewInputs = actualInputCount < _coinJoinConfiguration.AbsoluteMinInputCount;
+		var hasTooFewInputs = actualInputCount < Constants.CoinJoinMinimumInputCount;
 		if (hasTooFewInputs)
 		{
-			Logger.LogInfo(FormatLog($"Transaction has {actualInputCount} inputs but minimum required is {_coinJoinConfiguration.AbsoluteMinInputCount}.", roundState));
+			Logger.LogInfo(FormatLog($"Transaction has {actualInputCount} inputs but minimum required is {Constants.CoinJoinMinimumInputCount}.", roundState));
 		}
 
 		bool allMyOutputsArePresent = SanityCheck(outputTxOuts, unsignedCoinJoin.Transaction.Outputs);

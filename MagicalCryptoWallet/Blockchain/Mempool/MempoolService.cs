@@ -15,6 +15,7 @@ namespace MagicalCryptoWallet.Blockchain.Mempool;
 public class MempoolService(EventBus eventBus)
 {
 	private readonly MemoryCache<uint256, bool> _cache = new(TimeSpan.FromMinutes(30));
+	internal TransactionRequestTracker Requests { get; } = new();
 
 	/// <summary>Transactions that we would reply to INV messages.</summary>
 	/// <remarks>Guarded by <see cref="_broadcastStoreLock"/>.</remarks>
@@ -69,11 +70,16 @@ public class MempoolService(EventBus eventBus)
 	public void Process(Transaction tx)
 	{
 		var txId = tx.GetHash();
-		if (_cache.TryAdd(txId, true, TimeSpan.FromHours(1)))
+		var witnessId = tx.GetWitHash();
+		var firstReception = _cache.TryAdd(txId, true, TimeSpan.FromHours(1));
+		_cache.TryAdd(witnessId, true, TimeSpan.FromHours(1));
+		if (firstReception)
 		{
 			var txAdded = new SmartTransaction(tx, Height.Mempool, labels: TryGetLabel(txId));
 			eventBus.Publish(new NewTransactionInMempool(txAdded));
 		}
+		Requests.Complete(txId);
+		Requests.Complete(witnessId);
 	}
 
 	public bool TrySpend(SmartCoin coin, SmartTransaction tx)

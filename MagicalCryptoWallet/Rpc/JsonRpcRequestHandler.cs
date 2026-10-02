@@ -107,6 +107,10 @@ public class JsonRpcRequestHandler<TService>
 				for (int i = 0; i < count; i++)
 				{
 					var parameter = methodParameters[i];
+					if (parameter.type == typeof(string) && jArray[i].Type is not (JTokenType.String or JTokenType.Null))
+					{
+						return Error(JsonRpcErrorCodes.InvalidParams, $"Parameter '{parameter.name}' must be a string.", jsonRpcRequest.Id);
+					}
 					var item = jArray[i].ToObject(parameter.type, _defaultSerializer);
 					if (item is null && !(Nullable.GetUnderlyingType(parameter.type) is not null || parameter.isOptional && parameter.defaultValue is null))
 					{
@@ -138,6 +142,10 @@ public class JsonRpcRequestHandler<TService>
 					}
 
 					var parameterValue = jObj[parameter.name]!;
+					if (parameter.type == typeof(string) && parameterValue.Type is not (JTokenType.String or JTokenType.Null))
+					{
+						return Error(JsonRpcErrorCodes.InvalidParams, $"Parameter '{parameter.name}' must be a string.", jsonRpcRequest.Id);
+					}
 					var parameterTypedValue = parameterValue.ToObject(parameter.type, _defaultSerializer);
 					if (parameterTypedValue is null && !(Nullable.GetUnderlyingType(parameter.type) is not null || parameter.isOptional && parameter.defaultValue is null))
 					{

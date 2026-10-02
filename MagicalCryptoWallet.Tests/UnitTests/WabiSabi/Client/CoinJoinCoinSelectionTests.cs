@@ -2,8 +2,10 @@ using System.Linq;
 using NBitcoin;
 using MagicalCryptoWallet.Blockchain.Keys;
 using MagicalCryptoWallet.Blockchain.TransactionOutputs;
+using MagicalCryptoWallet.Blockchain.Transactions;
 using MagicalCryptoWallet.Crypto.Randomness;
 using MagicalCryptoWallet.Helpers;
+using MagicalCryptoWallet.Models;
 using MagicalCryptoWallet.Tests.Helpers;
 using MagicalCryptoWallet.WabiSabi.Client;
 using MagicalCryptoWallet.WabiSabi.Client.CoinJoin.Client;
@@ -17,15 +19,56 @@ namespace MagicalCryptoWallet.Tests.UnitTests.WabiSabi.Client;
 /// </summary>
 public class CoinJoinCoinSelectionTests
 {
+	[Theory]
+	[InlineData(1.0, true)]
+	[InlineData(1.99, true)]
+	[InlineData(2.0, false)]
+	[InlineData(3.0, false)]
+	public void FixedTargetIncludesOnlyBelowTwoWithoutPayments(double score, bool selected)
+	{
+		var km = KeyManager.CreateNew(out _, "", Network.Main);
+		var coin = BitcoinFactory.CreateSmartCoin(BitcoinFactory.CreateHdPubKey(km), Money.Coins(1m));
+		coin.HdPubKey.SetAnonymitySet(score);
+		var result = new CoinJoinCoinSelector(CreateSelectorGenerator()).SelectCoinsForRound([coin], CreateUtxoSelectionParameters(), Constants.MaximumNumberOfBitcoinsMoney);
+		Assert.Equal(selected ? 1 : 0, result.Count);
+	}
+
+	[Theory]
+	[InlineData(3)]
+	[InlineData(10)]
+	[InlineData(15)]
+	public void BatchesUnmixedCoinsUpToTenInputs(int count)
+	{
+		var km = KeyManager.CreateNew(out _, "", Network.Main);
+		var coins = Enumerable.Range(0, count).Select(i => BitcoinFactory.CreateSmartCoin(BitcoinFactory.CreateHdPubKey(km), Money.Coins(1m), anonymitySet: 1)).ToArray();
+		var result = new CoinJoinCoinSelector(CreateSelectorGenerator(sameTxAllowance: 0)).SelectCoinsForRound(coins, CreateUtxoSelectionParameters(), Constants.MaximumNumberOfBitcoinsMoney);
+		Assert.Equal(Math.Min(count, 10), result.Count);
+		Assert.All(result, coin => Assert.Contains(coin, coins));
+	}
+
+	[Fact]
+	public void PrivacyPruningCannotLeaveAnUneconomicalBatch()
+	{
+		var km = KeyManager.CreateNew(out _, "", Network.Main);
+		var keys = new[] { BitcoinFactory.CreateHdPubKey(km), BitcoinFactory.CreateHdPubKey(km) };
+		var tx = Transaction.Create(Network.Main);
+		tx.Inputs.Add(BitcoinFactory.CreateOutPoint());
+		foreach (var key in keys) { tx.Outputs.Add(new TxOut(Money.Satoshis(10_000), key.GetAssumedScriptPubKey())); }
+		var transaction = new SmartTransaction(tx, new Height.ChainHeight(100));
+		var coins = keys.Select((key, i) => new SmartCoin(transaction, (uint)i, key)).ToArray();
+		var parameters = CreateUtxoSelectionParameters() with { MinAllowedOutputAmount = Money.Satoshis(15_000), MiningFeeRate = new FeeRate(1m) };
+		var selector = new CoinJoinCoinSelector(CreateSelectorGenerator(sameTxAllowance: 0));
+		Assert.Empty(selector.SelectCoinsForRound(coins, parameters, Constants.MaximumNumberOfBitcoinsMoney));
+	}
 	/// <summary>
 	/// This test is to make sure no coins are selected when there are no coins.
 	/// </summary>
 	[Fact]
 	public void SelectNothingFromEmptySetOfCoins()
 	{
-		CoinJoinCoinSelectorRandomnessGenerator generator = CreateSelectorGenerator(inputTarget: 5);
+		CoinJoinCoinSelectorRandomnessGenerator generator = CreateSelectorGenerator();
 
-		var coinJoinCoinSelector = new CoinJoinCoinSelector(consolidationMode: false, anonScoreTarget: 10, semiPrivateThreshold: 0, generator);
+		var coinJoinCoinSelector = new CoinJoinCoinSelector(generator);
 		var coins = coinJoinCoinSelector.SelectCoinsForRound(
 			coins: [],
 			CreateUtxoSelectionParameters(),
@@ -40,7 +83,7 @@ public class CoinJoinCoinSelectionTests
 	[Fact]
 	public void SelectNothingFromFullyPrivateSetOfCoins()
 	{
-		const int AnonymitySet = 10;
+		const int AnonymitySet = Constants.AnonymityScoreTarget;
 		var km = KeyManager.CreateNew(out _, "", Network.Main);
 		var coinsToSelectFrom = Enumerable
 			.Range(0, 10)
@@ -55,8 +98,8 @@ public class CoinJoinCoinSelectionTests
 			sc.Transaction.TryAddWalletInput(sci);
 		}
 
-		CoinJoinCoinSelectorRandomnessGenerator generator = CreateSelectorGenerator(inputTarget: 5);
-		var coinJoinCoinSelector = new CoinJoinCoinSelector(consolidationMode: false, anonScoreTarget: AnonymitySet, semiPrivateThreshold: 0, generator);
+		CoinJoinCoinSelectorRandomnessGenerator generator = CreateSelectorGenerator();
+		var coinJoinCoinSelector = new CoinJoinCoinSelector(generator);
 
 		var coins = coinJoinCoinSelector.SelectCoinsForRound(
 			coins: coinsToSelectFrom,
@@ -68,13 +111,13 @@ public class CoinJoinCoinSelectionTests
 
 	/// <summary>
 	/// This test is to make sure private coins are selected to fund a pending payment when there is
-	/// nothing left to mix. In that case <see cref="CoinJoinCoinSelector.SelectCoinsForRound"/> lifts the
-	/// anonymity score target so every private coin becomes selectable.
+	/// nothing left to mix. <see cref="CoinJoinCoinSelector.SelectCoinsForRound"/> selects private funds
+	/// directly while retaining the fixed anonymity score target.
 	/// </summary>
 	[Fact]
 	public void SelectPrivateCoinsToPayRegardlessOfAnonScore()
 	{
-		const int AnonymitySet = 10;
+		const int AnonymitySet = Constants.AnonymityScoreTarget;
 		var km = KeyManager.CreateNew(out _, "", Network.Main);
 		var coinsToSelectFrom = Enumerable
 			.Range(0, 10)
@@ -89,8 +132,8 @@ public class CoinJoinCoinSelectionTests
 			sc.Transaction.TryAddWalletInput(sci);
 		}
 
-		CoinJoinCoinSelectorRandomnessGenerator generator = CreateSelectorGenerator(inputTarget: 5);
-		var coinJoinCoinSelector = new CoinJoinCoinSelector(consolidationMode: false, anonScoreTarget: AnonymitySet, semiPrivateThreshold: 0, generator, arePaymentsPending: () => true);
+		CoinJoinCoinSelectorRandomnessGenerator generator = CreateSelectorGenerator();
+		var coinJoinCoinSelector = new CoinJoinCoinSelector(generator, arePaymentsPending: () => true);
 
 		var coins = coinJoinCoinSelector.SelectCoinsForRound(
 			coins: coinsToSelectFrom,
@@ -109,7 +152,7 @@ public class CoinJoinCoinSelectionTests
 	[Fact]
 	public void SelectPrivateCoinsToPayWhenTheOnlyNonPrivateCoinsAreBanned()
 	{
-		const int AnonymitySet = 10;
+		const int AnonymitySet = Constants.AnonymityScoreTarget;
 		var km = KeyManager.CreateNew(out _, "", Network.Main);
 
 		// The semi-private coin is banned, hence it is not among the candidates - only private coins are.
@@ -126,11 +169,8 @@ public class CoinJoinCoinSelectionTests
 			sc.Transaction.TryAddWalletInput(sci);
 		}
 
-		CoinJoinCoinSelectorRandomnessGenerator generator = CreateSelectorGenerator(inputTarget: 5);
+		CoinJoinCoinSelectorRandomnessGenerator generator = CreateSelectorGenerator();
 		var coinJoinCoinSelector = new CoinJoinCoinSelector(
-			consolidationMode: false,
-			anonScoreTarget: AnonymitySet,
-			semiPrivateThreshold: Constants.SemiPrivateThreshold,
 			generator,
 			arePaymentsPending: () => true);
 
@@ -154,9 +194,9 @@ public class CoinJoinCoinSelectionTests
 			MaxRegistrableAmount = Money.Coins(430),
 		});
 
-		CoinJoinCoinSelectorRandomnessGenerator generator = CreateSelectorGenerator(inputTarget: 5);
+		CoinJoinCoinSelectorRandomnessGenerator generator = CreateSelectorGenerator();
 
-		var coinJoinCoinSelector = new CoinJoinCoinSelector(consolidationMode: false, anonScoreTarget: 10, semiPrivateThreshold: 0, generator);
+		var coinJoinCoinSelector = new CoinJoinCoinSelector(generator);
 		var coins = coinJoinCoinSelector.SelectCoinsForRound(
 			coins: coinsToSelectFrom,
 			UtxoSelectionParameters.FromRoundParameters(roundParams, [ScriptType.P2WPKH, ScriptType.Taproot]),
@@ -183,9 +223,9 @@ public class CoinJoinCoinSelectionTests
 			MaxRegistrableAmount = Money.Coins(430),
 		});
 
-		CoinJoinCoinSelectorRandomnessGenerator generator = CreateSelectorGenerator(inputTarget: 5);
+		CoinJoinCoinSelectorRandomnessGenerator generator = CreateSelectorGenerator();
 
-		var coinJoinCoinSelector = new CoinJoinCoinSelector(consolidationMode: false, anonScoreTarget: 10, semiPrivateThreshold: 0, generator);
+		var coinJoinCoinSelector = new CoinJoinCoinSelector(generator);
 		var coins = coinJoinCoinSelector.SelectCoinsForRound(
 			coins: coinsToSelectFrom,
 			UtxoSelectionParameters.FromRoundParameters(roundParams, [ScriptType.P2WPKH, ScriptType.Taproot]),
@@ -212,9 +252,9 @@ public class CoinJoinCoinSelectionTests
 			MaxRegistrableAmount = Money.Coins(430),
 		});
 
-		CoinJoinCoinSelectorRandomnessGenerator generator = CreateSelectorGenerator(inputTarget: 5);
+		CoinJoinCoinSelectorRandomnessGenerator generator = CreateSelectorGenerator();
 
-		var coinJoinCoinSelector = new CoinJoinCoinSelector(consolidationMode: false, anonScoreTarget: 10, semiPrivateThreshold: 0, generator);
+		var coinJoinCoinSelector = new CoinJoinCoinSelector(generator);
 		var coins = coinJoinCoinSelector.SelectCoinsForRound(
 			coins: coinsToSelectFrom,
 			UtxoSelectionParameters.FromRoundParameters(roundParams, [ScriptType.P2WPKH, ScriptType.Taproot]),
@@ -227,9 +267,9 @@ public class CoinJoinCoinSelectionTests
 	/// This test is to make sure that we select the non-private coin in the set.
 	/// </summary>
 	[Fact]
-	public void SelectNonPrivateCoinFromOneNonPrivateCoinInBigSetOfCoinsConsolidationMode()
+	public void SelectNonPrivateCoinFromOneNonPrivateCoinInBigSetOfCoinsBatches()
 	{
-		const int AnonymitySet = 10;
+		const int AnonymitySet = Constants.AnonymityScoreTarget;
 		var km = KeyManager.CreateNew(out _, "", Network.Main);
 		SmartCoin smallerAnonCoin = BitcoinFactory.CreateSmartCoin(BitcoinFactory.CreateHdPubKey(km), Money.Coins(1m), anonymitySet: AnonymitySet - 1);
 		var coinsToSelectFrom = Enumerable
@@ -238,9 +278,9 @@ public class CoinJoinCoinSelectionTests
 			.Prepend(smallerAnonCoin)
 			.ToList();
 
-		CoinJoinCoinSelectorRandomnessGenerator generator = CreateSelectorGenerator(inputTarget: 5);
+		CoinJoinCoinSelectorRandomnessGenerator generator = CreateSelectorGenerator();
 
-		var coinJoinCoinSelector = new CoinJoinCoinSelector(consolidationMode: true, anonScoreTarget: AnonymitySet, semiPrivateThreshold: 0, generator);
+		var coinJoinCoinSelector = new CoinJoinCoinSelector(generator);
 		var coins = coinJoinCoinSelector.SelectCoinsForRound(
 			coins: coinsToSelectFrom,
 			CreateUtxoSelectionParameters(),
@@ -256,16 +296,16 @@ public class CoinJoinCoinSelectionTests
 	[Fact]
 	public void SelectNonPrivateCoinFromOneCoinSetOfCoins()
 	{
-		const int AnonymitySet = 10;
+		const int AnonymitySet = Constants.AnonymityScoreTarget;
 		var km = KeyManager.CreateNew(out _, "", Network.Main);
 		var coinsToSelectFrom = Enumerable
 			.Empty<SmartCoin>()
 			.Prepend(BitcoinFactory.CreateSmartCoin(BitcoinFactory.CreateHdPubKey(km), Money.Coins(1m), anonymitySet: AnonymitySet - 1))
 			.ToList();
 
-		CoinJoinCoinSelectorRandomnessGenerator generator = CreateSelectorGenerator(inputTarget: 10);
+		CoinJoinCoinSelectorRandomnessGenerator generator = CreateSelectorGenerator();
 
-		var coinJoinCoinSelector = new CoinJoinCoinSelector(consolidationMode: false, anonScoreTarget: AnonymitySet, semiPrivateThreshold: 0, generator);
+		var coinJoinCoinSelector = new CoinJoinCoinSelector(generator);
 		var coins = coinJoinCoinSelector.SelectCoinsForRound(
 			coins: coinsToSelectFrom,
 			CreateUtxoSelectionParameters(),
@@ -281,7 +321,7 @@ public class CoinJoinCoinSelectionTests
 	[Fact]
 	public void SelectMoreNonPrivateCoinFromTwoCoinsSetOfCoins()
 	{
-		const int AnonymitySet = 10;
+		const int AnonymitySet = Constants.AnonymityScoreTarget;
 		var km = KeyManager.CreateNew(out _, "", Network.Main);
 		var coinsToSelectFrom = Enumerable
 			.Empty<SmartCoin>()
@@ -289,9 +329,9 @@ public class CoinJoinCoinSelectionTests
 			.Prepend(BitcoinFactory.CreateSmartCoin(BitcoinFactory.CreateHdPubKey(km), Money.Coins(1m), anonymitySet: AnonymitySet - 1))
 			.ToList();
 
-		CoinJoinCoinSelectorRandomnessGenerator generator = CreateSelectorGenerator(inputTarget: 10, sameTxAllowance: 0);
+		CoinJoinCoinSelectorRandomnessGenerator generator = CreateSelectorGenerator(sameTxAllowance: 0);
 
-		var coinJoinCoinSelector = new CoinJoinCoinSelector(consolidationMode: false, anonScoreTarget: AnonymitySet, semiPrivateThreshold: 0, generator);
+		var coinJoinCoinSelector = new CoinJoinCoinSelector(generator);
 		var coins = coinJoinCoinSelector.SelectCoinsForRound(
 			coins: coinsToSelectFrom,
 			CreateUtxoSelectionParameters(),
@@ -304,9 +344,9 @@ public class CoinJoinCoinSelectionTests
 	/// This test is to make sure that we select more than one non-private coin.
 	/// </summary>
 	[Fact]
-	public void SelectTwoNonPrivateCoinsFromTwoCoinsSetOfCoinsConsolidationMode()
+	public void SelectTwoNonPrivateCoinsFromTwoCoinsSetOfCoinsBatches()
 	{
-		const int AnonymitySet = 10;
+		const int AnonymitySet = Constants.AnonymityScoreTarget;
 		var km = KeyManager.CreateNew(out _, "", Network.Main);
 		var coinsToSelectFrom = Enumerable
 			.Empty<SmartCoin>()
@@ -314,9 +354,9 @@ public class CoinJoinCoinSelectionTests
 			.Prepend(BitcoinFactory.CreateSmartCoin(BitcoinFactory.CreateHdPubKey(km), Money.Coins(1m), anonymitySet: AnonymitySet - 1))
 			.ToList();
 
-		CoinJoinCoinSelectorRandomnessGenerator generator = CreateSelectorGenerator(inputTarget: 10);
+		CoinJoinCoinSelectorRandomnessGenerator generator = CreateSelectorGenerator();
 
-		var coinJoinCoinSelector = new CoinJoinCoinSelector(consolidationMode: true, anonScoreTarget: AnonymitySet, semiPrivateThreshold: 0, generator);
+		var coinJoinCoinSelector = new CoinJoinCoinSelector(generator);
 		var coins = coinJoinCoinSelector.SelectCoinsForRound(
 			coins: coinsToSelectFrom,
 			CreateUtxoSelectionParameters(),
@@ -331,7 +371,7 @@ public class CoinJoinCoinSelectionTests
 	[Fact]
 	public void SelectNothingFromFullyPrivateAndBelowMinAllowedSetOfCoins()
 	{
-		const int AnonymitySet = 10;
+		const int AnonymitySet = Constants.AnonymityScoreTarget;
 		var km = KeyManager.CreateNew(out _, "", Network.Main);
 		var coinsToSelectFrom = Enumerable
 			.Range(0, 10)
@@ -349,8 +389,8 @@ public class CoinJoinCoinSelectionTests
 			sc.Transaction.TryAddWalletInput(sci);
 		}
 
-		CoinJoinCoinSelectorRandomnessGenerator generator = CreateSelectorGenerator(inputTarget: 5);
-		var coinJoinCoinSelector = new CoinJoinCoinSelector(consolidationMode: false, anonScoreTarget: AnonymitySet, semiPrivateThreshold: 0, generator);
+		CoinJoinCoinSelectorRandomnessGenerator generator = CreateSelectorGenerator();
+		var coinJoinCoinSelector = new CoinJoinCoinSelector(generator);
 
 		var coins = coinJoinCoinSelector.SelectCoinsForRound(
 			coins: coinsToSelectFrom,
@@ -360,17 +400,14 @@ public class CoinJoinCoinSelectionTests
 		Assert.Empty(coins);
 	}
 
-	private static CoinJoinCoinSelectorRandomnessGenerator CreateSelectorGenerator(int inputTarget, int? sameTxAllowance = null)
+	private static CoinJoinCoinSelectorRandomnessGenerator CreateSelectorGenerator(int? sameTxAllowance = null)
 	{
-		GetInputTargetSelector fixedInputTarget = () => inputTarget;
 		GetSameTxAllowanceSelector? fixedSameTxAllowance = sameTxAllowance is not null
 				? (percent) => sameTxAllowance.Value
 				: null;
 
 		var generator = new CoinJoinCoinSelectorRandomnessGenerator(
-			CoinJoinCoinSelector.MaxInputsRegistrableByWallet,
 			RandomnessProviders.Insecure,
-			fixedInputTarget,
 			fixedSameTxAllowance);
 
 		return generator;

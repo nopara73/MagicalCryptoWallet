@@ -36,25 +36,29 @@ public class ReorgTests
 		await env.FundAddressAsync(receiveKey.GetP2wpkhAddress(env.Network), Money.Coins(1m));
 		await env.SyncFiltersRpcAsync(TestContext.Current.CancellationToken);
 		var tip = env.FilterStore.GetTip()!;
-		var downloading = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-		var wallet = env.CreateWallet(keyManager, async (_, token) =>
+		var invalidHeight = tip.Header.Height - 1;
+		var invalidHash = await env.RpcClient.GetBlockHashAsync((int)(uint)invalidHeight);
+		// Skip historical filters, which can match even when no wallet transaction is present.
+		keyManager.SetBestHeight(invalidHeight);
+		var downloading = new TaskCompletionSource<uint256>(TaskCreationOptions.RunContinuationsAsynchronously);
+		var wallet = env.CreateWallet(keyManager, async (blockHash, token) =>
 		{
-			downloading.SetResult();
+			downloading.SetResult(blockHash);
 			await Task.Delay(Timeout.InfiniteTimeSpan, token);
 			throw new InvalidOperationException("A canceled block request must not complete.");
 		});
 		var startup = wallet.StartAsync(TestContext.Current.CancellationToken);
-		await downloading.Task.WaitAsync(TestContext.Current.CancellationToken);
-		env.EventBus.Publish(new ChainReorganized(new Height.ChainHeight(tip.Header.Height), tip.Header.BlockHash));
+		Assert.Equal(tip.Header.BlockHash, await downloading.Task.WaitAsync(TestContext.Current.CancellationToken));
+		env.EventBus.Publish(new ChainReorganized(new Height.ChainHeight(invalidHeight), invalidHash));
 		using var shutdown = new CancellationTokenSource();
 		if (cancelShutdownWait) { shutdown.Cancel(); }
 		await wallet.StopAsync(shutdown.Token);
 		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => startup);
-		Assert.Equal(tip.Header.Height - 1, keyManager.GetBestHeight());
+		Assert.Equal(invalidHeight - 1, keyManager.GetBestHeight());
 
 		// EventBus publishers may have copied a subscription before shutdown began.
 		env.EventBus.Publish(new ChainReorganized(new Height.ChainHeight(1), tip.Header.BlockHash));
-		Assert.Equal(tip.Header.Height - 1, keyManager.GetBestHeight());
+		Assert.Equal(invalidHeight - 1, keyManager.GetBestHeight());
 	}
 
 	[Fact(Timeout = 120_000)] // 2 minute timeout
