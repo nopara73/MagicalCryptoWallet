@@ -1,10 +1,15 @@
 //! Synthetic retained-implementation comparisons and bounded-transfer failures.
+#[path = "../src/psbt_metadata.rs"]
+pub mod psbt_metadata;
+#[path = "../src/psbt_metadata_service.rs"]
+pub mod psbt_metadata_service;
+pub use mcw::{bitcoin_encoding, bitcoin_script, bitcoin_wire, psbt, wallet_hashes};
 use mcw::{
     bitcoin_wire::{self as wire, Transaction},
     psbt::{Limits, Map, Psbt, Record},
-    psbt_metadata::{self as metadata, PreviousTransaction},
-    psbt_metadata_service::{self as service, Transfers},
 };
+use psbt_metadata::{self as metadata, PreviousTransaction};
+use psbt_metadata_service::{self as service, Transfers};
 use std::collections::BTreeMap;
 
 // Fixture transport only: the application service consumes binary packets.

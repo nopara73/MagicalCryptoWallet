@@ -9,6 +9,7 @@ $metadataRun = (Get-Date -Format 'yyyyMMdd-HHmmss-fff') + '-' + [guid]::NewGuid(
 $metadataOutput = Join-Path $metadataRoot ".artifacts/psbt-metadata-validation/$metadataRun"
 $metadataSnapshot = Join-Path $metadataOutput 'snapshot'
 New-Item -ItemType Directory -Path $metadataSnapshot -Force | Out-Null
+New-Item -ItemType Directory -Path (Join-Path $metadataSnapshot 'src'), (Join-Path $metadataSnapshot 'tests') -Force | Out-Null
 $metadataInputs = [ordered]@{}
 foreach ($metadataModule in @('bitcoin_encoding','bitcoin_script','bitcoin_wire','wallet_hashes','psbt','psbt_metadata','psbt_metadata_service')) {
     $metadataInputs["$metadataModule.rs"] = Join-Path $metadataRoot "mcw/src/$metadataModule.rs"
@@ -16,15 +17,16 @@ foreach ($metadataModule in @('bitcoin_encoding','bitcoin_script','bitcoin_wire'
 $metadataInputs['psbt_metadata_conformance.rs'] = Join-Path $PSScriptRoot 'psbt_metadata_conformance.rs'
 $metadataInputs['psbt_metadata_vectors.tsv'] = Join-Path $PSScriptRoot 'psbt_metadata_vectors.tsv'
 $metadataHashes = foreach ($metadataEntry in $metadataInputs.GetEnumerator()) {
-    $metadataDestination = Join-Path $metadataSnapshot $metadataEntry.Key
+    $metadataDirectory = if ($metadataEntry.Key -in @('psbt_metadata_conformance.rs', 'psbt_metadata_vectors.tsv')) { 'tests' } else { 'src' }
+    $metadataDestination = Join-Path (Join-Path $metadataSnapshot $metadataDirectory) $metadataEntry.Key
     Copy-Item -LiteralPath $metadataEntry.Value -Destination $metadataDestination
     [ordered]@{file=$metadataEntry.Key;source=$metadataEntry.Value;sha256=(Get-FileHash -LiteralPath $metadataDestination -Algorithm SHA256).Hash.ToLowerInvariant()}
 }
 $metadataHarness = 'extern crate self as mcw;' + [Environment]::NewLine
 foreach ($metadataModule in @('bitcoin_encoding','bitcoin_script','bitcoin_wire','wallet_hashes','psbt','psbt_metadata','psbt_metadata_service')) {
-    $metadataHarness += '#[path="snapshot/' + $metadataModule + '.rs"] pub mod ' + $metadataModule + ';' + [Environment]::NewLine
+    $metadataHarness += '#[path="snapshot/src/' + $metadataModule + '.rs"] pub mod ' + $metadataModule + ';' + [Environment]::NewLine
 }
-$metadataHarness += '#[path="snapshot/psbt_metadata_conformance.rs"] mod conformance;'
+$metadataHarness += '#[path="snapshot/tests/psbt_metadata_conformance.rs"] pub mod conformance;'
 $metadataHarnessPath = Join-Path $metadataOutput 'harness.rs'
 [IO.File]::WriteAllText($metadataHarnessPath, $metadataHarness, [Text.UTF8Encoding]::new($false))
 $metadataSlot = $null
