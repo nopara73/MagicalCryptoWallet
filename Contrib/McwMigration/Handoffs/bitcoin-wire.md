@@ -67,6 +67,36 @@ superfluous witness encoding, trailing bytes, resource limits, arithmetic
 overflow, allocation failure, and an internal hashing error. No input trimming,
 repair, partial success, execution, or implicit alternate-format retry occurs.
 
+### Published host verification follow-up
+
+At published host pin `7ae424b5f5f3734ca1870962a2d913769c59b26d`, which includes
+the QR foundation `989cf2a2df22d23837c1aa328e29abfd33c9b9c8`, the actual
+`mcw/src/lib.rs` declares `bitcoin_wire` and `bitcoin_encoding`. The **21 wire
+integration tests passed through that existing Cargo package**, not only the
+earlier temporary module harness. Its offline locked Cargo tree contains only
+`mcw v0.1.0`, with no external dependency edges.
+
+Command, using one shared build slot, one Cargo job, and an ignored target folder:
+
+```powershell
+cargo test --offline --locked --manifest-path mcw/Cargo.toml --test bitcoin_wire_conformance --target-dir .artifacts/bitcoin-wire/host-target -- --test-threads=1
+```
+
+This Windows test run used `MCW_WINDOWS_RUNTIME=0` and
+`RUSTFLAGS=-C target-feature=+crt-static -C overflow-checks=yes`; it is a Cargo
+component test, not production CRT-free or five-target release evidence. The log
+and pinned source/dependency evidence are in the worker checkout's ignored
+`.artifacts/bitcoin-wire/host-cargo-test.log` and `host-verification.json`.
+
+The coordinator's current registry classifies this worker as a completed
+component awaiting a bounded production-caller handoff. No transaction caller
+leaf/adapter ownership is assigned in its active bounded workstreams. The
+original assignment reserves shared bridge/host/managed-adapter edits for the QR
+integrator, so this follow-up changes only this owned handoff and evidence. It
+does not claim that a production transaction-format call has been retired.
+Existing task/creation-deadline policy is preserved; no new task, subagent, fork,
+replacement dependency assignment, or removed UI was introduced.
+
 Data model:
 
 ```rust
@@ -244,6 +274,10 @@ paths still use NBitcoin's transaction binary/hex/hash responsibility and must b
 routed by the integrator before this responsibility can be reported migrated:
 
 The standalone transaction-file import/paste flow was removed after this baseline.
+At the follow-up host pin above, Client RPC parses/hex, transaction storage
+bytes/load, core broadcast/summary/diagnostic hex, and core witness-hash callers
+remain. MempoolService now has witness-id handling at lines 34 and 73. Removed UI
+leaves remain excluded from integration scope.
 
 | Path | Retained behavior |
 | --- | --- |
