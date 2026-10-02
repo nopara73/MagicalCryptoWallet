@@ -92,6 +92,42 @@ Fixed fixture SHA-256:
 Component evidence is under
 `.artifacts/mcw-bitcoin-script/.artifacts/script-text-evidence/`.
 
+## Probe provenance qualification
+
+The original 8,914-case report is historical. Its compiled probe SHA-256 is
+`79194dba0f675da058fb5a95479d045b9175f7ba13ebc11c3a811a661ec3dee2`;
+it does not certify the discovery-repair probe. The report is preserved unchanged
+as `historical-pre-discovery/differential.json`, SHA-256
+`b87cd9b1c821c431bbcb46ed05f56fd427c817a503174562a997f48b0372e458`.
+The corresponding published pre-repair probe source hash is
+`c0f091b63a98020931471672d7f83956d0b65284d87cc9da0ee1822e8f8611d1`.
+The old executable was replaced at its named path; its retention and original
+generated wrapper are not verified.
+
+Discovery repair `d1b797733309674266930ab53460caca9c459bdc` changes test discovery
+imports, with current probe source SHA-256
+`aa0b499e28f4710db714854c088bf10641fbd867d62637143c737b4f17f3817d`.
+The existing compiled Windows development probe SHA-256 is
+`e3eb306c3c5c44dac4d8927ecd6568cf0873f598686f54155a631f91a1952481`;
+its generated wrapper hash is
+`dd540b09d39f8528f50daa3b194e8d979998ece0ad08856036a3ba3699eea7fb`.
+The component implementation hash above is unchanged.
+
+One comparison replay binds all 8,914 cases to that exact current probe, using
+the same independent seed and cached retained-library oracle. No domain rebuild
+or fixture regeneration was performed. `differential-e3eb306c.json` has SHA-256
+`40e4a1e2e85c02f5f39bae6e6076a163337ab93ecaf8071b6da5f21767fedfe7`.
+`probe-provenance.json` records both reports, all eight physical source hashes,
+their canonical LF hashes and the oracle hash. The source set matches the pinned
+published discovery-repair tree after line-ending normalization;
+`bitcoin_encoding.rs` uses CRLF in the development checkout.
+
+These results certify the named development probes and pinned sources. They do
+not certify current master, an incorporated dispatcher/client, five native
+targets or shipping artifacts. Actual incorporation still requires source
+reconciliation and evidence tied to its resulting build; historical comparisons
+must not silently become current-build evidence.
+
 ## Production caller verification
 
 The prepared complete patch builds the actual Core and Client projects cleanly:
@@ -116,6 +152,12 @@ the production ManagedApplicationHost connection. HTTP remains in-memory, with
 no user wallet, data directory, coordinator, external network or visible window.
 Its evidence will be recorded under
 `.artifacts/mcw-script-text-verify/.artifacts/script-text-client-evidence/`.
+
+The refreshed caller evidence is a frozen candidate based on component commit
+`dfdf6ba4c641ab49e7ce74d02d4119f98eb164d0`, with patch SHA-256
+`3b914906a829487c67b8172d2efabe527985b1cb89b55fae4ab4ccf535a084e6`.
+It is not current-master execution evidence. Shared host operations and client
+caller cutover remain inactive; the coordinator controls QR-idle incorporation.
 
 This is bounded source and Windows x64 development evidence. Shared incorporation,
 Linux/macOS targets, packaged artifacts, CI and release/runtime acceptance remain
