@@ -130,13 +130,22 @@ def main():
                 address = rpc(url, "getnewaddress", ["synthetic round funding"])["address"]
                 rpc(miner_url, "sendtoaddress", [address, 1.0])
         rpc(node_url, "generatetoaddress", [1, mining_address], timeout=60)
+        confirmation_height = rpc(node_url, "getblockcount")
         for _, url in clients:
+            wait_for(lambda: (info := ready(url)) and info["syncHeight"] == info["targetHeight"] == confirmation_height, timeout=360)
             wait_for(lambda: ready(url) and len([coin for coin in rpc(url, "listcoins") if coin["confirmed"] and coin["anonymityScore"] < 2]) >= 4, timeout=360)
             destination = rpc(miner_url, "getnewaddress")
             payment_id = rpc(url, "payincoinjoin", [destination, 500_000, PASSWORD])
             payments.append((url, payment_id, destination))
-            wait_for(lambda: rpc(url, "getwalletinfo")["coinjoinStatus"] != "Idle", timeout=360)
-        # All clients are authorized before opening a round, so setup speed cannot split participants across rounds.
+        def waiting_for_round(url):
+            info = rpc(url, "getwalletinfo")
+            return info if (info["synchronized"] and info["syncHeight"] >= confirmation_height
+                and info["coinjoinStatus"] == "InProgress") else False
+        for index, (_, url) in enumerate(clients):
+            wait_for(lambda: waiting_for_round(url), timeout=360)
+            print(f"Client {index}: synchronized at {confirmation_height}; automatic CoinJoin is waiting for a round.", flush=True)
+        # Finish P2P broadcast cooldowns and wait for every tracker to actively
+        # await a round before opening the short synthetic registration window.
         service = launch(coordinator, [f"--datadir={coordinator_data}", f"--urls={coordinator_url}"], "coordinator")
         def coordinator_ready():
             assert service.poll() is None, "The isolated coordinator exited before becoming ready."

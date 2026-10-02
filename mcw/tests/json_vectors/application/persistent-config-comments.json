@@ -1,0 +1,10 @@
+// Synthetic config. The current JsonDecoder deliberately skips comments.
+{
+  "CoordinatorUri": "https://coordinator.example.invalid/",
+  "UseTor": "Enabled",
+  /* Unknown fields remain available to an explicit schema migration. */
+  "UnknownFutureField": {"Unicode": "\uD834\uDD1E", "Exact": 9007199254740993},
+  "DustThreshold": "0.00000001",
+  "MaxCoinJoinMiningFeeRate": 1.25,
+  "ConfigVersion": 4
+}

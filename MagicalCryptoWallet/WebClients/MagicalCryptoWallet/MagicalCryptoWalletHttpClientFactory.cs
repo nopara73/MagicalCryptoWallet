@@ -169,50 +169,49 @@ public class RetryHttpClientHandler : NotifyHttpClientHandler
 	private readonly string _name;
 	private readonly HttpClientHandlerConfiguration _config;
 	private readonly HttpSendCoreAsync _send;
+	private readonly Func<TimeSpan, CancellationToken, Task> _delay;
+	private readonly TimeProvider _timeProvider;
 
-	public RetryHttpClientHandler(string name, Action<string> disposedCallback, HttpClientHandlerConfiguration config, HttpSendCoreAsync? send =null)
+	public RetryHttpClientHandler(string name, Action<string> disposedCallback, HttpClientHandlerConfiguration config,
+		HttpSendCoreAsync? send = null, Func<TimeSpan, CancellationToken, Task>? delay = null, TimeProvider? timeProvider = null)
 		: base(name, disposedCallback)
 	{
 		_config = config;
 		_name = name;
 		_send = send ?? SendCoreAsync;
+		_delay = delay ?? Task.Delay;
+		_timeProvider = timeProvider ?? TimeProvider.System;
 	}
 
 	protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
 	{
 		ObjectDisposedException.ThrowIf(_dispose, $"HTTP handler {_name} was already disposed.");
 
-		var attempt = 0;
-
-		while (attempt < _config.MaxAttempts)
+		for (var attempt = 0; attempt < _config.MaxAttempts; attempt++)
 		{
+			cancellationToken.ThrowIfCancellationRequested();
 			if (_dispose)
 			{
 				throw new TimeoutException($"HTTP handler '{_name}' was disposed during request.");
 			}
 
+			TimeSpan retryDelay;
 			try
 			{
 				var response = await _send(this, request, cancellationToken).ConfigureAwait(false);
-
-				switch (response.StatusCode)
+				var baseDelay = response.StatusCode switch
 				{
-					case HttpStatusCode.RequestTimeout:
-					case HttpStatusCode.BadGateway:
-					case HttpStatusCode.ServiceUnavailable:
-						Logger.LogTrace($"Retrying {request.RequestUri} because {response.ReasonPhrase}");
-						await Task.Delay(_config.TimeBeforeRetryingAfterServerError, cancellationToken).ConfigureAwait(false);
-						continue;
-					case HttpStatusCode.TooManyRequests:
-						Logger.LogTrace($"Retrying {request.RequestUri} because {response.ReasonPhrase}");
-						// Be nice with third-party server overwhelmed by request from Tor exit nodes
-						await Task.Delay(_config.TimeBeforeRetryingAfterTooManyRequests, cancellationToken).ConfigureAwait(false);
-						continue;
-
-					default:
-						// Not something we can retry, return the response as is
-						return response;
-				}
+					HttpStatusCode.RequestTimeout or HttpStatusCode.BadGateway or HttpStatusCode.ServiceUnavailable => _config.TimeBeforeRetryingAfterServerError,
+					HttpStatusCode.TooManyRequests => _config.TimeBeforeRetryingAfterTooManyRequests,
+					_ => (TimeSpan?)null
+				};
+				if (baseDelay is null) { return response; }
+				retryDelay = Backoff(baseDelay.Value, attempt);
+				var retryAfter = response.Headers.RetryAfter;
+				var serverDelay = retryAfter?.Delta ?? (retryAfter?.Date - _timeProvider.GetUtcNow());
+				if (serverDelay is { } minimum && minimum > retryDelay) { retryDelay = minimum; }
+				Logger.LogTrace($"Retrying {request.RequestUri} because {response.ReasonPhrase}");
+				response.Dispose();
 			}
 			catch (OperationCanceledException)
 			{
@@ -226,16 +225,16 @@ public class RetryHttpClientHandler : NotifyHttpClientHandler
 				}
 
 				Logger.LogTrace($"Retrying {request.RequestUri} because {e.Message}");
-				await Task.Delay(_config.TimeBeforeRetryingAfterNetworkError, cancellationToken).ConfigureAwait(false);
+				retryDelay = Backoff(_config.TimeBeforeRetryingAfterNetworkError, attempt);
 			}
-			finally
-			{
-				attempt++;
-			}
+			if (attempt + 1 < _config.MaxAttempts) { await _delay(retryDelay, cancellationToken).ConfigureAwait(false); }
 		}
 
 		throw new HttpRequestException($"Failed to make http request '{request.RequestUri}' after {_config.MaxAttempts} attempts.");
 	}
+
+	private static TimeSpan Backoff(TimeSpan initial, int attempt) =>
+		TimeSpan.FromSeconds(Math.Min(30, initial.TotalSeconds * Math.Pow(2, Math.Min(attempt, 6))));
 
 	private async Task<HttpResponseMessage> SendCoreAsync(RetryHttpClientHandler handler, HttpRequestMessage request, CancellationToken cancellationToken)
 	{

@@ -154,9 +154,9 @@ public class P2pConnectionManager : IDisposable
 
 	public void AddBehavior(NodeBehavior behavior)
 	{
-		if (!_options.AllowBlockDownloads && behavior is P2pBehavior)
+		if (!_options.AllowTransactionBroadcasts && behavior is P2pBehavior { ServeBroadcasts: true })
 		{
-			throw new InvalidOperationException("Public synchronization peers cannot handle wallet transactions.");
+			throw new InvalidOperationException("This peer pool cannot broadcast wallet transactions.");
 		}
 		_templateBehaviors.Add(behavior);
 		foreach (var (_, node) in _connectedNodes)
@@ -199,7 +199,7 @@ public class P2pConnectionManager : IDisposable
 			try
 			{
 				await ReevaluateConnectionsAsync(DateTimeOffset.UtcNow, cancellationToken).ConfigureAwait(false);
-				await SeedFromDnsAsync(cancellationToken).ConfigureAwait(false);
+				_discoveryCoordinator?.Post(new HarvestedEndpointsMessage(_network.SeedNodes.Select(x => x.Endpoint).ToArray()));
 			}
 			catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { }
 		}, cancellationToken);
@@ -257,7 +257,7 @@ public class P2pConnectionManager : IDisposable
 
 	public async Task<P2pNodeClient> GetSingleUseNodeAsync(CancellationToken cancellationToken)
 	{
-		if (!_options.AllowBlockDownloads) { throw new InvalidOperationException("Wallet-selected blocks must use protected peers."); }
+		if (!_options.AllowBlockDownloads) { throw new InvalidOperationException("This peer pool cannot download blocks."); }
 		while (!cancellationToken.IsCancellationRequested)
 		{
 			var nodes = Nodes.Where(n => n.CanServeBlocks).ToArray();
@@ -386,12 +386,12 @@ public class P2pConnectionManager : IDisposable
 
 		var filterPeers = availablePeers
 			.Where(p => p.SupportsCompactFilters)
-			.OrderByDescending(p => p.Score)
+			.OrderByDescending(GetPeerScore)
 			.Take(filterNodesNeeded * 2)
 			.ToArray();
 
 		var otherPeers = availablePeers.Except(filterPeers)
-			.OrderByDescending(p => p.Score)
+			.OrderByDescending(GetPeerScore)
 			.Take(totalNeeded * 2)
 			.ToArray();
 
@@ -428,7 +428,7 @@ public class P2pConnectionManager : IDisposable
 			.Select(p => (Peer: p, NetGroup: GetNetgroup(p.Endpoint)))
 			.Where(p => IsAvailable(p.Peer.Endpoint))
 			.GroupBy(p => p.NetGroup)
-			.SelectMany(g => g.OrderByDescending(p => p.Peer.Score).Take(MaxPeersPerNetgroup - netgroupCounts.GetValueOrDefault(g.Key, 0)))
+			.SelectMany(g => g.OrderByDescending(p => GetPeerScore(p.Peer)).Take(MaxPeersPerNetgroup - netgroupCounts.GetValueOrDefault(g.Key, 0)))
 			.Select(p => p.Peer)
 			.ToArray();
 
@@ -589,7 +589,7 @@ public class P2pConnectionManager : IDisposable
 	{
 		var rankedConnectedNodes = _connectedNodes.Values
 			.Where(n => n.Node.IsConnected)
-			.OrderBy(x => x.PeerInfo.Score)
+			.OrderBy(x => GetPeerScore(x.PeerInfo))
 			.ToArray();
 
 		if (rankedConnectedNodes is not [var worstConnectedNode, ..])
@@ -599,8 +599,7 @@ public class P2pConnectionManager : IDisposable
 
 		var availablePeers = await GetAvailablePeersAsync(cancellationToken).ConfigureAwait(false);
 		var bestDiscoveredNode = availablePeers
-			.OrderByDescending(p => p.Score)
-			.ThenByDescending(p => p.SupportsCompactFilters)
+			.OrderByDescending(GetPeerScore)
 			.FirstOrDefault();
 
 		if (bestDiscoveredNode is null)
@@ -609,9 +608,9 @@ public class P2pConnectionManager : IDisposable
 			return;
 		}
 
-		var bestDiscoveredScore = bestDiscoveredNode.Score;
+		var bestDiscoveredScore = GetPeerScore(bestDiscoveredNode);
 
-		if (bestDiscoveredScore > worstConnectedNode.PeerInfo.Score * RotationScoreThreshold)
+		if (bestDiscoveredScore > GetPeerScore(worstConnectedNode.PeerInfo) * RotationScoreThreshold)
 		{
 			Logger.LogInfo($"Replacing peer {worstConnectedNode.PeerInfo.Endpoint} (score: {worstConnectedNode.PeerInfo.Score:F1}) with {bestDiscoveredNode.Endpoint} (score: {bestDiscoveredScore:F1})");
 
@@ -814,6 +813,9 @@ public class P2pConnectionManager : IDisposable
 			available.Count(p => p.SupportsCompactFilters) < _options.MinimumCompactFilterNodes;
 	}
 
+	internal double GetPeerScore(PeerInfo peer) =>
+		peer.Score - (_options.MinimumCompactFilterNodes == 0 && peer.SupportsCompactFilters ? 30 : 0);
+
 	private void SavePeerCache()
 	{
 		if (_options.PeerCacheFile is { } cacheFile)
@@ -982,7 +984,6 @@ public class P2pConnectionManager : IDisposable
 		Logger.LogInfo("Seeding from DNS...");
 		try
 		{
-			_discoveryCoordinator?.Post(new HarvestedEndpointsMessage(_network.SeedNodes.Select(x => x.Endpoint).ToArray()));
 			var hosts = _network.DNSSeeds.Select(x => x.Host).Distinct().ToArray();
 			var maximumRounds = _dnsResolver is DnsSocksResolver ? 16 : 1;
 			for (var round = 0; round < maximumRounds && _discoveryNeeded; round++)

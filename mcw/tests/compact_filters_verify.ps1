@@ -20,6 +20,7 @@ if ($ExpectedEncodingSha256 -and $taskSourceBefore -ne $ExpectedEncodingSha256.T
 }
 $taskRustc = Join-Path $ToolchainBin 'rustc.exe'
 $taskRustfmt = Join-Path $ToolchainBin 'rustfmt.exe'
+$taskClippy = Join-Path $ToolchainBin 'clippy-driver.exe'
 $taskVersion = & $taskRustc --version
 if ($LASTEXITCODE -ne 0 -or $taskVersion -notmatch '^rustc 1\.99\.0 ') { throw "Expected Rust 1.99.0; got $taskVersion" }
 $taskFreeGiB = (Get-CimInstance Win32_OperatingSystem).FreePhysicalMemory / 1MB
@@ -60,6 +61,14 @@ try {
     foreach ($taskNativePath in $NativeLibraryPaths) {
         if (-not (Test-Path -LiteralPath $taskNativePath)) { throw "Missing native library path $taskNativePath" }
         $taskNativeArguments += @('-L', "native=$taskNativePath")
+    }
+    foreach ($taskLintMode in @('library', 'tests')) {
+        $taskLintArguments = @('--edition=2024', '--emit=metadata', '-D', 'warnings', '-W', 'clippy::all',
+            $taskHarness, '-o', (Join-Path $taskEvidence "clippy-$taskLintMode.rmeta"))
+        if ($taskLintMode -eq 'library') { $taskLintArguments += '--crate-type=lib' }
+        else { $taskLintArguments += '--test' }
+        & $taskClippy @taskLintArguments 2>&1 | Tee-Object -FilePath (Join-Path $taskEvidence "clippy-$taskLintMode.txt")
+        if ($LASTEXITCODE -ne 0) { throw "Clippy $taskLintMode verification failed" }
     }
     $taskProfiles = @()
     foreach ($taskProfile in @('debug', 'optimized')) {
@@ -108,6 +117,7 @@ try {
         encoding_source = $taskEncoding
         encoding_source_sha256 = $taskSourceAfter
         compact_filters_sha256 = (Get-FileHash -LiteralPath $taskModule -Algorithm SHA256).Hash.ToLowerInvariant()
+        clippy = 'library_and_tests_passed'
         profiles = $taskProfiles
         targets = $taskTargetResults
         independent_reference = $taskReference

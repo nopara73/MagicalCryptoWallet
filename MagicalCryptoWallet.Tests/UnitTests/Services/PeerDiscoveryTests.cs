@@ -69,12 +69,33 @@ public class PeerDiscoveryTests
 	}
 
 	[Fact]
-	public async Task PublicSynchronizationPoolCannotServeWalletOperationsAsync()
+	public void PublicReceiveOnlyPoolRejectsBroadcastBehavior()
 	{
 		using var pool = new P2pConnectionManager(Network.RegTest, new EventBus(), DnsResolver.Instance, TimeSpan.FromSeconds(1),
-			options: new P2pConnectionOptions { RelayTransactions = false, AllowBlockDownloads = false });
+			options: new P2pConnectionOptions { AllowTransactionBroadcasts = false, AllowBlockDownloads = true });
 		Assert.Throws<InvalidOperationException>(() => pool.AddBehavior(new P2pBehavior(new MempoolService(new EventBus()))));
+		pool.AddBehavior(new P2pBehavior(new MempoolService(new EventBus()), serveBroadcasts: false));
+	}
+
+	[Fact]
+	public async Task BroadcastPoolCannotSupplyBlocksAsync()
+	{
+		using var pool = new P2pConnectionManager(Network.RegTest, new EventBus(), DnsResolver.Instance, TimeSpan.FromSeconds(1),
+			options: new P2pConnectionOptions { AllowBlockDownloads = false });
 		await Assert.ThrowsAsync<InvalidOperationException>(() => pool.GetSingleUseNodeAsync(CancellationToken.None));
+	}
+
+	[Fact]
+	public void BroadcastRankingDoesNotPreferCompactFiltersAndKeepsPenalties()
+	{
+		using var broadcastPool = new P2pConnectionManager(Network.RegTest, new EventBus(), DnsResolver.Instance, TimeSpan.FromSeconds(1),
+			options: new P2pConnectionOptions { MinimumCompactFilterNodes = 0 });
+		using var publicPool = new P2pConnectionManager(Network.RegTest, new EventBus(), DnsResolver.Instance, TimeSpan.FromSeconds(1));
+		var compact = NewPeer(1, DateTimeOffset.UtcNow);
+		var ordinary = compact with { Services = compact.Services & ~NodeServices.NODE_COMPACT_FILTERS, Score = compact.Score - 30 };
+		Assert.Equal(broadcastPool.GetPeerScore(compact), broadcastPool.GetPeerScore(ordinary));
+		Assert.True(publicPool.GetPeerScore(compact) > publicPool.GetPeerScore(ordinary));
+		Assert.True(broadcastPool.GetPeerScore(compact with { Score = compact.Score - 10 }) < broadcastPool.GetPeerScore(ordinary));
 	}
 
 	[Fact]

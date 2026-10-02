@@ -3,7 +3,7 @@ using MagicalCryptoWallet.WabiSabi.Models;
 
 namespace MagicalCryptoWallet.WabiSabi.Client.RoundStateAwaiters;
 
-public record RoundStateAwaiter
+public record RoundStateAwaiter : IDisposable
 {
 	public RoundStateAwaiter(
 		Predicate<RoundState>? predicate,
@@ -76,7 +76,7 @@ public record RoundStateAwaiter
 				}
 			}
 
-			_taskCompletionSource.SetResult(roundState);
+			_taskCompletionSource.TrySetResult(roundState);
 			return true;
 		}
 
@@ -87,4 +87,6 @@ public record RoundStateAwaiter
 	{
 		_taskCompletionSource.TrySetCanceled();
 	}
+
+	public void Dispose() => _cancellationTokenRegistration.Dispose();
 }
