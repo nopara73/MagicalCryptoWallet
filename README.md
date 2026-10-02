@@ -17,12 +17,15 @@ This project has its own application storage, installers, update keys, and relea
 - [Security reporting](SECURITY.md)
 - [Release signing and recovery](Contrib/Signing/README.md)
 
-Build with the .NET SDK selected by `global.json`. Build the native credential library from source before running the wallet:
+The application entry point is **`mcw`**, a Rust host whose first migrated service is QR generation. The existing managed wallet/UI remain transitional components. See the [application architecture](MagicalCryptoWallet.Documentation/McwArchitecture.md) and [dependency migration ledger](MagicalCryptoWallet.Documentation/McwMigration.md).
+
+Build with Rust 1.99.0 and the .NET SDK selected by `global.json`. Provision the toolchain using `python Contrib/Releases/setup-tools.py --rid <rid>` and use its workspace Cargo/Rustup paths. Build the native credential library from source before running the wallet:
 
 ```sh
 cmake -S ThirdParty/WabiSabi/c -B ThirdParty/WabiSabi/c/build -DCMAKE_BUILD_TYPE=Release
 cmake --build ThirdParty/WabiSabi/c/build --parallel
-dotnet run --project MagicalCryptoWallet.Fluent.Desktop -c Release
+dotnet build MagicalCryptoWallet.Fluent.Desktop -c Release
+MagicalCryptoWallet.Fluent.Desktop/bin/Release/net10.0/mcw
 ```
 
 On Windows use a MinGW C compiler and `c/build-win` as the build directory. For complete platform packages, use `python Contrib/Releases/package.py --rid <rid>`; snapshots use development version `99.99.99` without needing historical Git tags.

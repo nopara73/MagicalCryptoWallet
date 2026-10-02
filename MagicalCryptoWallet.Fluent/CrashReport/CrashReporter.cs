@@ -4,6 +4,7 @@ using System.Linq;
 using MagicalCryptoWallet.BundledApps;
 using MagicalCryptoWallet.Extensions;
 using MagicalCryptoWallet.Logging;
+using MagicalCryptoWallet.Client.Application;
 
 namespace MagicalCryptoWallet.Fluent.CrashReport;
 
@@ -17,6 +18,11 @@ public static class CrashReporter
 			var base64ExceptionString = SerializableException.ToBase64String(serializedException);
 			string[] args = ["crashreport", $"-exception={base64ExceptionString}"];
 
+			if (ManagedApplicationHost.Current is { } host)
+			{
+				host.Handoff(ManagedApplicationHost.CrashOperation, args);
+				return;
+			}
 			var path = Process.GetCurrentProcess().MainModule?.FileName;
 			if (string.IsNullOrEmpty(path))
 			{

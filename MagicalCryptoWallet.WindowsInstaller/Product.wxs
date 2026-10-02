@@ -71,7 +71,7 @@
     <Property Id="WIXUI_EXITDIALOGOPTIONALTEXT" Value="Thank you for helping the world staying private." />
     <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT" Value="Launch Magical Crypto Wallet" />
 
-    <SetProperty Id="WixShellExecTarget" Value="[INSTALLFOLDER]magicalcryptowallet.exe" After="CostFinalize" Sequence="both" />
+    <SetProperty Id="WixShellExecTarget" Value="[INSTALLFOLDER]mcw.exe" After="CostFinalize" Sequence="both" />
     <CustomAction Id="LaunchApplication"
                   BinaryKey="WixCA"
                   DllEntry="WixShellExec"

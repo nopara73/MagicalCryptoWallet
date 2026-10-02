@@ -287,3 +287,4 @@ result/
 packages/
 ThirdParty/WabiSabi/c/build*/
 ThirdParty/WabiSabi/csharp/WabiSabi/runtimes/
+mcw/target/

@@ -4,7 +4,7 @@ The app manages [one wallet](SingleWallet.md) and uses [automatic coin selection
 
 ## Build
 
-Install the .NET SDK selected by `global.json`, CMake 3.22 or newer, and a C11 compiler (MinGW on Windows, GCC on Linux, Clang on macOS).
+Install Rust 1.99.0, the .NET SDK selected by `global.json`, CMake 3.22 or newer, and a C11 compiler (MinGW on Windows, GCC on Linux, Clang on macOS). `python Contrib/Releases/setup-tools.py --rid <rid>` provisions workspace Rust and packaging tools. Set `RUSTUP_HOME`, `CARGO_HOME` and `CARGO` to the paths printed by setup when building locally. Windows also requires Visual Studio C++ build tools and a Windows SDK for linking against native OS APIs.
 
 ```sh
 cmake -S ThirdParty/WabiSabi/c -B ThirdParty/WabiSabi/c/build -DCMAKE_BUILD_TYPE=Release
@@ -28,7 +28,7 @@ Download packages from [GitHub Releases](https://github.com/nopara73/MagicalCryp
 | Backend | `%APPDATA%\MagicalCryptoWallet\Backend` | `~/.magicalcryptowallet/backend` |
 | Coordinator | `%APPDATA%\MagicalCryptoWallet\Coordinator` | `~/.magicalcryptowallet/coordinator` |
 
-The application ID is `io.github.nopara73.magicalcryptowallet`. Executables are `magicalcryptowallet`, `magicalcryptowalletd`, and `magicalcryptowallet-coordinator`. Use `--help` for supported options. Environment overrides use `MAGICALCRYPTOWALLET_`, for example `MAGICALCRYPTOWALLET_DATADIR`.
+The application ID is `io.github.nopara73.magicalcryptowallet`. Launch **`mcw`** for the GUI or **`mcw daemon`** for background operation. The old `magicalcryptowallet`/`magicalcryptowalletd` paths delegate to the Rust host; `magicalcryptowallet-coordinator` remains an external service. Use `mcw --help` for public modes and `mcw gui --help`/`mcw daemon --help` for retained managed options. Environment overrides use `MAGICALCRYPTOWALLET_`, for example `MAGICALCRYPTOWALLET_DATADIR`. See [the architecture and pipe contract](McwArchitecture.md) and [migration ledger](McwMigration.md).
 
 ## Wallet import
 

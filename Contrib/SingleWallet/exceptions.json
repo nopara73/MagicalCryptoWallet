@@ -454,5 +454,23 @@
     "line": 202,
     "line_sha256": "c1fd85e2dd80bb5a3c3b11ea22efdaa7da13ec36918d87ce2efc077003e28f24",
     "reason": "Source provenance: immutable managed-caller inventory at 748a961c78980c42bba293ff7ad1b9ca696566ec records the removed adapter; it is not active application source."
+  },
+  {
+    "path": "Contrib/Mcw/dependencies.py",
+    "line": 97,
+    "line_sha256": "4eb634e74de9f90f86ee65e05bdc0eca9a4552993c8c2ce91c0934276a53f156",
+    "reason": "Migration inventory documents absent historical hardware dependencies; no runtime implementation."
+  },
+  {
+    "path": "Contrib/McwMigration/dependencies.json",
+    "line": 7027,
+    "line_sha256": "321c7f93b45244572e1f848736ef80dcdbc1b5303daafec7a84235f7ba8a4306",
+    "reason": "Migration inventory documents absent historical hardware dependencies; no runtime implementation."
+  },
+  {
+    "path": "MagicalCryptoWallet.Documentation/McwMigration.md",
+    "line": 16,
+    "line_sha256": "f474968a6dc6898e70daff01a511db05b10902f919378d5a2d2a3df81b3b575b",
+    "reason": "Long-term migration ledger describes the removed hardware scope without restoring it."
   }
 ]

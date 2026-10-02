@@ -34,7 +34,12 @@ public partial class ReceiveAddressViewModel : RoutableViewModel
 
 		NextCommand = CancelCommand;
 
-		QrCode = UiContext.QrCodeGenerator.Generate(model.Text.ToUpperInvariant());
+		QrCode = UiContext.QrCodeGenerator.Generate(model.Text.ToUpperInvariant())
+			.Catch<bool[,], Exception>(error => Observable.Return(error)
+				.ObserveOn(RxApp.MainThreadScheduler)
+				.SelectMany(_ => Observable.FromAsync(() =>
+				ShowErrorAsync("QR code", error.Message, "The receive QR code could not be generated."))
+				.SelectMany(_ => Observable.Empty<bool[,]>())));
 
 		if (IsAutoCopyEnabled)
 		{

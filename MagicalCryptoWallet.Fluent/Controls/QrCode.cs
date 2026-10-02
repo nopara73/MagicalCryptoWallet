@@ -1,6 +1,5 @@
 using System.IO;
 using System.Reactive;
-using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
@@ -14,7 +13,7 @@ namespace MagicalCryptoWallet.Fluent.Controls;
 
 public class QrCode : Control
 {
-	private const int MatrixPadding = 2;
+	private const int MatrixPadding = 4;
 	private const int MinimumBitmapSizePixelWh = 512;
 
 	public static readonly DirectProperty<QrCode, ReactiveCommand<string, Unit>> SaveCommandProperty =
@@ -37,16 +36,8 @@ public class QrCode : Control
 
 	public QrCode()
 	{
-		this.WhenAnyValue(x => x.Matrix)
-			.ObserveOn(RxApp.MainThreadScheduler)
-			.Subscribe(matrix =>
-			{
-				if (matrix is { })
-				{
-					FinalMatrix = AddPaddingToMatrix(matrix);
-				}
-			});
-
+		UseLayoutRounding = true;
+		RenderOptions.SetEdgeMode(this, EdgeMode.Aliased);
 		_saveCommand = ReactiveCommand.CreateFromTask<string>(SaveQrCodeAsync);
 	}
 
@@ -62,7 +53,15 @@ public class QrCode : Control
 	public bool[,]? Matrix
 	{
 		get => _matrix;
-		set => SetAndRaise(MatrixProperty, ref _matrix, value);
+		set
+		{
+			if (SetAndRaise(MatrixProperty, ref _matrix, value))
+			{
+				FinalMatrix = value is { } ? AddPaddingToMatrix(value) : null;
+				InvalidateMeasure();
+				InvalidateVisual();
+			}
+		}
 	}
 
 	public async Task SaveQrCodeAsync(string address)
@@ -93,23 +92,34 @@ public class QrCode : Control
 				path = $"{path}.png";
 			}
 
-			var qrCodeSize = GetQrCodeSize(FinalMatrix, Bounds.Size);
-
-			var pixSize = PixelSize.FromSize(qrCodeSize.coercedSize, 1);
-
-			if (pixSize.Width < MinimumBitmapSizePixelWh || pixSize.Height < MinimumBitmapSizePixelWh)
-			{
-				pixSize = new PixelSize(MinimumBitmapSizePixelWh, MinimumBitmapSizePixelWh);
-			}
-
-			using var rtb = new RenderTargetBitmap(pixSize);
-			using (var rtbCtx = rtb.CreateDrawingContext())
-			{
-				DrawQrCodeImage(rtbCtx, FinalMatrix, pixSize.ToSize(1));
-			}
-
-			rtb.Save(path);
+			using var output = File.Create(path);
+			SavePng(output);
 		}
+	}
+
+	/// <summary>Export the displayed symbol with sharp pixels and four-module margins.</summary>
+	public void SavePng(Stream output)
+	{
+		if (FinalMatrix is null) { throw new InvalidOperationException("There is no QR code to export."); }
+		var qrCodeSize = GetQrCodeSize(FinalMatrix, Bounds.Size);
+		var pixSize = PixelSize.FromSize(qrCodeSize.coercedSize, 1);
+
+		if (pixSize.Width < MinimumBitmapSizePixelWh || pixSize.Height < MinimumBitmapSizePixelWh)
+		{
+			pixSize = new PixelSize(MinimumBitmapSizePixelWh, MinimumBitmapSizePixelWh);
+		}
+		// The PNG canvas is an exact multiple of the padded module count.
+		var modules = FinalMatrix.GetLength(0);
+		var pixels = (int)Math.Ceiling((double)pixSize.Width / modules) * modules;
+		pixSize = new PixelSize(pixels, pixels);
+
+		using var rtb = new RenderTargetBitmap(pixSize);
+		using (var rtbCtx = rtb.CreateDrawingContext())
+		{
+			DrawQrCodeImage(rtbCtx, FinalMatrix, pixSize.ToSize(1));
+		}
+
+		rtb.Save(output);
 	}
 
 	private bool[,] AddPaddingToMatrix(bool[,] source)
@@ -134,13 +144,13 @@ public class QrCode : Control
 	private (int indexW, int indexH) GetMatrixIndexSize(bool[,] source) =>
 		(source.GetUpperBound(0) + 1, source.GetUpperBound(1) + 1);
 
-	private void DrawQrCodeImage(DrawingContext ctx, bool[,] source, Size size)
+	private void DrawQrCodeImage(DrawingContext ctx, bool[,] source, Size size, double renderScaling = 1)
 	{
-		var qrCodeSize = GetQrCodeSize(source, size);
+		var qrCodeSize = GetQrCodeSize(source, size, renderScaling);
 		var (indexW, indexH) = GetMatrixIndexSize(source);
 		var gcf = qrCodeSize.gridCellFactor;
 
-		var canvasSize = new Rect(0, 0, gcf * indexW, gcf * indexH);
+		var canvasSize = new Rect(size);
 
 		ctx.DrawRectangle(Brushes.White, null, canvasSize);
 
@@ -149,7 +159,7 @@ public class QrCode : Control
 			for (var j = 0; j < indexW; j++)
 			{
 				var cellValue = source[i, j];
-				var rect = new Rect(i * gcf, j * gcf, gcf + 1, gcf + 1);
+				var rect = new Rect(i * gcf, j * gcf, gcf, gcf);
 				var color = cellValue ? Brushes.Black : Brushes.White;
 				ctx.DrawRectangle(color, null, rect);
 			}
@@ -165,17 +175,17 @@ public class QrCode : Control
 			return;
 		}
 
-		DrawQrCodeImage(context, source, Bounds.Size);
+		DrawQrCodeImage(context, source, Bounds.Size, TopLevel.GetTopLevel(this)?.RenderScaling ?? 1);
 	}
 
-	private (Size coercedSize, double gridCellFactor) GetQrCodeSize(bool[,] source, Size size)
+	private (Size coercedSize, double gridCellFactor) GetQrCodeSize(bool[,] source, Size size, double renderScaling = 1)
 	{
 		var (indexW, indexH) = GetMatrixIndexSize(source);
 
 		var minDimension = Math.Min(indexW, indexH);
 		var availMax = Math.Min(size.Width, size.Height);
 
-		var gridCellFactor = Math.Floor(availMax / minDimension);
+		var gridCellFactor = Math.Floor(availMax * renderScaling / minDimension) / renderScaling;
 
 		var maxF = Math.Min(availMax, gridCellFactor * minDimension);
 
@@ -193,6 +203,6 @@ public class QrCode : Control
 			return new Size();
 		}
 
-		return GetQrCodeSize(source, availableSize).coercedSize;
+		return GetQrCodeSize(source, availableSize, TopLevel.GetTopLevel(this)?.RenderScaling ?? 1).coercedSize;
 	}
 }

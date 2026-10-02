@@ -23,6 +23,7 @@ using ReactiveUI.Avalonia;
 using MagicalCryptoWallet.Client;
 using MagicalCryptoWallet.Client.Configuration;
 using MagicalCryptoWallet.Helpers;
+using MagicalCryptoWallet.Client.Application;
 
 namespace MagicalCryptoWallet.Fluent.Desktop;
 
@@ -54,10 +55,17 @@ public class Program
 	[STAThread]
 	public static int Main(string[] args)
 	{
+		if (ManagedApplicationHost.TryDelegate("gui", args, out var delegatedExitCode))
+		{
+			return delegatedExitCode;
+		}
+		using var host = ManagedApplicationHost.Connect();
+		if (host.StartupArguments.Length != 0) { args = host.StartupArguments; }
 		MagicalCryptoWallet.Helpers.WindowsAppIdentity.Apply();
 		// Crash reporting must be before the "single instance checking".
 		if (CrashReporter.TryGetExceptionFromCliArgs(args, out var exceptionToShow))
 		{
+			host.BindShutdown(TerminateApplication);
 			Logger.Configure(Path.Combine(Config.DataDir, "Logs.txt"), LogLevel.Info);
 
 			try
@@ -85,6 +93,7 @@ public class Program
 				.OnTermination(TerminateApplication)
 				.Build();
 
+			host.BindTermination(app.TerminateService);
 			var exitCode = app.RunAsGui();
 
 			if (app.TerminateService.GracefulCrashException is not null)
@@ -94,14 +103,14 @@ public class Program
 
 			if (exitCode == ExitCode.Ok && app.HasStarted && app.Global is {Status: {InstallOnClose: true, InstallerFilePath: var installerFilePath}})
 			{
-				Installer.StartInstallingNewVersion(installerFilePath);
+				host.Handoff(ManagedApplicationHost.UpdateOperation, [Path.GetFullPath(installerFilePath)]);
 			}
 
-			if (app.HasStarted && AppLifetimeHelper.RestartRequested)
+			else if (app.HasStarted && AppLifetimeHelper.RestartRequested)
 			{
 				var launch = new StartupLaunch(EnvironmentHelpers.GetExecutablePath(), app.DataDirectory, app.Config.Network);
 				var preserved = app.AppConfig.Arguments.Where(argument => argument != StartupHelper.SilentArgument && !argument.StartsWith("--datadir=", StringComparison.OrdinalIgnoreCase) && !argument.StartsWith("--network=", StringComparison.OrdinalIgnoreCase));
-				using var restarted = System.Diagnostics.Process.Start(MagicalCryptoWallet.BundledApps.ProcessStartInfoFactory.Make(launch.Executable, preserved.Concat(launch.Arguments(silent: false)).ToArray()));
+				host.Handoff(ManagedApplicationHost.RestartOperation, preserved.Concat(launch.Arguments(silent: false)).ToArray());
 			}
 			return (int)exitCode;
 		}

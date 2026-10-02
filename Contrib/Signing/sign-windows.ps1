@@ -12,7 +12,7 @@ try {
     $target = Get-Item -LiteralPath $Path
     $files = if ($target.PSIsContainer) {
         Get-ChildItem -LiteralPath $target.FullName -File | Where-Object {
-            $_.Name -like 'magicalcryptowallet*.exe' -or $_.Name -like 'MagicalCryptoWallet*.dll' -or $_.Name -eq 'libwabisabi.dll'
+            $_.Name -eq 'mcw.exe' -or $_.Name -like 'magicalcryptowallet*.exe' -or $_.Name -like 'MagicalCryptoWallet*.dll' -or $_.Name -eq 'libwabisabi.dll'
         }
     } else { @($target) }
     foreach ($file in $files) {

@@ -71,6 +71,8 @@ jobs:
         run: python Contrib/Signing/test-sign-release.py
       - name: Snapshot packaging regression checks
         run: python Contrib/Releases/test-package.py
+      - name: Dependency migration inventory
+        run: python Contrib/Mcw/dependencies.py --check
       - name: Linux runtime and packaging dependencies
         if: startsWith(matrix.rid, 'linux')
         run: sudo apt-get update && sudo apt-get install -y libfontconfig1 squashfs-tools
@@ -96,6 +98,8 @@ jobs:
         run: python Contrib/Releases/package.py --production --rid '${{ matrix.rid }}' --version "$MAGICALCRYPTOWALLET_VERSION" $([[ '${{ matrix.rid }}' == linux-* ]] && echo --appimage)
       - name: Wallet tests including synthetic import, startup, fees, locking and update authentication
         run: dotnet test --project MagicalCryptoWallet.Tests -c Release --filter-namespace '*UnitTests*' --no-progress --no-ansi --output Normal
+      - name: Rust host, persistent bridge and independently decoded QR versions 1-40
+        run: python Contrib/Mcw/test-host.py --binary .artifacts/packages/${{ matrix.rid }}/MagicalCryptoWallet/mcw${{ matrix.rid == 'win-x64' && '.exe' || '' }}
       - name: Wallet integration tests against isolated Bitcoin Core
         run: dotnet test --project MagicalCryptoWallet.IntegrationTests -c Release --no-progress --no-ansi --output Normal
       - name: Packaged application lifetime, encrypted background startup, offline recovery and process locking
@@ -135,7 +139,10 @@ jobs:
       - name: Extract packages and verify independent installation identities
         run: python Contrib/Rebrand/inspect-packages.py --rid ${{ matrix.rid }}
       - name: Actual application views in both themes and common display scales
-        run: dotnet run --project Contrib/VisualPreview -c Release -- .artifacts/screenshots
+        run: python Contrib/Mcw/run-managed-tool.py --host .artifacts/packages/${{ matrix.rid }}/MagicalCryptoWallet/mcw${{ matrix.rid == 'win-x64' && '.exe' || '' }} --project Contrib/VisualPreview -- .artifacts/screenshots
+      - name: Actual receive QR rendering and exported PNG pixels
+        shell: bash
+        run: MCW_TEST_EXECUTABLE="$PWD/.artifacts/packages/${{ matrix.rid }}/MagicalCryptoWallet/mcw${{ matrix.rid == 'win-x64' && '.exe' || '' }}" dotnet run --project Contrib/VisualPreview -c Release -- .artifacts/screenshots --qr-only
       - name: Package and validation artifacts
         if: always()
         uses: actions/upload-artifact@v4
@@ -145,6 +152,7 @@ jobs:
             packages/*
             .artifacts/screenshots/*.png
             .artifacts/package-inspection/*.json
+            .artifacts/mcw-evidence/*
             .artifacts/installed-coexistence/*.log
             .artifacts/single-wallet/process/**/*.log
             .artifacts/single-wallet/process/**/results.json

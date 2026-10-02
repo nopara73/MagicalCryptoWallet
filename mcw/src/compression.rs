@@ -800,7 +800,10 @@ impl Decoder {
                     }
                     let cmf = self.scratch[0];
                     let flg = self.scratch[1];
-                    if cmf & 15 != 8 || cmf >> 4 > 7 || u16::from_be_bytes([cmf, flg]) % 31 != 0 {
+                    if cmf & 15 != 8
+                        || cmf >> 4 > 7
+                        || !u16::from_be_bytes([cmf, flg]).is_multiple_of(31)
+                    {
                         return Err(self.error(ErrorKind::InvalidZlibHeader));
                     }
                     self.window_limit = 1usize << ((cmf >> 4) + 8);

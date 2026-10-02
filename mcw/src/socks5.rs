@@ -961,10 +961,15 @@ pub mod transport {
             if done {
                 return Ok(());
             }
-            self.abort_stream.shutdown(direction).map_err(|cause| {
-                // The state remains closed even if native shutdown failed.
-                io_error(Stage::Shutdown, cause)
-            })
+            match self.abort_stream.shutdown(direction) {
+                // Linux can report ENOTCONN after both peers have finished their
+                // halves. The requested shutdown is already complete in that case.
+                Err(cause) if cause.kind() == io::ErrorKind::NotConnected => Ok(()),
+                result => result.map_err(|cause| {
+                    // The state remains closed even if native shutdown failed.
+                    io_error(Stage::Shutdown, cause)
+                }),
+            }
         }
     }
 
