@@ -376,5 +376,23 @@
     "line": 308,
     "line_sha256": "84e7d5238193c363fcf305c34157888f4a17f93a6174b2687c054cf2c0398aad",
     "reason": "Bitcoin Core harness-only mining wallet reload; no application wallet-selection support."
+  },
+  {
+    "path": "Contrib/McwMigration/Handoffs/json.md",
+    "line": 141,
+    "line_sha256": "a2afbdf5fced8cffb9146e0ece30251f6e5e81980e264da659063973808dc362",
+    "reason": "Source provenance: historical JSON migration caller snapshot at 82127991068522210cdcf77080dc9b819502e486; no runtime implementation or feature restoration."
+  },
+  {
+    "path": "mcw/tests/json_caller_inventory.json",
+    "line": 72,
+    "line_sha256": "adbfd1d2e31e195cea8923e925b78e124807afee00b7a0d82dacb1a18091ec9f",
+    "reason": "Source provenance: recorded pre-removal caller inventory accompanying JSON migration baseline 82127991068522210cdcf77080dc9b819502e486."
+  },
+  {
+    "path": "mcw/tests/json_vectors/application/rpc-request.json",
+    "line": 1,
+    "line_sha256": "ef02f8d104f053ea2167d95858f8ba91a3463fc8cae05c3f531d3147e54d59e8",
+    "reason": "Immutable cross-language JSON parsing fixture, pinned by json_vectors.sha256; retired RPC shape is synthetic data and is never dispatched."
   }
 ]
