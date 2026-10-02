@@ -1,0 +1,16 @@
+namespace MagicalCryptoWallet.Fluent.ViewModels.OpenDirectory;
+
+[NavigationMetaData(
+	Title = "Tor Logs",
+	Caption = "",
+	Order = 3,
+	Category = "Open",
+	Keywords = new[]
+	{
+			"Browse", "Open", "Tor", "Logs"
+	},
+	IconName = "document_regular")]
+public partial class OpenTorLogsViewModel(UiContext uiContext) : OpenFileViewModel(uiContext)
+{
+	public override string FilePath => UiContext.Config.TorLogFilePath;
+}

@@ -1,0 +1,23 @@
+using System.Windows.Input;
+using MagicalCryptoWallet.Discoverability;
+using MagicalCryptoWallet.Fluent.ViewModels.Dialogs.Base;
+
+namespace MagicalCryptoWallet.Fluent.ViewModels.Dialogs;
+
+[NavigationMetaData(Title = "Coordinator detected", NavigationTarget = NavigationTarget.DialogScreen)]
+public partial class NewCoordinatorConfirmationDialogViewModel : DialogViewModelBase<bool>
+{
+	public NewCoordinatorConfirmationDialogViewModel(UiContext uiContext, CoordinatorConnectionString coordinatorConnection) : base(uiContext)
+	{
+		CoordinatorConnection = coordinatorConnection;
+		EnableBack = false;
+		SetupCancel(enableCancel: false, enableCancelOnEscape: true, enableCancelOnPressed: true);
+
+		NextCommand = ReactiveCommand.Create(() => Close(result: true));
+		OpenReadMoreCommand = ReactiveCommand.CreateFromTask(async () => await UiContext.OpenBrowserAsync(coordinatorConnection.ReadMore.ToString()));
+	}
+
+	public CoordinatorConnectionString CoordinatorConnection { get; }
+
+	public ICommand OpenReadMoreCommand { get; }
+}

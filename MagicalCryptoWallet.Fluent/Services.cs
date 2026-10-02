@@ -1,0 +1,147 @@
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.Net.Http;
+using System.Threading.Tasks;
+using NBitcoin;
+using MagicalCryptoWallet.Blockchain.Analysis.Clustering;
+using MagicalCryptoWallet.Blockchain.Blocks;
+using MagicalCryptoWallet.Blockchain.Keys;
+using MagicalCryptoWallet.Blockchain.TransactionBroadcasting;
+using MagicalCryptoWallet.Blockchain.Transactions;
+using MagicalCryptoWallet.Client;
+using MagicalCryptoWallet.Client.Configuration;
+using MagicalCryptoWallet.Helpers;
+using MagicalCryptoWallet.Services;
+using MagicalCryptoWallet.Services.Terminate;
+using MagicalCryptoWallet.Stores;
+using MagicalCryptoWallet.Tor;
+using MagicalCryptoWallet.Wallets;
+
+namespace MagicalCryptoWallet.Fluent;
+
+public class Services : IServices
+{
+	// Temporary solution. It should be removed
+	public static Services Instance { get; private set; } = null!;
+
+	private readonly Global _global;
+	private readonly TorSettings _torSettings;
+	private readonly FilterStore _filterStore;
+	private readonly FilterHeaderChain _filterHeaders;
+	private readonly AllTransactionStore _transactionStore;
+	private readonly IHttpClientFactory _httpClientFactory;
+	private readonly TransactionBroadcaster _transactionBroadcaster;
+	private readonly HostedServices _hostedServices;
+	private readonly TerminateService _terminateService;
+	private readonly StatusContainer _status;
+
+	private Services(Global global, UiConfig uiConfig, TerminateService terminateService)
+	{
+		Guard.NotNull(nameof(global.DataDir), global.DataDir);
+		Guard.NotNull(nameof(global.TorSettings), global.TorSettings);
+		Guard.NotNull(nameof(global.FilterStore), global.FilterStore);
+		Guard.NotNull(nameof(global.FilterHeaders), global.FilterHeaders);
+		Guard.NotNull(nameof(global.TransactionStore), global.TransactionStore);
+		Guard.NotNull(nameof(global.ExternalSourcesHttpClientFactory), global.ExternalSourcesHttpClientFactory);
+		Guard.NotNull(nameof(global.Config), global.Config);
+		Guard.NotNull(nameof(global.WalletManager), global.WalletManager);
+		Guard.NotNull(nameof(global.TransactionBroadcaster), global.TransactionBroadcaster);
+		Guard.NotNull(nameof(global.HostedServices), global.HostedServices);
+		Guard.NotNull(nameof(uiConfig), uiConfig);
+		Guard.NotNull(nameof(terminateService), terminateService);
+
+		_global = global;
+		_torSettings = global.TorSettings;
+		_filterStore = global.FilterStore;
+		_filterHeaders = global.FilterHeaders;
+		_transactionStore = global.TransactionStore;
+		_httpClientFactory = global.ExternalSourcesHttpClientFactory;
+		_transactionBroadcaster = global.TransactionBroadcaster;
+		_hostedServices = global.HostedServices;
+		_terminateService = terminateService;
+		_status = global.Status;
+		Scheme = global.Scheme;
+		DataDir = global.DataDir;
+		PersistentConfig = global.Config.PersistentConfig;
+		WalletManager = global.WalletManager;
+		UiConfig = uiConfig;
+		Config = global.Config;
+		EventBus = global.EventBus;
+	}
+
+	public string DataDir { get; }
+	public string PersistentConfigFilePath => Path.Combine(DataDir, PersistentConfig.GetConfigFileName());
+	public PersistentConfig PersistentConfig { get; }
+	public WalletManager WalletManager { get; }
+	public UiConfig UiConfig { get; }
+	public Config Config { get; }
+	public EventBus EventBus { get; }
+	public Client.Scheme Scheme { get; }
+
+	// Chain info
+	public uint GetTipHeight() => _filterHeaders.TipHeight;
+	public uint GetServerTipHeight() => _filterHeaders.ServerTipHeight;
+	public int GetHashesLeft() => _filterHeaders.HashesLeft;
+	public SmartHeader? GetTip() => _filterHeaders.Tip;
+	public uint GetBlockHeadersTipHeight() => _global.GetBlockHeadersTipHeight();
+	public int GetPeerCount() => _global.GetPeerCount();
+
+	// Filters info
+	public uint? GetMinimumBlockHeight() => _filterStore.GetMinimumBlockHeight();
+
+	// Transactions info
+	public IEnumerable<LabelsArray> GetTransactionLabels() => _transactionStore.GetLabels();
+	public bool TryGetTransaction(uint256 hash, [NotNullWhen(true)] out SmartTransaction? tx) => _transactionStore.TryGetTransaction(hash, out tx);
+
+	// WalletManager info
+	public Network GetNetwork() => WalletManager.Network;
+	public Wallet GetWallet() => WalletManager.GetWallet() ?? throw new InvalidOperationException("No wallet is configured.");
+	public bool HasWallet() => WalletManager.HasWallet();
+	public void RenameWallet(Wallet wallet, string newWalletName) => WalletManager.RenameWallet(wallet, newWalletName);
+	public string GetWalletsDir() => WalletManager.WalletDirectories.WalletsDir;
+	public string GetNextWalletName(string prefix) => WalletManager.WalletDirectories.GetNextWalletName(prefix);
+	public string GetWalletFilePath(string walletName) => WalletManager.WalletDirectories.GetWalletFilePaths(walletName + ".json");
+	public (ErrorSeverity Severity, string Message)? ValidateWalletName(string walletName) => WalletManager.ValidateWalletName(walletName);
+	public Task StartWalletAsync(Wallet wallet) => WalletManager.StartWalletAsync(wallet);
+	public void AddWallet(KeyManager keyManager) => WalletManager.AddWallet(keyManager);
+
+	// Tor info
+	public string GetTorLogFilePath() => _torSettings.LogFilePath;
+	public TorMode GetUseTor() => Config.UseTor;
+
+	// ExchangeRate info
+	public decimal GetUsdExchangeRate() => _status.UsdExchangeRate;
+
+	// UI Config
+	public bool GetHideOnClose() => UiConfig.HideOnClose;
+	public double? GetWindowWidth() => UiConfig.WindowWidth;
+	public double? GetWindowHeight() => UiConfig.WindowHeight;
+	public void SetWindowWidth(double? width) => UiConfig.WindowWidth = width;
+	public void SetWindowHeight(double? height) => UiConfig.WindowHeight = height;
+	public bool GetPrivacyMode() => UiConfig.PrivacyMode;
+	public bool GetAutocopy() => UiConfig.Autocopy;
+	public bool GetAutoPaste() => UiConfig.AutoPaste;
+	public bool GetSendAmountConversionReversed() => UiConfig.SendAmountConversionReversed;
+	public void SetSendAmountConversionReversed(bool value) => UiConfig.SendAmountConversionReversed = value;
+	public int GetFeeTarget() => UiConfig.FeeTarget;
+	public void SetFeeTarget(int value) => UiConfig.FeeTarget = value;
+
+	// Temporary solution
+	public T? GetHostedService<T>() where T : class, Microsoft.Extensions.Hosting.IHostedService => _hostedServices.GetOrDefault<T>();
+
+	// Transaction
+	public Task SendTransactionAsync(SmartTransaction transaction) => _transactionBroadcaster.SendTransactionAsync(transaction);
+
+	// HttpClientFactory wrapper functions
+	public HttpClient CreateHttpClient(string name) => _httpClientFactory.CreateClient(name);
+
+	// TerminateService wrapper functions
+	public bool IsForcefulTerminationRequested() => _terminateService.ForcefulTerminationRequestedTask.IsCompletedSuccessfully;
+
+	public static Services Create(Global global, UiConfig uiConfig, TerminateService terminateService)
+	{
+		Instance = new Services(global, uiConfig, terminateService);
+		return Instance;
+	}
+}

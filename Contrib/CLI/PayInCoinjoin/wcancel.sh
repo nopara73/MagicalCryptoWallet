@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
-# Wasabi Cancel Payments in CoinJoin
+# MagicalCryptoWallet Cancel Payments in CoinJoin
 # Interactive selection to cancel pending payments
 
 function config_extract() {
-  jq -r "$1" ~/.walletwasabi/client/Config.json
+  jq -r "$1" "${MAGICALCRYPTOWALLET_DATADIR:-$HOME/.magicalcryptowallet/client}/Config.json"
 }
 
 RPC_CREDENTIALS=$(config_extract '.JsonRpcUser + ":" + .JsonRpcPassword')
@@ -14,43 +14,24 @@ BASIC_AUTH=$([ "$RPC_CREDENTIALS" == ":" ] && echo "" || echo "--user ${RPC_CRED
 # Check RPC connection
 status=$(curl -s $BASIC_AUTH --connect-timeout 3 -d '{"jsonrpc":"2.0","id":"1","method":"getstatus"}' "$RPC_ENDPOINT" 2>/dev/null)
 if [ -z "$status" ]; then
-    echo "Error: Cannot connect to Wasabi RPC at $RPC_ENDPOINT"
-    echo "Make sure Wasabi is running and RPC is enabled in Config.json"
+    echo "Error: Cannot connect to Magical Crypto Wallet RPC at $RPC_ENDPOINT"
+    echo "Make sure MagicalCryptoWallet is running and RPC is enabled in Config.json"
     exit 1
 fi
 
-# Get wallet list
-wallets=$(curl -s $BASIC_AUTH -d '{"jsonrpc":"2.0","id":"1","method":"listwallets"}' "$RPC_ENDPOINT" | jq -r '.result')
-wallet_count=$(echo "$wallets" | jq 'length')
-
-if [ "$wallet_count" -eq 0 ]; then
-    echo "No wallets found."
+# Use the one configured wallet.
+info=$(curl -s $BASIC_AUTH -d '{"jsonrpc":"2.0","id":"1","method":"getwalletinfo"}' "$RPC_ENDPOINT")
+info_error=$(echo "$info" | jq -r '.error.message // empty')
+if [ -n "$info_error" ]; then
+    echo "Error: $info_error"
     exit 1
 fi
-
-# Select wallet
-echo "Wallets:"
-echo ""
-for i in $(seq 0 $((wallet_count - 1))); do
-    num=$((i + 1))
-    name=$(echo "$wallets" | jq -r ".[$i].walletName")
-    echo "  [$num] $name"
-done
-echo ""
-read -p "Select wallet: " wallet_choice
-
-idx=$((wallet_choice - 1))
-if [ "$idx" -lt 0 ] || [ "$idx" -ge "$wallet_count" ]; then
-    echo "Invalid selection."
-    exit 1
-fi
-
-WALLET=$(echo "$wallets" | jq -r ".[$idx].walletName")
+WALLET=$(echo "$info" | jq -r '.result.walletName')
 
 # Load wallet if not already loaded
 echo ""
 echo "Loading wallet $WALLET (this may take a moment)..."
-load_result=$(curl -s $BASIC_AUTH -d '{"jsonrpc":"2.0","id":"1","method":"loadwallet","params":["'"$WALLET"'"]}' "$RPC_ENDPOINT")
+load_result=$(curl -s $BASIC_AUTH -d '{"jsonrpc":"2.0","id":"1","method":"loadwallet","params":[]}' "$RPC_ENDPOINT")
 load_error=$(echo "$load_result" | jq -r '.error.message // empty')
 
 if [ -n "$load_error" ] && [[ "$load_error" != *"already"* ]]; then
@@ -63,7 +44,7 @@ echo "=== Pending Payments ==="
 echo ""
 
 # Get pending payments
-result=$(curl -s $BASIC_AUTH -d '{"jsonrpc":"2.0","id":"1","method":"listpaymentsincoinjoin"}' "$RPC_ENDPOINT/$WALLET")
+result=$(curl -s $BASIC_AUTH -d '{"jsonrpc":"2.0","id":"1","method":"listpaymentsincoinjoin"}' "$RPC_ENDPOINT")
 error=$(echo "$result" | jq -r '.error.message // empty')
 
 if [ -n "$error" ]; then
@@ -103,7 +84,7 @@ if [[ "${choice^^}" == "A" ]]; then
     echo ""
     ids=$(echo "$payments" | jq -r '.[].id')
     for id in $ids; do
-        curl -s $BASIC_AUTH -d '{"jsonrpc":"2.0","id":"1","method":"cancelpaymentincoinjoin","params":["'"$id"'"]}' "$RPC_ENDPOINT/$WALLET" > /dev/null
+        curl -s $BASIC_AUTH -d '{"jsonrpc":"2.0","id":"1","method":"cancelpaymentincoinjoin","params":["'"$id"'"]}' "$RPC_ENDPOINT" > /dev/null
         amount=$(echo "$payments" | jq -r ".[] | select(.id == \"$id\") | .amount")
         address=$(echo "$payments" | jq -r ".[] | select(.id == \"$id\") | .address")
         echo "Cancelled: $amount sats -> $address"
@@ -131,7 +112,7 @@ for sel in $selections; do
     amount=$(echo "$payments" | jq -r ".[$idx].amount")
     address=$(echo "$payments" | jq -r ".[$idx].address")
 
-    cancel_result=$(curl -s $BASIC_AUTH -d '{"jsonrpc":"2.0","id":"1","method":"cancelpaymentincoinjoin","params":["'"$id"'"]}' "$RPC_ENDPOINT/$WALLET")
+    cancel_result=$(curl -s $BASIC_AUTH -d '{"jsonrpc":"2.0","id":"1","method":"cancelpaymentincoinjoin","params":["'"$id"'"]}' "$RPC_ENDPOINT")
     cancel_error=$(echo "$cancel_result" | jq -r '.error.message // empty')
 
     if [ -n "$cancel_error" ]; then

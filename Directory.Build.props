@@ -1,6 +1,11 @@
 <Project>
 	<PropertyGroup>
-		<Authors>Wasabi Wallet Contributors</Authors>
+		<Authors>Magical Crypto Wallet Contributors</Authors>
+		<Company>Magical Crypto Wallet Contributors</Company>
+		<Product>Magical Crypto Wallet</Product>
+		<RepositoryUrl>https://github.com/nopara73/MagicalCryptoWallet</RepositoryUrl>
+		<ClientVersion Condition="'$(ClientVersion)' == ''">99.99.99</ClientVersion>
+		<Version>$(ClientVersion)</Version>
 		<TargetFramework>net10.0</TargetFramework>
 		<AnalysisLevel>latest</AnalysisLevel>
 		<LangVersion>14</LangVersion>
@@ -8,6 +13,7 @@
 		<Deterministic>true</Deterministic>
 		<InvariantGlobalization>true</InvariantGlobalization>
 		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+		<RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
 
 		<!-- Audit both top-level and transitive dependencies for vulnerabilities in NuGet packages. -->
 		<!-- https://learn.microsoft.com/en-us/nuget/concepts/auditing-packages#setting-a-security-audit-mode -->
@@ -17,6 +23,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<AssemblyMetadata Include="ClientVersion" Value="$(ClientVersion)" />
 		<PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" PrivateAssets="all" />
 		<AdditionalFiles Include="$(MSBuildThisFileDirectory)BannedSymbols.txt"/>
 	</ItemGroup>

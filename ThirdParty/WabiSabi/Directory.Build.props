@@ -1,0 +1,18 @@
+<Project>
+  <Import Project="../../Directory.Build.props" />
+  <PropertyGroup>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <Company>Magical Crypto Wallet Contributors</Company>
+    <RepositoryUrl>https://github.com/nopara73/MagicalCryptoWallet</RepositoryUrl>
+    <AssemblyName>MagicalCryptoWallet.$(MSBuildProjectName)</AssemblyName>
+    <NativeLibraryPath Condition="'$(NativeLibraryPath)' == '' and '$(OS)' == 'Windows_NT' and Exists('$(MSBuildThisFileDirectory)c/build-win/libwabisabi.dll')">$(MSBuildThisFileDirectory)c/build-win/libwabisabi.dll</NativeLibraryPath>
+    <!-- Keep upstream serialization constructors and algorithms intact. -->
+    <NoWarn>$(NoWarn);SYSLIB0051;CA1829</NoWarn>
+  </PropertyGroup>
+  <!-- The original cryptographic randomness implementations are outside the
+       application's banned-API rules. Algorithms and vectors stay unchanged. -->
+  <ItemGroup>
+    <PackageReference Remove="Microsoft.CodeAnalysis.BannedApiAnalyzers" />
+    <AdditionalFiles Remove="../../BannedSymbols.txt" />
+  </ItemGroup>
+</Project>

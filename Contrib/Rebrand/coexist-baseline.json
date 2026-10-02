@@ -1,0 +1,5 @@
+{
+  "purpose": "Checksum-pinned upstream installer provenance for the synthetic coexistence test on an ephemeral CI runner.",
+  "url": "https://github.com/WalletWasabi/WalletWasabi/releases/download/v2.8.3/Wasabi-2.8.3.msi",
+  "sha256": "e406048c8acd1136f2ac3a66674126c8ebc177ce91d4066b141367d68f572837"
+}

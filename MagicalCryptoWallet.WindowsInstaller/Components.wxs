@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Fragment>
+    <ComponentGroup Id="ProductComponents">
+      <ComponentRef Id="StartMenuShortcut" />
+      <ComponentRef Id="DesktopShortcut" />
+    </ComponentGroup>
+
+    <DirectoryRef Id="INSTALLFOLDER" FileSource="SourceDir">
+      <Component Id="StartMenuShortcut" Guid="{BC825B01-544B-40CC-869F-1FDE38A977AE}" Win64="yes">
+        <Shortcut
+          Id="StartMenuShortcut"
+          Name="!(loc.ProductName)"
+          Description="!(loc.Description)"
+          Target="[INSTALLFOLDER]magicalcryptowallet.exe"
+          Directory="InstallProgramMenuFolder"
+          WorkingDirectory="INSTALLFOLDER"
+          Icon="icon.ico">
+          <ShortcutProperty Key="System.AppUserModel.ID" Value="io.github.nopara73.magicalcryptowallet" />
+        </Shortcut>
+        <RegistryValue Id="StartMenuShortcutKey" Root="HKCU" Key="SOFTWARE\!(loc.ProductNameFolder)" Name="StartMenuShortcut" Value="1" Type="integer" KeyPath="yes" />
+        <RemoveFolder Id="RemoveStartMenu" Directory="InstallProgramMenuFolder" On="uninstall" />
+      </Component>
+
+      <Component Id="DesktopShortcut" Guid="{79101A65-C480-4909-AE1D-1FEDF313B8BD}" Win64="yes">
+        <Shortcut
+          Id="DesktopShortcut"
+          Name="!(loc.ProductName)"
+          Description="!(loc.Description)"
+          Target="[INSTALLFOLDER]magicalcryptowallet.exe"
+          Directory="DesktopFolder"
+          WorkingDirectory="INSTALLFOLDER"
+          Icon="icon.ico">
+          <ShortcutProperty Key="System.AppUserModel.ID" Value="io.github.nopara73.magicalcryptowallet" />
+        </Shortcut>
+        <RegistryValue Id="DesktopShortcutKey" Root="HKCU" Key="SOFTWARE\!(loc.ProductNameFolder)" Name="DesktopShortcut" Value="1" Type="integer" KeyPath="yes" />
+        <RemoveFolder Id="RemoveDesktop" Directory="DesktopFolder" On="uninstall" />
+      </Component>
+    </DirectoryRef>
+  </Fragment>
+</Wix>

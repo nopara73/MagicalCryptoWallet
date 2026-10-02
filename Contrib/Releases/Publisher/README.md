@@ -1,14 +1,11 @@
-# Publish
+# Release tools
 
-A command line tool to announce releases on nostr.
+`MagicalCryptoWallet.ReleaseTools.csproj` signs the checksum manifest, verifies an update signature, and prepares a signed Nostr announcement locally. It never broadcasts an announcement or publishes a release.
 
-# How to play with it
-
-```bash
-$ dotnet run <release-version> <announcement-content-file-path> <secret-key-hex>
+```sh
+dotnet run --project Contrib/Releases/Publisher/MagicalCryptoWallet.ReleaseTools.csproj -- sign-manifest SHA256SUMS.asc SHA256SUMS.magicalcryptowalletsig
+dotnet run --project Contrib/Releases/Publisher/MagicalCryptoWallet.ReleaseTools.csproj -- verify-manifest SHA256SUMS.asc SHA256SUMS.magicalcryptowalletsig <public-key>
+dotnet run --project Contrib/Releases/Publisher/MagicalCryptoWallet.ReleaseTools.csproj -- prepare-announcement 99.99.99 ReleaseNote.md packages
 ```
 
-Example:
-```bash
-dotnet run "2.46.5" "../../../WalletWasabi/Announcements/ReleaseHighlights.md" "b76950102f2cf9df470474a344621d6f25d10946aef0451f7ff3cb30152ebedd"
-```
+Private keys come from `MAGICALCRYPTOWALLET_UPDATE_SIGNING_KEY` and `MAGICALCRYPTOWALLET_NOSTR_ANNOUNCEMENT_KEY`, never command-line arguments. Only public notes/signatures are emitted. See [signing](../../Signing/README.md).

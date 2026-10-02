@@ -3,13 +3,13 @@ Wallet diagnostic
 
 Toolset for observe the internal state of wallets.
 
-## Wasabi keys state generation
+## MagicalCryptoWallet keys state generation
 
-Create a visual representation from a Wasabi keys dump.
+Create a visual representation from a MagicalCryptoWallet keys dump.
 
 ### How to run it
 
-Run Wasabi, open the wallet you are interested in.
+Run MagicalCryptoWallet, open the wallet you are interested in.
 
 Next open a terminal and enter:
 
@@ -25,13 +25,13 @@ dotnet fsi keygraph.fsx <wallet-name>
 
 None
 
-## Wasabi CoinGraph generation
+## MagicalCryptoWallet CoinGraph generation
 
-Create a visual representation from a Wasabi coins dump.
+Create a visual representation from a MagicalCryptoWallet coins dump.
 
 ### How to run it
 
-Run Wasabi, open the wallet you are interested in.
+Run MagicalCryptoWallet, open the wallet you are interested in.
 
 Next open a terminal and enter:
 

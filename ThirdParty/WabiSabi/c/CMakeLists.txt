@@ -1,0 +1,118 @@
+cmake_minimum_required(VERSION 3.22)
+project(wabisabi C)
+enable_testing()
+
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+
+include(FetchContent)
+
+# Fetch secp256k1
+FetchContent_Declare(
+    secp256k1
+    URL https://codeload.github.com/bitcoin-core/secp256k1/tar.gz/refs/tags/v0.7.1
+    URL_HASH SHA256=958f204dbafc117e73a2604285dc2eb2a5128344d3499c114dcba5de54cb7a9e
+)
+set(SECP256K1_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(SECP256K1_BUILD_EXHAUSTIVE_TESTS OFF CACHE BOOL "" FORCE)
+set(SECP256K1_BUILD_BENCHMARK OFF CACHE BOOL "" FORCE)
+set(SECP256K1_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(SECP256K1_ENABLE_MODULE_RECOVERY OFF CACHE BOOL "" FORCE)
+# The ownership-proof module (SLIP-0019 / BIP-322) needs Schnorr signatures and
+# the extrakeys (x-only pubkey / keypair) API for Taproot key-path spends.
+set(SECP256K1_ENABLE_MODULE_EXTRAKEYS ON CACHE BOOL "" FORCE)
+set(SECP256K1_ENABLE_MODULE_SCHNORRSIG ON CACHE BOOL "" FORCE)
+# Force secp256k1 to build as a static archive so it is embedded directly into
+# libwabisabi (no runtime dependency on libsecp256k1.so.N). secp256k1's
+# add_library() follows BUILD_SHARED_LIBS, which some build environments
+# (e.g. the nixpkgs cmake hook) default to ON — that would make libwabisabi
+# dynamically NEED libsecp256k1.so.2 and fail to load on consumers that don't
+# ship it. Override here and restore afterwards; our own `wabisabi` target is
+# declared SHARED explicitly, so it is unaffected.
+#
+# Building secp256k1 static turns PIC off by default for its objects, and
+# non-PIC objects cannot be linked into a shared library (ld: "relocation ...
+# can not be used when making a shared object; recompile with -fPIC"). Force
+# POSITION_INDEPENDENT_CODE ON so the static archive is still relocatable.
+set(_wabisabi_saved_build_shared "${BUILD_SHARED_LIBS}")
+set(_wabisabi_saved_pic "${CMAKE_POSITION_INDEPENDENT_CODE}")
+set(BUILD_SHARED_LIBS OFF)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+FetchContent_MakeAvailable(secp256k1)
+set(BUILD_SHARED_LIBS "${_wabisabi_saved_build_shared}")
+set(CMAKE_POSITION_INDEPENDENT_CODE "${_wabisabi_saved_pic}")
+
+# WabiSabi shared library (core protocol + serialization layer for P/Invoke)
+add_library(wabisabi SHARED
+    src/sha256.c
+    src/strobe.c
+    src/field.c
+    src/wabisabi_types.c
+    src/generators.c
+    src/mac.c
+    src/transcript.c
+    src/proof.c
+    src/credential.c
+    src/issuer.c
+    src/client.c
+    src/ownership_proof.c
+    src/ownership_ffi.c
+    src/ffi.c
+)
+
+# Force the "lib" prefix on every platform. On Unix CMake adds it by default
+# (libwabisabi.so / libwabisabi.dylib), but MSVC/Windows would emit "wabisabi.dll"
+# with no prefix — which collides case-insensitively with the managed WabiSabi.dll
+# in the NuGet package. Keeping the prefix everywhere gives libwabisabi.dll and
+# matches the DllImport name ("libwabisabi") used by the P/Invoke bindings.
+set_target_properties(wabisabi PROPERTIES PREFIX "lib")
+
+target_include_directories(wabisabi
+    PUBLIC  include
+    PRIVATE src
+    PRIVATE ${secp256k1_SOURCE_DIR}/include
+)
+
+target_link_libraries(wabisabi PRIVATE secp256k1)
+
+# The ported ownership-proof module (ownership_proof.c) declares its whole
+# SLIP-0019/BIP-322 API with external linkage under generic, un-namespaced names
+# (varint_write, bytes_to_hex, proof_body_*, bip322_*, ...). Only the two
+# wabisabi_ownership_proof_* entry points in ownership_ffi.c are meant to be
+# exported; the rest would pollute libwabisabi's dynamic symbol table and can
+# collide (via ELF interposition) with the host. Compile the module with hidden
+# visibility so its symbols stay internal to the DSO — ownership_ffi.c still
+# links against them within libwabisabi. GCC/Clang only; MSVC doesn't export
+# without __declspec(dllexport), so it needs nothing here.
+if(NOT MSVC)
+    set_source_files_properties(src/ownership_proof.c
+        PROPERTIES COMPILE_OPTIONS "-fvisibility=hidden")
+endif()
+
+# Keep symbols from the statically-linked secp256k1 archive out of libwabisabi's
+# dynamic symbol table. Otherwise the ~70 secp256k1_* symbols are re-exported
+# with default visibility and can collide (via ELF symbol interposition) with a
+# host process that loads its own libsecp256k1 — common in Bitcoin tooling.
+# GNU ld / lld only; macOS ld64 and Windows DLLs don't auto-export archive
+# symbols, so the flag is neither available nor needed there.
+if(NOT APPLE AND NOT WIN32)
+    target_link_options(wabisabi PRIVATE -Wl,--exclude-libs,ALL)
+endif()
+
+target_compile_options(wabisabi PRIVATE
+    -Wall -Wextra -Wpedantic
+    $<$<CONFIG:Release>:-O2>
+    $<$<CONFIG:Debug>:-g -O0 -U_FORTIFY_SOURCE>
+)
+
+# Test executable
+add_executable(wabisabi_test tests/test_main.c tests/test_compat.c tests/test_stack.c)
+target_include_directories(wabisabi_test PRIVATE include src
+    ${secp256k1_SOURCE_DIR}/include)
+
+# The stack-overflow regression test runs the FFI on a thread with a capped
+# stack; link the platform threading library (pthreads on POSIX; Win32 threads
+# are always available).
+find_package(Threads REQUIRED)
+target_link_libraries(wabisabi_test PRIVATE wabisabi secp256k1 Threads::Threads)
+add_test(NAME WabiSabi.Native COMMAND wabisabi_test)

@@ -1,0 +1,48 @@
+using System.Reactive.Disposables;
+using System.Reactive.Disposables.Fluent;
+using MagicalCryptoWallet.Fluent.Models.Wallets;
+using MagicalCryptoWallet.Fluent.ViewModels.Navigation;
+using MagicalCryptoWallet.Fluent.ViewModels.Wallets.Coins;
+
+namespace MagicalCryptoWallet.Fluent.ViewModels.Wallets.Advanced;
+
+[NavigationMetaData(
+	Title = "Wallet Coins",
+	Caption = "Display wallet coins",
+	IconName = "nav_wallet_24_regular",
+	Order = 0,
+	Category = "Wallet",
+	Keywords = ["Wallet", "Coins", "UTXO"],
+	NavBarPosition = NavBarPosition.None,
+	NavigationTarget = NavigationTarget.DialogScreen,
+	Searchable = false)]
+public partial class WalletCoinsViewModel : RoutableViewModel
+{
+	private readonly IWalletModel _wallet;
+
+	public WalletCoinsViewModel(UiContext uiContext, IWalletModel wallet) : base(uiContext)
+	{
+		_wallet = wallet;
+		SetupCancel(enableCancel: false, enableCancelOnEscape: true, enableCancelOnPressed: true);
+		NextCommand = CancelCommand;
+		CoinList = new CoinListViewModel(uiContext, _wallet.Coins);
+	}
+
+	public CoinListViewModel CoinList { get; }
+
+	protected override void OnNavigatedTo(bool isInHistory, CompositeDisposable disposables)
+	{
+		if (!isInHistory)
+		{
+			CoinList.ExpandAllCommand.Execute().Subscribe().DisposeWith(disposables);
+		}
+	}
+
+	protected override void OnNavigatedFrom(bool isInHistory)
+	{
+		if (!isInHistory)
+		{
+			CoinList.Dispose();
+		}
+	}
+}

@@ -1,0 +1,104 @@
+using System.Linq;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using NBitcoin;
+using MagicalCryptoWallet.BitcoinRpc;
+using MagicalCryptoWallet.Crypto.Randomness;
+using MagicalCryptoWallet.FeeRateEstimation;
+using MagicalCryptoWallet.Tests.Helpers;
+using MagicalCryptoWallet.WabiSabi.Client;
+using MagicalCryptoWallet.WabiSabi.Models;
+using MagicalCryptoWallet.WabiSabi.Models.MultipartyTransaction;
+using MagicalCryptoWallet.Services;
+using MagicalCryptoWallet.WabiSabi.Client.CoinJoin.Client;
+using MagicalCryptoWallet.WabiSabi.Coordinator;
+using MagicalCryptoWallet.WabiSabi.Coordinator.DoSPrevention;
+using MagicalCryptoWallet.WabiSabi.Coordinator.Rounds;
+using MagicalCryptoWallet.WabiSabi.Coordinator.Statistics;
+using MagicalCryptoWallet.Tests.UnitTests.Mocks;
+using MagicalCryptoWallet.Coordinator.WabiSabi;
+
+namespace MagicalCryptoWallet.Tests.UnitTests.WabiSabi.Integration;
+
+public class WabiSabiApiApplicationFactory<TStartup> : WebApplicationFactory<TStartup> where TStartup : class
+{
+	// There is a deadlock in the current version of the asp.net testing framework
+	// https://www.strathweb.com/2021/05/the-curious-case-of-asp-net-core-integration-test-deadlock/
+	protected override IHost CreateHost(IHostBuilder builder)
+	{
+		var host = builder.Build();
+		Task.Run(() => host.StartAsync()).GetAwaiter().GetResult();
+		return host;
+	}
+
+	protected override void ConfigureClient(HttpClient client)
+	{
+		client.Timeout = TimeSpan.FromMinutes(10);
+	}
+
+	protected override IHostBuilder CreateHostBuilder()
+	{
+		var builder = Host.CreateDefaultBuilder().ConfigureWebHostDefaults(x => x.UseStartup<TStartup>().UseTestServer());
+		return builder;
+	}
+
+	protected override void ConfigureWebHost(IWebHostBuilder builder)
+	{
+		// will be called after the `ConfigureServices` from the Startup
+		builder.ConfigureTestServices(services =>
+		{
+			services.AddHostedService<BackgroundServiceStarter<Arena>>();
+			services.AddSingleton<Arena>();
+			services.AddSingleton(_ => Network.RegTest);
+			services.AddSingleton<IRPCClient>(_ => BitcoinFactory.GetMockMinimalRpc());
+			services.AddSingleton<Prison>(_ => WabiSabiFactory.CreatePrison());
+			services.AddSingleton<WabiSabiConfig>();
+			services.AddSingleton<RoundParametersFactory>(s =>
+			{
+				var config = s.GetRequiredService<WabiSabiConfig>();
+				return (feeRate, maxSuggestedAmount, minInputCountByRound) => RoundParameters.Create(config, feeRate, maxSuggestedAmount);
+			});
+			services.AddSingleton(typeof(TimeSpan), _ => TimeSpan.FromSeconds(2));
+			services.AddSingleton(s => new CoinJoinScriptStore());
+			services.AddSingleton(s => FeeRateProviders.RpcAsync(s.GetRequiredService<IRPCClient>()));
+			services.AddHttpClient();
+		});
+		builder.ConfigureLogging(o => o.SetMinimumLevel(LogLevel.Warning));
+	}
+
+	public Task<ArenaClient> CreateArenaClientAsync(HttpClient httpClient) =>
+		CreateArenaClientAsync(CreateWabiSabiHttpApiClient(httpClient));
+
+	public async Task<ArenaClient> CreateArenaClientAsync(WabiSabiHttpApiClient wabiSabiHttpApiClient)
+	{
+		using CancellationTokenSource timeout = new(TimeSpan.FromSeconds(30));
+		RoundState? round;
+		do
+		{
+			var rounds = (await wabiSabiHttpApiClient.GetStatusAsync(RoundStateRequest.Empty, timeout.Token)).RoundStates;
+			round = rounds.FirstOrDefault(x => x.CoinjoinState is ConstructionState);
+			if (round is null)
+			{
+				await Task.Delay(50, timeout.Token);
+			}
+		}
+		while (round is null);
+
+		var arenaClient = new ArenaClient(
+			round.CreateAmountCredentialClient(InsecureRandom.Instance),
+			round.CreateVsizeCredentialClient(InsecureRandom.Instance),
+			round.CoinjoinState.Parameters.CoordinationIdentifier,
+			wabiSabiHttpApiClient);
+		return arenaClient;
+	}
+
+	public WabiSabiHttpApiClient CreateWabiSabiHttpApiClient(HttpClient httpClient) =>
+		new("identity", new MockHttpClientFactory { OnCreateClient = _ => httpClient});
+}

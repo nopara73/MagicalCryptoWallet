@@ -1,0 +1,467 @@
+using NBitcoin;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.Linq;
+using MagicalCryptoWallet.Exceptions;
+using MagicalCryptoWallet.Helpers;
+using MagicalCryptoWallet.Logging;
+using MagicalCryptoWallet.Models;
+using MagicalCryptoWallet.Tor;
+
+namespace MagicalCryptoWallet.Client.Configuration;
+
+public class Config
+{
+	public static readonly IDictionary EnvironmentVariables = Environment.GetEnvironmentVariables();
+
+#if RELEASE
+	private static readonly LogMode[] DefaultLogModes = [LogMode.Console, LogMode.File];
+#else
+	private static readonly LogMode[] DefaultLogModes = [LogMode.Debug, LogMode.Console, LogMode.File];
+#endif
+
+	public Config(PersistentConfig persistentConfig, string[] cliArgs)
+	{
+		if (ArgumentHelpers.GetValues("wallet", cliArgs).Length != 0)
+		{
+			throw new ArgumentException("Wallet selection is no longer supported. The configured wallet opens automatically.", nameof(cliArgs));
+		}
+		PersistentConfig = persistentConfig;
+		CliArgs = cliArgs;
+
+		Data = new() {
+			[nameof(Network)] = GetNetworkValue("Network", PersistentConfig.Network.ToString(), []),
+			[nameof(CoordinatorUri)] = GetStringValue("CoordinatorUri", PersistentConfig.CoordinatorUri, cliArgs),
+			[nameof(UseTor)] = GetTorModeValue("UseTor", PersistentConfig.UseTor, cliArgs),
+			[nameof(TorFolder)] = GetNullableStringValue("TorFolder", null, cliArgs),
+			[nameof(TorSocksPort)] = GetLongValue("TorSocksPort", TorSettings.DefaultSocksPort, cliArgs),
+			[nameof(TorControlPort)] = GetLongValue("TorControlPort", TorSettings.DefaultControlPort, cliArgs),
+			[nameof(TorBridges)] = GetStringArrayValue("TorBridges", PersistentConfig.TorBridges.ToArray(), cliArgs),
+			[nameof(TerminateTorOnExit)] = GetBoolValue("TerminateTorOnExit", PersistentConfig.TerminateTorOnExit, cliArgs),
+			[nameof(DownloadNewVersion)] = GetBoolValue("DownloadNewVersion", PersistentConfig.DownloadNewVersion, cliArgs),
+			[nameof(BitcoinRpcCredentialString)] = GetStringValue("BitcoinRpcCredentialString", PersistentConfig.BitcoinRpcCredentialString, cliArgs),
+			[nameof(BitcoinRpcUri)] = GetUriStringValue("BitcoinRpcEndPoint", PersistentConfig.BitcoinRpcUri, cliArgs),
+			[nameof(JsonRpcServerEnabled)] = GetBoolValue("JsonRpcServerEnabled", PersistentConfig.JsonRpcServerEnabled, cliArgs),
+			[nameof(JsonRpcUser)] = GetStringValue("JsonRpcUser", PersistentConfig.JsonRpcUser, cliArgs),
+			[nameof(JsonRpcPassword)] = GetStringValue("JsonRpcPassword", PersistentConfig.JsonRpcPassword, cliArgs),
+			[nameof(JsonRpcServerPrefixes)] = GetStringArrayValue("JsonRpcServerPrefixes", PersistentConfig.JsonRpcServerPrefixes.ToArray(), cliArgs),
+			[nameof(RpcOnionEnabled)] = GetBoolValue("RpcOnionEnabled", value: false, cliArgs),
+			[nameof(DustThreshold)] = GetMoneyValue("DustThreshold", PersistentConfig.DustThreshold, cliArgs),
+			[nameof(BlockOnlyMode)] = GetBoolValue("BlockOnly", value: false, cliArgs),
+			[nameof(LogLevel)] = GetStringValue("LogLevel", value: "", cliArgs),
+			[nameof(LogModes)] = GetLogModeArrayValue("LogModes", arrayValues: DefaultLogModes, cliArgs),
+			[nameof(EnableGpu)] = GetBoolValue("EnableGpu", PersistentConfig.EnableGpu, cliArgs),
+			[nameof(CoordinatorIdentifier)] = GetStringValue("CoordinatorIdentifier", PersistentConfig.CoordinatorIdentifier, cliArgs),
+			[nameof(MaxCoinjoinMiningFeeRate)] = GetDecimalValue("MaxCoinjoinMiningFeeRate", PersistentConfig.MaxCoinJoinMiningFeeRate, cliArgs),
+			[nameof(AbsoluteMinInputCount)] = GetLongValue("AbsoluteMinInputCount", PersistentConfig.AbsoluteMinInputCount, cliArgs),
+			[nameof(ExchangeRateProvider)] = GetStringValue("ExchangeRateProvider", PersistentConfig.ExchangeRateProvider, cliArgs),
+			[nameof(FeeRateEstimationProvider)] = GetStringValue("FeeRateEstimationProvider", PersistentConfig.FeeRateEstimationProvider, cliArgs),
+			[nameof(ExternalTransactionBroadcaster)] = GetStringValue("ExternalTransactionBroadcaster", PersistentConfig.ExternalTransactionBroadcaster, cliArgs),
+			[nameof(DropUnconfirmedTransactionsAfterDays)] = GetLongValue("MaxDaysInMempool", PersistentConfig.MaxDaysInMempool, cliArgs),
+			[nameof(ExperimentalFeatures)] = GetStringArrayValue("ExperimentalFeatures", PersistentConfig.ExperimentalFeatures.ToArray(), cliArgs)
+		};
+
+		// Check if any config value is overridden (either by an environment value, or by a CLI argument).
+		foreach (string optionName in Data.Keys)
+		{
+			// It is allowed to override the network.
+			if (!string.Equals(optionName, nameof(Network)))
+			{
+				IValue optionValue = Data[optionName];
+
+				if (optionValue.Overridden)
+				{
+					IsOverridden = true;
+					break;
+				}
+			}
+		}
+
+		ServiceConfiguration = new ServiceConfiguration(DustThreshold, DropUnconfirmedTransactionsAfterDays);
+	}
+
+	private static readonly Dictionary<string, string> Help =
+		new()
+		{
+			[nameof(Network)] = "The Bitcoin network to use: main, testnet, signet, or regtest",
+			[nameof(CoordinatorUri)] = "The coordinator server's URL to connect to",
+			[nameof(UseTor)] = "All the communications go through the Tor network",
+			[nameof(TorFolder)] = "Folder where Tor binary is located",
+			[nameof(TorSocksPort)] = "Tor is started to listen with the specified SOCKS5 port",
+			[nameof(TorControlPort)] = "Tor is started to listen with the specified control port",
+			[nameof(TorBridges)] = "Tor is started with the set of specified bridges",
+			[nameof(TerminateTorOnExit)] = "Stop the Tor process when Magical Crypto Wallet is closed",
+			[nameof(DownloadNewVersion)] = "Automatically download any new released version of MagicalCryptoWallet",
+			[nameof(BitcoinRpcCredentialString)] = "Credentials for authenticating against the bitcoin node rpc server",
+			[nameof(BitcoinRpcUri)] = "-",
+			[nameof(JsonRpcServerEnabled)] = "Start the Json RPC Server and accept requests",
+			[nameof(JsonRpcUser)] = "The user name that is authorized to make requests to the Json RPC server",
+			[nameof(JsonRpcPassword)] = "The user password that is authorized to make requests to the Json RPC server",
+			[nameof(JsonRpcServerPrefixes)] = "The Json RPC server prefixes",
+			[nameof(RpcOnionEnabled)] = "Publish the Json RPC Server as a Tor Onion service",
+			[nameof(DustThreshold)] = "The amount threshold under which coins received from others to already used addresses are considered a dust attack",
+			[nameof(BlockOnlyMode)] = "Magical Crypto Wallet listens only for blocks and not for transactions",
+			[nameof(LogLevel)] = "The level of detail in the logs: trace, debug, info, warning, error, or critical",
+			[nameof(LogModes)] = "The logging modes: console, and file (for multiple values use comma as a separator)",
+			[nameof(EnableGpu)] = "Use a GPU to render the user interface",
+			[nameof(CoordinatorIdentifier)] = "-",
+			[nameof(MaxCoinjoinMiningFeeRate)] = "Max mining fee rate in sat/vb the client is willing to pay to participate into a round",
+			[nameof(AbsoluteMinInputCount)] = "Minimum number of inputs the client is willing to accept to participate into a round",
+			[nameof(ExchangeRateProvider)] = "The BTC/USD exchange rate provider. Available providers are MempoolSpace (default), Gemini, BlockchainInfo, CoinGecko or None",
+			[nameof(FeeRateEstimationProvider)] = "The mining fee rate estimation provider. Available providers are MempoolSpace (default), BlockstreamInfo, BlockXyz or None",
+			[nameof(ExternalTransactionBroadcaster)] = "Third party transaction broadcaster. Available broadcasters are MempoolSpace (default) and BlockstreamInfo",
+			[nameof(DropUnconfirmedTransactionsAfterDays)] = "The number of days that unconfirmed wallet transactions will be remembered by Magical Crypto Wallet before dropping them",
+			[nameof(ExperimentalFeatures)] = "Colon-separated list of experimental features to enable. (features available: scripting)",
+		};
+	private Dictionary<string, IValue> Data { get; }
+	public PersistentConfig PersistentConfig { get; }
+	public string[] CliArgs { get; }
+	public Network Network => GetEffectiveValue<Network>(nameof(Network));
+
+	public string CoordinatorUri => GetEffectiveValue<string>(nameof(CoordinatorUri));
+	public TorMode UseTor => Network == Network.RegTest ? TorMode.Disabled : GetEffectiveValue<TorMode>(nameof(UseTor));
+	public string? TorFolder => GetEffectiveValue<string?>(nameof(TorFolder));
+	public int TorSocksPort => GetEffectiveValue<int>(nameof(TorSocksPort));
+	public int TorControlPort => GetEffectiveValue<int>(nameof(TorControlPort));
+	public string[] TorBridges => GetEffectiveValue<string[]>(nameof(TorBridges));
+	public bool TerminateTorOnExit => GetEffectiveValue<bool>(nameof(TerminateTorOnExit));
+	public bool DownloadNewVersion => GetEffectiveValue<bool>(nameof(DownloadNewVersion));
+	public string BitcoinRpcCredentialString => GetEffectiveValue<string>(nameof(BitcoinRpcCredentialString));
+	public string BitcoinRpcUri => GetEffectiveValue<string>(nameof(BitcoinRpcUri));
+	public bool JsonRpcServerEnabled => GetEffectiveValue<bool>(nameof(JsonRpcServerEnabled));
+	public string JsonRpcUser => GetEffectiveValue<string>(nameof(JsonRpcUser));
+	public string JsonRpcPassword => GetEffectiveValue<string>(nameof(JsonRpcPassword));
+	public string[] JsonRpcServerPrefixes => GetEffectiveValue<string[]>(nameof(JsonRpcServerPrefixes));
+	public bool RpcOnionEnabled => GetEffectiveValue<bool>(nameof(RpcOnionEnabled));
+	public Money DustThreshold => GetEffectiveValue<Money>(nameof(DustThreshold));
+	public bool BlockOnlyMode => GetEffectiveValue<bool>(nameof(BlockOnlyMode));
+	public string ExchangeRateProvider => GetEffectiveValue<string>(nameof(ExchangeRateProvider));
+	public string FeeRateEstimationProvider => GetEffectiveValue<string>(nameof(FeeRateEstimationProvider));
+	public string ExternalTransactionBroadcaster => GetEffectiveValue<string>(nameof(ExternalTransactionBroadcaster));
+	public int DropUnconfirmedTransactionsAfterDays => GetEffectiveValue<int>(nameof(DropUnconfirmedTransactionsAfterDays));
+
+	public bool EnableGpu => GetEffectiveValue<bool>(nameof(EnableGpu));
+	public string CoordinatorIdentifier => GetEffectiveValue<string>(nameof(CoordinatorIdentifier));
+	public decimal MaxCoinjoinMiningFeeRate => GetEffectiveValue<decimal>(nameof(MaxCoinjoinMiningFeeRate));
+	public int AbsoluteMinInputCount => int.Max(
+		GetEffectiveValue<int>(nameof(AbsoluteMinInputCount)),
+		Constants.AbsoluteMinInputCount);
+
+	public string[] ExperimentalFeatures => GetEffectiveValue<string[]>(nameof(ExperimentalFeatures));
+
+	public ServiceConfiguration ServiceConfiguration { get; }
+
+	public static string DataDir { get; } = GetStringValue(
+		"datadir",
+		EnvironmentHelpers.GetDataDir(Path.Combine("MagicalCryptoWallet", "Client")),
+		Environment.GetCommandLineArgs()).EffectiveValue;
+
+	public static string LogLevel { get; } = GetStringValue("loglevel", "", Environment.GetCommandLineArgs()).EffectiveValue;
+	public static LogMode[] LogModes { get; } = GetLogModeArrayValue("LogModes", arrayValues: DefaultLogModes, Environment.GetCommandLineArgs()).EffectiveValue;
+
+	/// <summary>Whether a config option was overridden by a command line argument or an environment variable.</summary>
+	/// <remarks>
+	/// Changing config options in the UI while a config option is overridden would bring uncertainty if user understands consequences or not,
+	/// thus it is normally not allowed. However, there are exceptions as what options are taken into account, there is currently
+	/// one exception: <see cref="LogLevel"/>.
+	/// </remarks>
+	public bool IsOverridden { get; }
+
+	public bool TryGetCoordinatorUri([NotNullWhen(true)] out Uri? coordinatorUri)
+	{
+		try
+		{
+			coordinatorUri = new Uri(CoordinatorUri);
+			return true;
+		}
+		catch (Exception e) when (e is UriFormatException or ArgumentException or NotSupportedNetworkException)
+		{
+			coordinatorUri = null;
+			return false;
+		}
+	}
+
+	public static IEnumerable<(string ParameterName, string Hint)> GetConfigOptionsMetadata() =>
+		Help.Select(x => (x.Key, x.Value));
+
+	private MoneyValue GetMoneyValue(string key, Money value, string[] cliArgs)
+	{
+		if (GetOverrideValue(key, cliArgs, out string? overrideValue, out ValueSource? valueSource))
+		{
+			if (!Money.TryParse(overrideValue, out var money))
+			{
+				throw new ArgumentNullException("DustThreshold", "Not a valid money");
+			}
+
+			return new MoneyValue(value, money, valueSource.Value);
+		}
+
+		return new MoneyValue(value, value, ValueSource.Disk);
+	}
+
+	private NetworkValue GetNetworkValue(string key, string value, string[] cliArgs)
+	{
+		StringValue stringValue = GetStringValue(key, value, cliArgs);
+
+		return new NetworkValue(
+			Value: Network.GetNetwork(stringValue.Value) ?? throw new ArgumentException("Network", $"Unknown network '{stringValue.Value}'"),
+			EffectiveValue: Network.GetNetwork(stringValue.EffectiveValue) ?? throw new ArgumentException("Network", $"Unknown network '{stringValue.EffectiveValue}'"),
+			stringValue.ValueSource);
+	}
+
+	private BoolValue GetBoolValue(string key, bool value, string[] cliArgs)
+	{
+		if (GetOverrideValue(key, cliArgs, out string? overrideValue, out ValueSource? valueSource))
+		{
+			if (!bool.TryParse(overrideValue, out bool argsBoolValue))
+			{
+				throw new ArgumentException("must be 'true' or 'false'.", key);
+			}
+
+			return new BoolValue(value, argsBoolValue, valueSource.Value);
+		}
+
+		return new BoolValue(value, value, ValueSource.Disk);
+	}
+
+	private DecimalValue GetDecimalValue(string key, decimal value, string[] cliArgs)
+	{
+		if (GetOverrideValue(key, cliArgs, out string? overrideValue, out ValueSource? valueSource))
+		{
+			if (!int.TryParse(overrideValue, out int argsLongValue))
+			{
+				throw new ArgumentException("must be a decimal number.", key);
+			}
+
+			return new DecimalValue(value, argsLongValue, valueSource.Value);
+		}
+
+		return new DecimalValue(value, value, ValueSource.Disk);
+	}
+
+	private IntValue GetLongValue(string key, int value, string[] cliArgs)
+	{
+		if (GetOverrideValue(key, cliArgs, out string? overrideValue, out ValueSource? valueSource))
+		{
+			if (!int.TryParse(overrideValue, out int argsLongValue))
+			{
+				throw new ArgumentException("must be a number.", key);
+			}
+
+			return new IntValue(value, argsLongValue, valueSource.Value);
+		}
+
+		return new IntValue(value, value, ValueSource.Disk);
+	}
+
+	private static StringValue GetStringValue(string key, string value, string[] cliArgs)
+	{
+		if (GetOverrideValue(key, cliArgs, out string? overrideValue, out ValueSource? valueSource))
+		{
+			return new StringValue(value, overrideValue, valueSource.Value);
+		}
+
+		return new StringValue(value, value, ValueSource.Disk);
+	}
+
+	private static StringValue GetUriStringValue(string key, string value, string[] cliArgs)
+	{
+		value = string.IsNullOrWhiteSpace(value)
+			? value
+			: value.StartsWith("http") ? value : $"http://{value}";
+		if (GetOverrideValue(key, cliArgs, out string? overrideValue, out ValueSource? valueSource))
+		{
+			overrideValue = overrideValue.StartsWith("http") ? overrideValue : $"http://{overrideValue}";
+			return new StringValue(value, overrideValue, valueSource.Value);
+		}
+
+		return new StringValue(value, value, ValueSource.Disk);
+	}
+	private static NullableStringValue GetNullableStringValue(string key, string? value, string[] cliArgs)
+	{
+		if (GetOverrideValue(key, cliArgs, out string? overrideValue, out ValueSource? valueSource))
+		{
+			return new NullableStringValue(value, overrideValue, valueSource.Value);
+		}
+
+		return new NullableStringValue(value, value, ValueSource.Disk);
+	}
+
+	private static StringArrayValue GetStringArrayValue(string key, string[] arrayValues, string[] cliArgs)
+	{
+		if (GetOverrideValue(key, cliArgs, out string? overrideValue, out ValueSource? valueSource))
+		{
+			string[] overrideValues = overrideValue.Split(';');
+			return new StringArrayValue(arrayValues, overrideValues, valueSource.Value);
+		}
+
+		return new StringArrayValue(arrayValues, arrayValues, ValueSource.Disk);
+	}
+
+	private static LogModeArrayValue GetLogModeArrayValue(string key, LogMode[] arrayValues, string[] cliArgs)
+	{
+		if (GetOverrideValue(key, cliArgs, out string? overrideValue, out ValueSource? valueSource))
+		{
+			LogMode[] logModes = overrideValue.Split(',', StringSplitOptions.RemoveEmptyEntries)
+				.Where(x => !string.IsNullOrWhiteSpace(x)) // Filter our whitespace-only elements.
+				.Select(x =>
+				{
+					if (!Enum.TryParse(x.Trim(), ignoreCase: true, out LogMode logMode))
+					{
+						throw new NotSupportedException($"Logging mode '{x}' is not supported.");
+					}
+
+					return logMode;
+				})
+				.ToHashSet() // Remove duplicates.
+				.ToArray();
+
+			return new LogModeArrayValue(arrayValues, logModes, valueSource.Value);
+		}
+
+		return new LogModeArrayValue(arrayValues, arrayValues, ValueSource.Disk);
+	}
+
+	private static TorModeValue GetTorModeValue(string key, object value, string[] cliArgs)
+	{
+		TorMode computedValue;
+
+		computedValue = ObjectToTorMode(value);
+
+		if (GetOverrideValue(key, cliArgs, out string? overrideValue, out ValueSource? valueSource))
+		{
+			TorMode parsedOverrideValue = ObjectToTorMode(overrideValue);
+			return new TorModeValue(computedValue, parsedOverrideValue, valueSource.Value);
+		}
+
+		return new TorModeValue(computedValue, computedValue, ValueSource.Disk);
+	}
+
+	public static TorMode ObjectToTorMode(object value)
+	{
+		string? stringValue = value.ToString();
+
+		TorMode computedValue;
+		if (stringValue is null)
+		{
+			throw new ArgumentException($"Could not convert '{value}' to a string value.");
+		}
+		else if (stringValue.Equals("true", StringComparison.OrdinalIgnoreCase))
+		{
+			computedValue = TorMode.Enabled;
+		}
+		else if (stringValue.Equals("false", StringComparison.OrdinalIgnoreCase))
+		{
+			computedValue = TorMode.Disabled;
+		}
+		else if (Enum.TryParse(stringValue, ignoreCase: true, out TorMode parsedTorMode))
+		{
+			computedValue = parsedTorMode;
+		}
+		else
+		{
+			throw new ArgumentException($"Could not convert '{value}' to a valid {nameof(TorMode)} value.");
+		}
+
+		return computedValue;
+	}
+
+	private static bool GetOverrideValue(string key, string[] cliArgs, [NotNullWhen(true)] out string? overrideValue, [NotNullWhen(true)] out ValueSource? valueSource)
+	{
+		// CLI arguments have higher precedence than environment variables.
+		if (GetCliArgsValue(key, cliArgs, out string? argsValue))
+		{
+			valueSource = ValueSource.CommandLineArgument;
+			overrideValue = argsValue;
+			return true;
+		}
+
+		if (GetEnvironmentVariable(key, out string? envVarValue))
+		{
+			valueSource = ValueSource.EnvironmentVariable;
+			overrideValue = envVarValue;
+			return true;
+		}
+
+		valueSource = null;
+		overrideValue = null;
+		return false;
+	}
+
+	public static bool GetCliArgsValue(string key, string[] cliArgs, [NotNullWhen(true)] out string? cliArgsValue)
+	{
+		if (ArgumentHelpers.TryGetValue(key, cliArgs, out cliArgsValue))
+		{
+			return true;
+		}
+
+		cliArgsValue = null;
+		return false;
+	}
+
+	private static bool GetEnvironmentVariable(string key, [NotNullWhen(true)] out string? envValue)
+	{
+		string envKey = $"MAGICALCRYPTOWALLET_{key.ToUpperInvariant()}";
+
+		if (EnvironmentVariables.Contains(envKey))
+		{
+			if (EnvironmentVariables[envKey] is string envVar)
+			{
+				envValue = envVar;
+				return true;
+			}
+		}
+
+		envValue = null;
+		return false;
+	}
+
+	private TValue GetEffectiveValue<TValue>(string key)
+	{
+		if (Data.TryGetValue(key, out IValue? value) && value is ITypedValue<TValue> typedValue)
+		{
+			return typedValue.EffectiveValue;
+		}
+
+		throw new InvalidOperationException($"Failed to find key '{key}' in config storage.");
+	}
+
+	/// <summary>Source of application config value.</summary>
+	private enum ValueSource
+	{
+		/// <summary>Value stored in JSON config on disk.</summary>
+		Disk,
+
+		/// <summary>CLI argument passed by user to override disk config value.</summary>
+		CommandLineArgument,
+
+		/// <summary>Environment variable overriding disk config value.</summary>
+		EnvironmentVariable
+	}
+
+	private interface IValue
+	{
+		ValueSource ValueSource { get; }
+		bool Overridden => ValueSource != ValueSource.Disk;
+	}
+
+	private interface ITypedValue<T> : IValue
+	{
+		T Value { get; }
+		T EffectiveValue { get; }
+	}
+
+	private record BoolValue(bool Value, bool EffectiveValue, ValueSource ValueSource) : ITypedValue<bool>;
+	private record IntValue(int Value, int EffectiveValue, ValueSource ValueSource) : ITypedValue<int>;
+	private record DecimalValue(decimal Value, decimal EffectiveValue, ValueSource ValueSource) : ITypedValue<decimal>;
+	private record StringValue(string Value, string EffectiveValue, ValueSource ValueSource) : ITypedValue<string>;
+	private record NullableStringValue(string? Value, string? EffectiveValue, ValueSource ValueSource) : ITypedValue<string?>;
+	private record StringArrayValue(string[] Value, string[] EffectiveValue, ValueSource ValueSource) : ITypedValue<string[]>;
+	private record LogModeArrayValue(LogMode[] Value, LogMode[] EffectiveValue, ValueSource ValueSource) : ITypedValue<LogMode[]>;
+	private record TorModeValue(TorMode Value, TorMode EffectiveValue, ValueSource ValueSource) : ITypedValue<TorMode>;
+	private record NetworkValue(Network Value, Network EffectiveValue, ValueSource ValueSource) : ITypedValue<Network>;
+	private record MoneyValue(Money Value, Money EffectiveValue, ValueSource ValueSource) : ITypedValue<Money>;
+}

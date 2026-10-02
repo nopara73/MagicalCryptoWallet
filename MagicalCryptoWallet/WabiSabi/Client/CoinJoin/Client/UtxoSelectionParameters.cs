@@ -1,0 +1,47 @@
+using MagicalCryptoWallet.Crypto.Randomness;
+using MagicalCryptoWallet.WabiSabi.Client.CoinJoin.Client.Decomposer;
+
+namespace MagicalCryptoWallet.WabiSabi.Client;
+
+public record UtxoSelectionParameters(
+	MoneyRange AllowedInputAmounts,
+	Money MinAllowedOutputAmount,
+	FeeRate MiningFeeRate,
+	ImmutableSortedSet<ScriptType> AllowedInputScriptTypes)
+{
+	public static UtxoSelectionParameters FromRoundParameters(RoundParameters roundParameters, ScriptType[] scriptTypesSupportedByWallet)
+	{
+		var outputTypes = roundParameters.AllowedOutputTypes.Intersect(scriptTypesSupportedByWallet);
+		var maxVsizeInputOutputPairScriptType = outputTypes.MaxBy(x => x.EstimateInputVsize() + x.EstimateOutputVsize());
+		var smallestEffectiveDenom = DenominationBuilder.CreateDenominations(
+				roundParameters.CalculateMinReasonableOutputAmount(scriptTypesSupportedByWallet),
+				roundParameters.AllowedOutputAmounts.Max,
+				roundParameters.MiningFeeRate,
+				[maxVsizeInputOutputPairScriptType],
+				RandomnessProviders.Secure) // Random generator is not used and then the algorithm is deterministic
+			.Min(x => x.EffectiveCost);
+		var smallestReasonableEffectiveDenomination =
+			smallestEffectiveDenom
+			?? throw new InvalidOperationException("Something's wrong with the denomination creation or with the parameters it got.");
+
+		return new(
+			roundParameters.AllowedInputAmounts,
+			smallestReasonableEffectiveDenomination,
+			roundParameters.MiningFeeRate,
+			roundParameters.AllowedInputTypes);
+	}
+}
+
+public static class RoundParametersExtensions
+{
+	/// <returns>Min: must be larger than the smallest economical denom. Max: max allowed in the round.</returns>
+	/// <returns>Min output amount that's economically reasonable to be registered with current network conditions.</returns>
+	/// <remarks>It won't be smaller than min allowed output amount.</remarks>
+	public static Money CalculateMinReasonableOutputAmount(this RoundParameters roundParameters, IEnumerable<ScriptType> scriptTypesSupportedByWallet)
+	{
+		var outputTypes = roundParameters.AllowedOutputTypes.Intersect(scriptTypesSupportedByWallet);
+		var maxVsizeInputOutputPair = outputTypes.Max(x => x.EstimateInputVsize() + x.EstimateOutputVsize());
+		var minEconomicalOutput = roundParameters.MiningFeeRate.GetFee(maxVsizeInputOutputPair);
+		return Math.Max(minEconomicalOutput, roundParameters.AllowedOutputAmounts.Min);
+	}
+}

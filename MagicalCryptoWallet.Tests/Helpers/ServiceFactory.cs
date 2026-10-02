@@ -1,0 +1,119 @@
+using NBitcoin;
+using System.Collections.Generic;
+using System.Linq;
+using MagicalCryptoWallet.Blockchain.BlockFilters;
+using MagicalCryptoWallet.Blockchain.Keys;
+using MagicalCryptoWallet.Blockchain.TransactionOutputs;
+using MagicalCryptoWallet.Blockchain.Transactions;
+
+namespace MagicalCryptoWallet.Tests.Helpers;
+
+public static class ServiceFactory
+{
+	public static TransactionFactory CreateTransactionFactory(
+		(string Label, int KeyIndex, decimal Amount, bool Confirmed, int AnonymitySet)[] coins,
+		bool watchOnly = false)
+	{
+		string password = "foo";
+		KeyManager keyManager = watchOnly ? CreateWatchOnlyKeyManager() : CreateKeyManager(password);
+		SmartCoin[] sCoins = CreateCoins(keyManager, coins);
+		var coinsView = new CoinsView(sCoins);
+#pragma warning disable CA2000 // Dispose objects before losing scope - test helper, ownership transferred to TransactionFactory
+		var mockTransactionStore = new AllTransactionStore(".", Network.Main);
+#pragma warning restore CA2000
+		return new TransactionFactory(Network.Main, keyManager, coinsView, mockTransactionStore, password);
+	}
+
+	public static SmartCoin[] CreateCoins(
+		KeyManager keyManager,
+		(string Label, int KeyIndex, decimal Amount, bool Confirmed, int AnonymitySet)[] coins)
+	{
+		var generated = keyManager.GetKeys().Length;
+		var toGenerate = coins.Length - generated;
+		for (int i = 0; i < toGenerate; i++)
+		{
+			keyManager.GenerateNewKey("", KeyState.Clean, false);
+		}
+
+		var keys = keyManager.GetKeys().Take(coins.Length).ToArray();
+		var sCoins = new List<SmartCoin>(coins.Length);
+
+		foreach (var c in coins)
+		{
+			var k = keys[c.KeyIndex];
+			k.SetLabel(c.Label);
+
+			var sCoin = BitcoinFactory.CreateSmartCoin(keys[c.KeyIndex], c.Amount, c.Confirmed, c.AnonymitySet);
+			sCoin.SetAnonymitySet(c.AnonymitySet);
+
+			sCoins.Add(sCoin);
+		}
+
+		foreach (var coin in sCoins)
+		{
+			foreach (var sameLabelCoin in sCoins.Where(c => !c.HdPubKey.Labels.IsEmpty && c.HdPubKey.Labels == coin.HdPubKey.Labels))
+			{
+				sameLabelCoin.HdPubKey.Cluster = coin.HdPubKey.Cluster;
+			}
+		}
+
+		var uniqueCoins = sCoins.Distinct().Count();
+		if (uniqueCoins != sCoins.Count)
+		{
+			throw new InvalidOperationException($"Coin clones have been detected. Number of all coins:{sCoins.Count}, unique coins:{uniqueCoins}.");
+		}
+
+		return sCoins.ToArray();
+	}
+
+	public static KeyManager CreateKeyManager(string password = "blahblahblah", bool isTaprootAllowed = false, Mnemonic? mnemonic = null)
+	{
+		mnemonic ??= new Mnemonic(Wordlist.English, WordCount.Twelve);
+		ExtKey extKey = mnemonic.DeriveExtKey(password);
+		var encryptedSecret = extKey.PrivateKey.GetEncryptedBitcoinSecret(password, Network.Main);
+
+		HDFingerprint masterFingerprint = extKey.Neuter().PubKey.GetHDFingerPrint();
+		BlockchainState blockchainState = new(Network.Main);
+		KeyPath segwitAccountKeyPath = KeyManager.GetAccountKeyPath(Network.Main, ScriptPubKeyType.Segwit);
+		ExtPubKey segwitExtPubKey = extKey.Derive(segwitAccountKeyPath).Neuter();
+
+		ExtPubKey? taprootExtPubKey = null;
+		if (isTaprootAllowed)
+		{
+			KeyPath taprootAccountKeyPath = KeyManager.GetAccountKeyPath(Network.Main, ScriptPubKeyType.TaprootBIP86);
+			taprootExtPubKey = extKey.Derive(taprootAccountKeyPath).Neuter();
+		}
+
+		return new KeyManager(encryptedSecret, extKey.ChainCode, masterFingerprint, segwitExtPubKey, taprootExtPubKey, null, null, 21, blockchainState, null, segwitAccountKeyPath, null);
+	}
+
+	public static KeyManager CreateWatchOnlyKeyManager()
+	{
+		Mnemonic mnemonic = new(Wordlist.English, WordCount.Twelve);
+		ExtKey extKey = mnemonic.DeriveExtKey();
+
+		return CreateNewWatchOnly(
+			Derive(extKey, KeyPurpose.Loud(ScriptPubKeyType.Segwit)),
+			Derive(extKey, KeyPurpose.Loud(ScriptPubKeyType.TaprootBIP86)),
+			Derive(extKey, KeyPurpose.Scan),
+			Derive(extKey, KeyPurpose.Spend));
+
+		static ExtPubKey Derive(ExtKey extKey, KeyPurpose purpose) =>
+			extKey.Derive(KeyManager.GetAccountKeyPath(Network.Main, purpose)).Neuter();
+	}
+
+	public static KeyManager CreateNewWatchOnly(
+		ExtPubKey segwitExtPubKey,
+		ExtPubKey taprootExtPubKey,
+		ExtPubKey silentPaymentScanExtPubKey,
+		ExtPubKey silentPaymentSpendExtPubKey,
+		string? filePath = null,
+		int? minGapLimit = null)
+	{
+		var network = Network.Main;
+		var birthHeight = FilterCheckpoints.GetMostRecentCheckpoint(network).Header.Height;
+		var blockchainState = new BlockchainState(network, birthHeight: birthHeight);
+		int gapLimit = minGapLimit ?? KeyManager.AbsoluteMinGapLimit;
+		return new KeyManager(null, null, null, segwitExtPubKey, taprootExtPubKey, silentPaymentScanExtPubKey, silentPaymentSpendExtPubKey, gapLimit, blockchainState, filePath);
+	}
+}

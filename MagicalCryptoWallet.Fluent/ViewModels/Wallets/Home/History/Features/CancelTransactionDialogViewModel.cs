@@ -1,0 +1,85 @@
+using System.Linq;
+using System.Reactive.Disposables;
+using System.Reactive.Disposables.Fluent;
+using System.Reactive.Linq;
+using System.Threading.Tasks;
+using MagicalCryptoWallet.Fluent.Extensions;
+using MagicalCryptoWallet.Fluent.Models.Wallets;
+using MagicalCryptoWallet.Fluent.ViewModels.Navigation;
+using MagicalCryptoWallet.Logging;
+
+namespace MagicalCryptoWallet.Fluent.ViewModels.Wallets.Home.History.Features;
+
+[NavigationMetaData(Title = "Cancel Transaction", NavigationTarget = NavigationTarget.CompactDialogScreen)]
+public partial class CancelTransactionDialogViewModel : RoutableViewModel
+{
+	private readonly IWalletModel _wallet;
+	private readonly CancellingTransaction _cancellingTransaction;
+
+	public CancelTransactionDialogViewModel(UiContext uiContext, IWalletModel wallet, CancellingTransaction cancellingTransaction) : base(uiContext)
+	{
+		_wallet = wallet;
+		_cancellingTransaction = cancellingTransaction;
+		SetupCancel(enableCancel: true, enableCancelOnEscape: true, enableCancelOnPressed: true);
+
+		Fee = cancellingTransaction.Fee;
+
+		EnableBack = false;
+		NextCommand = ReactiveCommand.CreateFromTask(() => OnCancelTransactionAsync(cancellingTransaction));
+	}
+
+	public Amount Fee { get; }
+
+	protected override void OnNavigatedTo(bool isInHistory, CompositeDisposable disposables)
+	{
+		// Close dialog if target transaction is already confirmed.
+		_wallet.Transactions.Cache
+			.Watch(_cancellingTransaction.TargetTransaction.Id)
+			.Where(change => change.Current.IsConfirmed)
+			.Do(_ => Navigate().Back())
+			.Subscribe()
+			.DisposeWith(disposables);
+
+		base.OnNavigatedTo(isInHistory, disposables);
+	}
+
+	private async Task OnCancelTransactionAsync(CancellingTransaction cancellingTransaction)
+	{
+		IsBusy = true;
+
+		try
+		{
+			var isAuthorized = await AuthorizeForPasswordAsync();
+			if (isAuthorized)
+			{
+				await _wallet.Transactions.SendAsync(cancellingTransaction);
+				var (title, caption) = ("Success", "Your transaction has been successfully cancelled.");
+
+				var mainViewModel = UiContext.MainViewModel
+					?? throw new InvalidOperationException("MainViewModel is not initialized.");
+
+				var wallet = UiContext.Services.GetWallet();
+
+				UiContext.Navigate().To().SendSuccess(cancellingTransaction.CancelTransaction.Transaction, title, caption, NavigationTarget.CompactDialogScreen);
+			}
+		}
+		catch (Exception ex)
+		{
+			Logger.LogError(ex);
+			var msg = cancellingTransaction.TargetTransaction.IsConfirmed ? "The transaction is already confirmed." : ex.ToUserFriendlyString();
+			UiContext.Navigate().To().ShowErrorDialog(msg, "Cancellation Failed", "Magical Crypto Wallet was unable to cancel your transaction.", NavigationTarget.CompactDialogScreen);
+		}
+
+		IsBusy = false;
+	}
+
+	private async Task<bool> AuthorizeForPasswordAsync()
+	{
+		if (_wallet.Auth.HasPassword)
+		{
+			return await Navigate().To().PasswordAuthDialog(_wallet, "Send").GetResultAsync();
+		}
+
+		return true;
+	}
+}

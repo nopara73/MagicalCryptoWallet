@@ -1,0 +1,50 @@
+using NBitcoin;
+using MagicalCryptoWallet.Blockchain.Keys;
+using MagicalCryptoWallet.Hwi.Models;
+using MagicalCryptoWallet.Wallets.Slip39;
+
+namespace MagicalCryptoWallet.Fluent.Models;
+
+public abstract record WalletCreationOptions(string? WalletName = null)
+{
+	public record AddNewWallet(string? WalletName = null, WalletBackup? SelectedWalletBackup = null, WalletBackup[]? WalletBackups = null)
+		: WalletCreationOptions(WalletName)
+	{
+		public AddNewWallet WithNewWalletBackups()
+		{
+			var recoveryWordsBackup = new RecoveryWordsBackup(
+				Password: "",
+				Mnemonic: new Mnemonic(Wordlist.English, WordCount.Twelve));
+
+			var multiShareBackupSettings = new MultiShareBackupSettings();
+
+			var multiShareBackup = new MultiShareBackup(
+				Settings: new MultiShareBackupSettings(),
+				Shares: Shamir.Generate(
+					multiShareBackupSettings.Threshold,
+					multiShareBackupSettings.Shares,
+					WalletGenerator.GenerateShamirEntropy()),
+				Password: "");
+
+			return this with
+			{
+				SelectedWalletBackup = recoveryWordsBackup,
+				WalletBackups = [recoveryWordsBackup, multiShareBackup]
+			};
+		}
+	}
+
+	public record ConnectToHardwareWallet(
+		string? WalletName = null,
+		HwiEnumerateEntry? Device = null) : WalletCreationOptions(WalletName);
+
+	public record ImportWallet(
+		string? WalletName = null,
+		string? FilePath = null) : WalletCreationOptions(WalletName);
+
+	public record RecoverWallet(
+		string? WalletName = null,
+		WalletBackup? WalletBackup = null,
+		int? MinGapLimit = null,
+		uint? BirthHeight = null) : WalletCreationOptions(WalletName);
+}

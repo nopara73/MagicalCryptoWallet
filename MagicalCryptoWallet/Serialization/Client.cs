@@ -1,0 +1,218 @@
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json.Nodes;
+using NBitcoin;
+using NBitcoin.Secp256k1;
+using MagicalCryptoWallet.Blockchain.Analysis.Clustering;
+using MagicalCryptoWallet.Blockchain.Keys;
+using MagicalCryptoWallet.Helpers;
+using MagicalCryptoWallet.Models;
+using MagicalCryptoWallet.WabiSabi.Client;
+using MagicalCryptoWallet.WabiSabi.Client.Banning;
+
+namespace MagicalCryptoWallet.Serialization;
+
+public static partial class Encode
+{
+	public static JsonNode KeyPath(KeyPath kp) =>
+		String(kp.ToString());
+
+	public static JsonNode ByteArray(byte[] bytes) =>
+		String(Convert.ToBase64String(bytes));
+
+	public static JsonNode ChainCode(byte[] bytes) =>
+		ByteArray(bytes);
+
+	public static JsonNode PubKey(PubKey pk) =>
+		String(pk.ToHex());
+
+	public static JsonNode ECPubKey(ECPubKey pk) =>
+		ByteArray(pk.ToBytes());
+
+	public static JsonNode LabelsArray(LabelsArray a) =>
+		String(a.ToString());
+
+	public static JsonNode HdPubKey(HdPubKey hd) =>
+		hd.TweakData is null
+			? HdPubKeyEncoder(hd)
+			: SpPubKeyEncoder(hd);
+
+	public static JsonNode HdPubKeyEncoder(HdPubKey hd) =>
+		Object([
+			("PubKey", PubKey(hd.PubKey)),
+			("FullKeyPath", KeyPath(hd.FullKeyPath) ),
+			("Label", LabelsArray(hd.Labels) ),
+			("KeyState", Int((int)hd.KeyState) ),
+		]);
+
+	public static JsonNode SpPubKeyEncoder(HdPubKey hd) =>
+		Object([
+			("PubKey", PubKey(hd.PubKey)),
+			("Label", LabelsArray(hd.Labels) ),
+			("TweakData", ECPubKey(hd.TweakData!))
+		]);
+
+	public static JsonNode HDFingerprint(HDFingerprint? fp)
+	{
+		if (fp is null)
+		{
+			throw new ArgumentNullException(nameof(fp));
+		}
+
+		return String(fp.Value.ToString());
+	}
+
+	public static JsonNode BitcoinEncryptedSecretNoEC(BitcoinEncryptedSecretNoEC s) =>
+		String(s.ToWif());
+
+	public static JsonNode WalletHeight(ChainHeight height) =>
+		String(Math.Max(0L, (long)height.Height - Constants.ResyncHeightMargin).ToString());
+
+	public static JsonNode BlockchainState(BlockchainState s) =>
+		Object(s.BirthHeight is not {} nonNullBirthHeight
+		? [
+			("Network", Network(s.Network)),
+			("Height", WalletHeight(s.Height)),
+		]
+		: [
+			("Network", Network(s.Network)),
+			("Height", WalletHeight(s.Height)),
+			("BirthHeight", UInt(nonNullBirthHeight.Height)),
+		]);
+
+	public static JsonNode PreferredScriptPubKeyType(PreferredScriptPubKeyType t) =>
+		t switch
+		{
+			PreferredScriptPubKeyType.Specified {ScriptType: NBitcoin.ScriptPubKeyType.Segwit} => String("Segwit"),
+			PreferredScriptPubKeyType.Specified {ScriptType: NBitcoin.ScriptPubKeyType.TaprootBIP86} => String("Taproot"),
+			PreferredScriptPubKeyType.Unspecified _ => String("Random"),
+			_ => throw new ArgumentOutOfRangeException(nameof(t))
+		};
+
+	public static JsonNode ScriptPubKeyType(ScriptPubKeyType w) =>
+		w switch
+		{
+			NBitcoin.ScriptPubKeyType.Segwit => "Segwit",
+			NBitcoin.ScriptPubKeyType.TaprootBIP86 => "Taproot",
+			_ => throw new ArgumentOutOfRangeException(nameof(w))
+		};
+
+	public static JsonNode SerializableException(SerializableException e) =>
+		Object([
+			("ExceptionType", Optional(e.ExceptionType, String)),
+			("Message", String(e.Message)),
+			("StackTrace", Optional(e.StackTrace, String)),
+			("InnerException", Optional(e.InnerException, SerializableException))
+		]);
+
+	public static JsonNode PrisonedCoinRecord(PrisonedCoinRecord r) =>
+		Object([
+			("Outpoint", Outpoint(r.Outpoint)),
+			("BannedUntil", DatetimeOffset(r.BannedUntil))
+		]);
+
+	public static JsonNode CoinjoinCosts(KeyValuePair<uint256, CoinjoinCosts> costs) =>
+		Object([
+			("TransactionId", UInt256(costs.Key)),
+			("MiningFee", MoneySatoshis(costs.Value.MiningFee)),
+			("WastedDust", MoneySatoshis(costs.Value.WastedDust)),
+			("PaymentsTotal", MoneySatoshis(costs.Value.PaymentsTotal))
+		]);
+
+	public static JsonNode ClientPrison(IEnumerable<PrisonedCoinRecord> p) =>
+		Array(p.Select(PrisonedCoinRecord));
+}
+
+
+public static partial class Decode
+{
+	public static Decoder<byte[]> ByteArray =>
+		String.Map(Convert.FromBase64String);
+
+	public static Decoder<HDFingerprint> HDFingerprint =>
+		String.Map(NBitcoin.HDFingerprint.Parse);
+
+	private static Decoder<ChainHeight> WalletHeight =>
+		UInt.Map(h => new ChainHeight(h));
+
+	public static Decoder<KeyPath> KeyPath =>
+		String.Map(NBitcoin.KeyPath.Parse);
+
+	private static Decoder<PubKey> PubKey =>
+		String.Map(s => new PubKey(s));
+
+	public static Decoder<ECPubKey> ECPubKey =>
+		ByteArray.Map(a => NBitcoin.Secp256k1.ECPubKey.Create(a));
+
+	private static Decoder<LabelsArray> LabelsArray =>
+		String.Map(s => new LabelsArray(s));
+
+	private static Decoder<HdPubKey> HdPubKeyDecoder =>
+		Object(get => new HdPubKey(
+			get.Required("PubKey", PubKey),
+			get.Required("FullKeyPath", KeyPath),
+			get.Required("Label", LabelsArray),
+			get.Required("KeyState", Int.Map(x => (KeyState)x))
+		));
+
+	private static Decoder<HdPubKey> SpPubKeyDecoder =>
+		Object(get => new HdPubKey(
+			get.Required("PubKey", PubKey),
+			get.Required("FullKeyPath", KeyPath),
+			get.Required("Label", LabelsArray),
+			get.Required("KeyState", Int.Map(x => (KeyState)x))
+		));
+
+	public static Decoder<HdPubKey> HdPubKey =>
+		OneOf([HdPubKeyDecoder, SpPubKeyDecoder]);
+
+	public static Decoder<BlockchainState> BlockchainState =>
+		Object(get => new BlockchainState(
+			get.Required("Network", Network),
+			get.Required("Height", WalletHeight),
+			get.Optional("BirthHeight", WalletHeight)
+			));
+
+	public static Decoder<BitcoinEncryptedSecretNoEC> BitcoinEncryptedSecretNoEC =>
+		String.Map(s => new BitcoinEncryptedSecretNoEC(s, NBitcoin.Network.Main));
+
+	public static Decoder<PreferredScriptPubKeyType> PreferredScriptPubKeyType =>
+		String.Map(s => s switch
+		{
+			"Segwit" => new PreferredScriptPubKeyType.Specified(NBitcoin.ScriptPubKeyType.Segwit),
+			"Taproot" => new PreferredScriptPubKeyType.Specified(NBitcoin.ScriptPubKeyType.TaprootBIP86),
+			"Random" => (PreferredScriptPubKeyType)MagicalCryptoWallet.Models.PreferredScriptPubKeyType.Unspecified.Instance,
+			_ => throw new Exception($"Unknown ScriptPubKeyType '{s}'")
+		}).Catch();
+
+	public static Decoder<ScriptPubKeyType> ScriptPubKeyType =>
+		String.Map(s => s switch
+		{
+			"Segwit" => NBitcoin.ScriptPubKeyType.Segwit,
+			"Taproot" => NBitcoin.ScriptPubKeyType.TaprootBIP86,
+			_ => throw new Exception($"Unknown ScriptPubKeyType '{s}'")
+		}).Catch();
+
+	public static Decoder<SerializableException> SerializableException =>
+		Object(get => new SerializableException(
+			get.Required("ExceptionType", String),
+			get.Required("Message", String),
+			get.Required("StackTrace", String),
+			get.Optional("InnerException", SerializableException)
+		));
+
+	public static Decoder<PrisonedCoinRecord> PrisonedCoinRecord =>
+		Object(get => new PrisonedCoinRecord(
+			get.Required("Outpoint", OutPoint),
+			get.Required("BannedUntil", DateTimeOffset)
+		));
+
+	public static Decoder<KeyValuePair<uint256, CoinjoinCosts>> CoinjoinCosts =>
+		Object(get => KeyValuePair.Create(
+			get.Required("TransactionId", UInt256),
+			new CoinjoinCosts(
+				get.Required("MiningFee", MoneySatoshis),
+				get.Required("WastedDust", MoneySatoshis),
+				get.Required("PaymentsTotal", MoneySatoshis))
+		));
+}

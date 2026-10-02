@@ -1,64 +1,175 @@
-name: "Build"
+name: Build and audit
 on:
   push:
-    branches: [ "*" ]
+    branches: [master, 'codex/**']
   pull_request:
-
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Numeric snapshot or release version
+        default: '99.99.99'
+      production:
+        description: Require Windows and macOS production certificates
+        type: boolean
+        default: false
+      prepare_release:
+        description: Authenticate package manifests and prepare an announcement without publishing
+        type: boolean
+        default: false
+  workflow_call:
+    inputs:
+      version:
+        type: string
+        default: '99.99.99'
+      production:
+        type: boolean
+        default: false
+      prepare_release:
+        type: boolean
+        default: false
+permissions:
+  contents: read
+  actions: read
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: build-${{ github.event.pull_request.head.ref || github.ref_name }}-${{ inputs.production || false }}
   cancel-in-progress: true
-
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: cachix/install-nix-action@v20
-        with:
-          nix_path: nixpkgs=channel:nixos-unstable
-      - name: Setup Cachix
-        uses: cachix/cachix-action@v12
-        with:
-          name: wasabibinarycache
-          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
-      - run: nix build --print-build-logs .#all
-      - run: echo OK
-
-  unit-tests:
-    name: Unit tests (${{ matrix.runtime }})
+  platform:
+    name: ${{ matrix.rid }}
     runs-on: ${{ matrix.os }}
-    env:
-      AVALONIA_TELEMETRY_OPTOUT: '1'
-      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
-      DOTNET_NOLOGO: '1'
+    timeout-minutes: 35
     strategy:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-latest
-            runtime: linux-x64
-          - os: windows-latest
-            runtime: win-x64
-          - os: macos-15-intel
-            runtime: osx-x64
-          - os: macos-15
-            runtime: osx-arm64
+          - {os: windows-2025, rid: win-x64}
+          - {os: ubuntu-24.04, rid: linux-x64}
+          - {os: ubuntu-24.04-arm, rid: linux-arm64}
+          - {os: macos-15-intel, rid: osx-x64}
+          - {os: macos-15, rid: osx-arm64}
+    env:
+      AVALONIA_TELEMETRY_OPTOUT: '1'
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      DOTNET_NOLOGO: '1'
+      MAGICALCRYPTOWALLET_VERSION: ${{ inputs.version || '99.99.99' }}
+      MAGICALCRYPTOWALLET_DATADIR: ${{ github.workspace }}/.artifacts/test-data
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
         with:
-          global-json-file: global.json
-      - name: Cache NuGet packages
-        uses: actions/cache@v4
+          dotnet-version: '10.0.401'
+      - uses: actions/setup-python@v5
         with:
-          path: ~/.nuget/packages
-          key: ${{ runner.os }}-${{ matrix.runtime }}-nuget-${{ hashFiles('Directory.Packages.props', 'NuGet.Config', 'global.json', 'deps.json', '**/packages.lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-${{ matrix.runtime }}-nuget-
-            ${{ runner.os }}-nuget-
-      - name: Restore
-        run: dotnet restore WalletWasabi.Tests/WalletWasabi.Tests.csproj
-      - name: Build
-        run: dotnet build WalletWasabi.Tests/WalletWasabi.Tests.csproj --no-restore --configuration Release
-      - name: Test
-        run: dotnet test --project WalletWasabi.Tests/WalletWasabi.Tests.csproj --no-build --configuration Release --filter-namespace "*UnitTests*" --no-progress --no-ansi --output Normal
+          python-version: '3.14'
+      - name: Release inventory and mixed-version regression checks
+        run: python Contrib/Signing/test-sign-release.py
+      - name: Linux runtime and packaging dependencies
+        if: startsWith(matrix.rid, 'linux')
+        run: sudo apt-get update && sudo apt-get install -y libfontconfig1 squashfs-tools
+      - name: Checksum-pinned packaging toolchains
+        run: python Contrib/Releases/setup-tools.py --rid ${{ matrix.rid }}
+      - name: Unsigned snapshot packages and native tests
+        if: ${{ !inputs.production }}
+        shell: bash
+        run: python Contrib/Releases/package.py --rid '${{ matrix.rid }}' --version "$MAGICALCRYPTOWALLET_VERSION" $([[ '${{ matrix.rid }}' == linux-* ]] && echo --appimage)
+      - name: Production packages and platform signature checks
+        if: ${{ inputs.production }}
+        shell: bash
+        env:
+          MAGICALCRYPTOWALLET_WINDOWS_CERTIFICATE: ${{ secrets.MAGICALCRYPTOWALLET_WINDOWS_CERTIFICATE }}
+          MAGICALCRYPTOWALLET_WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.MAGICALCRYPTOWALLET_WINDOWS_CERTIFICATE_PASSWORD }}
+          MAGICALCRYPTOWALLET_MACOS_CERTIFICATE: ${{ secrets.MAGICALCRYPTOWALLET_MACOS_CERTIFICATE }}
+          MAGICALCRYPTOWALLET_MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MAGICALCRYPTOWALLET_MACOS_CERTIFICATE_PASSWORD }}
+          MAGICALCRYPTOWALLET_MACOS_SIGNING_IDENTITY: ${{ secrets.MAGICALCRYPTOWALLET_MACOS_SIGNING_IDENTITY }}
+          MAGICALCRYPTOWALLET_MACOS_TEAM_ID: ${{ secrets.MAGICALCRYPTOWALLET_MACOS_TEAM_ID }}
+          MAGICALCRYPTOWALLET_NOTARY_KEY: ${{ secrets.MAGICALCRYPTOWALLET_NOTARY_KEY }}
+          MAGICALCRYPTOWALLET_NOTARY_KEY_ID: ${{ secrets.MAGICALCRYPTOWALLET_NOTARY_KEY_ID }}
+          MAGICALCRYPTOWALLET_NOTARY_ISSUER: ${{ secrets.MAGICALCRYPTOWALLET_NOTARY_ISSUER }}
+        run: python Contrib/Releases/package.py --production --rid '${{ matrix.rid }}' --version "$MAGICALCRYPTOWALLET_VERSION" $([[ '${{ matrix.rid }}' == linux-* ]] && echo --appimage)
+      - name: Wallet tests including synthetic import, startup, fees, locking and update authentication
+        run: dotnet test --project MagicalCryptoWallet.Tests -c Release --filter-namespace '*UnitTests*' --no-progress --no-ansi --output Normal
+      - name: Forked managed cryptography and published vectors
+        run: dotnet test --project ThirdParty/WabiSabi/csharp/WabiSabi.Tests -c Release --no-progress --no-ansi --output Normal
+      - name: Native and managed wire interoperability
+        run: dotnet test --project ThirdParty/WabiSabi/interop/WabiSabiInterop.Tests -c Release --no-progress --no-ansi --output Normal
+      - name: Standalone cross-language credential exchange
+        run: dotnet run --project ThirdParty/WabiSabi/interop -c Release
+      - name: Tracked source, generated code, assembly metadata, resources and symbols
+        run: python Contrib/Rebrand/audit.py --artifacts .artifacts/packages/${{ matrix.rid }}/MagicalCryptoWallet
+      - name: Audit rejects retired identity and trust material
+        run: python Contrib/Rebrand/test-audit.py
+      - name: Install alongside the checksum-pinned upstream baseline on the ephemeral runner
+        if: matrix.rid == 'win-x64'
+        shell: pwsh
+        run: ./Contrib/Rebrand/test-windows-coexistence.ps1
+      - name: Extract packages and verify independent installation identities
+        run: python Contrib/Rebrand/inspect-packages.py --rid ${{ matrix.rid }}
+      - name: Actual application views in both themes and common display scales
+        run: dotnet run --project Contrib/VisualPreview -c Release -- .artifacts/screenshots
+      - name: Package and validation artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: packages-${{ matrix.rid }}
+          path: |
+            packages/*
+            .artifacts/screenshots/*.png
+            .artifacts/package-inspection/*.json
+            .artifacts/installed-coexistence/*.log
+          compression-level: 0
+          if-no-files-found: error
+  container:
+    name: Coordinator container
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build --file Contrib/Containers/Dockerfile --tag magicalcryptowallet-coordinator:test .
+      - run: docker run --rm --entrypoint sh magicalcryptowallet-coordinator:test -c 'test -f MagicalCryptoWallet.Coordinator.dll && test -f libwabisabi.so && dotnet --info'
+  nix:
+    name: Nix source build and wallet tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v31
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+      - run: nix build .#unit-tests --print-build-logs
+  sign-manifests:
+    name: Authenticate package manifests
+    if: inputs.prepare_release
+    needs: [platform, container, nix]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: packages-*
+          path: .artifacts/downloaded
+      - name: Collect platform packages
+        run: |
+          mkdir packages
+          find .artifacts/downloaded -type f \( -name '*.msi' -o -name '*.deb' -o -name '*.dmg' -o -name '*.zip' -o -name '*.tar.gz' -o -name '*.AppImage' \) -exec cp {} packages/ \;
+      - name: Sign and verify manifests against repository public keys
+        env:
+          MAGICALCRYPTOWALLET_GPG_PRIVATE_KEY: ${{ secrets.MAGICALCRYPTOWALLET_GPG_PRIVATE_KEY }}
+          MAGICALCRYPTOWALLET_GPG_PASSPHRASE: ${{ secrets.MAGICALCRYPTOWALLET_GPG_PASSPHRASE }}
+          MAGICALCRYPTOWALLET_UPDATE_SIGNING_KEY: ${{ secrets.MAGICALCRYPTOWALLET_UPDATE_SIGNING_KEY }}
+          MAGICALCRYPTOWALLET_VERSION: ${{ inputs.version || '99.99.99' }}
+        run: python3 Contrib/Signing/sign-release.py packages --version "$MAGICALCRYPTOWALLET_VERSION"
+      - name: Prepare authenticated announcement without sending
+        env:
+          MAGICALCRYPTOWALLET_NOSTR_ANNOUNCEMENT_KEY: ${{ secrets.MAGICALCRYPTOWALLET_NOSTR_ANNOUNCEMENT_KEY }}
+          MAGICALCRYPTOWALLET_VERSION: ${{ inputs.version || '99.99.99' }}
+        run: dotnet run --project Contrib/Releases/Publisher -c Release -- prepare-announcement "$MAGICALCRYPTOWALLET_VERSION" MagicalCryptoWallet/Announcements/ReleaseHighlights.md packages
+      - uses: actions/upload-artifact@v4
+        with:
+          name: signed-release-artifacts
+          path: packages/*
+          compression-level: 0
+          if-no-files-found: error

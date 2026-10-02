@@ -1,0 +1,11 @@
+using MagicalCryptoWallet.Crypto.Randomness;
+
+namespace MagicalCryptoWallet.Tests.Helpers;
+
+public static class RandomString
+{
+	private static readonly RandomStringGenerator InsecureGenerator = RandomnessProviders.Insecure.CreateRandomStringGenerator();
+
+	public static string AlphaNumeric(int length) =>
+		InsecureGenerator(length);
+}

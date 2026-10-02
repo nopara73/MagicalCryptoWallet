@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" InitialTargets="EnsureWixToolsetInstalled" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <ProductVersion>3.10</ProductVersion>
+    <ProjectGuid>764EE04F-DAF2-4DB4-8A32-E134172275A1</ProjectGuid>
+    <SchemaVersion>2.0</SchemaVersion>
+    <OutputName>MagicalCryptoWallet</OutputName>
+    <OutputType>Package</OutputType>
+    <Cultures>;</Cultures>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
+    <OutputPath>bin\$(Configuration)\</OutputPath>
+    <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SuppressIces>ICE40</SuppressIces>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Components.wxs" />
+    <Compile Include="ComponentsGenerated.wxs" />
+    <Compile Include="Directories.wxs" />
+    <Compile Include="Product.wxs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MagicalCryptoWallet.Fluent.Desktop\MagicalCryptoWallet.Fluent.Desktop.csproj">
+      <Name>MagicalCryptoWallet.Fluent.Desktop</Name>
+      <Project>{b007dc0f-8c86-439d-be3c-283218d8308b}</Project>
+      <Private>True</Private>
+      <DoNotHarvest>True</DoNotHarvest>
+      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
+      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Common.wxl" />
+  </ItemGroup>
+  <ItemGroup>
+    <WixExtension Include="WixUtilExtension">
+      <HintPath>$(WixExtDir)\WixUtilExtension.dll</HintPath>
+      <Name>WixUtilExtension</Name>
+    </WixExtension>
+    <WixExtension Include="WixUIExtension">
+      <HintPath>$(WixExtDir)\WixUIExtension.dll</HintPath>
+      <Name>WixUIExtension</Name>
+    </WixExtension>
+  </ItemGroup>
+  <Import Project="$(WixTargetsPath)" Condition=" '$(WixTargetsPath)' != '' " />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.targets" Condition=" '$(WixTargetsPath)' == '' AND Exists('$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.targets') " />
+  <Target Name="EnsureWixToolsetInstalled" Condition=" '$(WixTargetsImported)' != 'true' ">
+    <Error Text="The WiX Toolset v3.11 (or newer) build tools must be installed to build this project. To download the WiX Toolset, see http://wixtoolset.org/releases/" />
+  </Target>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
+	      Other similar extension points exist, see Wix.targets. -->
+  <Target Name="BeforeBuild">
+    <PropertyGroup>
+      <PublishDirectory Condition="'$(PublishDirectory)' == ''">$(MSBuildProjectDirectory)\..\.artifacts\packages\win-x64\MagicalCryptoWallet</PublishDirectory>
+      <ClientVersion Condition="'$(ClientVersion)' == ''">99.99.99</ClientVersion>
+      <LinkerBaseInputPaths>$(PublishDirectory)</LinkerBaseInputPaths>
+      <DefineConstants>BuildVersion=$(ClientVersion);BasePath=$(PublishDirectory);DesktopProjectDir=$(MSBuildProjectDirectory)\..\MagicalCryptoWallet.Fluent.Desktop</DefineConstants>
+    </PropertyGroup>
+    <Error Condition="!Exists('$(PublishDirectory)\magicalcryptowallet.exe')" Text="Build the source-based Windows snapshot with python Contrib/Releases/package.py --rid win-x64 before opening the installer project." />
+    <Exec Command="python &quot;$(MSBuildProjectDirectory)\..\Contrib\Releases\installer-components.py&quot; &quot;$(PublishDirectory)&quot; &quot;$(MSBuildProjectDirectory)\ComponentsGenerated.wxs&quot;" />
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+</Project>

@@ -2,6 +2,16 @@
 # Set default behavior to automatically normalize line endings.
 ###############################################################################
 * text=auto
+*.py text eol=lf
+*.sh text eol=lf
+*.yml text eol=lf
+*.json text eol=lf
+*.c text eol=lf
+*.h text eol=lf
+CMakeLists.txt text eol=lf
+*.png binary
+*.ico binary
+*.icns binary
 **/osx64/Tor/tor text eol=lf
 
 ###############################################################################
@@ -68,3 +78,6 @@
 #*.PDF   diff=astextplain
 #*.rtf   diff=astextplain
 #*.RTF   diff=astextplain
+
+# Preserve imported cryptographic source formatting.
+ThirdParty/WabiSabi/** whitespace=-blank-at-eof,-blank-at-eol

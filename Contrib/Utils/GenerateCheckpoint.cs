@@ -5,7 +5,7 @@
 
 /// <summary>
 /// Standalone tool that connects to a Bitcoin peer supporting compact block filters (BIP 157/158), fetches a block + its basic compact 
-/// filter + filter header, and prints checkpoint data suitable for WalletWasabi-style filter checkpoints.
+/// filter + filter header, and prints checkpoint data suitable for Magical Crypto Wallet-style filter checkpoints.
 /// </summary>
 using NBitcoin;
 using NBitcoin.Protocol;

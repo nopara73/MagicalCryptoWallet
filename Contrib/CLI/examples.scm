@@ -1,8 +1,8 @@
 ;; Returns a list of wallet UTXOs, each annotated with hop-distance info,
 ;; sorted by number of hops since last coinjoin (descending).
-(define (list-wallet-coins-sorted-by-hops walletname)
-  (let* (;; Look up the wallet object by its name
-          (wallet (get-wallet-by-name walletname))
+(define (list-wallet-coins-sorted-by-hops)
+  (let* (;; Use the configured wallet
+          (wallet (wallet))
           ;; Get all unspent coins (UTXOs) belonging to this wallet
           (utxos  (wallet-unspent-coins wallet))
           ;; Get all transactions associated with this wallet
@@ -56,8 +56,8 @@
 ;; Returns a list of entries showing the wallet balance after each transaction,
 ;; ordered chronologically (by block height and block index).
 ;; Each entry contains the transaction hash, height, and running balance.
-(define (historical-balance walletname)
-  (let* ((wallet (get-wallet-by-name walletname))
+(define (historical-balance)
+  (let* ((wallet (wallet))
           (txs    (wallet-transactions wallet)))
 
     ;; Compute the net effect of a transaction on the wallet balance.
@@ -120,14 +120,14 @@
 ;;               to the coin.
 ;;
 ;; Parameters:
-;;   walletname - A string identifying the wallet by name.
+;;   Uses the one configured wallet.
 ;;
 ;; Returns:
 ;;   A list of association lists, one per labeled coin, conforming
 ;;   to the BIP-329 schema.
 ;;
 ;; Example:
-;;   (export-bip329 "my-wallet")
+;;   (export-bip329)
 ;;   ;; => ((("type" "output")
 ;;   ;;      ("ref" "abc123...def:0")
 ;;   ;;      ("label" "savings cold-storage"))
@@ -135,9 +135,9 @@
 ;;   ;;      ("ref" "789fed...012:1")
 ;;   ;;      ("label" "change")))
 
-(define (export-bip329 walletname)
-  ;; Look up the wallet once and bind it for use in the body.
-  (let ((wallet (get-wallet-by-name walletname)))
+(define (export-bip329)
+  ;; Bind the configured wallet for use in the body.
+  (let ((wallet (wallet)))
 
     ;; Convert a single coin into a BIP-329 label record.
     ;;

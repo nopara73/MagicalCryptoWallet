@@ -1,0 +1,96 @@
+using System.Collections.Generic;
+using System.Linq;
+using System.Reactive.Disposables;
+using System.Reactive.Disposables.Fluent;
+using System.Reactive.Linq;
+using System.Threading.Tasks;
+using Avalonia.Threading;
+using MagicalCryptoWallet.Blockchain.TransactionOutputs;
+using MagicalCryptoWallet.Fluent.Extensions;
+using MagicalCryptoWallet.Fluent.Models.Transactions;
+using MagicalCryptoWallet.Fluent.ViewModels.Dialogs.Base;
+using MagicalCryptoWallet.Services;
+using MagicalCryptoWallet.WabiSabi.Client.CoinJoin.Manager;
+using MagicalCryptoWallet.Wallets;
+
+namespace MagicalCryptoWallet.Fluent.ViewModels.Wallets.Send;
+
+[NavigationMetaData(Title = "Privacy Control")]
+public partial class PrivacyControlViewModel : DialogViewModelBase<IEnumerable<SmartCoin>>
+{
+	private readonly Wallet _wallet;
+	private readonly SendFlowModel _sendFlow;
+	private readonly TransactionInfo _transactionInfo;
+	private readonly bool _isSilent;
+	private readonly IEnumerable<SmartCoin>? _usedCoins;
+
+	public PrivacyControlViewModel(UiContext uiContext, Wallet wallet, SendFlowModel sendFlow, TransactionInfo transactionInfo, IEnumerable<SmartCoin>? usedCoins, bool isSilent) : base(uiContext)
+	{
+		_wallet = wallet;
+		_sendFlow = sendFlow;
+		_transactionInfo = transactionInfo;
+		_isSilent = isSilent;
+		_usedCoins = usedCoins;
+
+		LabelSelection = new LabelSelectionViewModel(uiContext, wallet.KeyManager, wallet.Password, _transactionInfo, isSilent);
+
+		SetupCancel(enableCancel: false, enableCancelOnEscape: true, enableCancelOnPressed: false);
+		EnableBack = true;
+
+		NextCommand = ReactiveCommand.Create(() => Complete(LabelSelection.GetUsedPockets()), LabelSelection.WhenAnyValue(x => x.EnoughSelected));
+
+		IsBusy = true;
+	}
+
+	public LabelSelectionViewModel LabelSelection { get; }
+
+	private void Complete(IEnumerable<Pocket> pockets)
+	{
+		var coins = Pocket.Merge(pockets.ToArray()).Coins;
+
+		Close(DialogResultKind.Normal, coins);
+	}
+
+	private async Task InitializeLabelsAsync()
+	{
+		var privateThreshold = _wallet.AnonScoreTarget;
+
+		var cjManager = UiContext.Services.GetHostedService<CoinJoinManager>();
+		var coinsToExclude = cjManager?.CoinsInCriticalPhase[_wallet.WalletId].ToList() ?? [];
+
+		var pockets = _sendFlow.GetPockets();
+
+		await LabelSelection.ResetAsync(pockets, coinsToExclude);
+		await LabelSelection.SetUsedLabelAsync(_usedCoins, privateThreshold);
+	}
+
+	protected override void OnNavigatedTo(bool isInHistory, CompositeDisposable disposables)
+	{
+		base.OnNavigatedTo(isInHistory, disposables);
+
+		// TODO: Decoupling
+		UiContext.Services.EventBus.AsObservable<WalletRelevantTransactionProcessed>()
+			.ObserveOn(RxApp.MainThreadScheduler)
+			.SubscribeAsync(_ => InitializeLabelsAsync())
+			.DisposeWith(disposables);
+
+		Dispatcher.UIThread.InvokeAsync(async () =>
+		{
+			IsBusy = true;
+
+			if (!isInHistory)
+			{
+				await InitializeLabelsAsync();
+			}
+
+			if (_isSilent)
+			{
+				var autoSelectedPockets = await LabelSelection.AutoSelectPocketsAsync();
+
+				Complete(autoSelectedPockets);
+			}
+
+			IsBusy = false;
+		});
+	}
+}

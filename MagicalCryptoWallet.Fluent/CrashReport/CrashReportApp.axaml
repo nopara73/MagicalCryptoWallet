@@ -1,0 +1,24 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:MagicalCryptoWallet.Fluent"
+             x:Class="MagicalCryptoWallet.Fluent.CrashReport.CrashReportApp"
+             RequestedThemeVariant="Dark">
+  <Application.DataTemplates>
+    <local:ViewLocator />
+  </Application.DataTemplates>
+  <Application.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <MergeResourceInclude Source="avares://MagicalCryptoWallet.Fluent/Styles/Themes/ThemeVariants.axaml" />
+        <MergeResourceInclude Source="avares://MagicalCryptoWallet.Fluent/Controls/ContentArea.axaml" />
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </Application.Resources>
+  <Application.Styles>
+    <FluentTheme />
+    <StyleInclude Source="avares://Avalonia.Controls.TreeDataGrid/Themes/Fluent.axaml" />
+    <StyleInclude Source="avares://MagicalCryptoWallet.Fluent/Styles/Themes/Fluent.axaml" />
+    <StyleInclude Source="avares://MagicalCryptoWallet.Fluent/Icons/Icons.axaml" />
+    <StyleInclude Source="avares://MagicalCryptoWallet.Fluent/Styles/Styles.axaml" />
+  </Application.Styles>
+</Application>

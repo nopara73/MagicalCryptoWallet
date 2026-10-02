@@ -13,12 +13,8 @@ open Common
 type KeyInfo = { Path: string; State: int }
 
 
-let args = Environment.GetCommandLineArgs()
-let walletname = args[2]
-
-let getKeys (walletName: string) = 
-    walletName
-    |> Rpc.getListOfKeys 
+let getKeys () =
+    Rpc.getListOfKeys ()
     |> Array.map (fun x -> { Path=x.FullKeyPath; State=x.KeyState })
     |> List.ofArray
 
@@ -30,7 +26,7 @@ let filterByKeyPath (keys: KeyInfo list) (kp: string) =
 let stateToHeat (key: KeyInfo) =
     key.State
 
-let keys = getKeys walletname
+let keys = getKeys ()
 let intSegwit = filterByKeyPath keys "84'/1'/0'/1" |> List.map stateToHeat
 let extSegwit = filterByKeyPath keys "84'/1'/0'/0" |> List.map stateToHeat
 let intTaproot= filterByKeyPath keys "86'/1'/0'/1" |> List.map stateToHeat
