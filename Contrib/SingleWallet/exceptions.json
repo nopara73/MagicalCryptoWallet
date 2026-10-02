@@ -430,5 +430,23 @@
     "line": 51,
     "line_sha256": "3e28714b370d722945532279f68a172ec737b3029d02927521f89d106bfad8a1",
     "reason": "Explicit negative fixture must be rejected by the removal scanner."
+  },
+  {
+    "path": "Contrib/McwMigration/Handoffs/json.md",
+    "line": 141,
+    "line_sha256": "a2afbdf5fced8cffb9146e0ece30251f6e5e81980e264da659063973808dc362",
+    "reason": "Historical shared-checkout migration inventory; the hardware parser is absent from active source."
+  },
+  {
+    "path": "mcw/tests/json_caller_inventory.json",
+    "line": 72,
+    "line_sha256": "adbfd1d2e31e195cea8923e925b78e124807afee00b7a0d82dacb1a18091ec9f",
+    "reason": "Archived shared-checkout caller inventory records a removed hardware parser, not a runtime caller."
+  },
+  {
+    "path": "mcw/tests/json_vectors/application/rpc-request.json",
+    "line": 1,
+    "line_sha256": "ef02f8d104f053ea2167d95858f8ba91a3463fc8cae05c3f531d3147e54d59e8",
+    "reason": "Frozen legacy RPC JSON conformance input preserves its recorded hash; it does not restore wallet selection."
   }
 ]
