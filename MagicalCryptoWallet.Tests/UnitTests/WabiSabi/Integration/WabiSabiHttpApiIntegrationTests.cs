@@ -11,6 +11,8 @@ using System.Threading.Tasks;
 using MagicalCryptoWallet.BitcoinRpc;
 using MagicalCryptoWallet.Blockchain.Keys;
 using MagicalCryptoWallet.Blockchain.TransactionOutputs;
+using MagicalCryptoWallet.Crypto;
+using MagicalCryptoWallet.Crypto.Randomness;
 using MagicalCryptoWallet.Tests.Helpers;
 using MagicalCryptoWallet.Tests.UnitTests.Mocks;
 using MagicalCryptoWallet.Tests.UnitTests.Services;
@@ -19,6 +21,7 @@ using MagicalCryptoWallet.WabiSabi.Client.CoinJoin.Client;
 using MagicalCryptoWallet.WabiSabi.Client.RoundStateAwaiters;
 using MagicalCryptoWallet.WabiSabi.Coordinator;
 using MagicalCryptoWallet.WabiSabi.Coordinator.Models;
+using MagicalCryptoWallet.WabiSabi.Coordinator.PostRequests;
 using MagicalCryptoWallet.WabiSabi.Coordinator.Rounds;
 using MagicalCryptoWallet.WabiSabi.Coordinator.Statistics;
 using MagicalCryptoWallet.WabiSabi.Models;
@@ -263,14 +266,19 @@ public class WabiSabiHttpApiIntegrationTests : IClassFixture<WabiSabiApiApplicat
 		var apiClient3 = _apiApplicationFactory.CreateWabiSabiHttpApiClient(coordinatorApp.CreateClient());
 		var apiClient4 = _apiApplicationFactory.CreateWabiSabiHttpApiClient(coordinatorApp.CreateClient());
 
-		var coinJoinClient1 = WabiSabiFactory.CreateTestCoinJoinClient(_ => apiClient1, keyManager1, roundStateProvider);
-		var coinJoinClient2Bad = WabiSabiFactory.CreateTestCoinJoinClient(_ => apiClient2Bad, keyManager2, roundStateProvider);
-		var coinJoinClient3 = WabiSabiFactory.CreateTestCoinJoinClient(_ => apiClient3, keyManager3, roundStateProvider);
-		var coinJoinClient4 = WabiSabiFactory.CreateTestCoinJoinClient(_ => apiClient4, keyManager4, roundStateProvider);
+		var signingTrace = new ConcurrentQueue<string>();
+		var elapsed = System.Diagnostics.Stopwatch.StartNew();
+		CoinJoinClient CreateParticipant(int participant, IWabiSabiApiRequestHandler api, KeyManager keys) =>
+			WabiSabiFactory.CreateTestCoinJoinClient(_ => api,
+				new TimedSyntheticKeyChain(new SyntheticKeyChain(keys), participant, signingTrace, elapsed),
+				new OutputProvider(new InternalDestinationProvider(keys), RandomnessProviders.Insecure), roundStateProvider);
+		var coinJoinClient1 = CreateParticipant(1, apiClient1, keyManager1);
+		var coinJoinClient2Bad = CreateParticipant(2, apiClient2Bad, keyManager2);
+		var coinJoinClient3 = CreateParticipant(3, apiClient3, keyManager3);
+		var coinJoinClient4 = CreateParticipant(4, apiClient4, keyManager4);
 		CoinJoinClient[] clients = [coinJoinClient1, coinJoinClient2Bad, coinJoinClient3, coinJoinClient4];
 		var progress = clients.Select(_ => new ConcurrentQueue<string>()).ToArray();
 		var endedRounds = clients.Select(_ => new ConcurrentQueue<RoundState>()).ToArray();
-		var elapsed = System.Diagnostics.Stopwatch.StartNew();
 		static string DescribeRound(RoundState state) => $"id={state.Id}, blameOf={state.BlameOf}, phase={state.Phase}, end={state.EndRoundState}, inputs={state.CoinjoinState.Inputs.Count()}, outputs={state.CoinjoinState.Outputs.Count()}";
 		for (int i = 0; i < clients.Length; i++)
 		{
@@ -306,6 +314,7 @@ public class WabiSabiHttpApiIntegrationTests : IClassFixture<WabiSabiApiApplicat
 		if (participant1Result is not SuccessfulCoinJoinResult || participant3Result is not SuccessfulCoinJoinResult ||
 			participant4Result is not SuccessfulCoinJoinResult)
 		{
+			foreach (var entry in signingTrace) { _output.WriteLine(entry); }
 			CoinJoinResult[] results = [participant1Result, participant2ResultBad, participant3Result, participant4Result];
 			for (int i = 0; i < clients.Length; i++)
 			{
@@ -326,6 +335,9 @@ public class WabiSabiHttpApiIntegrationTests : IClassFixture<WabiSabiApiApplicat
 				var logPath = Path.GetFullPath(global::MagicalCryptoWallet.Logging.Logger.FilePath);
 				if (logPath.StartsWith(Path.GetFullPath(Common.DataDir) + Path.DirectorySeparatorChar, StringComparison.Ordinal) && File.Exists(logPath))
 				{
+					// The immutable test build artifact retains complete exception stacks and
+					// request timestamps, which the short console excerpt cannot preserve.
+					File.Copy(logPath, Path.Combine(AppContext.BaseDirectory, "coinjoin-blame-synthetic.log"), overwrite: true);
 					_output.WriteLine("Synthetic blame coordinator/client log tail:");
 					foreach (var line in File.ReadLines(logPath).Where(line => line.Contains("CoinJoinClient") || line.Contains("Arena") || line.Contains("RoundStateUpdater")).TakeLast(400))
 					{
@@ -576,6 +588,20 @@ public class WabiSabiHttpApiIntegrationTests : IClassFixture<WabiSabiApiApplicat
 		var response = await stutteredApiClient.RegisterInputAsync(round.Id, coinToRegister.Outpoint, ownershipProof, CancellationToken.None);
 
 		Assert.NotEqual(Guid.Empty, response.Value);
+	}
+
+	private sealed class TimedSyntheticKeyChain(IKeyChain inner, int participant, ConcurrentQueue<string> trace,
+		System.Diagnostics.Stopwatch elapsed) : IKeyChain
+	{
+		public OwnershipProof GetOwnershipProof(IDestination destination, CoinJoinInputCommitmentData committedData) =>
+			inner.GetOwnershipProof(destination, committedData);
+
+		public Transaction Sign(Transaction transaction, Coin coin, PrecomputedTransactionData precomputeTransactionData)
+		{
+			var started = elapsed.Elapsed;
+			try { return inner.Sign(transaction, coin, precomputeTransactionData); }
+			finally { trace.Enqueue($"Blame signing participant {participant}: started={started.TotalSeconds:F3}s, finished={elapsed.Elapsed.TotalSeconds:F3}s, duration={(elapsed.Elapsed - started).TotalSeconds:F3}s."); }
+		}
 	}
 
 	private ImmutableList<SmartCoin> GenerateSmartCoins(KeyManager keyManager, long[] amounts, int inputCount)
