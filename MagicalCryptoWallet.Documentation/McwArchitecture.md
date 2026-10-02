@@ -87,6 +87,17 @@ Cancellation releases managed request IDs immediately and sends a kind-5 frame
 with the original ID/operation; late responses are drained. A registered service
 must connect this signal to its own bounded work/session cleanup.
 
+The host's reader never waits for application dispatch. It admits at most 256
+queued frames within a 16 MiB body-byte budget and keeps at most 256 distinct
+cancellation controls. Cancellation removes matching queued work immediately;
+control delivery takes priority after the handshake. In-flight QR work is bounded
+by version 40 and may finish with a late reply. EOF or protocol failure discards
+the backlog and requests graceful child cleanup. Queue overflow returns typed
+resource-limit error 4 when a request can be identified, then shuts down the
+connection. Request IDs are unique for the entire connection: the managed owner
+allocates increasing IDs and never reuses a completed or canceled ID. Arrival
+order may differ under concurrent writes; services must not infer ordering from IDs.
+
 All integers are little-endian. Each frame begins with a **u32 body length** in bytes, followed by this 16-byte header and its typed payload. Body length must be 16–1,048,576; validate it before allocation.
 
 | Offset in body | Field |

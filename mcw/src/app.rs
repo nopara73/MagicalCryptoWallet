@@ -1,15 +1,17 @@
 //! The permanent application lifetime owner. The managed child is transitional.
 #![forbid(unsafe_code)]
+mod inbox;
 use crate::{
     bridge::{self, Frame},
     platform,
 };
+use inbox::{Event, Inbox};
 use std::{
     ffi::OsString,
     io,
     path::PathBuf,
     process::{Child, Command, Stdio},
-    sync::mpsc,
+    sync::Arc,
     time::{Duration, Instant},
 };
 
@@ -100,14 +102,25 @@ fn host(
     };
     let mut output = child.process.stdout.take().unwrap();
     let mut input = child.process.stdin.take().unwrap();
-    // A bounded queue prevents a faulty child from filling host memory.
-    let (send, receive) = mpsc::sync_channel(16);
+    // Keep reading cancellation/EOF even when application work is backlogged.
+    let receive = Arc::new(Inbox::default());
+    let reader_inbox = Arc::clone(&receive);
     std::thread::spawn(move || {
         loop {
-            let result = Frame::read(&mut output);
-            let stop = !matches!(result, Ok(Some(_)));
-            if send.send(result).is_err() || stop {
-                break;
+            match Frame::read(&mut output) {
+                Ok(Some(frame)) => {
+                    if !reader_inbox.push(frame) {
+                        break;
+                    }
+                }
+                Ok(None) => {
+                    reader_inbox.close(None);
+                    break;
+                }
+                Err(error) => {
+                    reader_inbox.close(Some(error));
+                    break;
+                }
             }
         }
     });
@@ -120,7 +133,7 @@ fn host(
     loop {
         if let Some(status) = child.process.try_wait()? {
             // Drain already queued handoffs even if the process exited immediately.
-            while let Ok(Ok(Some(frame))) = receive.try_recv() {
+            while let Event::Frame(frame) = receive.receive(Duration::ZERO) {
                 // The child waits for each handoff acknowledgement before exiting.
                 // A final reply write may meet an already closed input pipe.
                 let _ = dispatch(
@@ -162,8 +175,8 @@ fn host(
             child.process.kill()?;
             return Ok((1, None));
         }
-        match receive.recv_timeout(Duration::from_millis(50)) {
-            Ok(Ok(Some(frame))) => {
+        match receive.receive(Duration::from_millis(50)) {
+            Event::Frame(frame) => {
                 if let Err(error) = dispatch(
                     &frame,
                     &mut input,
@@ -184,7 +197,14 @@ fn host(
                     stopping.get_or_insert(Instant::now());
                 }
             }
-            Ok(Ok(None)) | Err(mpsc::RecvTimeoutError::Disconnected) => {
+            Event::Closed(failure) => {
+                if let Some(failure) = failure {
+                    eprintln!("mcw: {}", failure.error);
+                    broken = true;
+                    if let Some(reply) = failure.reply {
+                        let _ = reply.write(&mut input);
+                    }
+                }
                 // Unannounced EOF is the same failure signal observed by the child.
                 // Do not return early and orphan a child still cleaning up its wallet.
                 if stopping.is_none() {
@@ -200,19 +220,7 @@ fn host(
                 }
                 std::thread::sleep(Duration::from_millis(50));
             }
-            Ok(Err(error)) => {
-                eprintln!("mcw: {error}");
-                broken = true;
-                let _ = Frame {
-                    kind: bridge::REQUEST,
-                    id: 0,
-                    operation: bridge::SHUTDOWN,
-                    payload: Vec::new(),
-                }
-                .write(&mut input);
-                stopping.get_or_insert(Instant::now());
-            }
-            Err(mpsc::RecvTimeoutError::Timeout) => (),
+            Event::Timeout => (),
         }
     }
 }

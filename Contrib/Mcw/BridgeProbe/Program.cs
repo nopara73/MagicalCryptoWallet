@@ -1,7 +1,9 @@
 using System;
+using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -19,6 +21,7 @@ var action = args[0];
 var report = args.Length > 1 ? Path.GetFullPath(args[1]) : "";
 if (action == "early-exit") { return 0; }
 if (action == "no-handshake") { await Task.Delay(TimeSpan.FromSeconds(180)); return 0; }
+if (action is "queue-eof" or "queue-overload") { return await ProbeQueueAsync(action, report); }
 if (action is "bad-version" or "bad-length" or "truncated")
 {
     var frame = new byte[20]; frame[0] = 16; frame[4] = 2; frame[6] = 1;
@@ -123,6 +126,77 @@ if (action == "qr")
 }
 return 2;
 
+static async Task<int> ProbeQueueAsync(string action, string report)
+{
+    using var input = Console.OpenStandardInput();
+    using var output = Console.OpenStandardOutput();
+    await WriteFrameAsync(output, 1, 0, 0, []);
+    var hello = await ReadFrameAsync(input);
+    if (hello.Kind != 2 || hello.Id != 0 || hello.Operation != 0) { throw new IOException("Invalid queue-probe handshake."); }
+    // Read replies concurrently so host output backpressure cannot cause the
+    // backlog. Thousands of maximum-version symbols saturate request ingress.
+    var reader = Task.Run(async () =>
+    {
+        var replies = 0;
+        var overloaded = false;
+        while (true)
+        {
+            var frame = await ReadFrameAsync(input);
+            if (frame.Kind == 3 && frame.Id == 0 && frame.Operation == 2)
+            { return (Replies: replies, Overloaded: overloaded, Shutdown: true); }
+            if (frame.Kind == 4 && frame.Payload.Length >= 2 && BinaryPrimitives.ReadUInt16LittleEndian(frame.Payload) == 4)
+            { overloaded = true; }
+            else if (frame.Kind == 2 && frame.Operation == 1) { replies++; }
+            else { throw new IOException("Unexpected queue-probe response."); }
+        }
+    });
+    var payload = new byte[7090];
+    Array.Fill(payload, (byte)'1');
+    payload[0] = 0;
+    var count = action == "queue-eof" ? 200 : 4096;
+    try
+    {
+        for (var id = 1; id <= count && !reader.IsCompleted; id++)
+        { await WriteFrameAsync(output, 3, (ulong)id, 1, payload); }
+        if (action == "queue-eof") { await WriteFrameAsync(output, 5, 199, 1, []); }
+    }
+    catch (IOException) when (action == "queue-overload")
+    { /* Saturation closes the child's write pipe and explicitly requests cleanup. */ }
+    output.Dispose();
+    if (action == "queue-eof") { ProbePipe.CloseOutput(); }
+    var result = await reader.WaitAsync(TimeSpan.FromSeconds(15));
+    if (action == "queue-overload" && !result.Overloaded) { throw new IOException("No typed queue-overload error."); }
+    if (action == "queue-eof" && result.Replies >= count) { throw new IOException("EOF did not discard backlogged work."); }
+    File.WriteAllText(report, JsonSerializer.Serialize(new { result.Replies, result.Overloaded, result.Shutdown }));
+    return 0;
+}
+
+static async Task WriteFrameAsync(Stream output, byte kind, ulong id, ushort operation, byte[] payload)
+{
+    var frame = new byte[20 + payload.Length];
+    BinaryPrimitives.WriteInt32LittleEndian(frame, frame.Length - 4);
+    BinaryPrimitives.WriteUInt16LittleEndian(frame.AsSpan(4), 1);
+    frame[6] = kind;
+    BinaryPrimitives.WriteUInt64LittleEndian(frame.AsSpan(8), id);
+    BinaryPrimitives.WriteUInt16LittleEndian(frame.AsSpan(16), operation);
+    payload.CopyTo(frame, 20);
+    await output.WriteAsync(frame);
+    await output.FlushAsync();
+}
+
+static async Task<(byte Kind, ulong Id, ushort Operation, byte[] Payload)> ReadFrameAsync(Stream input)
+{
+    var prefix = new byte[4];
+    await input.ReadExactlyAsync(prefix);
+    var length = BinaryPrimitives.ReadInt32LittleEndian(prefix);
+    if (length is < 16 or > 1024 * 1024) { throw new IOException("Invalid queue-probe frame length."); }
+    var frame = new byte[length];
+    await input.ReadExactlyAsync(frame);
+    if (BinaryPrimitives.ReadUInt16LittleEndian(frame) != 1 || frame[3] != 0 || frame[14] != 0 || frame[15] != 0)
+    { throw new IOException("Invalid queue-probe frame header."); }
+    return (frame[2], BinaryPrimitives.ReadUInt64LittleEndian(frame.AsSpan(4)), BinaryPrimitives.ReadUInt16LittleEndian(frame.AsSpan(12)), frame[16..]);
+}
+
 static async Task ExpectErrorAsync(Func<Task<bool[,]>> action)
 {
     try { await action(); throw new Exception("Invalid QR request was accepted."); }
@@ -153,4 +227,25 @@ static void Decode(bool[,] matrix, string expected, bool pure = false)
     if (pure) { hints[DecodeHintType.PURE_BARCODE] = true; }
     var result = new QRCodeReader().decode(new BinaryBitmap(new HybridBinarizer(source)), hints);
     if (result?.Text != expected) { throw new Exception($"Independent decoder mismatch for synthetic vector: width {width}, input length {expected.Length}, expected {Convert.ToHexString(Encoding.UTF8.GetBytes(expected[..Math.Min(40,expected.Length)]))}, actual {Convert.ToHexString(Encoding.UTF8.GetBytes(result?.Text ?? "<null>"))}."); }
+}
+
+// Console streams do not own the process standard handles. This test-only
+// child closes its stdout explicitly while remaining alive to verify cleanup.
+internal static class ProbePipe
+{
+    [DllImport("kernel32.dll", SetLastError = true)]
+    private static extern IntPtr GetStdHandle(int handle);
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool CloseHandle(IntPtr handle);
+
+    [DllImport("libc", EntryPoint = "close", SetLastError = true)]
+    private static extern int Close(int descriptor);
+
+    public static void CloseOutput()
+    {
+        var success = OperatingSystem.IsWindows() ? CloseHandle(GetStdHandle(-11)) : Close(1) == 0;
+        if (!success) { throw new IOException("Could not close synthetic child output."); }
+    }
 }

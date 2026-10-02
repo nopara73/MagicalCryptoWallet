@@ -37,6 +37,8 @@ with tempfile.TemporaryDirectory(prefix="mcw spaces 你好 ", dir=ROOT / ".artif
     run("bad-length",1)
     run("truncated",1)
     run("unknown-operation")
+    run("queue-eof",1)
+    run("queue-overload",1)
     run("early-exit",1)
     run("unexpected-exit",1)
     run("no-handshake",1,timeout=150)
