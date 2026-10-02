@@ -56,6 +56,10 @@ def extract_zip(path, destination):
             target=(destination/item.filename).resolve()
             if destination.resolve() not in target.parents and target!=destination.resolve():raise RuntimeError('Archive path escapes inspection directory')
         archive.extractall(destination)
+        if os.name != 'nt':
+            for item in archive.infolist():
+                if item.create_system == 3 and not item.is_dir():
+                    (destination/item.filename).chmod((item.external_attr >> 16) & 0o777)
 
 parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--rid',required=True);args=parser.parse_args()
 work=ROOT/'.artifacts/package-inspection'/args.rid

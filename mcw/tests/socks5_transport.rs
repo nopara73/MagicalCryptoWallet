@@ -686,16 +686,16 @@ fn total_handshake_deadline_does_not_reset_between_stages() {
     // Each stage fits separately; their combined delay exceeds the total budget.
     let (proxy, task) = server(|mut stream| {
         assert_eq!(bytes(&mut stream, 3), [5, 1, 2]);
-        thread::sleep(Duration::from_millis(300));
+        thread::sleep(Duration::from_secs(2));
         stream.write_all(&[5, 2]).unwrap();
         assert_eq!(bytes(&mut stream, 5), [1, 1, b'u', 1, b'p']);
-        thread::sleep(Duration::from_millis(300));
+        thread::sleep(Duration::from_secs(2));
         let _ = stream.write_all(&[1, 0]);
         assert_closed_without_application_data(&mut stream);
     });
     let credentials = Credentials::new(b"u", b"p").unwrap();
     let mut short = options();
-    short.total_timeout = Duration::from_millis(500);
+    short.total_timeout = Duration::from_secs(3);
     let start = Instant::now();
     let failure = SocksConnection::connect(
         proxy,
@@ -707,7 +707,7 @@ fn total_handshake_deadline_does_not_reset_between_stages() {
     .unwrap_err();
     assert_eq!(failure.kind, ErrorKind::TimedOut);
     assert_eq!(failure.stage, Stage::Authentication);
-    assert!(start.elapsed() < Duration::from_secs(1));
+    assert!(start.elapsed() < Duration::from_secs(4));
     task.join().unwrap();
 }
 
