@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using MagicalCryptoWallet.Mcw.Network;
 using MagicalCryptoWallet.Blockchain.Transactions;
 using MagicalCryptoWallet.Crypto.Randomness;
 using MagicalCryptoWallet.Helpers;
@@ -60,7 +61,7 @@ public static class CpfpInfoUpdater
 	}
 
 	public static MessageHandler<CpfpInfoMessage, Unit> Create(
-		IHttpClientFactory httpClientFactory, Network network, EventBus eventBus, TimeProvider? timeProvider = null,
+		IMcwHttpClientFactory httpClientFactory, Network network, EventBus eventBus, TimeProvider? timeProvider = null,
 		Func<TimeSpan, CancellationToken, Task>? prefetchDelay = null)
 	{
 		var uri = network == Network.Main
@@ -74,7 +75,7 @@ public static class CpfpInfoUpdater
 			timeProvider ?? TimeProvider.System, prefetchDelay ?? Task.Delay, eventBus, cancellationToken);
 	}
 
-	private static async Task<Unit> ProcessMessagesAsync(CpfpInfoMessage msg, IHttpClientFactory httpClientFactory, Uri uri,
+	private static async Task<Unit> ProcessMessagesAsync(CpfpInfoMessage msg, IMcwHttpClientFactory httpClientFactory, Uri uri,
 		Dictionary<uint256, Task> tasks, ConcurrentDictionary<uint256, CachedCpfpInfo> cache,
 		ConcurrentDictionary<uint256, Lazy<Task<Result<CpfpInfo, string>>>> pending,
 		ConcurrentDictionary<uint256, (DateTimeOffset RetryAt, string Error)> failures, TimeProvider timeProvider,
@@ -165,7 +166,7 @@ public static class CpfpInfoUpdater
 		}
 	}
 
-	private static async Task<Result<CpfpInfo, string>> GetCpfpInfoAsync(SmartTransaction tx, IHttpClientFactory httpClientFactory, Uri uri,
+	private static async Task<Result<CpfpInfo, string>> GetCpfpInfoAsync(SmartTransaction tx, IMcwHttpClientFactory httpClientFactory, Uri uri,
 		ConcurrentDictionary<uint256, CachedCpfpInfo> cache, ConcurrentDictionary<uint256, Lazy<Task<Result<CpfpInfo, string>>>> pending,
 		ConcurrentDictionary<uint256, (DateTimeOffset RetryAt, string Error)> failures, TimeProvider timeProvider, CancellationToken cancellationToken)
 	{
@@ -205,7 +206,7 @@ public static class CpfpInfoUpdater
 		}
 	}
 
-	private static async Task<CpfpInfo> GetCpfpInfoAsync(uint256 txid, IHttpClientFactory httpClientFactory, Uri uri, CancellationToken cancellationToken)
+	private static async Task<CpfpInfo> GetCpfpInfoAsync(uint256 txid, IMcwHttpClientFactory httpClientFactory, Uri uri, CancellationToken cancellationToken)
 	{
 		using var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
 		using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);

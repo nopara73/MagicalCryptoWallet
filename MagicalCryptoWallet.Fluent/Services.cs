@@ -3,6 +3,7 @@ using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
 using NBitcoin;
+using MagicalCryptoWallet.Mcw.Network;
 using MagicalCryptoWallet.Blockchain.Analysis.Clustering;
 using MagicalCryptoWallet.Blockchain.Blocks;
 using MagicalCryptoWallet.Blockchain.Keys;
@@ -29,7 +30,7 @@ public class Services : IServices
 	private readonly FilterStore _filterStore;
 	private readonly FilterHeaderChain _filterHeaders;
 	private readonly AllTransactionStore _transactionStore;
-	private readonly IHttpClientFactory _httpClientFactory;
+	private readonly IMcwHttpClientFactory _httpClientFactory;
 	private readonly TransactionBroadcaster _transactionBroadcaster;
 	private readonly HostedServices _hostedServices;
 	private readonly TerminateService _terminateService;

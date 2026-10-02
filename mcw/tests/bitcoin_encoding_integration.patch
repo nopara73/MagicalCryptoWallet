@@ -1,0 +1,116 @@
+diff --git a/mcw/src/lib.rs b/mcw/src/lib.rs
+--- a/mcw/src/lib.rs
++++ b/mcw/src/lib.rs
+@@ -1,5 +1,7 @@
+ //! Application services shared by the host, CLI and eventually the native UI.
+ pub mod app;
++#[path = "bitcoin_encoding/address_service.rs"]
++pub mod bitcoin_address_service;
+ pub mod bitcoin_block;
+ pub mod bitcoin_encoding;
+ pub mod bitcoin_script;
+diff --git a/mcw/src/app.rs b/mcw/src/app.rs
+--- a/mcw/src/app.rs
++++ b/mcw/src/app.rs
+@@ -263,6 +263,9 @@
+             frame.reply(Vec::new()).write(output)
+         }
+         bridge::QR => bridge::encode_qr(frame).write(output),
++        crate::bitcoin_address_service::VALIDATE_ADDRESS => {
++            crate::bitcoin_address_service::handle(frame).write(output)
++        }
+         bridge::RESTART | bridge::CRASH | bridge::UPDATE => {
+             let args = match bridge::strings(&frame.payload) {
+                 Ok(args) => args,
+diff --git a/MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs b/MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs
+--- a/MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs
++++ b/MagicalCryptoWallet/Extensions/NBitcoinExtensions.cs
+@@ -438,19 +438,16 @@
+ 	public static Money GetFeeWithZero(this FeeRate feeRate, int virtualSize) =>
+ 		feeRate == FeeRate.Zero ? Money.Zero : feeRate.GetFee(virtualSize);
+ 
+-	/// <remarks>NBitcoin does not provide a try-parse method.</remarks>
++	/// <remarks>Rust validates address text; managed Script/address objects retain their existing ownership.</remarks>
+ 	public static bool TryParseBitcoinAddressForNetwork(string address, Network network, [NotNullWhen(true)] out BitcoinAddress? bitcoinAddress)
+ 	{
+-		try
+-		{
+-			bitcoinAddress = Network.Parse<BitcoinAddress>(address, network);
+-			return true;
+-		}
+-		catch
+-		{
+-			bitcoinAddress = null;
++		bitcoinAddress = null;
++		if (!MagicalCryptoWallet.Mcw.BitcoinAddressValidation.TryGetScriptPubKey(address, network, out var script))
++		{
+ 			return false;
+ 		}
++		bitcoinAddress = new Script(script).GetDestinationAddress(network);
++		return bitcoinAddress is not null;
+ 	}
+ 
+ 	public static Money GetAdjustedFee(this FeeRate feeRate, int virtualSize)
+diff --git a/MagicalCryptoWallet/Mcw/BitcoinAddressValidation.cs b/MagicalCryptoWallet/Mcw/BitcoinAddressValidation.cs
+new file mode 100644
+--- /dev/null
++++ b/MagicalCryptoWallet/Mcw/BitcoinAddressValidation.cs
+@@ -0,0 +1,58 @@
++using System;
++using System.Buffers.Binary;
++using System.Diagnostics.CodeAnalysis;
++using System.IO;
++using System.Text;
++using NBitcoin;
++
++namespace MagicalCryptoWallet.Mcw;
++
++/// <summary>Typed adapter for Rust address validation. No managed text-decoder fallback.</summary>
++public static class BitcoinAddressValidation
++{
++    public const ushort Operation = 0x020c;
++    private static readonly UTF8Encoding Utf8 = new(false, true);
++
++    public static bool TryGetScriptPubKey(string? address, Network network, [NotNullWhen(true)] out byte[]? scriptPubKey)
++    {
++        scriptPubKey = null;
++        if (address is null) { return false; }
++        byte networkId;
++        switch (network.Name)
++        {
++            case "Main": networkId = 0; break;
++            case "TestNet": networkId = 1; break;
++            case "TestNet4": networkId = 2; break;
++            case "signet": networkId = 3; break;
++            case "RegTest": networkId = 4; break;
++            default: return false;
++        }
++        int length;
++        try { length = Utf8.GetByteCount(address); }
++        catch (EncoderFallbackException) { return false; }
++        if (length > 90) { return false; }
++        var payload = new byte[length + 1];
++        payload[0] = networkId;
++        Utf8.GetBytes(address, payload.AsSpan(1));
++        var service = McwApplicationServices.Current;
++        var result = service.RequestAsync(Operation, payload, service.Stopped).GetAwaiter().GetResult();
++        if (result.Length == 3 && result[0] == 0)
++        {
++            var reason = BinaryPrimitives.ReadUInt16LittleEndian(result.AsSpan(1));
++            if (reason is >= 1 and <= 5) { return false; }
++        }
++        if (result.Length < 2 || result[0] != 1 || !IsStandardScript(result.AsSpan(1)))
++        { throw new IOException("Invalid mcw address validation response."); }
++        scriptPubKey = result[1..];
++        return true;
++    }
++
++    private static bool IsStandardScript(ReadOnlySpan<byte> script)
++    {
++        if (script.Length == 25 && script[0] == 0x76 && script[1] == 0xa9 && script[2] == 20
++            && script[23] == 0x88 && script[24] == 0xac) { return true; }
++        if (script.Length == 23 && script[0] == 0xa9 && script[1] == 20 && script[22] == 0x87) { return true; }
++        if (script.Length is < 4 or > 42 || script[1] != script.Length - 2) { return false; }
++        return script[0] == 0 ? script[1] is 20 or 32 : script[0] is >= 0x51 and <= 0x60;
++    }
++}

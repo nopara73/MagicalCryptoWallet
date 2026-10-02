@@ -1,0 +1,169 @@
+--- a/mcw/src/bridge.rs
++++ b/mcw/src/bridge.rs
+@@ -12,6 +12,7 @@
+ pub const ERROR: u8 = 4;
+ pub const CANCEL: u8 = 5;
+ pub const QR: u16 = 1;
++pub const COMPACT_FILTER_MATCH_ANY: u16 = 0x0702;
+ pub const SHUTDOWN: u16 = 2;
+ pub const RESTART: u16 = 3;
+ pub const UPDATE: u16 = 4;
+@@ -151,6 +152,76 @@
+         result.extend_from_slice(text.as_bytes());
+     }
+     result
++}
++
++/// Application transport adapter for basic-filter matching. The portable
++/// compact_filters module remains unaware of frames, handles and managed code.
++pub fn match_basic_compact_filter(request: &Frame) -> Frame {
++    if request.operation != COMPACT_FILTER_MATCH_ANY {
++        return request.error(1, "unexpected compact-filter operation");
++    }
++    if request.payload.len() > MAX_FRAME - HEADER {
++        return request.error(1, "compact-filter request exceeds frame limit");
++    }
++    type FilterQuery<'a> = ([u8; 32], &'a [u8], Vec<&'a [u8]>);
++    fn take<'a>(bytes: &mut &'a [u8], length: usize) -> Result<&'a [u8], &'static str> {
++        let value = bytes
++            .get(..length)
++            .ok_or("truncated compact-filter request")?;
++        *bytes = &bytes[length..];
++        Ok(value)
++    }
++    fn number(bytes: &mut &[u8]) -> Result<usize, &'static str> {
++        let value: [u8; 4] = take(bytes, 4)?
++            .try_into()
++            .map_err(|_| "invalid compact-filter length")?;
++        Ok(u32::from_le_bytes(value) as usize)
++    }
++    fn blob<'a>(bytes: &mut &'a [u8]) -> Result<&'a [u8], &'static str> {
++        let length = number(bytes)?;
++        take(bytes, length)
++    }
++    fn decode(mut bytes: &[u8]) -> Result<FilterQuery<'_>, &'static str> {
++        let hash = take(&mut bytes, 32)?
++            .try_into()
++            .map_err(|_| "invalid block hash")?;
++        let filter = blob(&mut bytes)?;
++        let count = number(&mut bytes)?;
++        if count > 65_536 {
++            return Err("too many compact-filter queries");
++        }
++        // Each query needs a four-byte length even when the script is empty.
++        if count > bytes.len() / 4 {
++            return Err("truncated compact-filter query list");
++        }
++        let mut queries = Vec::new();
++        queries
++            .try_reserve_exact(count)
++            .map_err(|_| "compact-filter allocation failed")?;
++        for _ in 0..count {
++            queries.push(blob(&mut bytes)?);
++        }
++        if !bytes.is_empty() {
++            return Err("trailing compact-filter request bytes");
++        }
++        Ok((hash, filter, queries))
++    }
++    let (hash, filter, queries) = match decode(&request.payload) {
++        Ok(value) => value,
++        Err(message) => return request.error(1, message),
++    };
++    let limits = crate::compact_filters::Limits {
++        max_filter_bytes: MAX_FRAME - HEADER,
++        max_elements: 1_000_000,
++        max_queries: 65_536,
++        max_input_bytes: MAX_FRAME - HEADER,
++    };
++    let result = crate::compact_filters::GcsFilter::parse_basic(filter, &hash, limits)
++        .and_then(|filter| filter.match_any(&queries));
++    match result {
++        Ok(matched) => request.reply(vec![u8::from(matched)]),
++        Err(error) => request.error(2, &error.to_string()),
++    }
+ }
+ 
+ #[cfg(test)]
+--- a/mcw/src/app.rs
++++ b/mcw/src/app.rs
+@@ -263,6 +263,7 @@
+             frame.reply(Vec::new()).write(output)
+         }
+         bridge::QR => bridge::encode_qr(frame).write(output),
++        bridge::COMPACT_FILTER_MATCH_ANY => bridge::match_basic_compact_filter(frame).write(output),
+         bridge::RESTART | bridge::CRASH | bridge::UPDATE => {
+             let args = match bridge::strings(&frame.payload) {
+                 Ok(args) => args,
+--- /dev/null
++++ b/MagicalCryptoWallet/Mcw/CompactFilters/McwCompactFilterMatcher.cs
+@@ -0,0 +1,53 @@
++using System;
++using System.Buffers.Binary;
++using System.IO;
++using System.Threading;
++using System.Threading.Tasks;
++
++namespace MagicalCryptoWallet.Mcw.CompactFilters;
++
++/// <summary>Typed temporary adapter to first-party basic-filter matching in mcw.</summary>
++public static class McwCompactFilterMatcher
++{
++    public const ushort MatchAnyOperation = 0x0702;
++    private const int MaxPayload = 1024 * 1024 - 16;
++    private const int MaxQueries = 65_536;
++
++    public static async Task<bool> MatchAnyAsync(byte[] encodedFilter, byte[] blockHash,
++        byte[][] scripts, CancellationToken cancellationToken = default)
++    {
++        ArgumentNullException.ThrowIfNull(encodedFilter);
++        ArgumentNullException.ThrowIfNull(blockHash);
++        ArgumentNullException.ThrowIfNull(scripts);
++        cancellationToken.ThrowIfCancellationRequested();
++        if (blockHash.Length != 32) { throw new ArgumentException("Block hash must contain 32 raw wire-order bytes.", nameof(blockHash)); }
++        if (scripts.Length > MaxQueries) { throw new IOException("Too many compact-filter queries."); }
++        long length = 32L + 4 + encodedFilter.Length + 4;
++        foreach (var script in scripts)
++        {
++            if (script is null) { throw new ArgumentException("Query scripts cannot be null.", nameof(scripts)); }
++            length += 4L + script.Length;
++            if (length > MaxPayload) { throw new IOException("Compact-filter request exceeds the application frame limit."); }
++        }
++        if (length > MaxPayload) { throw new IOException("Compact-filter request exceeds the application frame limit."); }
++        var payload = new byte[(int)length];
++        blockHash.CopyTo(payload, 0);
++        BinaryPrimitives.WriteUInt32LittleEndian(payload.AsSpan(32), (uint)encodedFilter.Length);
++        encodedFilter.CopyTo(payload, 36);
++        var offset = 36 + encodedFilter.Length;
++        BinaryPrimitives.WriteUInt32LittleEndian(payload.AsSpan(offset), (uint)scripts.Length);
++        offset += 4;
++        foreach (var script in scripts)
++        {
++            BinaryPrimitives.WriteUInt32LittleEndian(payload.AsSpan(offset), (uint)script.Length);
++            offset += 4;
++            script.CopyTo(payload, offset);
++            offset += script.Length;
++        }
++        cancellationToken.ThrowIfCancellationRequested();
++        var result = await McwApplicationServices.Current.RequestAsync(MatchAnyOperation, payload,
++            cancellationToken).ConfigureAwait(false);
++        if (result.Length != 1 || result[0] > 1) { throw new IOException("Invalid compact-filter match response."); }
++        return result[0] == 1;
++    }
++}
+--- a/MagicalCryptoWallet/Wallets/WalletFilterProcessor.cs
++++ b/MagicalCryptoWallet/Wallets/WalletFilterProcessor.cs
+@@ -151,7 +151,12 @@
+ 		var matchFound = false;
+ 		if (toTestKeys.Length != 0)
+ 		{
+-			matchFound = filter.Filter.MatchAny(toTestKeys, filter.FilterKey);
++			if (filter.Filter.P != 19 || filter.Filter.M != 784_931)
++			{
++				throw new System.InvalidOperationException("Wallet block filters require BIP158 basic parameters.");
++			}
++			matchFound = await MagicalCryptoWallet.Mcw.CompactFilters.McwCompactFilterMatcher.MatchAnyAsync(
++				filter.FilterData, filter.Header.BlockHash.ToBytes(), toTestKeys, cancellationToken).ConfigureAwait(false);
+ 
+ 			if (matchFound)
+ 			{

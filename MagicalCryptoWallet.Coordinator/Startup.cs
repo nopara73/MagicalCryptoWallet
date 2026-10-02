@@ -12,6 +12,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using NBitcoin;
 using NBitcoin.RPC;
+using MagicalCryptoWallet.Mcw.Network;
 using MagicalCryptoWallet.BitcoinRpc;
 using MagicalCryptoWallet.Cache;
 using MagicalCryptoWallet.Coordinator.WabiSabi;
@@ -118,11 +119,11 @@ public class Startup(IConfiguration configuration)
 			services.AddBackgroundService<CoordinatorAnnouncer>();
 		}
 
-		services.AddSingleton<IHttpClientFactory>(_ => new DirectHttpClientFactory());
+		services.AddSingleton<IMcwHttpClientFactory>(_ => new DirectHttpClientFactory());
 
 		services.AddSingleton<FeeRateProvider>(s =>
 		{
-			var httpClientFactory = s.GetRequiredService<IHttpClientFactory>();
+			var httpClientFactory = s.GetRequiredService<IMcwHttpClientFactory>();
 			return FeeRateProviders.Composed([
 				FeeRateProviders.RpcAsync(s.GetRequiredService<IRPCClient>()),
 				FeeRateProviders.MempoolSpaceAsync(httpClientFactory),

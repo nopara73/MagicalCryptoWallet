@@ -1,0 +1,27 @@
+[package]
+name = "mcw"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.99.0"
+license = "MIT"
+description = "Magical Crypto Wallet application host"
+publish = false
+
+[dependencies]
+
+[dev-dependencies]
+
+[build-dependencies]
+
+[profile.release]
+lto = true
+codegen-units = 1
+strip = "symbols"
+overflow-checks = true
+panic = "abort"
+
+[lints.rust]
+unsafe_op_in_unsafe_fn = "deny"
+
+[lints.clippy]
+undocumented_unsafe_blocks = "deny"

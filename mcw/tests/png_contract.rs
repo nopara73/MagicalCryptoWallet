@@ -2,6 +2,11 @@
 //! Run `rustc --edition=2024 --test mcw/tests/png_contract.rs -o <artifact>`.
 //! This is a test harness, never a second shipping executable or Cargo package.
 
+#[allow(dead_code)]
+#[path = "../src/compression.rs"]
+mod compression;
+
+#[allow(dead_code)]
 #[path = "../src/png.rs"]
 mod png;
 

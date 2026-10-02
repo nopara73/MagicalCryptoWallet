@@ -1,6 +1,7 @@
 using NBitcoin.Protocol;
 using System.Net;
 using System.Net.Http;
+using MagicalCryptoWallet.Mcw.Network;
 using MagicalCryptoWallet.BitcoinRpc;
 using MagicalCryptoWallet.Blockchain.Mempool;
 using MagicalCryptoWallet.Blockchain.Transactions;
@@ -79,14 +80,14 @@ public class ExternalTransactionBroadcaster : IBroadcaster
 			.ToArray();
 	}
 
-	public ExternalTransactionBroadcaster(ExternalBroadcasterInfo broadcaster, IHttpClientFactory httpClientFactory)
+	public ExternalTransactionBroadcaster(ExternalBroadcasterInfo broadcaster, IMcwHttpClientFactory httpClientFactory)
 	{
 		Broadcaster = broadcaster;
 		HttpClientFactory = httpClientFactory;
 		_userAgentGetter = UserAgent.GenerateUserAgentPicker();
 	}
 
-	public IHttpClientFactory HttpClientFactory { get; }
+	public IMcwHttpClientFactory HttpClientFactory { get; }
 
 	private UserAgentPicker _userAgentGetter;
 

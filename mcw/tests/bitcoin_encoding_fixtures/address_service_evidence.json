@@ -1,0 +1,81 @@
+{
+  "scope": "bounded public-address validation handler and deferred actual-caller patch",
+  "integration_base": "7ae424b5f5f3734ca1870962a2d913769c59b26d",
+  "patch_applicability_verified_at": "b28331b8dfae53acdd1b25c77780f1a47762df2a",
+  "source_hash_kind": "canonical LF UTF-8 SHA256",
+  "source_sha256": {
+    "mcw/src/bitcoin_encoding.rs": "4e59e9210317f6c75f1196d22892202b3c72f62adcf9d05be88c4c3c66925ec0",
+    "mcw/src/bitcoin_encoding/address_service.rs": "a3bde3d876fcfad9f2e5b66b9df48056307c30fdf945d67dc960a1d81486e7a4",
+    "mcw/tests/bitcoin_encoding_service.rs": "95bc9c7b0dd2834e1909dc0f7eea8461c3748b4b6cd600c7de63cc06d0ba55e2",
+    "mcw/tests/bitcoin_encoding_prepare_integration.py": "6764b1b2d1f4e74a7ab06a8a4c352bf646a82a3f610de655b90a57e467efcd7f",
+    "mcw/tests/bitcoin_encoding_integration.patch": "860b6dbb4c9d2b8bbbf16e23fb88d514f01a87d736ddb38c7b89c47ff77d8126",
+    "mcw/tests/bitcoin_encoding_managed_probe.cs": "93fea08b66163d0236145cf0f28afa4fc6ad06f302e6bce1fa8ccb88b73c100a",
+    "mcw/tests/bitcoin_encoding_integration_verify.ps1": "5b71e22f519df00082a9537ec7d35c9af4dec50758578167695f71dc6b99ad94"
+  },
+  "native_target": "x86_64-pc-windows-msvc",
+  "rust_version": "rustc 1.99.0 (b940084d7 2026-09-28)",
+  "handler_tests_per_profile": 4,
+  "profiles": [
+    "debug",
+    "release with overflow checks"
+  ],
+  "rustfmt": "pass",
+  "clippy_D_warnings": "pass",
+  "cargo_packages": 1,
+  "cargo_external_dependencies": 0,
+  "managed_build_warnings": 0,
+  "managed_build_errors": 0,
+  "managed_probe": {
+    "core_valid": 54,
+    "core_invalid": 70,
+    "explicit_native_network_cases": 54,
+    "managed_valid_cases": 60,
+    "retained_unsupported_cases": 26,
+    "malformed_requests": 4,
+    "concurrent_requests": 64,
+    "assertions": 1139,
+    "lexical_compatibility_cases": 8,
+    "networks": [
+      "Main",
+      "TestNet4",
+      "TestNet4",
+      "RegTest"
+    ],
+    "actual_caller": "NBitcoinExtensions.TryParseBitcoinAddressForNetwork / AddressParser",
+    "actual_transport": "ManagedApplicationHost / mcw app dispatch",
+    "dependency_removed": false
+  },
+  "retained_managed_packages": [
+    "Microsoft.Extensions.DependencyInjection.Abstractions/10.0.12",
+    "Microsoft.Extensions.Logging.Abstractions/10.0.12",
+    "NBitcoin/10.0.13",
+    "NBitcoin.Secp256k1/3.1.6",
+    "Newtonsoft.Json/13.0.4"
+  ],
+  "host_sha256": "eca194bd00acc558dca93ac3b6f4d4c4e5bb8fa80a6b7e65d33465fdad91cf57",
+  "host_imports": [
+    "api-ms-win-core-synch-l1-2-0.dll",
+    "kernel32.dll",
+    "KERNEL32.dll",
+    "ntdll.dll",
+    "shell32.dll"
+  ],
+  "evidence_file_sha256": {
+    "handler-debug.log": "35349df3d5e0f9c52a92c0e743a3ed851a2b4ff40513e2fb3fbaabe8f8537220",
+    "handler-release.log": "6f69c13ec17227651398669aa66298603a57281a1ad03b836ac2df84aa1b24bc",
+    "handler-clippy.log": "b83c4082950bebc68fda4357fe4ae72309d4b3b70c4e4a28d1966eeecaaa29a0",
+    "host-build.log": "5aa8a82cf411b5b40a0d324acebb8f6d994157265c2b5fdf07c1112267c0fd83",
+    "host-imports.txt": "b9a5b7f07c28827561f72e9097d5246e10906559d0c8c80d9ffb43d12194a8d1",
+    "managed-edge-build.log": "1c4234d57be2979f6a0d7397a1adff29ebc476db4085c9b07e0547fe2020cefe",
+    "managed-edge-run.log": "5ee6549a02ab60f72d7e00715ce9d12ba1140641a4597d1ab68a7002f6076443",
+    "managed-edge-results.json": "cb546775f444fef6e093ba66e602f6e0558e89c4c04be76c4a1322bac2604f06",
+    "verification.json": "ce06bff8c085908b4eabff527ab6087f0063e4d54638bdee70f23b2390b96bc1",
+    "cargo-metadata.json": "c2b3d6d1aa0129b9eb7abcde803039b12ffbfd6cbefbfa0dbf46272a72384fa9"
+  },
+  "evidence_directory": "C:\\Users\\user\\OneDrive\\Documents\\ChatGPT\\MagicalCryptoWallet\\.artifacts\\mcw-bitcoin-address-integration\\.artifacts\\bitcoin-address-evidence",
+  "production_integrated": false,
+  "old_implementation_retired": false,
+  "dependency_removed": false,
+  "five_target_native_release_verified": false,
+  "generated_at_utc": "2026-10-02T12:44:08.667723+00:00"
+}

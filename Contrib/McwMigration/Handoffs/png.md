@@ -6,6 +6,12 @@ adapters and release packaging remain with the QR/application-host task. This is
 component evidence, not a claim that the application has migrated its export path
 or removed Skia/Avalonia.
 
+Follow-up: the same PNG owner has added a bounded input codec, documented in
+[PNG decode handoff](png-decode.md). The exporter implementation and behavior
+below are unchanged. The current `png` module also exposes `png::decode` and now
+requires the separately owned first-party `crate::compression` module. Scanner
+and camera caller changes remain deferred to their authorized owners.
+
 - Worker: `png`, thread `01a0fc2a-3c9a-7e81-b6e5-d198194b3f77`.
 - Implementation and tests commit: `10f0805acdc0db07a70560a7fdfa1fcc7f2ae49d`.
 - Publication: normal push to `origin/master`; the machine handoff records the
@@ -25,7 +31,7 @@ Only these paths belong to this track:
 | `mcw/tests/png_verify.py` | Non-shipping independent Pillow/zlib conformance oracle |
 | `Contrib/McwMigration/Handoffs/png.md` | This integration contract and evidence |
 
-No Cargo package, manifest, module declaration, host, command, bridge, managed
+No Cargo package, manifest, host module declaration, host, command, bridge, managed
 adapter, QR matrix/encoder, receive UI, release pipeline or migration ledger was
 created or edited by this track. All generated executables and fixtures are under
 the worker checkout's ignored `.artifacts/png-verification/` directory.
@@ -166,7 +172,6 @@ $env:CARGO_HOME = 'C:\Users\user\OneDrive\Documents\ChatGPT\MagicalCryptoWallet\
 & "$env:CARGO_HOME\bin\rustc.exe" --edition=2024 --test -D warnings -C target-feature=+crt-static mcw\tests\png_contract.rs -o .artifacts\png-verification\png-contract.exe
 & .artifacts\png-verification\png-contract.exe --test-threads=1
 python mcw\tests\png_verify.py --encoder-tests .artifacts\png-verification\png-contract.exe --output-dir .artifacts\png-verification\fixtures
-& "$env:CARGO_HOME\bin\clippy-driver.exe" --edition=2024 --crate-type=lib --emit=metadata -D warnings -W clippy::all mcw\src\png.rs --out-dir .artifacts\png-verification\lints
 & "$env:CARGO_HOME\bin\clippy-driver.exe" --edition=2024 --test --emit=metadata -D warnings -W clippy::all mcw\tests\png_contract.rs --out-dir .artifacts\png-verification\lints
 ```
 
@@ -194,7 +199,10 @@ Primary format references: [W3C PNG specification](https://www.w3.org/TR/png-3/)
 
 ## Dependencies and remaining callers
 
-Production module dependencies: **Rust std only; zero external Cargo packages**.
+Production implementation dependencies: **Rust std only; zero external Cargo packages**.
+The follow-up decoder reuses first-party `crate::compression`; declare that module
+alongside `png`. Current standalone checks therefore use the test harness above,
+which declares both modules, rather than compiling `png.rs` as a crate root.
 `#![forbid(unsafe_code)]` is enforced. It imports `std::fmt` and implements
 `std::error::Error`, and has no OS bindings, C#/Avalonia reference, IPC, installer,
 companion executable, external checksum/encoding/cryptographic package or DLL.

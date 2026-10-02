@@ -8,6 +8,7 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Styling;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using ReactiveUI;
 using ReactiveUI.Avalonia;
 using MagicalCryptoWallet.Fluent;
@@ -25,6 +26,8 @@ using MagicalCryptoWallet.Fluent.Views.Shell;
 
 // Render the actual application views and resources with an inert context.
 // No wallet services, networking, navigation, or user data are initialized.
+using var applicationHost = Environment.GetEnvironmentVariable("MCW_HOSTED") == "1"
+    ? MagicalCryptoWallet.Client.Application.ManagedApplicationHost.Connect() : null;
 AppBuilder.Configure<App>().WithInterFont().With(new FontManagerOptions { DefaultFamilyName = "fonts:Inter#Inter, $Default" }).UseSkia().UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false }).UseReactiveUI().SetupWithoutStarting();
 // Headless test detection can override RxApp's thread-local scheduler. Commands
 // also use RxSchedulers directly, so initialize both before creating any views.
@@ -39,6 +42,11 @@ using (Task.Run(() => RxSchedulers.MainThreadScheduler.Schedule(() => callbackOn
 Console.WriteLine("Headless UI scheduler check passed: background callbacks return to the Avalonia dispatcher.");
 string destination = args.FirstOrDefault(x => !x.StartsWith("--", StringComparison.Ordinal)) ?? ".artifacts/rebrand/screenshots";
 Directory.CreateDirectory(destination);
+if (args.Contains("--qr-only"))
+{
+    QrChecks.Run(destination);
+    return;
+}
 if (args.Contains("--bitcoin-only"))
 {
     BitcoinP2pChecks.Render(destination);
@@ -160,12 +168,32 @@ foreach (var theme in new[] { ThemeVariant.Light, ThemeVariant.Dark })
             (scalingChanged ?? throw new InvalidOperationException("Missing platform DPI notification."))(scale);
             window.Show();
             Dispatcher.UIThread.RunJobs();
+            if (name == "receive")
+            {
+                var qr = window.GetVisualDescendants().OfType<MagicalCryptoWallet.Fluent.Controls.QrCode>().Single();
+                var deadline = System.Diagnostics.Stopwatch.StartNew();
+                while (qr.Matrix is null && deadline.Elapsed < TimeSpan.FromSeconds(15))
+                {
+                    Dispatcher.UIThread.RunJobs();
+                    Thread.Sleep(10);
+                }
+                Dispatcher.UIThread.RunJobs();
+                if (qr.Matrix is null) { throw new InvalidOperationException("The receive screen did not complete its Rust QR request."); }
+            }
             window.Measure(new Size(width, height));
             window.Arrange(new Rect(0, 0, width, height));
+            Dispatcher.UIThread.RunJobs();
+            AvaloniaHeadlessPlatform.ForceRenderTimerTick(3);
+            Dispatcher.UIThread.RunJobs();
             using var bitmap = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("The compositor did not render a frame.");
+            bitmap.Save(Path.Combine(destination, $"{name}-{theme.Key!.ToString()!.ToLowerInvariant()}-{(int)(scale * 100)}.png"));
+            if (name == "receive")
+            {
+                var receive = (MagicalCryptoWallet.Fluent.ViewModels.Wallets.Receive.ReceiveAddressViewModel)content.DataContext!;
+                QrChecks.VerifyReceiveFrame(window, bitmap, receive.Address.ToUpperInvariant());
+            }
             if (window.RenderScaling != scale || bitmap.PixelSize != PixelSize.FromSize(new Size(width, height), scale))
                 throw new InvalidOperationException("The captured frame does not match the requested display scale.");
-            bitmap.Save(Path.Combine(destination, $"{name}-{theme.Key!.ToString()!.ToLowerInvariant()}-{(int)(scale * 100)}.png"));
             capturedFrames++;
             window.Close();
         }

@@ -15,6 +15,10 @@
 
 use std::fmt;
 
+/// Bounded first-party PNG input decoding for the scanning service.
+#[path = "png/decode.rs"]
+pub mod decode;
+
 /// The quiet zone cannot be disabled or changed by a caller.
 pub const QUIET_ZONE_MODULES: u32 = 4;
 /// Arbitrary rectangular binary matrices are accepted within this bound.

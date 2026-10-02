@@ -4,6 +4,7 @@ using System.Net.Sockets;
 using System.Threading.Tasks;
 using MagicalCryptoWallet.Client;
 using MagicalCryptoWallet.Logging;
+using MagicalCryptoWallet.Client.Application;
 
 namespace MagicalCryptoWallet.Daemon;
 
@@ -11,6 +12,11 @@ public class Program
 {
 	public static async Task<int> Main(string[] args)
 	{
+		if (ManagedApplicationHost.TryDelegate("daemon", args, out var delegatedExitCode))
+		{
+			return delegatedExitCode;
+		}
+		using var host = ManagedApplicationHost.Connect();
 		var app = MagicalCryptoWalletAppBuilder
 			.Create("Magical Crypto Wallet Daemon", args)
 			.EnsureSingleInstance()
@@ -18,6 +24,7 @@ public class Program
 			.OnUnobservedTaskExceptions(LogUnobservedTaskException)
 			.Build();
 
+		host.BindTermination(app.TerminateService);
 		var exitCode = await app.RunAsConsoleAsync().ConfigureAwait(false);
 		return (int)exitCode;
 	}

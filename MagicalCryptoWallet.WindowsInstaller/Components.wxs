@@ -12,7 +12,7 @@
           Id="StartMenuShortcut"
           Name="!(loc.ProductName)"
           Description="!(loc.Description)"
-          Target="[INSTALLFOLDER]magicalcryptowallet.exe"
+          Target="[INSTALLFOLDER]mcw.exe"
           Directory="InstallProgramMenuFolder"
           WorkingDirectory="INSTALLFOLDER"
           Icon="icon.ico">
@@ -27,7 +27,7 @@
           Id="DesktopShortcut"
           Name="!(loc.ProductName)"
           Description="!(loc.Description)"
-          Target="[INSTALLFOLDER]magicalcryptowallet.exe"
+          Target="[INSTALLFOLDER]mcw.exe"
           Directory="DesktopFolder"
           WorkingDirectory="INSTALLFOLDER"
           Icon="icon.ico">

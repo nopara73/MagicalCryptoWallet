@@ -50,11 +50,9 @@
             </Button>
           </Panel>
         </AdorningContentControl.Adornment>
-        <Viewbox Margin="20" MaxHeight="270" MinHeight="100">
-          <PrivacyContentControl Height="264" PrivacyReplacementMode="Icon">
+          <PrivacyContentControl Margin="20" Width="264" Height="264" MaxHeight="270" MinHeight="100" PrivacyReplacementMode="Icon">
             <QrCode x:Name="QrCode" Matrix="{Binding QrCode^}" />
           </PrivacyContentControl>
-        </Viewbox>
       </AdorningContentControl>
     </DockPanel>
   </ContentArea>

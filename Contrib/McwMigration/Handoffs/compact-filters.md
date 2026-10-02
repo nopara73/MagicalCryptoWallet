@@ -1,6 +1,7 @@
 # Compact filter migration handoff
 
-Status: component ready for application-host integration. Verification date:
+Status: component included in the published application host; a bounded matching
+caller/handler review patch is prepared separately. Verification date:
 2026-10-02, Asia/Singapore. Worker chat: `01a0fc2a-a793-7522-ac10-b5832440dec6`.
 Coordinator owns integration dispatch; this document does not claim that managed
 callers, networking, storage, or the production wallet have migrated.
@@ -22,10 +23,18 @@ Owned files:
 - `mcw/tests/compact_filters_vectors.inc`
 - `mcw/tests/compact_filters_reference.py`
 - `mcw/tests/compact_filters_verify.ps1`
+- `mcw/tests/compact_filters_bridge_handler.inc`
+- `mcw/tests/compact_filters_managed_adapter.inc`
+- `mcw/tests/compact_filters_host_prepare.py`
+- `mcw/tests/compact_filters_host_wiring.patch`
+- `mcw/tests/compact_filters_host_probe.inc`
+- `mcw/tests/compact_filters_host_verify.ps1`
 - `Contrib/McwMigration/Handoffs/compact-filters.md`
 
-No Cargo manifests, module declarations, host commands, bridge code, managed
-adapters, network/filter-store code, packaging, or launch paths were edited.
+No tracked Cargo manifests, module declarations, host commands, bridge code,
+managed adapters, network/filter-store code, packaging, or launch paths were edited.
+The proposed four-file integration patch is an owned test/handoff artifact;
+it was applied only in ignored synthetic verification snapshots.
 There is no additional Cargo package or shipping executable. Temporary test
 crates, executables, reference downloads, and evidence are under the worker's
 ignored `.artifacts` directory, not in shipping sources.
@@ -301,18 +310,18 @@ Direct managed Golomb-Rice test users found across the full checkout are
 `MagicalCryptoWallet.Tests/UnitTests/Services/FilterProvidersTests.cs`, and
 `MagicalCryptoWallet.Tests/UnitTests/Services/CompactFilterBehaviorTests.cs`.
 
-Observed the host owner's live `mcw/Cargo.toml`: empty dependencies,
+The initial read-only host-checkout observation found `mcw/Cargo.toml`: empty dependencies,
 dev-dependencies and build-dependencies sections. Its `Cargo.lock` contained
 only `mcw` 0.1.0. This is a read-only host-checkout snapshot, not a claim that its
-uncommitted host/packaging work is part of these commits. This worker adds zero
+uncommitted host/packaging work was part of those component commits. This worker adds zero
 external Cargo/runtime libraries; `bitcoin_encoding` is an internal first-party
 module ultimately compiled into the same mcw executable.
 
 ## Integration and removal acceptance checks
 
-1. Include the published encoding source, declare `pub mod compact_filters` in
-   the host-owned library/application, and run the committed Rust integration
-   tests through the real Cargo host in addition to the temporary harness.
+1. Published host pin `b28331b8dfae53acdd1b25c77780f1a47762df2a` includes
+   the encoding and compact-filter module declarations. The actual Cargo
+   conformance run passed all 19 tests. Keep this check in the host pipeline.
 2. Add host-owned bridge operations/adapters with framing/count/byte limits;
    domain code remains unaware of IPC, handles and managed types. Verify error
    propagation and raw-hash order using all official vector cases end to end.
@@ -330,3 +339,91 @@ module ultimately compiled into the same mcw executable.
 6. Preserve wallet/filter state and other agents' scope. Only the coordinator
    requests incorporation when the host-owner chat is idle; the ready machine
    record is evidence and does not authorize edits to host-owned files.
+
+## Published-host verification and bounded caller patch
+
+The verification baseline is remote-master commit
+`b28331b8dfae53acdd1b25c77780f1a47762df2a`, including published host foundation
+`989cf2a2df22d23837c1aa328e29abfd33c9b9c8`. The owned review artifact
+`mcw/tests/compact_filters_host_wiring.patch` proposes exactly these four paths:
+
+| Proposed owner change | Behavior |
+| --- | --- |
+| `mcw/src/bridge.rs` | Decode bounded `0x0702` requests, fully validate a basic filter, call first-party `match_any`, return a canonical boolean or service error |
+| `mcw/src/app.rs` | Dispatch `0x0702` in the existing permanent host |
+| `MagicalCryptoWallet/Mcw/CompactFilters/McwCompactFilterMatcher.cs` | Typed async adapter with local count/size/null/hash validation, cancellation forwarding and strict boolean response validation |
+| `MagicalCryptoWallet/Wallets/WalletFilterProcessor.cs` | Replace its one `Filter.MatchAny` call with the typed adapter; reject custom P/M before interpreting bytes as a basic filter |
+
+The production `FilterModel.Create` constructor uses the default basic parameters.
+[NBitcoin v10.0.13 source](https://github.com/MetacoSA/NBitcoin/blob/v10.0.13/NBitcoin/BIP158/GolombRiceFilter.cs)
+confirms P=19/M=784931; its stale XML comment mentioning 20 is inconsistent with
+its constants. Existing explicitly custom P=20/M=1048576 test fixtures must keep
+their parameters when other codec callers migrate. This matching patch refuses
+custom parameters rather than silently reinterpreting them.
+
+`0x0702` payload, without the existing 16-byte application-frame header:
+
+1. Raw wire-order block hash: 32 bytes.
+2. Filter: length u32 LE followed by that many encoded filter bytes.
+3. Query count: u32 LE.
+4. Each query: length u32 LE followed by script bytes.
+
+The entire payload is at most 1,048,560 bytes; queries are at most 65,536 and
+filter elements at most 1,000,000. Exact consumption is required. Length/count
+checks precede query-vector allocation and script copying. Response payload is
+exactly one byte, 0 or 1. Malformed transport payloads use service error 1;
+domain validation/matching failures use service error 2. The managed adapter
+propagates these errors and never falls back to managed matching.
+
+These are explicit local transport limits. A valid filter/query collection that
+exceeds the combined frame budget is rejected; no streaming/chunking path or
+unbounded wallet-key count is claimed by this patch.
+
+Successful Windows verification on 2026-10-02 used
+`mcw/tests/compact_filters_host_verify.ps1` and the existing shared toolchain,
+native libraries, build-slot policy, and Python reference directory documented
+above. Set `CARGO_HOME` and `RUSTUP_HOME` to the shared mcw tool directories,
+then use the same parameters as the earlier command except omit
+`-EncodingSource`/`-ExpectedEncodingSha256` and select the host verifier script.
+The independent preparation tool checks the official vector-file hash before
+constructing transport cases.
+
+- Actual published-host Cargo conformance: 19 passed.
+- Ignored snapshot with the proposed handler/dispatch patch: 19 passed; the
+  actual `mcw` application executable built successfully.
+- Cargo dependency graph: one package, zero external dependencies.
+- Synthetic .NET 10 probe: the actual `ManagedApplicationHost.cs` and
+  `IMcwApplicationServices.cs`, plus the proposed typed adapter, compiled with
+  warnings as errors and no external NuGet packages. Only the adjacent
+  termination-service type was stubbed; no wallet was opened.
+- Typed adapter contract: 14 checks passed, including invalid boolean responses,
+  null inputs, hash length, count/size limits, pre-cancellation and token forwarding.
+- Real `mcw`/managed-probe round trip: 60 typed cases from all 10 official blocks,
+  including 20 expected canonical-codec errors; 7 malformed inner payloads;
+  40 concurrent requests; unknown-operation and pre-cancellation recovery;
+  accepted maximum query count and frame size; adjacent oversized-frame rejection.
+- The Windows GUI-subsystem host was launched hidden and explicitly awaited.
+  Its successful exit is required before evidence is accepted. The synthetic
+  probe has a two-minute watchdog; the verifier has a three-minute process limit.
+- The three reserved existing patch-target files retained their original hashes.
+  Patch application happened only in the ignored snapshot via `git apply --no-index`.
+- Handler and patched host formatting, Python syntax, and PowerShell syntax passed.
+
+Evidence is in the worker's ignored `.artifacts/compact-filters-host-evidence/`:
+`host-verification.json`, both Cargo test logs, the host build log, managed probe
+restore/build logs, `adapter-unit-results.json`, `host-roundtrip-results.json`,
+and host stdout/stderr logs. Review-patch SHA256 after canonical LF normalization:
+`6bbcf1fa9ac3ca73704f25f0d1d2ed8e7860b695c599699fa9703f501401051d`.
+The preparation script can regenerate the patch against a newer pinned host
+snapshot; rerun verification after changing its owner source or templates.
+The verifier defaults to immediate deferral when both shared build slots are
+occupied. `-WaitForBuildSlotSeconds 120` optionally retries for up to two minutes,
+without holding another coordination lock; it rechecks free memory once admitted.
+
+The proposed wallet caller file was patch-applied and inspected, but the full
+managed wallet project and its existing filter tests were not built/run here.
+Its end-to-end evidence covers the real host and typed managed transport, not
+live wallet synchronization. Other filter parsing/header/checkpoint/storage
+callers and NBitcoin remain in production. This worker did not apply the patch
+to production, remove a package, create an extra shipping executable, modify an
+active host-owner checkout, or establish five-target release readiness.

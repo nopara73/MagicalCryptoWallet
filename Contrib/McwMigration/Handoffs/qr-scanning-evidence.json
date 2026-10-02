@@ -1,0 +1,98 @@
+{
+  "schema_version": 1,
+  "task_slug": "qr-scanning",
+  "checkpoint_only": true,
+  "production_integrated": false,
+  "old_implementation_retired": false,
+  "dependency_removed": false,
+  "rust": "1.99.0",
+  "target": "x86_64-pc-windows-msvc",
+  "external_cargo_dependencies": 0,
+  "unsafe_code_forbidden": true,
+  "strict_clippy": "passed",
+  "debug_tests": 10,
+  "optimized_tests": 10,
+  "source_hashes": {
+    "mcw/src/scan_service/charset_data.rs": "215b2d1a5e60c41b7b19a7b859e8641426ca6985e3e5666959b8f6b64f902371",
+    "mcw/src/scan_service/decoder.rs": "625a509abd9501bbfe401d962490269a14b2812a55e198c56c3019a24752b474",
+    "mcw/src/scan_service/matrix.rs": "c1df3a6c9bd2278032e4ca55ee2dd6af48d7a6db0a7f658630f554d08a7e4119",
+    "mcw/src/scan_service/mod.rs": "424f8ffd875775386a08cc2c2e761ae4eebe6291503ca572390ac3fb80b5f53b",
+    "mcw/src/scan_service/payload.rs": "02ce2946d3c3217e3a5d8a75511386c465485a9e432dd992f1e82612fc4783cc",
+    "mcw/src/scan_service/raster.rs": "ed8d79e09bb0e576ca572d6c5073af191b9d167778ae23606478aedb1c08fd43",
+    "mcw/src/scan_service/text.rs": "3e62e526d191e3443f458f8cc8d37e39abe062b46ad2e3364aec771fd382571f",
+    "mcw/src/scan_service/wire.rs": "7b325e8226c74846bde5ba3907f8b6ab04b43211505408e3a7a904155680ccb9",
+    "Contrib/McwMigration/Patches/qr-scanning-host.patch": "c895ee3d510a19f5358d13a880ac0a64879bcba45d720a4d5e3a3dc037a1b499",
+    "Contrib/McwMigration/Patches/qr-scanning-caller.patch": "fa4fedae5ed8dd93940cc27904b5be2d6b5022db764c399fc801f4bd9d33337a",
+    "mcw/tests/qr_scanning_tools/termination_type.cs": "85694b5e30b63766f45e394b805c2e533c505baf809707f41a45a6918ca68bde",
+    "mcw/tests/qr_scanning_managed_fixture.cs": "f6c265aed7681da45dfb410b080f95bbfd97524f3fc0a5d3cfab88ce5b319aac",
+    "MagicalCryptoWallet/Mcw/Scanning/McwQrDecoder.cs": "ddc3ec1c280d49c3ec02c6081b1bac1c513ca1e326054be603faac3f230021d7",
+    "mcw/tests/qr_scanning_tools/bridge_fixture.rs": "6449e75cd8de9c1b8b1ea0e43b0a7252b970f4ef0fedc6bfca52e7843c82c203",
+    "mcw/tests/qr_scanning_tools/host_fixture.rs": "9b6be4907d5f1dc4e5390309e48bbfe009cec287d1e8b79c64ff0bdcf8836524"
+  },
+  "independent_corpora": {
+    "matrix": {
+      "cases": 1817,
+      "passed": 1817,
+      "binary_sha256": "9ce3a392731016da47ab3576f719e40248bd72e2e7f3d041aad7a1e957f6b027",
+      "corrected_symbols": 591,
+      "oracle_sha256": "b089855caf16185c61421ea4927c1b213cf9468940d71fa8ab11ef83662dcc84",
+      "corpus_sha256": "69963a044afbce9b7d9007dfbbb91f5ee816735b3ed6c9a07587386440d3959b"
+    },
+    "raster": {
+      "cases": 74,
+      "passed": 74,
+      "binary_sha256": "9ce3a392731016da47ab3576f719e40248bd72e2e7f3d041aad7a1e957f6b027"
+    },
+    "content": {
+      "cases": 42,
+      "passed": 42,
+      "binary_sha256": "9ce3a392731016da47ab3576f719e40248bd72e2e7f3d041aad7a1e957f6b027"
+    },
+    "retained": {
+      "cases": 5,
+      "passed": 5,
+      "binary_sha256": "9ce3a392731016da47ab3576f719e40248bd72e2e7f3d041aad7a1e957f6b027"
+    },
+    "perspective": {
+      "cases": 12,
+      "passed": 12,
+      "binary_sha256": "9ce3a392731016da47ab3576f719e40248bd72e2e7f3d041aad7a1e957f6b027"
+    }
+  },
+  "actual_caller_frame_fixture": {
+    "production_caller_leaf_cases": 42,
+    "retained_repository_images": 5,
+    "multi_chunk": true,
+    "maximum_resolution": true,
+    "malformed_image_rejected": true,
+    "cancellation_verified": true,
+    "cancellation_ms": 2.489,
+    "malformed_reply_rejected": true,
+    "capture_backend_replaced": false,
+    "camera_activated": false,
+    "shipping_host_dispatch_verified": false
+  },
+  "actual_managed_transport_patched_host": {
+    "production_caller_leaf_cases": 42,
+    "retained_repository_images": 5,
+    "actual_managed_transport": true,
+    "patched_host_dispatch_verified": true,
+    "cancellation_verified": true,
+    "capture_backend_replaced": false,
+    "camera_activated": false,
+    "shipping_host_dispatch_verified": false
+  },
+  "patched_caller_sha256": "3fe460dad6eb59ca1deca69acf2609759b4e9b4609c4389b06a4d30da980101c",
+  "tested_shared_revision": "556fc1a18a89029bab272c3d5c64d77f55de0501",
+  "tested_patched_app_sha256": "64b7ec77be7dc6f70acd149d99d12cb4054bb719d0469d1820cab4c7b8dc3507",
+  "tested_managed_transport_sha256": "19ac5fe2e7bf2f5a8cc0f694132e346e59748d210b48087487c0c429090de086",
+  "fixture_binary_sha256": "eb79fce96db3691577e608471bbab272730ca8cf22f124417b568cb8e8aaf517",
+  "host_fixture_sha256": "a1b4c123d21513b68617546cbc40c0a206833e99a6177674b8bc1dae478447e6",
+  "test_role": "Development-only source-bound Windows x64 verification. Static CRT tooling is not a shipping target.",
+  "unverified": [
+    "Production host incorporation",
+    "Camera hardware",
+    "Linux/ARM/macOS execution",
+    "Packaged release/runtime import audit"
+  ]
+}

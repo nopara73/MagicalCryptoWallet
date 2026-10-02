@@ -9,6 +9,11 @@
 use crate::bitcoin_encoding::{self, Network};
 use std::{collections::BTreeSet, fmt};
 
+/// Portable application-service payloads. Framing, IPC and lifecycle stay in the
+/// application host; the BIP21 domain APIs above and below require none of them.
+#[path = "payment_uri/service.rs"]
+pub mod service;
+
 pub const SATOSHIS_PER_BTC: u64 = 100_000_000;
 pub const MAX_SATOSHIS: u64 = 21_000_000 * SATOSHIS_PER_BTC;
 /// Same bound as the retained managed AddressParser's String.Length limit.

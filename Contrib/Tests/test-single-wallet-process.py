@@ -132,6 +132,30 @@ def visible_windows(pid):
     user32 = ctypes.WinDLL("user32", use_last_error=True)
     callback_type = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.HWND, wintypes.LPARAM)
     found = []
+    # mcw owns a managed child; inspect the whole owned tree so hidden-startup
+    # checks cannot accidentally pass by inspecting only the windowless host.
+    kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+    class Entry(ctypes.Structure):
+        _fields_ = [("size",wintypes.DWORD),("usage",wintypes.DWORD),("pid",wintypes.DWORD),("heap",ctypes.c_void_p),
+                    ("module",wintypes.DWORD),("threads",wintypes.DWORD),("parent",wintypes.DWORD),
+                    ("priority",wintypes.LONG),("flags",wintypes.DWORD),("exe",wintypes.WCHAR * 260)]
+    kernel32.CreateToolhelp32Snapshot.restype = wintypes.HANDLE
+    kernel32.Process32FirstW.argtypes = kernel32.Process32NextW.argtypes = [wintypes.HANDLE,ctypes.POINTER(Entry)]
+    kernel32.CloseHandle.argtypes = [wintypes.HANDLE]
+    snapshot = kernel32.CreateToolhelp32Snapshot(2,0)
+    owned = {pid}; parents = {}
+    if snapshot == ctypes.c_void_p(-1).value: raise OSError("Process tree snapshot failed")
+    try:
+        entry = Entry();entry.size = ctypes.sizeof(entry)
+        more = kernel32.Process32FirstW(snapshot,ctypes.byref(entry))
+        while more:
+            parents[entry.pid] = entry.parent
+            more = kernel32.Process32NextW(snapshot,ctypes.byref(entry))
+        while True:
+            descendants = {child for child,parent in parents.items() if parent in owned}
+            if descendants <= owned: break
+            owned |= descendants
+    finally: kernel32.CloseHandle(snapshot)
     user32.GetWindowThreadProcessId.argtypes = [wintypes.HWND, ctypes.POINTER(wintypes.DWORD)]
     user32.GetWindowTextW.argtypes = [wintypes.HWND, wintypes.LPWSTR, ctypes.c_int]
     user32.IsWindowVisible.argtypes = [wintypes.HWND]
@@ -139,7 +163,7 @@ def visible_windows(pid):
     def visit(hwnd, _):
         owner = wintypes.DWORD()
         user32.GetWindowThreadProcessId(hwnd, ctypes.byref(owner))
-        if owner.value == pid and user32.IsWindowVisible(hwnd):
+        if owner.value in owned and user32.IsWindowVisible(hwnd):
             title = ctypes.create_unicode_buffer(1024)
             user32.GetWindowTextW(hwnd, title, len(title))
             if title.value:
@@ -200,7 +224,7 @@ def main():
     data = run / "MCW data with spaces"; data.mkdir()
     bitcoin = run / "bitcoin"; bitcoin.mkdir()
     suffix = ".exe" if os.name == "nt" else ""
-    desktop = args.package.resolve() / ("magicalcryptowallet" + suffix)
+    desktop = args.package.resolve() / ("mcw" + suffix)
     daemon = args.package.resolve() / ("magicalcryptowalletd" + suffix)
     node_p2p = require_regtest_p2p_port()
     node_rpc, wallet_rpc = free_port(), free_port()
@@ -215,6 +239,10 @@ def main():
     children, logs, results = [], [], {}
     def launch(executable, arguments, name):
         log = (run / (name + ".log")).open("wb"); logs.append(log)
+        # Exercise the mcw daemon mode as well as the compatibility path.
+        if executable == daemon and name != "daemon-conflict":
+            executable = desktop
+            arguments = ["daemon", *arguments]
         process = subprocess.Popen([str(executable), *arguments], stdout=log, stderr=subprocess.STDOUT, env=env,
             creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0)
         children.append(process)

@@ -1,0 +1,97 @@
+--- a/mcw/src/app.rs
++++ b/mcw/src/app.rs
+@@ -3,6 +3,7 @@
+ use crate::{
+     bridge::{self, Frame},
+     platform,
++    scan_service::wire,
+ };
+ use std::{
+     ffi::OsString,
+@@ -110,16 +111,33 @@
+     };
+     let mut output = child.process.stdout.take().unwrap();
+     let mut input = child.process.stdin.take().unwrap();
++    let scan = wire::Runtime::default();
++    let scan_reader = scan.reader();
+     // A bounded queue prevents a faulty child from filling host memory.
+     let (send, receive) = mpsc::sync_channel(16);
+     std::thread::spawn(move || {
+         loop {
+             let result = Frame::read(&mut output);
++            if let Ok(Some(frame)) = &result
++                && wire::handles(frame.operation)
++            {
++                if frame.kind == bridge::REQUEST
++                    && scan_reader.register(frame.id, frame.operation).is_err()
++                {
++                    let _ = send.send(Err(bridge::invalid("invalid QR request registration")));
++                    break;
++                }
++                if frame.kind == bridge::CANCEL && frame.id != 0 && frame.payload.is_empty() {
++                    scan_reader.cancel(frame.id, frame.operation);
++                    continue;
++                }
++            }
+             let stop = !matches!(result, Ok(Some(_)));
+             if send.send(result).is_err() || stop {
+                 break;
+             }
+         }
++        scan_reader.disconnected();
+     });
+     let mut ready = false;
+     let mut handoff = None;
+@@ -128,6 +146,7 @@
+     let mut stopping = None;
+     let handshake_deadline = Instant::now() + Duration::from_secs(15);
+     loop {
++        scan.reap();
+         if let Some(status) = child.process.try_wait()? {
+             // Drain already queued handoffs even if the process exited immediately.
+             while let Ok(Ok(Some(frame))) = receive.try_recv() {
+@@ -140,6 +159,7 @@
+                     &mut handoff,
+                     &mut closing,
+                     bootstrap,
++                    &scan,
+                 );
+             }
+             return Ok((
+@@ -181,6 +201,7 @@
+                     &mut handoff,
+                     &mut closing,
+                     bootstrap,
++                    &scan,
+                 ) {
+                     eprintln!("mcw: {error}");
+                     broken = true;
+@@ -234,6 +255,7 @@
+     handoff: &mut Handoff,
+     closing: &mut bool,
+     bootstrap: &[u8],
++    scan: &wire::Runtime,
+ ) -> io::Result<()> {
+     if !*ready {
+         if frame.kind != bridge::HELLO
+@@ -263,6 +285,10 @@
+             frame.reply(Vec::new()).write(output)
+         }
+         bridge::QR => bridge::encode_qr(frame).write(output),
++        op if wire::handles(op) => match scan.handle(frame.id, op, &frame.payload) {
++            Ok(payload) => frame.reply(payload).write(output),
++            Err(error) => frame.error(2, &error.to_string()).write(output),
++        },
+         bridge::RESTART | bridge::CRASH | bridge::UPDATE => {
+             let args = match bridge::strings(&frame.payload) {
+                 Ok(args) => args,
+--- a/mcw/src/lib.rs
++++ b/mcw/src/lib.rs
+@@ -16,6 +16,7 @@
+ pub mod privacy_service;
+ pub mod psbt;
+ pub mod qr;
++pub mod scan_service;
+ pub mod script_service;
+ pub mod socks5;
+ pub mod wallet_hash_service;
