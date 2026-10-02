@@ -96,6 +96,27 @@ malformed request rejections, in-flight wait cancellation and twelve concurrent
 requests over the one stream; the actual current packaged input yielded zero
 blocks, preserving its existing extraction result.
 
+After component publication, an ignored source snapshot of `6e8bf58cbf` with
+both cutover patches restored all five consumers in Release configuration.
+All fifteen Markdown-exclusive candidates disappeared and no package was added.
+Tests/VisualPreview also omitted three Debug-only Avalonia packages under the
+Release configuration; those remain conditional source references and are not
+additional dependency retirements. Do not publish unrelated configuration churn.
+
+That snapshot's fresh caller artifact build is currently blocked by preexisting
+`RpcObjectCodec.cs` compiler errors CS0234 at line8 and CS0118 at line14. The JSON
+owner and coordinator received the exact errors; its source was preserved.
+The earlier caller/real-host proof does not claim compilation of this newer
+master or production retirement. Recheck after the shared repair is published.
+
+`native_ui_markdown_retirement.py --report <path>` checks the actual caller,
+host export/dispatch, absent legacy styles/pins/references, all five restored
+locks and compiled Fluent dependency manifests/assemblies. It rejects today's
+unchanged production state. `--root <snapshot> --proposed` keeps unpublished
+snapshot evidence explicit; `--artifact-directory` can point to the retained
+managed release output. A passing report does not prove native-host execution,
+native imports or remote publication. Run the real-host proof separately.
+
 Evidence is under the worker's ignored
 `.artifacts/native-ui-markdown-verification/`; screenshots are not staged.
 All verifier locks release in `finally` before source review/publication.
@@ -103,7 +124,10 @@ All verifier locks release in `finally` before source review/publication.
 ## Incorporation sequence
 
 1. Apply the disjoint component commit, shared registration and pending caller
-   patches in the same isolated integration checkout. Remove the old package
+   patches in the same isolated integration checkout. With `core.autocrlf=true`,
+   use `git apply --check --ignore-space-change` and then apply with the same
+   option; both patches passed that applicability check at `6e8bf58cbf`.
+   Remove the old package
    reference and central pin; regenerate all five affected production/consumer
    locks (Fluent, Desktop, Tests, BridgeProbe, VisualPreview) without peer churn.
 2. Run bounded verification, actual published-host/caller build, dependency
