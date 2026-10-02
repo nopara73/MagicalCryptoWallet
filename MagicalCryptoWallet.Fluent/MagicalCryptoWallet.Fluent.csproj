@@ -18,6 +18,7 @@
 
 	<ItemGroup>
 		<AvaloniaResource Include="Assets\**" />
+		<None Update="Assets\Fonts\PasswordMask.OFL.txt" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" TargetPath="Licenses\PasswordMask.OFL.txt" />
 	</ItemGroup>
 	<ItemGroup>
 		<PackageReference Include="Avalonia" />

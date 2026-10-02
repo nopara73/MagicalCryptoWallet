@@ -7,24 +7,27 @@ using Avalonia.Utilities;
 namespace MagicalCryptoWallet.Fluent.Controls;
 
 /// <summary>
-/// Uses English translations of the sentence mask from the original 2018/2019 password box.
+/// Restores the sentence mask from the original 2018/2019 password box.
 /// Only the rendered layout changes; TextBox retains the real password and native editing.
 /// </summary>
 public class ChinesePasswordTextPresenter : TextPresenter
 {
-	public const string CreationMaskText = "This dumb foreigner doesn't know what he's writing.";
+	public const string CreationMaskText = "这个笨老外不知道自己在写什么。";
 
 	private static readonly string[] Sentences =
 	[
 		CreationMaskText,
-		"French fries French fries French fries",
-		"Anyone with only one chopstick will go hungry.",
-		"Anyone who tells too many light bulb jokes will soon burn out.",
-		"Noodle soup hot pot",
-		"You're the cutest zombie I've ever seen.",
-		"Never give up.",
-		"If you were a Pokémon, I'd choose you."
+		"法式炸薯条法式炸薯条法式炸薯条",
+		"只有一支筷子的人会挨饿。",
+		"说太多灯泡笑话的人，很快就会心力交瘁。",
+		"汤面火锅",
+		"你是我见过的最可爱的僵尸。",
+		"永不放弃。",
+		"如果你是只宠物小精灵，我就选你。"
 	];
+
+	private static readonly FontFamily MaskFont =
+		new("avares://MagicalCryptoWallet.Fluent/Assets/Fonts#MagicalCryptoWallet Password Mask");
 
 	private string? _sequence;
 
@@ -47,7 +50,7 @@ public class ChinesePasswordTextPresenter : TextPresenter
 		{
 			var sentences = (string[])Sentences.Clone();
 			Random.Shared.Shuffle(sentences);
-			_sequence = string.Join(" ", sentences);
+			_sequence = string.Concat(sentences);
 		}
 
 		var sequence = string.IsNullOrEmpty(owner.FixedPasswordText) ? _sequence : owner.FixedPasswordText;
@@ -60,7 +63,7 @@ public class ChinesePasswordTextPresenter : TextPresenter
 			}
 		});
 
-		var typeface = new Typeface(FontFamily, FontStyle, FontWeight, FontStretch);
+		var typeface = new Typeface(MaskFont);
 		IReadOnlyList<ValueSpan<TextRunProperties>>? overrides = null;
 		if (!string.IsNullOrEmpty(PreeditText))
 		{
