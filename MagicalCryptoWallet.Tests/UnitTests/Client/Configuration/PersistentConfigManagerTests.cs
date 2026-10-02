@@ -50,7 +50,6 @@ public class PersistentConfigManagerTests
 			{
 			  "CoordinatorUri": "",
 			  "UseTor": "Enabled",
-			  "UseTorForPublicData": false,
 			  "TerminateTorOnExit": false,
 			  "TorBridges": [],
 			  "DownloadNewVersion": true,

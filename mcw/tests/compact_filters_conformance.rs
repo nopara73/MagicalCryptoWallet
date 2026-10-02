@@ -31,7 +31,9 @@ include!("compact_filters_vectors.inc");
 fn hex(text: &str) -> Vec<u8> {
     assert!(text.len().is_multiple_of(2));
     text.as_bytes()
-        .chunks_exact(2)
+        .as_chunks::<2>()
+        .0
+        .iter()
         .map(|pair| {
             let digit = |x: u8| match x {
                 b'0'..=b'9' => x - b'0',

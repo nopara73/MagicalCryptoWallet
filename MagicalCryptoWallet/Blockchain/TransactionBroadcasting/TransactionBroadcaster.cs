@@ -123,10 +123,12 @@ public class ExternalTransactionBroadcaster : IBroadcaster
 	public record ExternalBroadcasterInfo(string Name, (string ClearNet, string Onion) ApiDomain, string ApiEndpoint);
 }
 
-public class NetworkBroadcaster(MempoolService mempoolService, P2pNodeListProvider p2pNodeListProvider, int minBroadcastNodes) : IBroadcaster
+public class NetworkBroadcaster(MempoolService mempoolService, P2pNodeListProvider p2pNodeListProvider, int minBroadcastNodes,
+	Func<CancellationToken, Task>? prepareNodes = null) : IBroadcaster
 {
 	public async Task<BroadcastingResult> BroadcastAsync(SmartTransaction tx, CancellationToken cancellationToken)
 	{
+		if (prepareNodes is not null) { await prepareNodes(cancellationToken).ConfigureAwait(false); }
 		var connectedNodes = p2pNodeListProvider();
 		if (connectedNodes.Length <  minBroadcastNodes)
 		{
@@ -178,7 +180,7 @@ public class NetworkBroadcaster(MempoolService mempoolService, P2pNodeListProvid
 
 				return confirmation;
 			}
-		} while (completedTask.IsFaulted && tasksToWaitFor.Count > 0);
+		} while (tasksToWaitFor.Count > 0);
 
 		var results = await Task.WhenAll(broadcastToNodeTasks).ConfigureAwait(false);
 		var errors = results

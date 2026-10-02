@@ -1,0 +1,2 @@
+# Parsing vectors include invalid UTF-8 and significant byte/line endings.
+* -text

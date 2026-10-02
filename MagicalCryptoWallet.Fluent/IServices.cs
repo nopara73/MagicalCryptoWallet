@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Threading.Tasks;
 using NBitcoin;
@@ -35,7 +34,6 @@ public interface IServices
 	uint? GetMinimumBlockHeight();
 
 	IEnumerable<LabelsArray> GetTransactionLabels();
-	bool TryGetTransaction(uint256 hash, [NotNullWhen(true)] out SmartTransaction? tx);
 
 	Network GetNetwork();
 

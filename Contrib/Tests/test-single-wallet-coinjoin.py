@@ -146,8 +146,15 @@ def main():
             destination = rpc(miner_url, "getnewaddress")
             payment_id = rpc(url, "payincoinjoin", [destination, 500_000, PASSWORD])
             payments.append((url, payment_id, destination))
-            wait_for(lambda: rpc(url, "getwalletinfo")["coinjoinStatus"] != "Idle", timeout=360)
-        # Finish P2P broadcast cooldowns and authorize every client before opening a round.
+        def waiting_for_round(url):
+            info = rpc(url, "getwalletinfo")
+            return info if (info["synchronized"] and info["syncHeight"] >= confirmation_height
+                and info["coinjoinStatus"] == "InProgress") else False
+        for index, (_, url) in enumerate(clients):
+            wait_for(lambda: waiting_for_round(url), timeout=360)
+            print(f"Client {index}: synchronized at {confirmation_height}; automatic CoinJoin is waiting for a round.", flush=True)
+        # Finish P2P broadcast cooldowns and wait for every tracker to actively
+        # await a round before opening the short synthetic registration window.
         service = launch(coordinator, [f"--datadir={coordinator_data}", f"--urls={coordinator_url}"], "coordinator")
         def coordinator_ready():
             assert service.poll() is None, "The isolated coordinator exited before becoming ready."

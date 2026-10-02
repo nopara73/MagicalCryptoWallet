@@ -40,8 +40,6 @@ public class CpfpInfoProvider(MailboxProcessor<CpfpInfoMessage> cpfpUpdater)
 
 public static class CpfpInfoUpdater
 {
-	private delegate Task<Result<CpfpInfo,string>> CpfpInfoGetter(SmartTransaction stx);
-
 	public static MessageHandler<CpfpInfoMessage, Unit> CreateForRegTest()
 	{
 		return (msg, _, _) =>
@@ -62,7 +60,8 @@ public static class CpfpInfoUpdater
 	}
 
 	public static MessageHandler<CpfpInfoMessage, Unit> Create(
-		IHttpClientFactory httpClientFactory, Network network, EventBus eventBus)
+		IHttpClientFactory httpClientFactory, Network network, EventBus eventBus, TimeProvider? timeProvider = null,
+		Func<TimeSpan, CancellationToken, Task>? prefetchDelay = null)
 	{
 		var uri = network == Network.Main
 			? new Uri("https://mempool.space/api/")
@@ -70,16 +69,23 @@ public static class CpfpInfoUpdater
 		var tasks = new Dictionary<uint256, Task>();
 		var cache = new ConcurrentDictionary<uint256, CachedCpfpInfo>();
 		var pending = new ConcurrentDictionary<uint256, Lazy<Task<Result<CpfpInfo, string>>>>();
-		return (msg, _, cancellationToken) => ProcessMessagesAsync(msg, httpClientFactory, uri, tasks, cache, pending, eventBus, cancellationToken);
+		var failures = new ConcurrentDictionary<uint256, (DateTimeOffset RetryAt, string Error)>();
+		return (msg, _, cancellationToken) => ProcessMessagesAsync(msg, httpClientFactory, uri, tasks, cache, pending, failures,
+			timeProvider ?? TimeProvider.System, prefetchDelay ?? Task.Delay, eventBus, cancellationToken);
 	}
 
-	private static async Task<Unit> ProcessMessagesAsync(CpfpInfoMessage msg, IHttpClientFactory httpClientFactory, Uri uri, Dictionary<uint256, Task> tasks, ConcurrentDictionary<uint256, CachedCpfpInfo> cache, ConcurrentDictionary<uint256, Lazy<Task<Result<CpfpInfo, string>>>> pending, EventBus eventBus, CancellationToken cancellationToken)
+	private static async Task<Unit> ProcessMessagesAsync(CpfpInfoMessage msg, IHttpClientFactory httpClientFactory, Uri uri,
+		Dictionary<uint256, Task> tasks, ConcurrentDictionary<uint256, CachedCpfpInfo> cache,
+		ConcurrentDictionary<uint256, Lazy<Task<Result<CpfpInfo, string>>>> pending,
+		ConcurrentDictionary<uint256, (DateTimeOffset RetryAt, string Error)> failures, TimeProvider timeProvider,
+		Func<TimeSpan, CancellationToken, Task> prefetchDelay, EventBus eventBus, CancellationToken cancellationToken)
 	{
 		switch (msg)
 		{
 			case CpfpInfoMessage.UpdateMessage _ :
 				await ProcessFinishedFetchingTasksAsync(tasks, cancellationToken).ConfigureAwait(false);
 				CleanCache(cache);
+				foreach (var expired in failures.Where(x => x.Value.RetryAt <= timeProvider.GetUtcNow())) { failures.TryRemove(expired.Key, out _); }
 				break;
 			case CpfpInfoMessage.GetCachedCpfpInfo m:
 				m.ReplyChannel.Reply(cache.Values.ToArray());
@@ -90,9 +96,10 @@ public static class CpfpInfoUpdater
 				break;
 			case CpfpInfoMessage.PreFetchInfoForTransaction m:
 				var txid = m.SmartTransaction.GetHash();
-				if (!cache.ContainsKey(txid) && (!tasks.TryGetValue(txid, out var task) || task.IsCompleted))
+				if (!cache.ContainsKey(txid) && (!failures.TryGetValue(txid, out var failure) || failure.RetryAt <= timeProvider.GetUtcNow()) &&
+					(!tasks.TryGetValue(txid, out var task) || task.IsCompleted))
 				{
-					tasks[txid] = ScheduleTaskAsync(m.SmartTransaction, GetCpfpInfo, cancellationToken);
+					tasks[txid] = ScheduleTaskAsync(m.SmartTransaction, GetCpfpInfo, prefetchDelay, cancellationToken);
 				}
 				break;
 		}
@@ -101,7 +108,7 @@ public static class CpfpInfoUpdater
 
 		async Task<Result<CpfpInfo, string>> GetCpfpInfo(SmartTransaction tx)
 		{
-			var result = await GetCpfpInfoAsync(tx, httpClientFactory, uri, cache, pending, cancellationToken).ConfigureAwait(false);
+			var result = await GetCpfpInfoAsync(tx, httpClientFactory, uri, cache, pending, failures, timeProvider, cancellationToken).ConfigureAwait(false);
 			return result.Map(
 				info =>
 				{
@@ -129,7 +136,8 @@ public static class CpfpInfoUpdater
 		}
 	}
 
-	private	static async Task ScheduleTaskAsync(SmartTransaction transaction, CpfpInfoGetter cpfpGetter, CancellationToken cancellationToken)
+	internal static async Task ScheduleTaskAsync(SmartTransaction transaction, Func<SmartTransaction, Task<Result<CpfpInfo, string>>> cpfpGetter,
+		Func<TimeSpan, CancellationToken, Task> prefetchDelay, CancellationToken cancellationToken)
 	{
 		if (!transaction.CanBeSpeedUpUsingCpfp())
 		{
@@ -143,7 +151,9 @@ public static class CpfpInfoUpdater
 
 		try
 		{
-			await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
+			await prefetchDelay(delay, cancellationToken).ConfigureAwait(false);
+			cancellationToken.ThrowIfCancellationRequested();
+			if (!transaction.CanBeSpeedUpUsingCpfp()) { return; }
 			await cpfpGetter(transaction).ConfigureAwait(false);
 		}
 		catch (OperationCanceledException)
@@ -155,12 +165,18 @@ public static class CpfpInfoUpdater
 		}
 	}
 
-	private static async Task<Result<CpfpInfo, string>> GetCpfpInfoAsync(SmartTransaction tx, IHttpClientFactory httpClientFactory, Uri uri, ConcurrentDictionary<uint256, CachedCpfpInfo> cache, ConcurrentDictionary<uint256, Lazy<Task<Result<CpfpInfo, string>>>> pending, CancellationToken cancellationToken)
+	private static async Task<Result<CpfpInfo, string>> GetCpfpInfoAsync(SmartTransaction tx, IHttpClientFactory httpClientFactory, Uri uri,
+		ConcurrentDictionary<uint256, CachedCpfpInfo> cache, ConcurrentDictionary<uint256, Lazy<Task<Result<CpfpInfo, string>>>> pending,
+		ConcurrentDictionary<uint256, (DateTimeOffset RetryAt, string Error)> failures, TimeProvider timeProvider, CancellationToken cancellationToken)
 	{
 		var txid = tx.GetHash();
 		if (cache.TryGetValue(txid, out var cachedCpfpInfo))
 		{
 			return cachedCpfpInfo.CpfpInfo;
+		}
+		if (failures.TryGetValue(txid, out var failure) && failure.RetryAt > timeProvider.GetUtcNow())
+		{
+			return Result<CpfpInfo, string>.Fail(failure.Error);
 		}
 
 		var request = pending.GetOrAdd(txid, _ => new Lazy<Task<Result<CpfpInfo, string>>>(FetchAsync));
@@ -174,9 +190,18 @@ public static class CpfpInfoUpdater
 			{
 				var cpfpInfo = await GetCpfpInfoAsync(txid, httpClientFactory, uri, cancellationToken).ConfigureAwait(false);
 				cache.TryAdd(txid, new CachedCpfpInfo(cpfpInfo, tx));
+				failures.TryRemove(txid, out _);
 				return cpfpInfo;
 			}
-			catch (Exception e) { return Result<CpfpInfo, string>.Fail(e.Message); }
+			catch (OperationCanceledException e) when (cancellationToken.IsCancellationRequested)
+			{
+				return Result<CpfpInfo, string>.Fail(e.Message);
+			}
+			catch (Exception e)
+			{
+				failures[txid] = (timeProvider.GetUtcNow() + TimeSpan.FromSeconds(30), e.Message);
+				return Result<CpfpInfo, string>.Fail(e.Message);
+			}
 		}
 	}
 

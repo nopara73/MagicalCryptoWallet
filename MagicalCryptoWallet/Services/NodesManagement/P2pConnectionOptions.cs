@@ -7,5 +7,6 @@ public record P2pConnectionOptions
 	public int MinimumCompactFilterNodes { get; init; } = 5;
 	public bool RelayTransactions { get; init; } = true;
 	public bool AllowBlockDownloads { get; init; } = true;
+	public bool AllowTransactionBroadcasts { get; init; } = true;
 	public string? PeerCacheFile { get; init; }
 }

@@ -1,0 +1,16 @@
+{
+  "EncryptedSecret": "SYNTHETIC-NOT-A-KEY",
+  "ChainCode": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+  "MasterFingerprint": "00000000",
+  "ExtPubKey": "SYNTHETIC-NOT-AN-XPUB",
+  "TaprootExtPubKey": null,
+  "MinGapLimit": 21,
+  "AccountKeyPath": "84'/0'/0'",
+  "TaprootAccountKeyPath": "86'/0'/0'",
+  "BlockchainState": {"Network": "Main", "Height": "9007199254740993", "BirthHeight": 1},
+  "PlebStopThreshold": "0.00000001",
+  "DefaultReceiveScriptType": "Segwit",
+  "ChangeScriptPubKeyType": "Random",
+  "CoinjoinCosts": [{"TransactionId": "0000000000000000000000000000000000000000000000000000000000000000", "MiningFee": 1, "WastedDust": 0, "PaymentsTotal": 2100000000000000}],
+  "HdPubKeys": [{"PubKey": "SYNTHETIC-NOT-A-PUBKEY", "FullKeyPath": "84'/0'/0'/0/1", "Label": "Test, 中, e\u0301", "KeyState": 0}]
+}

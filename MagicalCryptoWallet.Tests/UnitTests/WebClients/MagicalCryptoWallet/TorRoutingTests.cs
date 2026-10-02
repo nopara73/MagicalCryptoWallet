@@ -48,7 +48,7 @@ public class TorRoutingTests
 		var server = RespondAsync(listener, cancellation.Token);
 		var factory = new OnionHttpClientFactory(new Uri("socks5://127.0.0.1:1"),
 			new HttpClientHandlerConfiguration { MaxAttempts = 1 });
-		using var client = factory.CreateClient("local-payjoin");
+		using var client = factory.CreateClient("local-service");
 		using var response = await client.GetAsync($"http://127.0.0.1:{endpoint.Port}/", cancellation.Token);
 		Assert.Equal("synthetic", await response.Content.ReadAsStringAsync(cancellation.Token));
 		await server;

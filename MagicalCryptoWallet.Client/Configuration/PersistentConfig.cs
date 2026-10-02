@@ -30,8 +30,7 @@ public record PersistentConfig(
 	decimal MaxCoinJoinMiningFeeRate,
 	int MaxDaysInMempool,
 	ValueList<string> ExperimentalFeatures,
-	int ConfigVersion,
-	bool UseTorForPublicData = false
+	int ConfigVersion
 	) : IPersistentConfig
 {
 	public string GetConfigFileName() =>

@@ -1,0 +1,112 @@
+{
+  "schema_version": 1,
+  "sources": [
+    {
+      "file": "ripemd160.html",
+      "url": "https://homes.esat.kuleuven.be/~bosselae/ripemd160.html",
+      "bytes": 38189,
+      "sha256": "2c93056656682146eedb9cc4848f22b100f5b078226c990c02081db9b972f2d7"
+    },
+    {
+      "file": "rmd160-spec.txt",
+      "url": "https://homes.esat.kuleuven.be/~bosselae/ripemd/rmd160.txt",
+      "bytes": 3900,
+      "sha256": "9bff59a94e76fd78dfc4d222685bf388d43630f60ef0b5c3275e9c6422a38634"
+    },
+    {
+      "file": "rfc4231.txt",
+      "url": "https://www.rfc-editor.org/rfc/rfc4231.txt",
+      "bytes": 17725,
+      "sha256": "72178527ce93500e730bc8eb182b857e583096d652b64ece0879c52ba1df973b"
+    },
+    {
+      "file": "rfc8018.txt",
+      "url": "https://www.rfc-editor.org/rfc/rfc8018.txt",
+      "bytes": 80887,
+      "sha256": "cf96b02e68216f618ea33b20b49d476edba9d70f2333597ec516629d22971cda"
+    },
+    {
+      "file": "rfc7914.txt",
+      "url": "https://www.rfc-editor.org/rfc/rfc7914.txt",
+      "bytes": 29222,
+      "sha256": "df55932f8b6a5d271f36a634d91a25903724e189ba6c120bf7257cd47f10b197"
+    },
+    {
+      "file": "fips180-4.pdf",
+      "url": "https://csrc.nist.gov/files/pubs/fips/180-4/final/docs/fips180-4.pdf",
+      "bytes": 1309119,
+      "sha256": "5b88d70308c95106e713221c7085cbb8e89dc2eb6214d75c885af2f07ffc6b8a"
+    },
+    {
+      "file": "shabytetestvectors.zip",
+      "url": "https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/shs/shabytetestvectors.zip",
+      "bytes": 4909729,
+      "sha256": "929ef80b7b3418aca026643f6f248815913b60e01741a44bba9e118067f4c9b8"
+    },
+    {
+      "file": "trezor-commit.json",
+      "url": "https://api.github.com/repos/trezor/python-mnemonic/commits/master",
+      "bytes": 83240,
+      "sha256": "22063203ec0b4ac3b94236f733291590c8ada3947a3c19a3d8620d92586bf1e0"
+    },
+    {
+      "file": "trezor-vectors.json",
+      "url": "https://raw.githubusercontent.com/trezor/python-mnemonic/b57a5ad77a981e743f4167ab2f7927a55c1e82a8/vectors.json",
+      "bytes": 152400,
+      "sha256": "fa3b937b7cff9c9b8ecd3aa011faeb8d6dd67993174b72326e83f4de8fdb30f8"
+    },
+    {
+      "file": "trezor-LICENSE",
+      "url": "https://raw.githubusercontent.com/trezor/python-mnemonic/b57a5ad77a981e743f4167ab2f7927a55c1e82a8/LICENSE",
+      "bytes": 1084,
+      "sha256": "d5e3c7c62a84e80073201e2f6e5130e9e6804fa05f8ac4f8b26a13c7d3969697"
+    },
+    {
+      "file": "bip0039.mediawiki",
+      "url": "https://raw.githubusercontent.com/bitcoin/bips/master/bip-0039.mediawiki",
+      "bytes": 6842,
+      "sha256": "afcbcbed36fe9eb734bd607398a8c124683ded2a75c3830e1b16c47b043a9134"
+    },
+    {
+      "file": "slip0021.md",
+      "url": "https://raw.githubusercontent.com/satoshilabs/slips/master/slip-0021.md",
+      "bytes": 7480,
+      "sha256": "81e87f483ac46d146c7e42b2837bc5f4dd9c3e47282a3e295ad13c3330b708f4"
+    },
+    {
+      "file": "SHA512ShortMsg.rsp",
+      "zip_member": "shabytetestvectors/SHA512ShortMsg.rsp",
+      "sha256": "e53a36c03609e5a3e3cc4b6e117a499db7864c23ec825c6cec99503a45f40764",
+      "bytes": 36800
+    },
+    {
+      "file": "SHA512LongMsg.rsp",
+      "zip_member": "shabytetestvectors/SHA512LongMsg.rsp",
+      "sha256": "b1f3f05d5c209777954d49521d7ea1349447c36a0c52849e044bc397a27dd410",
+      "bytes": 1687845
+    }
+  ],
+  "trezor_commit": "b57a5ad77a981e743f4167ab2f7927a55c1e82a8",
+  "counts": {
+    "ripemd160": 8,
+    "SHA512ShortMsg.rsp": 129,
+    "SHA512LongMsg.rsp": 128,
+    "rfc4231": 14,
+    "rfc7914": 2,
+    "bip39_english": 24,
+    "bip39_chinese_simplified": 24,
+    "bip39_chinese_traditional": 24,
+    "bip39_czech": 24,
+    "bip39_french": 24,
+    "bip39_italian": 24,
+    "bip39_japanese": 24,
+    "bip39_korean": 24,
+    "bip39_portuguese": 24,
+    "bip39_spanish": 24,
+    "bip39_russian": 24,
+    "bip39_turkish": 24
+  },
+  "vectors": 569,
+  "fixture_sha256": "a62b8e37c19b94041b8e4c2f09a93cd632b09d7142ae7967b815c02060e8a7e9",
+  "scope": "Published vector facts only; independent primitives are not vendored"
+}

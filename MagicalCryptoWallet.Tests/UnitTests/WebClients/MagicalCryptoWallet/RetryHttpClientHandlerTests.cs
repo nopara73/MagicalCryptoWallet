@@ -1,9 +1,13 @@
 using System.Diagnostics;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Net.Mime;
 using System.Text;
 using System.Threading.Tasks;
+using System.Threading;
+using MagicalCryptoWallet.Tests.UnitTests.Mocks;
 using MagicalCryptoWallet.WebClients.MagicalCryptoWallet;
 using Xunit;
 
@@ -11,6 +15,98 @@ namespace MagicalCryptoWallet.Tests.UnitTests.WebClients.MagicalCryptoWallet;
 
 public class RetryHttpClientHandlerTests
 {
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public async Task RetryAfterIsRespectedAndFailedResponseIsDisposedBeforeWaitingAsync(bool absolute)
+	{
+		var clock = new ManualTimeProvider();
+		using var content = new TrackingContent();
+		var calls = 0;
+		var delays = new List<TimeSpan>();
+		using var handler = new RetryHttpClientHandler("retry-after", _ => { }, HttpClientHandlerConfiguration.Default,
+			(_, _, _) =>
+			{
+				var response = new HttpResponseMessage(++calls == 1 ? HttpStatusCode.TooManyRequests : HttpStatusCode.OK);
+				if (calls == 1)
+				{
+					response.Content = content;
+					response.Headers.RetryAfter = absolute
+						? new RetryConditionHeaderValue(clock.GetUtcNow().AddSeconds(9))
+						: new RetryConditionHeaderValue(TimeSpan.FromSeconds(9));
+				}
+				return Task.FromResult(response);
+			}, (delay, _) =>
+			{
+				Assert.True(content.IsDisposed);
+				delays.Add(delay);
+				return Task.CompletedTask;
+			}, clock);
+		using var client = new HttpClient(handler);
+		using var response = await client.GetAsync("http://synthetic.invalid/");
+		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+		Assert.Equal(2, calls);
+		Assert.Equal(TimeSpan.FromSeconds(9), Assert.Single(delays));
+	}
+
+	[Fact]
+	public async Task RetryBudgetBacksOffWithoutSleepingAfterFinalAttemptAsync()
+	{
+		var calls = 0;
+		var delays = new List<TimeSpan>();
+		var contents = new List<TrackingContent>();
+		using var handler = new RetryHttpClientHandler("budget", _ => { }, HttpClientHandlerConfiguration.Default,
+			(_, _, _) =>
+			{
+				calls++;
+				var content = new TrackingContent();
+				contents.Add(content);
+				return Task.FromResult(new HttpResponseMessage(HttpStatusCode.ServiceUnavailable) { Content = content });
+			}, (delay, _) => { delays.Add(delay); return Task.CompletedTask; });
+		using var client = new HttpClient(handler);
+		await Assert.ThrowsAsync<HttpRequestException>(() => client.GetAsync("http://synthetic.invalid/"));
+		Assert.Equal(3, calls);
+		Assert.Equal(new[] { TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(4) }, delays);
+		Assert.All(contents, c => Assert.True(c.IsDisposed));
+	}
+
+	[Fact]
+	public async Task CancellationDuringServerRequestedWaitStopsRetriesAsync()
+	{
+		var waiting = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+		var calls = 0;
+		using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+		using var handler = new RetryHttpClientHandler("cancel", _ => { }, HttpClientHandlerConfiguration.Default,
+			(_, _, _) =>
+			{
+				calls++;
+				var response = new HttpResponseMessage(HttpStatusCode.TooManyRequests);
+				response.Headers.RetryAfter = new RetryConditionHeaderValue(TimeSpan.FromHours(1));
+				return Task.FromResult(response);
+			}, async (delay, token) =>
+			{
+				Assert.Equal(TimeSpan.FromHours(1), delay);
+				waiting.TrySetResult();
+				await Task.Delay(Timeout.InfiniteTimeSpan, token);
+			});
+		using var client = new HttpClient(handler);
+		var request = client.GetAsync("http://synthetic.invalid/", cancellation.Token);
+		await waiting.Task.WaitAsync(cancellation.Token);
+		await cancellation.CancelAsync();
+		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => request);
+		Assert.Equal(1, calls);
+	}
+
+	private sealed class TrackingContent() : ByteArrayContent([])
+	{
+		public bool IsDisposed { get; private set; }
+		protected override void Dispose(bool disposing)
+		{
+			IsDisposed = true;
+			base.Dispose(disposing);
+		}
+	}
+
 	// Trivial test to make sure that the mock handler works as expected.
 	[Fact]
 	public async Task SendAsync_OkTestAsync()

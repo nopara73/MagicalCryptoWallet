@@ -1,0 +1,21 @@
+{
+  "CoordinatorUri": "https://coordinator.example.invalid/",
+  "UseTor": true,
+  "TerminateTorOnExit": false,
+  "TorBridges": ["synthetic bridge text"],
+  "DownloadNewVersion": false,
+  "JsonRpcServerEnabled": false,
+  "JsonRpcUser": "synthetic-test-user",
+  "JsonRpcPassword": "synthetic-unused-value",
+  "JsonRpcServerPrefixes": ["http://127.0.0.1:37129/"],
+  "DustThreshold": "0.00005",
+  "EnableGpu": false,
+  "CoordinatorIdentifier": "Synthetic Unicode 中 𝄞",
+  "ExchangeRateProvider": "MempoolSpace",
+  "FeeRateEstimationProvider": "BlockstreamInfo",
+  "ExternalTransactionBroadcaster": "MempoolSpace",
+  "MaxCoinJoinMiningFeeRate": 123.4500,
+  "MaxDaysInMempool": 7,
+  "ExperimentalFeatures": [],
+  "ConfigVersion": 4
+}

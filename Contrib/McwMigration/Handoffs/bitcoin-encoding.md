@@ -8,7 +8,7 @@ package references have been changed by this worker.
 Worker: bitcoin-encoding, Codex thread 01a0fc27-21f9-7901-abff-f8a7acdaacdf.
 Implementation commit: 6365f3244d23b801c0bb36581967caad8aae968e.
 Source SHA-256: 4e59e9210317f6c75f1196d22892202b3c72f62adcf9d05be88c4c3c66925ec0 (canonical LF Git blob).
-Caller inventory snapshot: 6365f3244d23b801c0bb36581967caad8aae968e.
+Caller inventory snapshot: 2f4867c188b49d61d2eded702975fca111d3bbe4.
 
 ## Owned files
 
@@ -215,8 +215,8 @@ directly; no second Cargo package or shipping executable is required.
 ## Retained callers and dependencies
 
 NBitcoin 10.0.13 and NBitcoin.Secp256k1 3.1.6 remain. The complete mechanical
-snapshot is mcw/tests/bitcoin_encoding_fixtures/managed_callers.tsv: 495 direct
-NBitcoin source references in 384 files, 116 address/data symbols in 42 files,
+snapshot is mcw/tests/bitcoin_encoding_fixtures/managed_callers.tsv: 493 direct
+NBitcoin source references in 382 files, 116 address/data symbols in 42 files,
 6 package references/version entries in 5 files, and 56 lock-file references in
 14 files. Global imports, including WabiSabi/GlobalUsings.cs, are recorded; the
 list does not imply implicitly imported types elsewhere have been removed.

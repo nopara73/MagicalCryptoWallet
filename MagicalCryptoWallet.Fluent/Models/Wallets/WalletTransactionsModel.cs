@@ -13,7 +13,6 @@ using MagicalCryptoWallet.Blockchain.TransactionProcessing;
 using MagicalCryptoWallet.Blockchain.Transactions;
 using MagicalCryptoWallet.Blockchain.Transactions.Summary;
 using MagicalCryptoWallet.Fluent.Extensions;
-using MagicalCryptoWallet.Fluent.Helpers;
 using MagicalCryptoWallet.Services;
 using MagicalCryptoWallet.Wallets;
 
@@ -78,12 +77,6 @@ public class WalletTransactionsModel : ReactiveObject, IDisposable
 			.FirstOrDefault(x => x.Id == transactionId);
 
 		return transaction is not null;
-	}
-
-	public async Task<SmartTransaction> LoadFromFileAsync(string path)
-	{
-		var txn = await TransactionHelpers.ParseTransactionAsync(path, _wallet.Network);
-		return txn;
 	}
 
 	public async Task<SpeedupTransaction> CreateSpeedUpTransactionAsync(RegularTransactionModel transaction, CancellationToken cancellationToken)
