@@ -1,0 +1,14 @@
+{
+  "facts": "Python stdlib hashlib/hmac independent development reference",
+  "openssl": "OpenSSL 3.5.7 9 Jun 2026",
+  "cases": 441,
+  "per_operation": 147,
+  "fixture_sha256": "853c79f5c996e13175b1ebf855902ca2f71d9ba831b3fc2bfd055791bfdf16cf",
+  "maximum_request_bytes": 1048560,
+  "maximum_zero_payload_results": {
+    "ownership": "a9e1560a9ee06dec22d755da9725801e601f006b12be4522f2a2909dfe99c2d7",
+    "seed": "6b5629c1c4ed5442747c97d0d7c64074439d997242677aa7a89ad553eefa2a016e6995174813e95aa89d274905bed755ecd6c7bd59fcfddf607ca1de180882a0",
+    "child": "163af2bcb971545e25b44dc70ba556b0676953968c575aaa818cbb34fc554fdcdf7bde878d910f7bf0e80c0eee52bf55045289222abfb948995635a98de82a79"
+  },
+  "production_reference_dependency": false
+}
