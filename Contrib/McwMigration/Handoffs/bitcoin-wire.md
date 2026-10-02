@@ -1,9 +1,10 @@
 # Bitcoin transaction wire codec handoff
 
-Status: ready for integration, 2026-10-02 (Asia/Singapore). This is a verified
-portable component of the future **one mcw executable**. Production callers,
-bridge operations, native packaging, and dependency removal are not yet wired.
-This document does not claim a production wallet release or NBitcoin removal.
+Status: standalone codec ready, 2026-10-02 (Asia/Singapore). The published,
+verified component is an internal dependency of the **one mcw executable**.
+Its required production consumer is the existing PSBT metadata migration.
+The PSBT factory cutover and shared host routing remain pending publication
+and integration verification. NBitcoin remains retained.
 
 Worker: `bitcoin-wire`, Codex thread `01a0fc2a-71e2-7f13-bff0-a34eee3e44e7`.
 Integrator: `01a0fbf5-89e2-7e90-9b98-50e3ff9bb5bc` ("List all dependencies").
@@ -40,8 +41,8 @@ were not changed.
 
 ## Portable API
 
-The integrator declares `bitcoin_encoding` and `bitcoin_wire` modules in the
-existing mcw crate. There is no second Cargo package or shipping executable.
+The published mcw crate declares `bitcoin_encoding` and `bitcoin_wire` modules.
+There is no second Cargo package or shipping executable.
 `bitcoin_wire` forbids unsafe code and has no C#, Avalonia, IPC, OS-handle, native
 library, or third-party crate dependency.
 
@@ -88,14 +89,84 @@ component test, not production CRT-free or five-target release evidence. The log
 and pinned source/dependency evidence are in the worker checkout's ignored
 `.artifacts/bitcoin-wire/host-cargo-test.log` and `host-verification.json`.
 
-The coordinator's current registry classifies this worker as a completed
-component awaiting a bounded production-caller handoff. No transaction caller
-leaf/adapter ownership is assigned in its active bounded workstreams. The
-original assignment reserves shared bridge/host/managed-adapter edits for the QR
-integrator, so this follow-up changes only this owned handoff and evidence. It
-does not claim that a production transaction-format call has been retired.
-Existing task/creation-deadline policy is preserved; no new task, subagent, fork,
-replacement dependency assignment, or removed UI was introduced.
+### Required internal production use through PSBT
+
+The existing PSBT metadata assignment provides the required production caller.
+The wire module stays a pure internal codec; a separate transaction parser CLI,
+managed wire adapter, or operation in `0x0500-0x05FF` is not required. The PSBT
+owner confirmed the following exact chain and compatible APIs, with no requested
+wire source or API changes:
+
+```text
+TransactionFactory.BuildTransaction
+  -> MagicalCryptoWallet/Mcw/Psbt/McwPsbtMetadata.cs: Enrich
+  -> IMcwApplicationServices.RequestAsync
+  -> mcw/src/app.rs dispatch (PSBT owner's prepared host patch)
+  -> psbt_metadata_service::Transfers / handle (0x0600-0x0606)
+  -> psbt_metadata::{inspect,enrich} and psbt::Psbt
+  -> bitcoin_wire
+  -> bitcoin_encoding::double_sha256 (transaction IDs)
+```
+
+The caller replacement removes `AddKeyPaths`, `AddKeyPath`, and `AddPrevTxs`
+metadata work from `NBitcoinExtensions.cs`; the PSBT owner owns those edits,
+the managed leaf, metadata domain/service, and verification. The QR integrator
+owns shared host routing. This wire follow-up changes only this handoff and
+ignored evidence. Construction, signing, and unrelated callers retain their
+existing owners.
+
+| Internal consumer | Wire API and compatibility requirement |
+| --- | --- |
+| Published `mcw/src/psbt.rs` unsigned global transaction | `Transaction::decode_legacy`; unsigned fields require empty scriptSig and witness. |
+| Published PSBT `NON_WITNESS_UTXO` | `Transaction::decode`, exact witness-aware parent bytes. |
+| Published PSBT `WITNESS_UTXO` / `FINAL_SCRIPTWITNESS` | `decode_output` / `decode_witness`, exact standalone containers. |
+| Metadata `inspect` / `enrich` unsigned v0/v2 transaction | `Transaction::decode_legacy(packet.unsigned_transaction(), &Limits)`, including reconstructed v2 bytes. |
+| Metadata previous-parent validation and effective-output lookup | `Transaction::decode` and `txid(&Limits).0`; compare the raw 32-byte digest with the input outpoint, never its reversed display text. |
+| Metadata input/output lookup | `decode_output` and the published `OutPoint`, `TxIn`, `TxOut`, and `Transaction` fields. |
+
+`psbt.rs` narrows wire byte/payload/script/item limits to its packet value and
+packet byte limits, and input/output counts to its bounded map count. Metadata
+uses the existing default wire limits. The metadata transport uses bounded
+64 KiB chunks under the existing frame ceiling; it does not change the wire
+codec or introduce a wire transport. PSBT retains its own CompactSize writer.
+
+Status evidence at the read-only PSBT checkout snapshot
+`e58c0bc5a74d4072d5bc7eacd98921328f02c339`:
+
+- Published PSBT codec implementation:
+  `211afbb71426e31d9ebc3a088674abe020160e5f`. Its existing reference evidence
+  includes 94 BIP174/BIP370 examples and 47 retained NBitcoin exports using the
+  actual wire and encoding modules.
+- The factory replacement, managed adapter, metadata domain/service, and
+  `psbt-metadata-host.patch` were local/unpublished. The shared host patch was
+  prepared for QR incorporation. Production internal execution is pending;
+  source presence and a proposed patch do not establish it.
+- The PSBT owner's saved debug snapshot
+  `.artifacts/mcw-psbt/.artifacts/psbt-metadata-validation/20261002-204142-575-3b142ecf/evidence.json`
+  reports 12 passing tests, formatting and Clippy with warnings denied. Its
+  metadata source SHA256 is
+  `13ac591eaa72297b0de8192d7f0be1baad0bfd22412b9d8c899a766aec756085`;
+  service SHA256 is
+  `2d3c69ad00b64040cdf0409ccae33935afe4bbc9de646ac50d0c88499161930f`.
+  The saved test log was checked. The owner confirms coverage of 14 independent
+  NBitcoin metadata cases, including a complete parent above 1 MiB transferred
+  in 64 KiB chunks. Managed/actual-host completion and publication remain with
+  the PSBT/QR owners.
+
+The read-only source snapshot at 20:49 Singapore time is recorded in the wire
+checkout's ignored `.artifacts/bitcoin-wire/psbt-chain-compatibility.json`.
+Metadata domain/service hashes match the owner's saved test inputs; the wire
+source matches this handoff's final LF source hash. Source copies preserve the
+exact caller/adapter/patch state examined. An additional actual-package PSBT
+test run was deferred because both shared build slots were occupied; existing
+published PSBT conformance and the checked owner snapshot remain the
+compatibility evidence. No production integration result is inferred from them.
+
+These are separate milestones: the standalone wire codec is ready; required
+internal production use is through PSBT and remains pending final caller/host
+verification; whole NBitcoin package removal is incomplete. No extra caller
+assignment, task, agent, dependency scope, or removed UI is needed for this
+handoff.
 
 Data model:
 
@@ -314,37 +385,26 @@ rg -n 'WitScript|Outpoint\(|SmartTransactionJsonConverter' MagicalCryptoWallet M
 rg -l '\busing NBitcoin|\bNBitcoin\.' MagicalCryptoWallet MagicalCryptoWallet.Client MagicalCryptoWallet.Fluent -g '*.cs'
 ```
 
-## Bridge reservation and integration acceptance
+## Internal production integration and package removal
 
-Reserved proposal: **`0x0500–0x05FF`**, implementation/wiring exclusively owned by
-the QR integrator. Suggested operations: exact structural decode/roundtrip,
-stripped serialization, txid/wtxid plus sizes, and exact TxOut/scriptWitness or
-CompactSize handling. The domain module itself knows nothing about bridge frames
-or managed object formats. Bridge layout/error mapping must follow the existing
-mcw host contract; expose limits without leaking native handles into this module.
+The historical reservation **`0x0500-0x05FF`** remains unused. This pure codec
+does not require a standalone bridge operation. The existing PSBT metadata
+operations carry the production caller path; their adapter/service/host edits
+remain with the PSBT and QR owners.
 
-Before integration/removal acceptance:
+For that integration, preserve explicit legacy decoding of unsigned fields,
+exact witness-aware parent decoding, raw outpoint digest order, and standalone
+output/witness containers. Verify the completed factory-to-host-to-metadata
+chain using synthetic packets before reporting production use. Retain codec
+bounds and existing signing, consensus, fee, script, and wallet policy gates.
 
-1. Incorporate the implementation commit and the final verified first-party
-   encoding module; declare modules in the existing mcw crate only. Rerun current
-   combined conformance and the PSBT worker's real-source suite.
-2. Keep legacy-vs-witness mode explicit at every boundary. PSBT unsigned fields
-   use legacy mode; peer/broadcast/raw-import/storage bytes use the appropriate
-   witness-aware exact mode. Do not accept trailing bytes or unknown flags.
-3. Preserve signed values, unknown scripts/witness, sequence/version bits,
-   locktime, raw BLOB/outpoint digest order, and reversed transaction-id display.
-   The wire codec must not replace signing, consensus, fees, script analysis, or
-   wallet policy gates.
-4. Route and verify every applicable retained caller above, including persistence,
-   imports, broadcasting, hashes, RPC serialization and witness containers. Use
-   synthetic fixtures/data for integration and never migrate live wallet state
-   merely to demonstrate the codec.
-5. Run current-source native-runtime tests/builds for Windows x64, Linux x64/ARM64,
-   and macOS x64/ARM64. Audit final Cargo tree/lock and binary imports/linkage;
-   static test CRT evidence is not acceptable production evidence.
-6. Keep NBitcoin marked retained until every unrelated caller is independently
-   migrated by its owner. Update the shared migration ledger only as the
-   integrator; do not interpret this ready handoff as completed package removal.
+The retained caller inventory above records remaining NBitcoin responsibility;
+it is not an additional assignment for this completed wire worker. Package
+removal requires those callers and unrelated dependencies to be independently
+migrated by their owners. Native-runtime linkage and current-source builds/tests
+for Windows x64, Linux x64/ARM64, and macOS x64/ARM64 remain integrator acceptance
+work. Static test CRT evidence does not establish those milestones. The shared
+migration ledger stays integrator-owned.
 
 The ignored machine handoff is coordination evidence, not an integration request.
 The coordinator owns dispatch to the QR integrator when that chat is idle.
