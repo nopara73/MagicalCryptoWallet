@@ -6649,16 +6649,10 @@
   ],
   "bundled_files": [
     {
-      "path": "MagicalCryptoWallet/BundledApps/Binaries/.gitignore",
-      "bytes": 8,
-      "sha256": "646aab01488f65b2413368436f341db36a9ba0dcbe35c2fdda5a2d8c8442d204",
-      "role": "application",
-      "status": "retained"
-    },
-    {
       "path": "MagicalCryptoWallet/BundledApps/Binaries/README.md",
       "bytes": 691,
       "sha256": "a57b77b8a55f58ba50a1dd9561b6246858e933e2a6dda7ed460255ccfbe5ce4e",
+      "hash_scope": "file bytes",
       "role": "application",
       "status": "retained"
     },
@@ -6666,6 +6660,7 @@
       "path": "MagicalCryptoWallet/BundledApps/Binaries/linux-arm64/Tor/libcrypto.so.3",
       "bytes": 5778424,
       "sha256": "863cd72e532412f853542d8024464acd092fe4d2a3f7477e9a1a8bc16bb81462",
+      "hash_scope": "file bytes",
       "role": "application",
       "status": "retained"
     },
@@ -6673,6 +6668,7 @@
       "path": "MagicalCryptoWallet/BundledApps/Binaries/linux-arm64/Tor/libevent-2.1.so.7",
       "bytes": 395592,
       "sha256": "4d52e92d52405dc1dcf69c4ceda69ecd8907acbfa7721c3dcc263fcd1604253d",
+      "hash_scope": "file bytes",
       "role": "application",
       "status": "retained"
     },
@@ -6680,6 +6676,7 @@
       "path": "MagicalCryptoWallet/BundledApps/Binaries/linux-arm64/Tor/libssl.so.3",
       "bytes": 1064696,
       "sha256": "fb1ca43e12019764bbedfe85d19a3c43492180bc86c43ee2a1d700c13cc62523",
+      "hash_scope": "file bytes",
       "role": "application",
       "status": "retained"
     },
@@ -6687,6 +6684,7 @@
       "path": "MagicalCryptoWallet/BundledApps/Binaries/linux-arm64/Tor/libstdc++/libstdc++.so.6",
       "bytes": 1911616,
       "sha256": "5361f216fb733d94ece22c9e15ed8d408a7dbf415b7818864cea5c002f7637d4",
+      "hash_scope": "file bytes",
       "role": "application",
       "status": "retained"
     },
@@ -6694,20 +6692,15 @@
       "path": "MagicalCryptoWallet/BundledApps/Binaries/linux-arm64/Tor/tor",
       "bytes": 3785640,
       "sha256": "6a7bd16c5cf6cc84f690e1e3c8d360fecc1add92dbfc1a9be1713ab533bcc394",
-      "role": "application",
-      "status": "retained"
-    },
-    {
-      "path": "MagicalCryptoWallet/BundledApps/Binaries/linux-x64/Tor/.gitattributes",
-      "bytes": 12,
-      "sha256": "52ed1906f9f755854e3a5d860f0644200fcf3eddea43ac77ea19b771d09372de",
+      "hash_scope": "file bytes",
       "role": "application",
       "status": "retained"
     },
     {
       "path": "MagicalCryptoWallet/BundledApps/Binaries/linux-x64/Tor/LICENSE",
-      "bytes": 20040,
-      "sha256": "fa14c36ee65b62accc19e819455a2c1639d1ccb68cc2120273cf5382ceda8638",
+      "bytes": 19651,
+      "sha256": "47b54ed17e8fdcab3c44729a1789a09b208f9a63a845a7e50def9df729eebad0",
+      "hash_scope": "UTF-8 text with LF line endings",
       "role": "application",
       "status": "retained"
     },
@@ -6715,6 +6708,7 @@
       "path": "MagicalCryptoWallet/BundledApps/Binaries/linux-x64/Tor/libcrypto.so.3",
       "bytes": 5476656,
       "sha256": "fc9f029c1545534f9ccdb20a4ed338a5956ee2ce67a8af568706792427cffc5a",
+      "hash_scope": "file bytes",
       "role": "application",
       "status": "retained"
     },
@@ -6722,6 +6716,7 @@
       "path": "MagicalCryptoWallet/BundledApps/Binaries/linux-x64/Tor/libevent-2.1.so.7",
       "bytes": 342328,
       "sha256": "ac9c728b83f8ac5b814f2ee4458f90e71330e7f960bc0505ac089c3bfa0f74a4",
+      "hash_scope": "file bytes",
       "role": "application",
       "status": "retained"
     },
@@ -6729,6 +6724,7 @@
       "path": "MagicalCryptoWallet/BundledApps/Binaries/linux-x64/Tor/libssl.so.3",
       "bytes": 1048256,
       "sha256": "fe15605e04a0d1467ba4e4ab7aebe46259c61fe3009aff828f2e615570f1aa95",
+      "hash_scope": "file bytes",
       "role": "application",
       "status": "retained"
     },
@@ -6736,6 +6732,7 @@
       "path": "MagicalCryptoWallet/BundledApps/Binaries/linux-x64/Tor/libstdc++/libstdc++.so.6",
       "bytes": 1911264,
       "sha256": "d015803ac62c46cc12cb7573d712437e890a9959f9220f0162385e411a2c81d2",
+      "hash_scope": "file bytes",
       "role": "application",
       "status": "retained"
     },
@@ -6743,20 +6740,15 @@
       "path": "MagicalCryptoWallet/BundledApps/Binaries/linux-x64/Tor/tor",
       "bytes": 3594072,
       "sha256": "ff37b5be3c321db4be3ecb81f3ca8c822e64b3ededc60b6fd2f1ce8e626a8a07",
-      "role": "application",
-      "status": "retained"
-    },
-    {
-      "path": "MagicalCryptoWallet/BundledApps/Binaries/osx64/Tor/.gitattributes",
-      "bytes": 12,
-      "sha256": "52ed1906f9f755854e3a5d860f0644200fcf3eddea43ac77ea19b771d09372de",
+      "hash_scope": "file bytes",
       "role": "application",
       "status": "retained"
     },
     {
       "path": "MagicalCryptoWallet/BundledApps/Binaries/osx64/Tor/LICENSE",
-      "bytes": 20040,
-      "sha256": "fa14c36ee65b62accc19e819455a2c1639d1ccb68cc2120273cf5382ceda8638",
+      "bytes": 19651,
+      "sha256": "47b54ed17e8fdcab3c44729a1789a09b208f9a63a845a7e50def9df729eebad0",
+      "hash_scope": "UTF-8 text with LF line endings",
       "role": "application",
       "status": "retained"
     },
@@ -6764,6 +6756,7 @@
       "path": "MagicalCryptoWallet/BundledApps/Binaries/osx64/Tor/libevent-2.1.7.dylib",
       "bytes": 823056,
       "sha256": "2eb13c45dd9a7adf27b6cfdad8890719eec3064c2f3cb5e08c780533cca70db4",
+      "hash_scope": "file bytes",
       "role": "application",
       "status": "retained"
     },
@@ -6771,20 +6764,15 @@
       "path": "MagicalCryptoWallet/BundledApps/Binaries/osx64/Tor/tor",
       "bytes": 17600464,
       "sha256": "28f2cd62c1dc9ea89788c23a80a8a9105321f397961cf893e1057c20c5e53c7b",
-      "role": "application",
-      "status": "retained"
-    },
-    {
-      "path": "MagicalCryptoWallet/BundledApps/Binaries/win-x64/Tor/.gitattributes",
-      "bytes": 16,
-      "sha256": "fc616803e5268399a08cbe85af97beafe077c2a6a1ebe8f1b0f65066495b3615",
+      "hash_scope": "file bytes",
       "role": "application",
       "status": "retained"
     },
     {
       "path": "MagicalCryptoWallet/BundledApps/Binaries/win-x64/Tor/LICENSE",
-      "bytes": 20040,
-      "sha256": "fa14c36ee65b62accc19e819455a2c1639d1ccb68cc2120273cf5382ceda8638",
+      "bytes": 19651,
+      "sha256": "47b54ed17e8fdcab3c44729a1789a09b208f9a63a845a7e50def9df729eebad0",
+      "hash_scope": "UTF-8 text with LF line endings",
       "role": "application",
       "status": "retained"
     },
@@ -6792,20 +6780,15 @@
       "path": "MagicalCryptoWallet/BundledApps/Binaries/win-x64/Tor/tor.exe",
       "bytes": 10210816,
       "sha256": "af7d71ba304eaaa24b5c824cd869d8bdfb554ff4d55e694f9037f979e7600362",
+      "hash_scope": "file bytes",
       "role": "application",
-      "status": "retained"
-    },
-    {
-      "path": "MagicalCryptoWallet.IntegrationTests/BundledApps/Binaries/.gitignore",
-      "bytes": 8,
-      "sha256": "646aab01488f65b2413368436f341db36a9ba0dcbe35c2fdda5a2d8c8442d204",
-      "role": "verification",
       "status": "retained"
     },
     {
       "path": "MagicalCryptoWallet.IntegrationTests/BundledApps/Binaries/linux-arm64/bitcoind",
       "bytes": 16451256,
       "sha256": "6f66822a44b4d4edd2a8ae1a11f63dd4db8d070e219c8eb54a3e2faa536409c2",
+      "hash_scope": "file bytes",
       "role": "verification",
       "status": "retained"
     },
@@ -6813,6 +6796,7 @@
       "path": "MagicalCryptoWallet.IntegrationTests/BundledApps/Binaries/linux-x64/bitcoind",
       "bytes": 17826248,
       "sha256": "dae69848ae9aaadcc3aa697d1c92b1283273a59c8d87b220b29ddc2813e25eb6",
+      "hash_scope": "file bytes",
       "role": "verification",
       "status": "retained"
     },
@@ -6820,6 +6804,7 @@
       "path": "MagicalCryptoWallet.IntegrationTests/BundledApps/Binaries/osx64/bitcoind",
       "bytes": 14112312,
       "sha256": "01dbf0e049cbd4775a16c2cabf57a0818557f0e7cac2f0d05991cab4fe5cd05c",
+      "hash_scope": "file bytes",
       "role": "verification",
       "status": "retained"
     },
@@ -6827,6 +6812,7 @@
       "path": "MagicalCryptoWallet.IntegrationTests/BundledApps/Binaries/win-x64/bitcoind.exe",
       "bytes": 16804344,
       "sha256": "665f3cbe3c5695d0eef734a42d5307cbff6d48f7a5fdcfbfc3c32dbdb23f0d05",
+      "hash_scope": "file bytes",
       "role": "verification",
       "status": "retained"
     }
@@ -6921,6 +6907,12 @@
       "path": "mcw/src/socks5.rs",
       "status": "implementation present; production caller integration pending",
       "handoff": "Contrib/McwMigration/Handoffs/socks5.md"
+    },
+    {
+      "name": "wallet_hash_service",
+      "path": "mcw/src/wallet_hash_service.rs",
+      "status": "implementation present; production caller integration pending",
+      "handoff": "Contrib/McwMigration/Handoffs/wallet-hmac.md"
     },
     {
       "name": "wallet_hashes",

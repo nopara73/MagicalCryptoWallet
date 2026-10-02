@@ -30,7 +30,8 @@ def inventory():
                          if path.parent.name!="platform"})
     rust_components=[]
     for name,path in sorted(rust_sources.items()):
-        handoff_name={"privacy_service":"privacy","script_service":"bitcoin-script"}.get(name,name.replace("_","-"))
+        handoff_name={"privacy_service":"privacy","script_service":"bitcoin-script",
+                      "wallet_hash_service":"wallet-hmac"}.get(name,name.replace("_","-"))
         handoff=ROOT/"Contrib/McwMigration/Handoffs"/(handoff_name+".md")
         rust_components.append({"name":name,"path":path.relative_to(ROOT).as_posix(),
             "status":"production callers migrated" if name=="qr" else "implementation present; production caller integration pending",
@@ -69,10 +70,18 @@ def inventory():
     bundles=[]
     for directory in ("MagicalCryptoWallet/BundledApps/Binaries","MagicalCryptoWallet.IntegrationTests/BundledApps/Binaries"):
         for path in sorted((ROOT/directory).rglob("*"),key=lambda path:path.relative_to(ROOT).as_posix()):
-            if path.is_file():
-                bundles.append({"path":path.relative_to(ROOT).as_posix(),"bytes":path.stat().st_size,
-                                "sha256":hashlib.sha256(path.read_bytes()).hexdigest(),"role":role(directory),
-                                "status":"retained"})
+            if path.is_file() and not path.name.startswith("."):
+                data=path.read_bytes()
+                scope="file bytes"
+                if path.name in {"LICENSE","LICENSE.md","NOTICE.md"}:
+                    # Git checks out text with platform-specific line endings.
+                    # Only notices are canonicalized; executable/library hashes
+                    # always describe their original, unmodified bytes.
+                    data=data.decode("utf-8").replace("\r\n","\n").encode("utf-8")
+                    scope="UTF-8 text with LF line endings"
+                bundles.append({"path":path.relative_to(ROOT).as_posix(),"bytes":len(data),
+                                "sha256":hashlib.sha256(data).hexdigest(),"hash_scope":scope,
+                                "role":role(directory),"status":"retained"})
     return {
         "schema":1,
         "application":"mcw",

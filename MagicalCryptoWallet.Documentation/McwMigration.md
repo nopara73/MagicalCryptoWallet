@@ -2,6 +2,8 @@
 
 The reproducible package/edge/role inventory is [dependencies.json](../Contrib/McwMigration/dependencies.json). Generate it with `python Contrib/Mcw/dependencies.py`; CI's `--check` rejects stale records. It includes every direct reference, transitive framework-lock package and version, central unused pins, copied source, native libraries, bundled executable hashes and libraries embedded in bundled programs. Mutable per-RID lock sections duplicate the framework graph; extracted package audits verify the target-specific payloads separately. Native/bundled versions are platform-specific; a Windows Tor version is not evidence for the other four packages.
 
+Executable and library hashes describe exact file bytes. License notices use UTF-8 with LF line endings so Git's platform-specific text checkout does not change their inventory; each record states its hash scope. Repository dotfiles are excluded from bundled runtime payloads.
+
 ## Current ownership
 
 | Responsibility | Preserved behavior and compatibility | Rust ownership/interface | Status and required evidence |
