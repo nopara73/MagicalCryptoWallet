@@ -5,6 +5,7 @@ import json
 import os
 from pathlib import Path
 import subprocess
+import xml.etree.ElementTree as ET
 import zipfile
 
 
@@ -74,7 +75,56 @@ def assemblies(directory):
                                    or path.name.endswith(('.deps.json', '.runtimeconfig.json')))}
 
 
+def restore_lock_inputs(root, output, names=None):
+    """Isolate no-RID verifier locks without changing any resolved framework graph."""
+    project = ET.Element('Project')
+    records = {}
+    for name in names if names is not None else source_files(root):
+        if not name.endswith('.csproj'):
+            continue
+        source = root / Path(name).parent / 'packages.lock.json'
+        if not source.is_file():
+            continue
+        original = json.loads(source.read_text(encoding='utf-8-sig'))
+        portable = dict(original)
+        portable['dependencies'] = {framework: value for framework, value in original['dependencies'].items()
+                                    if '/' not in framework}
+        assert portable['dependencies'], 'A framework lock graph is required'
+        relative = source.relative_to(root).as_posix()
+        destination = output / 'restore-locks' / relative
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_text(json.dumps(portable, indent=2) + '\n', encoding='utf-8')
+        group = ET.SubElement(project, 'PropertyGroup', {
+            'Condition': "'$(MSBuildProjectFullPath)' == '" + str((root / name).resolve()) + "'"})
+        ET.SubElement(group, 'NuGetLockFilePath').text = str(destination.resolve())
+        # Verifiers use framework-dependent apphosts for the current machine.
+        # The coordinator's declared release RID list must not select packaging
+        # graphs while it is referenced by this portable verification build.
+        ET.SubElement(group, 'RuntimeIdentifiers').text = ''
+        ET.SubElement(group, 'RuntimeIdentifier').text = ''
+        records[relative] = {'source_sha256': sha(source), 'isolated_sha256': sha(destination),
+                             'isolated_path': destination.relative_to(output).as_posix(),
+                             'framework_graph_unchanged': True,
+                             'runtime_sections_omitted': [framework for framework in original['dependencies'] if '/' in framework]}
+    target = output / 'restore-locks.targets'
+    ET.indent(project)
+    ET.ElementTree(project).write(target, encoding='unicode')
+    return {'runtime_profile': 'portable verification only', 'locks': records,
+            'target': target.relative_to(output).as_posix(), 'target_sha256': sha(target),
+            'arguments': ['/p:CustomAfterMicrosoftCommonTargets=' + str(target.resolve())]}
+
+
+def restore_inputs_stable(output, inputs):
+    return (sha(output / inputs['target']) == inputs['target_sha256'] and
+            all(sha(output / value['isolated_path']) == value['isolated_sha256'] for value in inputs['locks'].values()))
+
+
 def finish(root, output, record):
+    for key in ('restore_inputs', 'renderer_restore_inputs'):
+        if inputs := record.get(key):
+            record[key + '_stable'] = restore_inputs_stable(output, inputs)
+            if not record[key + '_stable']:
+                record.update(passed=False, real_host_verified=False, error='Isolated restore inputs changed')
     record['source_stable'] = (set(source_files(root)) == set(record['source_hashes']) and
                               all((root / name).is_file() and sha(root / name) == value
                                   for name, value in record['source_hashes'].items())
@@ -86,3 +136,5 @@ def finish(root, output, record):
     (output / 'verification.json').write_text(json.dumps(record, indent=2) + '\n', encoding='utf-8')
     if not record['source_stable']:
         raise RuntimeError('Source or build input changed during verification; see ' + str(output))
+    if any(record.get(key) is False for key in ('restore_inputs_stable', 'renderer_restore_inputs_stable')):
+        raise RuntimeError('Isolated restore input changed during verification; see ' + str(output))

@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 import subprocess
 import sys
-from evidence import assemblies, finish, snapshot
+from evidence import assemblies, finish, restore_lock_inputs, snapshot
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.stdout.reconfigure(encoding='utf-8', errors='replace')
@@ -79,9 +79,11 @@ def main():
         tool('markdown', 'Contrib/McwMigration/NativeUiBridgeProbe', [output / 'markdown.json', inputs])
         run('markdown-legacy', [sys.executable, 'mcw/tests/native_ui_markdown_legacy_compare.py', '--host', '--inputs', str(inputs), '--output', str(output)])
         render_build = output / 'renderer-build'
+        evidence['renderer_restore_inputs'] = restore_lock_inputs(ROOT, output, evidence['source_hashes'])
         run('markdown-render-build', ['dotnet', 'build', 'Contrib/McwMigration/NativeUiVerification', '-c', 'Release', '-m:1',
                                       '/p:UseSharedCompilation=false', '/p:RestoreLockedMode=true', '--artifacts-path',
-                                      str(output / 'renderer-artifacts'), '-o', str(render_build)])
+                                      str(output / 'renderer-artifacts'), '-o', str(render_build),
+                                      *evidence['renderer_restore_inputs']['arguments']])
         evidence['renderer_assemblies_before'] = assemblies(render_build)
         run('markdown-render', ['dotnet', str(render_build / 'NativeUiVerification.dll'), str(output / 'render'), str(output)])
         evidence['renderer_assemblies_after'] = assemblies(render_build)

@@ -167,12 +167,16 @@ jobs:
             .artifacts/mcw-evidence/**/source-snapshot.zip
             .artifacts/mcw-evidence/**/host-tests.json
             .artifacts/mcw-evidence/**/*.log
+            .artifacts/mcw-evidence/**/restore-locks/**
+            .artifacts/mcw-evidence/**/restore-locks.targets
             .artifacts/mcw-evidence/**/build/BridgeProbe.dll
             .artifacts/mcw-evidence/**/build/BridgeProbe.pdb
             .artifacts/mcw-migrations/**
             .artifacts/mcw-managed-tools/**/verification.json
             .artifacts/mcw-managed-tools/**/source-snapshot.zip
             .artifacts/mcw-managed-tools/**/*.log
+            .artifacts/mcw-managed-tools/**/restore-locks/**
+            .artifacts/mcw-managed-tools/**/restore-locks.targets
             .artifacts/mcw-managed-tools/**/outputs/**
             .artifacts/mcw-content-host/**/verification.json
             .artifacts/mcw-content-host/**/*.log
@@ -180,6 +184,8 @@ jobs:
             .artifacts/managed-host-verification/**/verification.json
             .artifacts/managed-host-verification/**/source-snapshot.zip
             .artifacts/managed-host-verification/**/*.log
+            .artifacts/managed-host-verification/**/restore-locks/**
+            .artifacts/managed-host-verification/**/restore-locks.targets
             .artifacts/managed-host-verification/**/build/MagicalCryptoWallet*.dll
             .artifacts/managed-host-verification/**/build/MagicalCryptoWallet*.pdb
             .artifacts/installed-coexistence/*.log

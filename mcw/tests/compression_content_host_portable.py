@@ -17,6 +17,9 @@ import time
 import xml.etree.ElementTree as ET
 import zipfile
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'Contrib/Mcw'))
+from evidence import restore_inputs_stable, restore_lock_inputs
+
 
 def sha(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
@@ -37,7 +40,8 @@ def sources(root):
     result.update(path.relative_to(root).as_posix() for path in (
         root / 'mcw/Cargo.toml', root / 'mcw/Cargo.lock', root / 'mcw/rust-toolchain.toml',
         root / 'mcw/build.rs', root / 'mcw/.cargo/config.toml', root / 'Contrib/Mcw/build.py',
-        root / 'Contrib/Mcw/build-windows.ps1', root / 'Contrib/Mcw/link-linux.sh') if path.is_file())
+        root / 'Contrib/Mcw/build-windows.ps1', root / 'Contrib/Mcw/link-linux.sh',
+        root / 'Contrib/Mcw/evidence.py') if path.is_file())
     return {name: sha(root / name) for name in sorted(result)}
 
 
@@ -155,12 +159,14 @@ def main():
                   in_flight_native_verified=False, barrier_synchronized_native_checkpoint=False,
                   injection_schedule_is_not_proof=True, cases={})
     try:
+        record['restore_inputs'] = restore_lock_inputs(root, out, pinned)
         build_log = out / 'managed-build.log'
         with build_log.open('wb') as log:
             result = subprocess.run([args.dotnet, 'build', str(project_path), '-c', 'Release', '-m:1',
                 '--artifacts-path', str(out / 'build'), '-p:BuildMcwHost=false',
                 '-p:UseSharedCompilation=false', '-p:RestoreLockedMode=true',
-                '-p:NuGetAudit=false', '--nologo'], stdout=log, stderr=subprocess.STDOUT, timeout=300)
+                '-p:NuGetAudit=false', '--nologo', *record['restore_inputs']['arguments']],
+                stdout=log, stderr=subprocess.STDOUT, timeout=300)
         assert result.returncode == 0, 'Real Core/ManagedApplicationHost fixture build failed: ' + str(build_log)
         record['managed_build_passed'] = True
         outputs = [path for path in (out / 'build/bin/ContentActualHost').rglob('McwContentActualHostFixture.dll')]
@@ -230,6 +236,8 @@ def main():
         assert sha(native) == binary_hash and sha(staged_native) == binary_hash
         record['assemblies_after'] = assemblies()
         assert record['assemblies_before'] == record['assemblies_after'], 'Managed fixture assembly changed during proof'
+        record['restore_inputs_stable'] = restore_inputs_stable(out, record['restore_inputs'])
+        assert record['restore_inputs_stable'], 'Isolated restore inputs changed during proof'
         record['source_stable'] = True
         record['passed'] = not args.build_only
     except Exception as error:

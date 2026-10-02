@@ -2,7 +2,7 @@
 """Run an inert managed verification tool through the production mcw host."""
 import argparse, os, shutil, subprocess, sys, xml.etree.ElementTree as ET
 from pathlib import Path
-from evidence import assemblies, finish, new_run, sha, snapshot
+from evidence import assemblies, finish, new_run, restore_lock_inputs, sha, snapshot
 ROOT=Path(__file__).resolve().parents[2]
 sys.stdout.reconfigure(encoding='utf-8', errors='replace')
 parser=argparse.ArgumentParser(description=__doc__)
@@ -30,10 +30,11 @@ record.update(project=str(tools[0].relative_to(ROOT)), arguments=arguments, prop
 try:
     if args.output_artifacts and args.output_artifacts.exists() and any(args.output_artifacts.iterdir()):
         raise RuntimeError('Verification output directory must be fresh')
+    record['restore_inputs'] = restore_lock_inputs(ROOT, output, record['source_hashes'])
     command = ["dotnet","build",str(tools[0]),"-c","Release","-m:1",
                     "/p:UseSharedCompilation=false", "/p:BuildMcwHost=false", "/p:RestoreLockedMode=true",
                     '--artifacts-path', str(output / 'artifacts'), "-o", str(work),
-                    *["/p:" + value for value in args.property]]
+                    *["/p:" + value for value in args.property], *record['restore_inputs']['arguments']]
     with (output / 'build.log').open('wb') as log:
         result = subprocess.run(command, stdout=log, stderr=subprocess.STDOUT, timeout=300)
     if result.returncode:

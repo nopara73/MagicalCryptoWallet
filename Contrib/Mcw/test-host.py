@@ -2,7 +2,7 @@
 """Exercise the actual mcw host/managed pipe with synthetic children and payloads."""
 import argparse, contextlib, json, os, shutil, signal, subprocess, time
 from pathlib import Path
-from evidence import assemblies, finish, new_run, sha, snapshot
+from evidence import assemblies, finish, new_run, restore_lock_inputs, sha, snapshot
 
 ROOT = Path(__file__).resolve().parents[2]
 parser = argparse.ArgumentParser(description=__doc__)
@@ -13,10 +13,12 @@ evidence = new_run(ROOT / '.artifacts/mcw-evidence', 'host')
 record = snapshot(ROOT, evidence)
 record.update(native_sha256=sha(binary), production_release=False)
 source = evidence / 'build'
+record['restore_inputs'] = restore_lock_inputs(ROOT, evidence, record['source_hashes'])
 with (evidence / 'build.log').open('wb') as log:
     built = subprocess.run(["dotnet","build",str(ROOT / "Contrib/Mcw/BridgeProbe"),"-c","Release","-m:1",
                             '/p:UseSharedCompilation=false','/p:BuildMcwHost=false','/p:RestoreLockedMode=true',
-                            '--artifacts-path',str(evidence / 'artifacts'),'-o',str(source)],
+                            '--artifacts-path',str(evidence / 'artifacts'),'-o',str(source),
+                            *record['restore_inputs']['arguments']],
                            stdout=log,stderr=subprocess.STDOUT,timeout=300)
 if built.returncode:
     print((evidence / 'build.log').read_text(encoding='utf-8', errors='replace'))

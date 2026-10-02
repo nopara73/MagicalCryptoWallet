@@ -10,7 +10,7 @@ import shlex
 import shutil
 import subprocess
 import sys
-from evidence import assemblies, finish, new_run, sha, snapshot
+from evidence import assemblies, finish, new_run, restore_lock_inputs, sha, snapshot
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -36,10 +36,12 @@ def main():
         if args.prebuilt:
             shutil.copytree(args.prebuilt.resolve(strict=True), work, dirs_exist_ok=True)
         else:
+            record['restore_inputs'] = restore_lock_inputs(ROOT, output, record['source_hashes'])
             with (output / 'build.log').open('wb') as log:
                 built = subprocess.run(['dotnet', 'build', str(ROOT / args.project), '-c', 'Release', '-m:1',
                                         '/p:UseSharedCompilation=false', '/p:BuildMcwHost=false', '/p:RestoreLockedMode=true',
-                                        '--artifacts-path', str(output / 'artifacts'), '-o', str(work)],
+                                        '--artifacts-path', str(output / 'artifacts'), '-o', str(work),
+                                        *record['restore_inputs']['arguments']],
                                        stdout=log, stderr=subprocess.STDOUT, timeout=600)
             if built.returncode:
                 print((output / 'build.log').read_text(encoding='utf-8', errors='replace'))
