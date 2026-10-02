@@ -156,7 +156,82 @@ using (McwApplicationServices.Bind(accurate))
     Check(JsonEncoder.ToString(parsed, Encode.CoordinatorMessage) == statusJson, "actual GetStatusAsync preserves decoded response");
     Check(accurate.Requests.Count == 3, "actual request and response roots invoke three real script leaves");
 }
+// An incomplete native response must not block the asynchronous HTTP entry point.
+// Always release the fixture even on failure, so this check cannot strand a worker.
+var deferred = new DeferredServices();
+using (McwApplicationServices.Bind(deferred))
+{
+    var factory = new MemoryHttpFactory(statusJson);
+    var client = new WabiSabiHttpApiClient("synthetic-deferred-script-client", factory);
+    var returned = new TaskCompletionSource<Task>(TaskCreationOptions.RunContinuationsAsynchronously);
+    var invocation = Task.Run(() => returned.TrySetResult(client.RegisterOutputAsync(outputRequest, CancellationToken.None)));
+    await deferred.Entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+    bool yielded;
+    try { await returned.Task.WaitAsync(TimeSpan.FromSeconds(5)); yielded = true; }
+    catch (TimeoutException) { yielded = false; }
+    finally { deferred.Response.TrySetResult(Encoding.UTF8.GetBytes("OP_DUP")); }
+    await invocation.WaitAsync(TimeSpan.FromSeconds(5));
+    await (await returned.Task).WaitAsync(TimeSpan.FromSeconds(5));
+    Check(yielded, "HTTP output registration yields while native rendering is pending");
+    Check(factory.Handler.Bodies.Single() == requestJson, "deferred native rendering preserves wire JSON");
+}
+var deferredStatus = new DeferredServices();
+using (McwApplicationServices.Bind(deferredStatus))
+{
+    var client = new WabiSabiHttpApiClient("synthetic-deferred-status-client", new MemoryHttpFactory(statusJson));
+    var returned = new TaskCompletionSource<Task<RoundStateResponse>>(TaskCreationOptions.RunContinuationsAsynchronously);
+    var invocation = Task.Run(() => returned.TrySetResult(client.GetStatusAsync(RoundStateRequest.Empty, CancellationToken.None)));
+    await deferredStatus.Entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+    bool yielded;
+    try { await returned.Task.WaitAsync(TimeSpan.FromSeconds(5)); yielded = true; }
+    catch (TimeoutException) { yielded = false; }
+    finally { deferredStatus.Response.TrySetResult(legacyScript.ToBytes()); }
+    await invocation.WaitAsync(TimeSpan.FromSeconds(5));
+    var parsed = await (await returned.Task).WaitAsync(TimeSpan.FromSeconds(5));
+    Check(yielded, "HTTP status decoding yields while native parsing is pending");
+    Check(JsonEncoder.ToString(parsed, Encode.CoordinatorMessage) == statusJson, "deferred native parsing preserves every status field");
+    Check(deferredStatus.RequestCount == 2, "every repeated status script occurrence receives a native result");
+}
+var canceledRender = new DeferredServices();
+using (McwApplicationServices.Bind(canceledRender))
+{
+    using var cancellation = new CancellationTokenSource();
+    var factory = new MemoryHttpFactory(statusJson);
+    var client = new WabiSabiHttpApiClient("synthetic-canceled-render-client", factory);
+    var task = client.RegisterOutputAsync(outputRequest, cancellation.Token);
+    await canceledRender.Entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+    cancellation.Cancel();
+    try { await task.WaitAsync(TimeSpan.FromSeconds(5)); throw new InvalidOperationException("Canceled native render completed."); }
+    catch (OperationCanceledException) { checks++; }
+    Check(factory.Handler.Bodies.Count == 0, "canceled native render never sends an HTTP payload");
+}
+using (McwApplicationServices.Bind(failed))
+{
+    try { await ClientScriptTextJson.DecodeResponseAsync<RoundStateResponse>(statusJson); throw new InvalidOperationException("Failed native parse completed."); }
+    catch (FormatException) { checks++; }
+}
+var forbiddenAsync = new RecordingServices((_, _) => throw new InvalidOperationException("Malformed response reached native parsing"));
+using (McwApplicationServices.Bind(forbiddenAsync))
+{
+    try { await ClientScriptTextJson.DecodeResponseAsync<RoundStateResponse>("{}"); throw new InvalidOperationException("Malformed status completed."); }
+    catch (FormatException) { checks++; }
+    Check(forbiddenAsync.Requests.Count == 0, "malformed status fails explicitly before native dispatch");
+}
 Console.WriteLine($"SCRIPT_TEXT_CLIENT_ROUTING_CHECKS={checks}");
+
+sealed class DeferredServices : IMcwApplicationServices
+{
+    public CancellationToken Stopped => CancellationToken.None;
+    public TaskCompletionSource Entered { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    public TaskCompletionSource<byte[]> Response { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    public int RequestCount { get; private set; }
+    public Task<byte[]> RequestAsync(ushort operation, ReadOnlyMemory<byte> payload, CancellationToken cancellationToken = default)
+    {
+        RequestCount++;
+        Entered.TrySetResult();
+        return Response.Task.WaitAsync(cancellationToken);
+    }
+}
 
 sealed class RecordingServices(Func<ushort, ReadOnlyMemory<byte>, byte[]> reply) : IMcwApplicationServices
 {

@@ -16,6 +16,9 @@ using ZXing.QrCode;
 
 // Test-only managed child. The package never contains this program. It exercises
 // the production adapter through the production Rust host with synthetic data.
+// Redirect ordinary logging before opening the private protocol streams.
+Console.SetOut(TextWriter.Null);
+Console.SetOut(Console.Error);
 if (args.Length == 0) { return 2; }
 var action = args[0];
 var report = args.Length > 1 ? Path.GetFullPath(args[1]) : "";
@@ -230,8 +233,9 @@ static void Decode(bool[,] matrix, string expected, bool pure = false)
     if (result?.Text != expected) { throw new Exception($"Independent decoder mismatch for synthetic vector: width {width}, input length {expected.Length}, expected {Convert.ToHexString(Encoding.UTF8.GetBytes(expected[..Math.Min(40,expected.Length)]))}, actual {Convert.ToHexString(Encoding.UTF8.GetBytes(result?.Text ?? "<null>"))}."); }
 }
 
-// Console streams do not own the process standard handles. This test-only
-// child closes its stdout explicitly while remaining alive to verify cleanup.
+// Dispose the caller's console stream first (its duplicate is owned on Unix).
+// This test-only child also closes the original process stdout handle while
+// remaining alive to observe the host's resource cleanup and shutdown request.
 internal static class ProbePipe
 {
     [DllImport("kernel32.dll", SetLastError = true)]
@@ -244,8 +248,42 @@ internal static class ProbePipe
     [DllImport("libc", EntryPoint = "close", SetLastError = true)]
     private static extern int Close(int descriptor);
 
+    // The retained .NET runtime normalizes Linux/Darwin stat layouts and symbol
+    // aliases. This test-only binding is not an import of the Rust executable.
+    // Layout: dotnet/runtime v10.0.12, System.Native/pal_io.h FileStatus.
+    [StructLayout(LayoutKind.Explicit, Size = 120)]
+    private struct FileStatus
+    {
+        [FieldOffset(4)] public int Mode;
+        [FieldOffset(88)] public long Device;
+        [FieldOffset(104)] public long Inode;
+    }
+    [DllImport("System.Native", EntryPoint = "SystemNative_FStat", SetLastError = true)]
+    private static extern int Stat(IntPtr descriptor, out FileStatus status);
+
+    [DllImport("libc", EntryPoint = "getdtablesize")]
+    private static extern int DescriptorLimit();
+
     public static void CloseOutput()
     {
+        if (!OperatingSystem.IsWindows())
+        {
+            // CoreCLR duplicates all standard handles before managed entry.
+            // Closing fd 1 alone leaves its PAL stdout copy alive. Close only
+            // descriptors belonging to this synthetic child's same output pipe.
+            if (Stat(new IntPtr(1), out var identity) != 0 || (identity.Mode & 0xF000) != 0x1000 || identity.Inode == 0)
+            { throw new IOException("Could not identify synthetic child output pipe."); }
+            var limit = DescriptorLimit();
+            for (var descriptor = 3; descriptor < limit; descriptor++)
+            {
+                if (Stat(new IntPtr(descriptor), out var candidate) == 0 && (candidate.Mode & 0xF000) == 0x1000
+                    && candidate.Device == identity.Device && candidate.Inode == identity.Inode
+                    && Close(descriptor) != 0)
+                {
+                    throw new IOException("Could not close synthetic child output copy.");
+                }
+            }
+        }
         var success = OperatingSystem.IsWindows() ? CloseHandle(GetStdHandle(-11)) : Close(1) == 0;
         if (!success) { throw new IOException("Could not close synthetic child output."); }
     }

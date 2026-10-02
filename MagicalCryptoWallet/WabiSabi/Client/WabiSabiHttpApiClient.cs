@@ -65,7 +65,8 @@ public class WabiSabiHttpApiClient : IWabiSabiApiRequestHandler
 
 	private async Task<string> InternalSendAsync<TRequest>(RemoteAction action, TRequest request, CancellationToken cancellationToken) where TRequest : class
 	{
-		var jsonRequest = JsonEncoder.ToString(request, value => ClientScriptTextJson.EncodeRequest(value, cancellationToken));
+		var encoded = await ClientScriptTextJson.EncodeRequestAsync(request, cancellationToken).ConfigureAwait(false);
+		var jsonRequest = JsonEncoder.ToString(encoded, value => value);
 		using var response = await InternalSendAsync(action, jsonRequest, cancellationToken).ConfigureAwait(false);
 
 		if (!response.IsSuccessStatusCode)
@@ -84,7 +85,7 @@ public class WabiSabiHttpApiClient : IWabiSabiApiRequestHandler
 	private async Task<TResponse> SendAndReceiveAsync<TRequest, TResponse>(RemoteAction action, TRequest request, CancellationToken cancellationToken) where TRequest : class
 	{
 		var jsonString = await InternalSendAsync(action, request, cancellationToken).ConfigureAwait(false);
-		return ClientScriptTextJson.DecodeResponse<TResponse>(jsonString, cancellationToken);
+		return await ClientScriptTextJson.DecodeResponseAsync<TResponse>(jsonString, cancellationToken).ConfigureAwait(false);
 	}
 
 	private static string GetUriEndPoint(RemoteAction action) =>

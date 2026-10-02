@@ -2,6 +2,7 @@ using MagicalCryptoWallet.Tests.Helpers;
 using NBitcoin;
 using NBitcoin.Crypto;
 using NBitcoin.RPC;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -405,9 +406,12 @@ public class TestableCoinJoinClient(
 		liquidityClueProvider,
 		doNotRegisterInLastMinuteTimeLimit)
 {
+	internal ConcurrentQueue<TimeSpan> ScheduledMaximumDelays { get; } = new();
+
 	internal override ImmutableList<DateTimeOffset> GetScheduledDates(int howMany, DateTimeOffset startTime, DateTimeOffset endTime,
 		TimeSpan maximumRequestDelay)
 	{
+		ScheduledMaximumDelays.Enqueue(maximumRequestDelay);
 		return base.GetScheduledDates(howMany, startTime, endTime, TimeSpan.FromSeconds(1));
 	}
 }

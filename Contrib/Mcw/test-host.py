@@ -52,6 +52,9 @@ with contextlib.nullcontext(evidence / 'mcw spaces 你好') as work:
     run("unknown-operation")
     run("queue-eof",1)
     run("queue-overload",1)
+    for action in ('queue-eof', 'queue-overload'):
+        assert json.loads(results[action]['report'])['Shutdown'], 'Queue probe must observe orderly host shutdown'
+    assert json.loads(results['queue-overload']['report'])['Overloaded'], 'Queue overload must produce its typed error'
     run("sessions-cancel")
     run("sessions-eof",1)
     run("sessions-overload",1)

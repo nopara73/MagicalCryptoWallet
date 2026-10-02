@@ -99,6 +99,12 @@ def main():
     if selected('script'):
         tool('script', 'mcw/tests/script_text_client', ['--script-text-native-child'])
         assert 'SCRIPT_TEXT_NATIVE_CALLER_CHECKS=' in (output / 'script.log').read_text(encoding='utf-8')
+        script_build = output / 'script-host/build'
+        evidence['script_routing_assemblies_before'] = assemblies(script_build)
+        run('script-routing', ['dotnet', str(script_build / 'ClientCheck.dll')])
+        assert 'SCRIPT_TEXT_CLIENT_ROUTING_CHECKS=' in (output / 'script-routing.log').read_text(encoding='utf-8')
+        evidence['script_routing_assemblies_after'] = assemblies(script_build)
+        assert evidence['script_routing_assemblies_before'] == evidence['script_routing_assemblies_after']
     if selected('nostr'):
         tool('nostr', 'mcw/tests/nostr_host', ['--evidence', output / 'nostr.json'])
         assert json.loads((output / 'nostr.json').read_text())['status'] == 'passed'

@@ -16,5 +16,7 @@
     <Compile Include="../../../MagicalCryptoWallet/Mcw/NativeUi/MarkdownPresentation.cs" Link="MarkdownPresentation.cs" />
     <Compile Include="../../../MagicalCryptoWallet.Fluent/Controls/ReleaseHighlightsText.cs" Link="ReleaseHighlightsText.cs" />
     <AvaloniaResource Include="../../../MagicalCryptoWallet.Fluent/Styles/ReleaseHighlights.axaml" Link="Styles/ReleaseHighlights.axaml" />
+    <EmbeddedResource Include="../../../MagicalCryptoWallet.Fluent/Styles/Themes/Light.axaml" LogicalName="ShippingPalette.Light.axaml" />
+    <EmbeddedResource Include="../../../MagicalCryptoWallet.Fluent/Styles/Themes/Dark.axaml" LogicalName="ShippingPalette.Dark.axaml" />
   </ItemGroup>
 </Project>

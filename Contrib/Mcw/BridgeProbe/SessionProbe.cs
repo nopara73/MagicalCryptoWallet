@@ -17,7 +17,6 @@ internal static class SessionProbe
     {
         using var input = Console.OpenStandardInput();
         using var output = Console.OpenStandardOutput();
-        Console.SetOut(Console.Error);
         var file = report + ".wallet";
         File.WriteAllText(file, "original synthetic bytes");
         await Write(output, 1, 0, 0, []);

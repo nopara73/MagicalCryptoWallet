@@ -1,3 +1,5 @@
+using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -31,6 +33,8 @@ internal class Participant
 	private TestWallet Wallet { get; }
 	public Func<string, IWabiSabiApiRequestHandler> HttpClientFactory { get; }
 	private SmartTransaction? SplitTransaction { get; set; }
+	public TestableCoinJoinClient? ActiveClient { get; private set; }
+	public ConcurrentQueue<string> Progress { get; } = new();
 
 	public async Task GenerateSourceCoinAsync(CancellationToken cancellationToken)
 	{
@@ -81,6 +85,10 @@ internal class Participant
 
 		var outputProvider = new OutputProvider(Wallet, RandomnessProviders.Insecure);
 		var coinJoinClient = WabiSabiFactory.CreateTestCoinJoinClient(HttpClientFactory, Wallet, outputProvider, roundStateProvider);
+		ActiveClient = (TestableCoinJoinClient)coinJoinClient;
+		var elapsed = Stopwatch.StartNew();
+		coinJoinClient.CoinJoinClientProgress += (_, progress) =>
+			Progress.Enqueue($"{elapsed.Elapsed.TotalSeconds:F3}s {progress.GetType().Name}");
 
 		static HdPubKey CreateHdPubKey(ExtPubKey extPubKey)
 		{

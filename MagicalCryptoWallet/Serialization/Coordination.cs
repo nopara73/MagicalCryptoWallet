@@ -224,6 +224,9 @@ public static partial class Encode
 	internal static JsonNode ClientOutputRegistrationRequest(OutputRegistrationRequest rr, CancellationToken cancellationToken) =>
 		OutputRegistrationRequestWithScript(rr, ClientScript(rr.Script, cancellationToken));
 
+	internal static JsonNode ClientOutputRegistrationRequest(OutputRegistrationRequest rr, string scriptText) =>
+		OutputRegistrationRequestWithScript(rr, String(scriptText));
+
 	private static JsonNode OutputRegistrationRequestWithScript(OutputRegistrationRequest rr, JsonNode script) =>
 		Object([
 			("RoundId", UInt256(rr.RoundId)),
@@ -601,6 +604,9 @@ public static partial class Decode
 
 	internal static Decoder<RoundStateResponse> ClientRoundStateResponse(CancellationToken cancellationToken) =>
 		RoundStateResponseWithScript(ClientScript(cancellationToken));
+
+	internal static Decoder<RoundStateResponse> ClientRoundStateResponse(Func<string, Script> scriptParser) =>
+		RoundStateResponseWithScript(String.Map(scriptParser).Catch());
 
 	private static Decoder<RoundStateResponse> RoundStateResponseWithScript(Decoder<Script> script) =>
 		Object(get => new RoundStateResponse(

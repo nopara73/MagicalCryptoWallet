@@ -1,6 +1,7 @@
 using System;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace MagicalCryptoWallet.Mcw.Scripts;
 
@@ -13,20 +14,26 @@ public static class ScriptTextClient
 	public const int MaximumPayloadBytes = 1_048_560;
 	private static readonly UTF8Encoding Utf8 = new(false, true);
 
-	public static byte[] Parse(string text, CancellationToken cancellationToken = default)
+	public static byte[] Parse(string text, CancellationToken cancellationToken = default) =>
+		ParseAsync(text, cancellationToken).GetAwaiter().GetResult();
+
+	public static async Task<byte[]> ParseAsync(string text, CancellationToken cancellationToken = default)
 	{
 		ArgumentNullException.ThrowIfNull(text);
 		var length = Utf8.GetByteCount(text);
 		CheckLength(length);
-		var result = Request(ParseOperation, Utf8.GetBytes(text), cancellationToken);
+		var result = await RequestAsync(ParseOperation, Utf8.GetBytes(text), cancellationToken).ConfigureAwait(false);
 		CheckLength(result.Length);
 		return result;
 	}
 
-	public static string Render(ReadOnlyMemory<byte> script, CancellationToken cancellationToken = default)
+	public static string Render(ReadOnlyMemory<byte> script, CancellationToken cancellationToken = default) =>
+		RenderAsync(script, cancellationToken).GetAwaiter().GetResult();
+
+	public static async Task<string> RenderAsync(ReadOnlyMemory<byte> script, CancellationToken cancellationToken = default)
 	{
 		CheckLength(script.Length);
-		var result = Request(RenderOperation, script, cancellationToken);
+		var result = await RequestAsync(RenderOperation, script, cancellationToken).ConfigureAwait(false);
 		CheckLength(result.Length);
 		try
 		{
@@ -38,11 +45,10 @@ public static class ScriptTextClient
 		}
 	}
 
-	private static byte[] Request(ushort operation, ReadOnlyMemory<byte> payload, CancellationToken cancellationToken)
+	private static Task<byte[]> RequestAsync(ushort operation, ReadOnlyMemory<byte> payload, CancellationToken cancellationToken)
 	{
 		cancellationToken.ThrowIfCancellationRequested();
-		return McwApplicationServices.Current.RequestAsync(operation, payload, cancellationToken)
-			.ConfigureAwait(false).GetAwaiter().GetResult();
+		return McwApplicationServices.Current.RequestAsync(operation, payload, cancellationToken);
 	}
 
 	private static void CheckLength(int length)

@@ -80,8 +80,9 @@ foreach (var width in new[] { 360d, 640d })
     Application.Current.RequestedThemeVariant = theme;
     // The small harness loads the application's actual palette tokens, without
     // starting its wallet/network services or copying a second theme system.
-    var repository = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../../../"));
-    var palette = XDocument.Load(Path.Combine(repository, $"MagicalCryptoWallet.Fluent/Styles/Themes/{theme}.axaml"));
+    using var paletteResource = Assembly.GetExecutingAssembly().GetManifestResourceStream($"ShippingPalette.{theme}.axaml")
+        ?? throw new InvalidOperationException("Shipping palette resource is missing.");
+    var palette = XDocument.Load(paletteResource);
     XNamespace x = "http://schemas.microsoft.com/winfx/2006/xaml";
     foreach (var element in palette.Root!.Elements().Where(e => e.Name.LocalName == "Color"))
         Application.Current.Resources[element.Attribute(x + "Key")!.Value] = Color.Parse(element.Value.Trim());

@@ -552,7 +552,7 @@ public class CoinJoinClient
 		// Decrease the available time, so the clients hurry up.
 		var safetyBuffer = TimeSpan.FromMinutes(1);
 		var remainingTime = roundState.InputRegistrationEnd - safetyBuffer;
-		var scheduledDates = remainingTime.GetScheduledDates(smartCoins.Count());
+		var scheduledDates = GetScheduledDates(smartCoins.Count(), DateTimeOffset.UtcNow, remainingTime, TimeSpan.MaxValue);
 
 		// Creates scheduled tasks (tasks that wait until the specified date/time and then perform the real registration)
 		var aliceClients = smartCoins.Zip(
@@ -647,7 +647,7 @@ public class CoinJoinClient
 		// Maximum signing request delay is 50 seconds, because
 		// - the fast track signing phase will be 1m 30s, so we want to give a decent time for the requests to be sent out.
 		var maximumSigningRequestDelay = TimeSpan.FromSeconds(50);
-		var scheduledDates = signingEndTime.GetScheduledDates(aliceClients.Count(), signingStartTime, maximumSigningRequestDelay);
+		var scheduledDates = GetScheduledDates(aliceClients.Count(), signingStartTime, signingEndTime, maximumSigningRequestDelay);
 
 		var tasks = aliceClients.Zip(
 			scheduledDates,
@@ -819,7 +819,7 @@ public class CoinJoinClient
 			// Output registration.
 			Logger.LogDebug(FormatLog($"Output registration started - it will end in: {outputRegistrationEndTime - DateTimeOffset.UtcNow:hh\\:mm\\:ss}.", roundState));
 
-			var outputRegistrationScheduledDates = outputRegistrationEndTime.GetScheduledDates(outputTxOuts.Length, DateTimeOffset.UtcNow, MaximumRequestDelay);
+			var outputRegistrationScheduledDates = GetScheduledDates(outputTxOuts.Length, DateTimeOffset.UtcNow, outputRegistrationEndTime, MaximumRequestDelay);
 			var registrationResult = await scheduler.StartOutputRegistrationsAsync(outputTxOuts, bobClientFactory, outputRegistrationScheduledDates, combinedToken).ConfigureAwait(false);
 			registrationResult.MatchDo(
 				OnOutputRegistrationSuccess,

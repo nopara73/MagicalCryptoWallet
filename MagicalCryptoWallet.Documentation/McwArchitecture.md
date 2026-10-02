@@ -30,6 +30,13 @@ The Rust host and managed application share `ClientVersion` (development default
 
 Linux release builds also rebuild the pinned standard library with aborting panics and backtrace support disabled. This removes the GCC unwinder runtime instead of bundling or statically linking it. OS libc remains the native baseline; the extracted ELF dependency audit rejects libgcc_s, libstdc++, OpenSSL and other non-OS libraries in the mcw executable.
 
+Linux compatibility evidence must identify the build/test distribution and required
+libc symbol versions. An OS-only import list does not prove compatibility with
+older distributions. The Ubuntu 24.04 x64 CI snapshot tested during incorporation
+requires GLIBC 2.32–2.34 symbols and cannot execute on the local Ubuntu 20.04
+glibc 2.31 diagnostic environment. That local loader failure provides no host
+lifecycle evidence; qualification uses the actual packaged target in CI.
+
 The Linux compiler driver omits the aborting, backtrace-free standard library's unused `-lgcc_s` request and applies early `--as-needed`. This prevents GNU ARM linkers from retaining an empty GCC runtime dependency. With default linker libraries disabled, a genuinely needed unwinder symbol fails linking; the runtime audit also remains strict.
 
 The shipping linker policy is passed through `cargo rustc` only to the final `mcw` binary. Compiler build helpers use the normal native compiler and the toolchain's prebuilt unwinding standard library; these build-only executables are never packaged.
@@ -144,6 +151,13 @@ Kinds: hello=1, response=2, request=3, error=4, cancel=5. The child sends hello 
 A string list is u32 count (maximum 256), then repeated u32 byte length plus strict UTF-8 bytes, with no NUL or trailing data. Error payloads are u16 code and a UTF-8 diagnostic: invalid request=1, capacity/content=2, unsupported operation=3. Diagnostics never echo input.
 
 The managed adapter serializes writes so concurrent callers cannot interleave frames, validates response shape and operation IDs, and bounds outstanding requests. Disposal/cancellation releases pending completions immediately; late replies are drained. Failure closes admission before completing pending calls, including calls racing with disconnection. Native rejections expose `McwServiceException.Operation` and `.Code`; diagnostic payload text is validated and discarded. Request/frame/error buffers receive best-effort clearing, without a formal erasure claim. The host validates versions/header/operations, bounds its receive queue and uses a 15-second startup handshake deadline. A broken connection fails pending calls and triggers existing graceful termination. QR failures follow the existing receive-screen error dialog; there is no legacy fallback.
+
+Asynchronous application callers await native service requests throughout their
+transport path. The WabiSabi HTTP adapter resolves script rendering/parsing before
+its retained synchronous schema codec runs; every script occurrence receives a
+native result without a shared cache or a managed fallback. A pending Rust reply
+must leave the HTTP entry point asynchronous. Cancellation and malformed/native
+failures propagate explicitly instead of returning a null round-state response.
 
 ## Bounded services in the same application
 

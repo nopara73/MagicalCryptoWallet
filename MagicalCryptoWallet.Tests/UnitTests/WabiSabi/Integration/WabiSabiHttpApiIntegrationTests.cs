@@ -318,7 +318,7 @@ public class WabiSabiHttpApiIntegrationTests : IClassFixture<WabiSabiApiApplicat
 		const int NumberOfCoinsPerParticipant = 1;
 		const int ExpectedInputNumber = NumberOfParticipants * NumberOfCoinsPerParticipant;
 
-		var coinJoinBroadcasted = new TaskCompletionSource<Transaction>();
+		var coinJoinBroadcasted = new TaskCompletionSource<Transaction>(TaskCreationOptions.RunContinuationsAsynchronously);
 		var rpc = BitcoinFactory.GetMockMinimalRpc();
 		var onSendRawTransaction = rpc.OnSendRawTransactionAsync;
 		rpc.OnSendRawTransactionAsync = tx =>
@@ -394,6 +394,26 @@ public class WabiSabiHttpApiIntegrationTests : IClassFixture<WabiSabiApiApplicat
 		var coinjoinTransactionCompletionTask = coinJoinBroadcasted.Task.WaitAsync(cts.Token);
 		var participantsFinishedTask = Task.WhenAll(tasks);
 		var finishedTask = await Task.WhenAny(participantsFinishedTask, coinjoinTransactionCompletionTask);
+		_output.WriteLine($"CoinJoin outcomes: broadcast={coinjoinTransactionCompletionTask.Status}, participants completed={tasks.Count(t => t.IsCompletedSuccessfully)}, faulted={tasks.Count(t => t.IsFaulted)}, canceled={tasks.Count(t => t.IsCanceled)}.");
+		for (int i = 0; i < participants.Length; i++)
+		{
+			_output.WriteLine($"Participant {i}: {string.Join(", ", participants[i].Progress)}; schedules={string.Join(", ", participants[i].ActiveClient?.ScheduledMaximumDelays.ToArray() ?? [])}.");
+		}
+		if (!coinJoinBroadcasted.Task.IsCompletedSuccessfully)
+		{
+			using var diagnosticTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+			var directApi = _apiApplicationFactory.CreateWabiSabiHttpApiClient(httpClient);
+			var status = await directApi.GetStatusAsync(RoundStateRequest.Empty, diagnosticTimeout.Token);
+			foreach (var round in status.RoundStates)
+			{
+				var parameters = round.CoinjoinState.Parameters;
+				_output.WriteLine($"Coordinator round: phase={round.Phase}, end={round.EndRoundState}, inputs={round.CoinjoinState.Inputs.Count()}, outputs={round.CoinjoinState.Outputs.Count()}, inputTimeout={round.InputRegistrationTimeout}, confirmationTimeout={parameters.ConnectionConfirmationTimeout}, outputTimeout={parameters.OutputRegistrationTimeout}, signingTimeout={parameters.TransactionSigningTimeout}, delaySigning={parameters.DelayTransactionSigning}.");
+			}
+		}
+		foreach (var faulted in tasks.Where(t => t.IsFaulted))
+		{
+			_output.WriteLine($"Participant fault: {faulted.Exception}");
+		}
 
 		if (finishedTask == coinjoinTransactionCompletionTask)
 		{
@@ -413,22 +433,23 @@ public class WabiSabiHttpApiIntegrationTests : IClassFixture<WabiSabiApiApplicat
 
 			// In case some participants claim to have finished successfully then wait a second for seeing
 			// the coinjoin in the mempool. This seems really hard to believe but just in case.
-			if (participantsFinishedSuccessfully.All(x => x is SuccessfulCoinJoinResult))
+			if (participantsFinishedSuccessfully.Length > 0 && participantsFinishedSuccessfully.All(x => x is SuccessfulCoinJoinResult))
 			{
 				await Task.Delay(TimeSpan.FromSeconds(1), cts.Token);
 				var mempool = await rpc.GetRawMempoolAsync(cts.Token);
 				Assert.Single(mempool);
 			}
-			else if (participantsFinishedSuccessfully.All(x => x is FailedCoinJoinResult))
+			else if (participantsFinishedSuccessfully.Length > 0 && participantsFinishedSuccessfully.All(x => x is FailedCoinJoinResult))
 			{
 				throw new Exception("All participants finished, but CoinJoin still not in the mempool (no more blame rounds).");
 			}
-			else if (participantsFinishedSuccessfully.Length == 0 && !cts.IsCancellationRequested)
+			else if (participantsFinishedSuccessfully.Length == 0)
 			{
 				var exceptions = tasks
 					.Where(x => x.IsFaulted)
 					.Select(x => new Exception("Something went wrong", x.Exception))
 					.ToArray();
+				if (exceptions.Length == 0) { throw new OperationCanceledException(cts.Token); }
 				throw new AggregateException(exceptions);
 			}
 			else
@@ -440,6 +461,17 @@ public class WabiSabiHttpApiIntegrationTests : IClassFixture<WabiSabiApiApplicat
 		{
 			throw new Exception("This is not so possible.");
 		}
+
+		// Real registration, output, readiness and signing requests must all use
+		// the fixture's schedule. Bypassing it restores long random production
+		// sleeps inside this test's unchanged two-minute deadline.
+		Assert.All(participants, participant =>
+		{
+			var delays = participant.ActiveClient!.ScheduledMaximumDelays.ToArray();
+			Assert.Contains(TimeSpan.MaxValue, delays);
+			Assert.Contains(TimeSpan.FromSeconds(50), delays);
+			Assert.True(delays.Count(delay => delay == TimeSpan.FromSeconds(10)) >= 2);
+		});
 	}
 
 	[Fact]
