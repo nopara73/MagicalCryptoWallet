@@ -69,6 +69,8 @@ jobs:
           python Contrib/Rebrand/audit.py
       - name: Release inventory and mixed-version regression checks
         run: python Contrib/Signing/test-sign-release.py
+      - name: Snapshot packaging regression checks
+        run: python Contrib/Releases/test-package.py
       - name: Linux runtime and packaging dependencies
         if: startsWith(matrix.rid, 'linux')
         run: sudo apt-get update && sudo apt-get install -y libfontconfig1 squashfs-tools

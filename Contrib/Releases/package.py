@@ -7,7 +7,7 @@ This tool creates artifacts only; it never publishes a release or announcement.
 from __future__ import annotations
 import argparse, hashlib, importlib.util, json, os, platform, plistlib
 from pathlib import Path
-import re, shutil, subprocess, sys, tarfile, zipfile
+import re, shutil, subprocess, sys, tarfile, time, zipfile
 
 ROOT = Path(__file__).resolve().parents[2]
 APP_ID = "io.github.nopara73.magicalcryptowallet"
@@ -100,6 +100,21 @@ def linux_packages(dist: Path, work: Path, output: Path, version: str, rid: str,
         environment = os.environ.copy(); environment["ARCH"] = "aarch64" if architecture == "arm64" else "x86_64"
         run(tool, "--no-appstream", appdir, output / f"MagicalCryptoWallet-{version}{suffix}.AppImage", env=environment)
 
+def create_disk_image(staging: Path, destination: Path):
+    command = ["hdiutil", "create", "-volname", NAME, "-srcfolder", str(staging), "-format", "UDZO", "-ov", str(destination)]
+    for attempt in range(3):
+        result = subprocess.run(command, capture_output=True, text=True)
+        print(result.stdout, end="")
+        print(result.stderr, end="", file=sys.stderr)
+        if result.returncode == 0:
+            run("hdiutil", "verify", destination)
+            return
+        # Hosted macOS runners can briefly hold the disk-image service busy.
+        # Do not retry other failures or accept an unverified partial image.
+        if "resource busy" not in result.stderr.casefold() or attempt == 2:
+            result.check_returncode()
+        time.sleep(2 * (attempt + 1))
+
 def macos_packages(dist: Path, work: Path, output: Path, version: str, rid: str, production: bool):
     staging = work / "dmg"; clean(staging)
     app = staging / f"{NAME}.app"; contents = app / "Contents"
@@ -125,7 +140,7 @@ def macos_packages(dist: Path, work: Path, output: Path, version: str, rid: str,
         run("ditto", "-c", "-k", "--sequesterRsrc", "--keepParent", app, zipped)
     (staging / "Applications").symlink_to("/Applications")
     dmg = output / f"MagicalCryptoWallet-{version}{suffix}.dmg"
-    run("hdiutil", "create", "-volname", NAME, "-srcfolder", staging, "-format", "UDZO", "-ov", dmg)
+    create_disk_image(staging, dmg)
     if production:
         run("python3", ROOT / "Contrib/Signing/sign-macos.py", "--notarize", dmg, dmg)
 
