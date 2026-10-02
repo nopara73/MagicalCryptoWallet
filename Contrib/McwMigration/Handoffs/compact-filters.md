@@ -29,6 +29,9 @@ Owned files:
 - `mcw/tests/compact_filters_host_wiring.patch`
 - `mcw/tests/compact_filters_host_probe.inc`
 - `mcw/tests/compact_filters_host_verify.ps1`
+- `mcw/tests/compact_filters_caller_prepare.py`
+- `mcw/tests/compact_filters_caller_probe.inc`
+- `mcw/tests/compact_filters_caller_verify.ps1`
 - `Contrib/McwMigration/Handoffs/compact-filters.md`
 
 No tracked Cargo manifests, module declarations, host commands, bridge code,
@@ -420,10 +423,112 @@ The verifier defaults to immediate deferral when both shared build slots are
 occupied. `-WaitForBuildSlotSeconds 120` optionally retries for up to two minutes,
 without holding another coordination lock; it rechecks free memory once admitted.
 
-The proposed wallet caller file was patch-applied and inspected, but the full
-managed wallet project and its existing filter tests were not built/run here.
-Its end-to-end evidence covers the real host and typed managed transport, not
-live wallet synchronization. Other filter parsing/header/checkpoint/storage
+The actual Core and Client projects and selected retained tests have now been
+built/run in the bounded synthetic caller proof below. The full UI/test suite,
+live wallet synchronization, full regtest synchronization and release packaging
+remain outside this evidence. Other filter parsing/header/checkpoint/storage
 callers and NBitcoin remain in production. This worker did not apply the patch
 to production, remove a package, create an extra shipping executable, modify an
 active host-owner checkout, or establish five-target release readiness.
+
+## Actual selected caller proof
+
+The existing matching responsibility's caller gate is verified against source
+pin `96afc8ee20ed8c2af101a9ae14652e714c00a576`. The test preparer copies the
+actual complete `MagicalCryptoWallet` Core and `MagicalCryptoWallet.Client`
+projects, their original project/central/build properties and locked dependencies,
+source-built retained WabiSabi project, the actual Rust host, and selected retained
+test sources into an ignored snapshot. It hashes 1,148 copied source files and
+applies the same published four-file review patch only there. The selected caller
+contains exactly one typed matching call and no `filter.Filter.MatchAny` call.
+Bundled Tor executables and geoip packaging inputs are omitted; none is launched.
+
+The original full Core project compiled successfully with its repository warnings
+as errors and analyzers: zero warnings, zero errors. The complete actual Client
+also compiled successfully. No adjacent production type is stubbed in this proof,
+including `ManagedApplicationHost` and `TerminateService`. The offline restore
+uses existing retained NuGet packages with feed sources cleared and audit-feed
+lookup disabled only for this verification invocation; production package files,
+locks and audit policy are unchanged. No new shipping dependency is introduced.
+
+The synthetic child constructs the actual `KeyManager`, `AllTransactionStore`,
+`FilterStore`, `FilterHeaderChain`, `TransactionProcessor`, `EventBus`, and
+`WalletFilterProcessor`. It uses an explicitly public synthetic mnemonic, empty
+in-memory transaction databases, fresh ignored filter directories, one synthetic
+block/payment, and a test-only block-provider delegate. No live wallet is opened,
+no real keys/data are read, and no peer/HTTP/RPC network provider is used.
+
+Seven cases run the actual public `StartAsync`/`ExecuteAsync`/`StopAsync` loop:
+
+| Case | Verified outcome |
+| --- | --- |
+| Matched synthetic wallet script | Exactly one `0x0702` request and block request; one block event, one processed-filter event, one relevant transaction event; synthetic coin balance 1 BTC; height advances from 0 to 1 once |
+| Empty basic filter / no match | One Rust request, no block/transaction event; processed-filter event once; height advances to 1 |
+| No indexed keys | Retained skip behavior: no matching or block request; processed-filter event once; height advances to 1 |
+| Malformed encoded filter | Real Rust service rejects trailing data; caller enters its retry state, emits no processed-filter/block/transaction event, retains height 0 and retires cleanly on stop |
+| Frame budget exceeded | Typed adapter rejects before transport; same retry/height/event behavior; no Rust or block request |
+| Matching block unavailable | Real Rust match invokes the synthetic provider once; null block produces retry state without advancing height or transaction/event state |
+| Cancellation during block wait | Real Rust match precedes the provider wait; caller stop cancels the exact forwarded provider token, awaits execution retirement, and leaves height 0 with no processed-filter/transaction event |
+
+Three further cases invoke the actual compiled private matching method directly,
+using the same actual objects: pre-cancellation, P=20/M=784931, and
+P=19/M=1048576. All reject before any Rust/block request and retain height 0.
+Custom parameters are tested before storage because P/M are not serialized in
+the retained filter store; its factory reconstructs basic defaults. This proof
+does not claim that legacy custom-parameter storage semantics have migrated.
+
+A test-only observer validates request operation, exact raw block-hash order,
+query count, every actual synchronization script and complete payload consumption,
+then forwards the original request/token unchanged to the real managed host and
+Rust process. Every dispatched case observes the actual
+`WalletFilterProcessor.ProcessFilterModelAsync` state machine in the caller stack.
+It never supplies a match result or calls legacy matching as a fallback.
+
+The host permits one service registration. The observer asserts that duplicate
+binding is rejected, releases only this synthetic host's registration, installs
+one pass-through registration, then restores the host registration before disposal.
+Only the harness inspects the private registration field; production host/Core
+source is unchanged. Each processor uses one actual key-manager instance, is
+stopped and awaited before another starts, and its execution is confirmed retired.
+
+The probe also executes these unchanged retained test methods with real xUnit
+assertions, directly from their compiled source, rather than claiming a full
+runner/suite result:
+
+- `SingleWalletTests.CancellationWhileWaitingForHeadersStopsCleanlyAsync(false)`
+- `SingleWalletTests.CancellationWhileWaitingForHeadersStopsCleanlyAsync(true)`
+- `BlockFilterIteratorTests.GetAndRemoveTestAsync`
+- `CompactFilterBlockHashReproTests.ValidFilterBytesAreAcceptedWithAnAttackerChosenBlockHash`
+
+The child redirects only its own `APPDATA` to a fresh workspace-owned
+`.artifacts/cfs-<id>` directory and checks the retained helper's resolved data
+directory stays beneath it. This short synthetic path avoids SQLite's native
+Windows path-length limit in the unchanged retained test helper; no global
+environment setting or actual user-data directory changes. Each test directory
+and all synthetic state are retained as ignored evidence. The process runs hidden
+under the same actual Rust lifetime owner; successful host exit is required.
+
+Reproduce with `mcw/tests/compact_filters_caller_verify.ps1`, the same toolchain,
+coordination root/linker/native-library parameters and CARGO_HOME/RUSTUP_HOME
+settings as the host verifier. It uses the two shared build slots, one build job,
+no shared compiler process and the 2 GiB free-memory gate. The optional
+`-ExistingSnapshot` may reuse only a snapshot beneath this task's own caller
+evidence directory for harness iteration; existing production source hashes are
+checked again. Default execution makes a fresh source snapshot.
+
+Evidence is under `.artifacts/compact-filters-caller-evidence/`:
+`caller-verification.json`, `caller-results.json`, `caller-source-manifest.json`
+inside the recorded snapshot, actual Core restore/build logs, actual Client/probe
+restore/build logs, Rust-host build log, and host stdout/stderr. Verified actual
+compiled Core assembly SHA256:
+`610ee8244b54ec86ef9688b0cb102f300a02edc8df98d462e0ddbc83cd1375af`.
+Patched caller-file SHA256 (physical snapshot bytes):
+`6900bc36f58900530982e47cb7b7b10171e4b5b2978984b17a5e4b4a432e35bb`.
+All copied existing worker-checkout sources retained their original hashes after
+the run. These hashes identify this Debug snapshot, not a production release.
+
+The actual selected matching caller gate is passed on Windows. The integration
+hook remains a review patch for the idle host owner; NBitcoin, other filter
+responsibilities, full managed-suite/release acceptance and the four other target
+runs remain explicitly retained/unverified. No additional dependency/task scope
+or shared-host edits are authorized by this evidence.
