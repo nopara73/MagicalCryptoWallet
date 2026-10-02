@@ -238,10 +238,11 @@ def main():
         rpc(wallet_url, "recoverwallet", [MNEMONIC, "synthetic passphrase"], timeout=60)
         info = wait_for(ready, timeout=360)
         assert info["syncHeight"] == info["targetHeight"] == 0 and info["hasCachedData"]
-        assert info["coinJoinRequiresAuthorization"]
+        assert not info["coinJoinRequiresAuthorization"], "The recovery password did not authorize CoinJoin."
         assert "walletName" not in info and "loaded" not in info
         assert rpc(wallet_url, "loadwallet", allow_error=True)["error"]["code"] == -32601
-        results["first_setup_starts_without_window_or_passphrase"] = True
+        results["first_setup_starts_without_window"] = True
+        results["setup_password_authorizes_coinjoin_for_current_run"] = True
         # Bitcoin Core's own wallet management is deliberately retained for independent synthetic test participants.
         rpc(node_url, "createwallet", ["synthetic-miner"])
         miner_url = node_url + "wallet/synthetic-miner"
@@ -259,6 +260,13 @@ def main():
         wait_for(lambda: (info := ready()) and info["syncHeight"] == old_height + 1 and info["balance"] == 5_000_000, timeout=360)
         assert rpc(node_url, "getblockhash", [old_height]) != old_tip
         results["p2p_reorg_recovers_funding_on_replacement_chain"] = True
+        stop(first)
+        first = launch(desktop if os.name == "nt" else daemon, initial + (["startsilent"] if os.name == "nt" else []), "before-signing")
+        wait_for_rpc_start(first, run / "before-signing.log")
+        info = wait_for(ready, timeout=360)
+        assert info["balance"] == 5_000_000 and info["coinJoinRequiresAuthorization"]
+        assert not visible_windows(first.pid), "Restarting the encrypted wallet opened a window."
+        results["encrypted_startup_synchronizes_without_authorization"] = True
         payment = [{"Sendto": mining_address, "Amount": 500_000, "Label": "synthetic spend"}]
         assert "error" in rpc(wallet_url, "build", [payment, None, 2, "wrong"], allow_error=True, timeout=60)
         assert rpc(wallet_url, "getwalletinfo")["coinJoinRequiresAuthorization"]
@@ -285,6 +293,7 @@ def main():
             wait_for_rpc_start(second, run / "encrypted-restart.log")
             offline = wait_for(lambda: (info := rpc(wallet_url, "getwalletinfo")) and info["state"] == "Offline" and info["hasCachedData"] and info)
             assert offline["balance"] == 5_000_000 and not offline["synchronized"]
+            assert offline["coinJoinRequiresAuthorization"], "CoinJoin credentials survived process restart."
             assert rpc(wallet_url, "gethistory")
             assert not visible_windows(second.pid)
             # Finish the initial failed discovery before bringing the peer back.
