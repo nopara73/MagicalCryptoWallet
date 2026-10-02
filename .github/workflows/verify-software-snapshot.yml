@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       build_run:
-        description: Workflow run that built the Linux snapshot
+        description: Workflow run that produced the input artifact
         type: number
         required: true
       artifact_id:
@@ -13,6 +13,9 @@ on:
       build_commit:
         description: Exact application build commit
         required: true
+      artifact_commit:
+        description: Input artifact commit when resuming verified evidence
+        required: false
       archive_sha256:
         description: GitHub artifact archive SHA-256
         required: true
@@ -33,6 +36,7 @@ jobs:
       BUILD_RUN: ${{ inputs.build_run }}
       ARTIFACT_ID: ${{ inputs.artifact_id }}
       BUILD_COMMIT: ${{ inputs.build_commit }}
+      ARTIFACT_COMMIT: ${{ inputs.artifact_commit || inputs.build_commit }}
       ARCHIVE_SHA256: ${{ inputs.archive_sha256 }}
     steps:
       - uses: actions/checkout@v4
@@ -45,6 +49,7 @@ jobs:
       - name: Linux runtime and package inspection dependencies
         run: sudo apt-get update && sudo apt-get install -y libfontconfig1 squashfs-tools
       - name: Restore authenticated snapshot without changing application code
+        id: snapshot
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -54,29 +59,33 @@ jobs:
           import json, os, re
           artifact = json.load(open('.artifacts/build-artifact.json'))
           assert re.fullmatch('[0-9a-f]{40}', os.environ['BUILD_COMMIT'])
+          assert re.fullmatch('[0-9a-f]{40}', os.environ['ARTIFACT_COMMIT'])
           assert re.fullmatch('[0-9a-f]{64}', os.environ['ARCHIVE_SHA256'])
           assert artifact['workflow_run']['id'] == int(os.environ['BUILD_RUN'])
-          assert artifact['workflow_run']['head_sha'] == os.environ['BUILD_COMMIT']
+          assert artifact['workflow_run']['head_sha'] == os.environ['ARTIFACT_COMMIT']
           assert artifact['digest'] == 'sha256:' + os.environ['ARCHIVE_SHA256']
           assert artifact['name'] == 'packages-linux-x64' and not artifact['expired']
           PY
           git fetch --depth=1 origin "$BUILD_COMMIT"
+          git fetch --depth=1 origin "$ARTIFACT_COMMIT"
           git diff --name-only "$BUILD_COMMIT" HEAD > .artifacts/verification-changes.txt
+          git diff --name-only "$BUILD_COMMIT" "$ARTIFACT_COMMIT" > .artifacts/artifact-changes.txt
           python - <<'PY'
           from pathlib import Path
           allowed = {'.github/workflows/verify-software-snapshot.yml', 'Contrib/Tests/test-single-wallet-coinjoin.py'}
           assert set(Path('.artifacts/verification-changes.txt').read_text().splitlines()) <= allowed, 'Application source changed.'
+          assert set(Path('.artifacts/artifact-changes.txt').read_text().splitlines()) <= allowed, 'Input application source changed.'
           PY
           gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/$ARTIFACT_ID/zip" > .artifacts/built-snapshot.zip
           printf '%s  %s\n' "$ARCHIVE_SHA256" .artifacts/built-snapshot.zip | sha256sum --check
           python - <<'PY'
           from pathlib import Path
-          import tarfile, zipfile
+          import json, os, tarfile, zipfile
           root = Path.cwd().resolve()
           with zipfile.ZipFile('.artifacts/built-snapshot.zip') as archive:
               assert archive.testzip() is None
               for name in archive.namelist():
-                  if name.endswith('/') or not name.startswith(('packages/', '.artifacts/single-wallet/process/')):
+                  if name.endswith('/') or not name.startswith(('packages/', '.artifacts/single-wallet/process/', '.artifacts/single-wallet/coinjoin/')):
                       continue
                   destination = (root / name).resolve()
                   assert destination.is_relative_to(root)
@@ -86,9 +95,29 @@ jobs:
           destination.mkdir(parents=True)
           with tarfile.open('packages/MagicalCryptoWallet-99.99.99-linux-x64.tar.gz') as archive:
               archive.extractall(destination, filter='data')
+          reports = list(Path('.artifacts/single-wallet/coinjoin').glob('*/results.json'))
+          for path in reports:
+              result = json.loads(path.read_text())
+              assert result['independent_clients'] == 5 and result['coinjoin_transactions']
+              assert all(result[key] is True for key in ('encrypted_startup_without_authorization',
+                  'send_authorizes_automatic_coinjoin', 'later_wrong_password_rejected',
+                  'every_client_received_confirmed_mixed_outputs'))
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as stream:
+              stream.write('coinjoin_verified=' + ('true' if reports else 'false') + '\n')
+          Path('.artifacts/software-snapshot-provenance.json').write_text(json.dumps({
+              'package_build_commit': os.environ['BUILD_COMMIT'],
+              'input_artifact_commit': os.environ['ARTIFACT_COMMIT'],
+              'input_artifact_id': int(os.environ['ARTIFACT_ID']),
+              'input_workflow_run_id': int(os.environ['BUILD_RUN']),
+              'input_archive_sha256': os.environ['ARCHIVE_SHA256'],
+              'application_source_unchanged': True,
+              'reused_coinjoin_reports': [str(path) for path in reports]}, indent=2))
           PY
+          echo "LD_LIBRARY_PATH=$GITHUB_WORKSPACE/.artifacts/packages/linux-x64/MagicalCryptoWallet${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" >> "$GITHUB_ENV"
+          echo "NativeLibraryPath=$GITHUB_WORKSPACE/.artifacts/packages/linux-x64/MagicalCryptoWallet/libwabisabi.so" >> "$GITHUB_ENV"
           chmod +x MagicalCryptoWallet.IntegrationTests/BundledApps/Binaries/linux-x64/bitcoind
       - name: Five encrypted clients automatically complete CoinJoin after Send
+        if: steps.snapshot.outputs.coinjoin_verified != 'true'
         run: python Contrib/Tests/test-single-wallet-coinjoin.py --package .artifacts/packages/linux-x64/MagicalCryptoWallet --bitcoind MagicalCryptoWallet.IntegrationTests/BundledApps/Binaries/linux-x64/bitcoind
       - name: Source, generated code, assemblies, resources and symbols
         run: |
@@ -117,6 +146,7 @@ jobs:
             packages/*
             .artifacts/screenshots/*.png
             .artifacts/package-inspection/*.json
+            .artifacts/software-snapshot-provenance.json
             .artifacts/single-wallet/process/**/*.log
             .artifacts/single-wallet/process/**/results.json
             .artifacts/single-wallet/coinjoin/**/*.log
