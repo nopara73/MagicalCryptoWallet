@@ -121,7 +121,10 @@ def main():
         for _, url in clients:
             wait_for(lambda: rpc(url, "getwalletinfo")["coinjoinStatus"] != "Idle", timeout=360)
         rpc(node_url, "generatetoaddress", [1, mining_address], timeout=60)
-        # All clients are authorized before opening a round, so setup speed cannot split participants across rounds.
+        confirmation_height = rpc(node_url, "getblockcount")
+        for _, url in clients:
+            wait_for(lambda: (info := ready(url)) and info["syncHeight"] == info["targetHeight"] == confirmation_height, timeout=360)
+        # Wait for every P2P broadcast cooldown before opening a round to keep the participants together.
         service = launch(coordinator, [f"--datadir={coordinator_data}", f"--urls={coordinator_url}"], "coordinator")
         def coordinator_ready():
             assert service.poll() is None, "The isolated coordinator exited before becoming ready."
