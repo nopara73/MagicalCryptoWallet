@@ -748,11 +748,9 @@ public class TransactionFactoryTests
 	[Fact]
 	public void SelectLockTimeForTransaction()
 	{
-		var lockTimeZero = uint.MaxValue;
 		var samplingSize = 10_000;
-
-		var dictionary = Enumerable.Range(-99, 101).ToDictionary(x => (uint)x, x => 0);
-		dictionary[lockTimeZero] = 0;
+		var zeroLockTimes = 0;
+		var offsets = Enumerable.Range(-99, 100).ToDictionary(x => x, _ => 0);
 
 		var curTip = 100_000u;
 		var lockTimeSelector = new LockTimeSelector(new Random(123456));
@@ -760,15 +758,22 @@ public class TransactionFactoryTests
 		foreach (var i in Enumerable.Range(0, samplingSize))
 		{
 			var lt = (uint)lockTimeSelector.GetLockTimeBasedOnDistribution(curTip).Height;
-			var diff = lt == 0 ? lockTimeZero : lt - curTip;
-			dictionary[diff]++;
+			if (lt == 0)
+			{
+				zeroLockTimes++;
+			}
+			else
+			{
+				Assert.InRange(lt, curTip - 99, curTip);
+				offsets[(int)lt - (int)curTip]++;
+			}
 		}
 
-		Assert.InRange(dictionary[lockTimeZero], samplingSize * 0.85, samplingSize * 0.95); // around 90%
-		Assert.InRange(dictionary[0], samplingSize * 0.070, samplingSize * 0.080); // around 7.5%
-		Assert.InRange(dictionary[1], samplingSize * 0.003, samplingSize * 0.009); // around 0.65%
+		Assert.InRange(zeroLockTimes, samplingSize * 0.85, samplingSize * 0.95); // around 90%
+		// The observed next-tip group is clamped to the current tip, making around 8.15%.
+		Assert.InRange(offsets[0], samplingSize * 0.075, samplingSize * 0.090);
 
-		var rest = dictionary.Where(x => x.Key < 0).Select(x => x.Value);
+		var rest = offsets.Where(x => x.Key < 0).Select(x => x.Value);
 		Assert.DoesNotContain(rest, x => x > samplingSize * 0.001);
 	}
 
