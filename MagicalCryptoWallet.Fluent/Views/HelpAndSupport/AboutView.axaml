@@ -27,48 +27,10 @@
           </Button>
         </StackPanel>
         <DockPanel>
-          <StackPanel Spacing="10" DockPanel.Dock="Top" HorizontalAlignment="Stretch" Orientation="Vertical">
-            <!-- Links -->
-            <ItemsControl ItemsSource="{Binding Links}"
+          <ContentControl Content="{Binding SourceCode}"
+                          DockPanel.Dock="Top"
                           Margin="0 0 0 25"
-                          HorizontalAlignment="Stretch">
-              <Interaction.Behaviors>
-                <AdaptiveBehavior>
-                  <AdaptiveClassSetter MinWidth="0" MaxWidth="500" ClassName="narrow" />
-                </AdaptiveBehavior>
-              </Interaction.Behaviors>
-              <ItemsControl.Styles>
-                <Style Selector="ItemsControl">
-                  <Setter Property="ItemsPanel">
-                    <Setter.Value>
-                      <ItemsPanelTemplate>
-                        <WrapPanel />
-                      </ItemsPanelTemplate>
-                    </Setter.Value>
-                  </Setter>
-                </Style>
-                <Style Selector="ItemsControl > ContentPresenter">
-                  <Setter Property="HorizontalAlignment" Value="Center" />
-                  <Setter Property="VerticalAlignment" Value="Center" />
-                </Style>
-                <Style Selector="ItemsControl /template/ #PART_ItemsPresenter > WrapPanel">
-                  <Setter Property="HorizontalAlignment" Value="Center" />
-                </Style>
-                <Style Selector="ItemsControl.narrow /template/ #PART_ItemsPresenter > WrapPanel">
-                  <Setter Property="HorizontalAlignment" Value="Center" />
-                  <Setter Property="Orientation" Value="Vertical" />
-                </Style>
-              </ItemsControl.Styles>
-              <ItemsControl.DataTemplates>
-                <DataTemplate DataType="vm:SeparatorViewModel">
-                  <TextBlock VerticalAlignment="Center"
-                             Margin="5 -0.5"
-                             Text="-"
-                             IsVisible="True" />
-                </DataTemplate>
-              </ItemsControl.DataTemplates>
-            </ItemsControl>
-          </StackPanel>
+                          HorizontalAlignment="Center" />
           <!-- License -->
           <DockPanel HorizontalAlignment="Center" DockPanel.Dock="Top">
             <TextBlock Margin=" 0 0 0 -0.5"
