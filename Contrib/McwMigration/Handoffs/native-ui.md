@@ -155,6 +155,11 @@ if the source comparison reports any concurrent compiler-input change.
 
 The immutable fixture SHA256 remains
 `02e8b976e6671d70f07eca2c354b0014c2486065c8f9ef9d3b01ffb72328002e`.
+Both final run manifests bind all 1283 captured source Git blobs to published
+`b40d06ea2e397e9282a24f1f06f6e68f8077d3d4`; the before/after hashes match,
+and the snapshot parser raw bytes equal the actual compiler inputs.
+`native-ui-evidence.json` persists the concrete commit, source-set/parser/input
+hashes, checks, binary hashes, historical-record locations and pending gates.
 Activation, operation registration, native in-progress cancellation and
 fifteen-package retirement flags remain false until atomic integration/proof.
 

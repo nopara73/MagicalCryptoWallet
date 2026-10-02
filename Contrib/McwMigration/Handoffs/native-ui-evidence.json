@@ -1,0 +1,90 @@
+{
+  "schema": 1,
+  "scope": "Existing bounded release-highlights Markdown parser audit fix; shared cutover pending",
+  "implementation_commit": "b40d06ea2e397e9282a24f1f06f6e68f8077d3d4",
+  "remote_ancestry_verified": true,
+  "source_binding": {
+    "captured_source_inputs": 1283,
+    "canonical_source_set_sha256": "27f1d874d21f9f3e84c66016324962ae1479d63e5fab957530581667c0bc0b5b",
+    "before_after_inputs_match": true,
+    "publication_source_git_blobs_match": true,
+    "git_binding_normalizes_CRLF_to_LF": true,
+    "parser": {
+      "mod.rs": {
+        "compiler_raw_sha256": "af100d3f1cd2e0c0a42de88dfbdf9fed5336e978b92bf52804f715d5fe749951",
+        "compiler_lf_sha256": "c8e5a1dfec5f440e01dc030d1f613077774a0dfab409a7e4fe0b8c6a5bd1685f",
+        "published_git_blob": "3e8446b8efdd0c653851ed06108796466db62c29",
+        "snapshot_raw_sha256": "af100d3f1cd2e0c0a42de88dfbdf9fed5336e978b92bf52804f715d5fe749951"
+      },
+      "inline.rs": {
+        "compiler_raw_sha256": "2c671ee4b3c3aac683e6d7593d9eea4b006e03bc3298519eb2478c5358e6cae8",
+        "compiler_lf_sha256": "2c671ee4b3c3aac683e6d7593d9eea4b006e03bc3298519eb2478c5358e6cae8",
+        "published_git_blob": "3ebaec33494b2a522bff6535f704f28a47eec722",
+        "snapshot_raw_sha256": "2c671ee4b3c3aac683e6d7593d9eea4b006e03bc3298519eb2478c5358e6cae8"
+      }
+    }
+  },
+  "immutable_fixture": {
+    "lf_sha256": "02e8b976e6671d70f07eca2c354b0014c2486065c8f9ef9d3b01ffb72328002e",
+    "inputs": {
+      "current.md": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "96ac5f435109bfeec8edc5f0835445b522790be4.md": "6981582a79788410180ae504ddd201baf945b4540d601210ff4b6b46530173e6",
+      "7fd820d251d863004b7ed6f0ec3345e1ef4abf8c.md": "d04fa8c855f58b69e24b4f77b9c6107b09a952ad325aabfce7ebf5df84ae2570",
+      "92c20e3dcbdeec8d04fb1402d6c48a37f52f9c7b.md": "05cd678c48409755b6427c0ad15464284d68a3835b07954250f9eb97c734a3e0",
+      "15f97c5446a1ff4c0c1f59c06ef1cd6c8bcea841.md": "1c087a5da09c59e883b70df06d36fbcffd3410427d59fc6af07771eb2be74d87",
+      "fa2b79e0672a4270f74a8dfa76654f67b31bdbe5.md": "5aa8596e004087436b1188ffed6559a1c33d020890eb1ef5ba885a97375cdf89",
+      "0354c5fdfedb7bfa1d9ff01bfbf7a10cc8fa1ff9.md": "ff1680bd4f36fac00c40f2884b207a8cf948c59a7436c8feb7635a5692465e08",
+      "75ef276a4e75c4eea4d8da0f1b7700592570f0f7.md": "ce71164bdf625ce37bca12333a626ae762b5b17d13ccaa61fdb73d9b2d428e89",
+      "5bb82bc2340e9bcb88506936d377bcd59c780884.md": "322bd00d5c3fa064613e45fac83f813bd77b06b35c303e8a2a5bec68166abeac",
+      "4060397445fdc78d1f5ee1430064bb171329b480.md": "335d50c14c0f9466400da25abb3f0370e5c7e9391cad40a2383ff1cd96dd2e60",
+      "7490b92feb7011347c5fd2eecc274d5d9e79e357.md": "220d92322260822aec72e1fc7cf6ec8093fd944819be31eb3d4c1703ea9b5ba9",
+      "1a35a3f5c77307187dec46b35bae3ff8d6703807.md": "0ccd304fb84b7db43b926ea03effb4483e402a50d43f08728fc12e230c1950da",
+      "85bdfc671c17ac8e9dcba29da9ca7319d649390d.md": "a61e0e7144073ac11cf8eee910eac1cfbb9ee97aaae7893131faf07f8ea1521c"
+    },
+    "legacy_cases_matched": 13
+  },
+  "verification": {
+    "rust_tests_passed": 19,
+    "strict_parser_clippy_warnings": 0,
+    "managed_build_warnings": 0,
+    "managed_build_errors": 0,
+    "render_cases": 16,
+    "actual_one_host_proposed_candidate": {
+      "realHost": true,
+      "operation": "0x1100",
+      "documents": 13,
+      "currentBlocks": 0,
+      "malformedRejected": 4,
+      "adversarialLimits": 2,
+      "canceled": true,
+      "nativeInProgressCancellationVerified": false,
+      "concurrent": 12,
+      "utc": "2026-10-02T14:30:47.075557Z"
+    },
+    "built_binary_sha256": {
+      "mcw.exe": "1432487c7efafb1a47bacc3050c936598f004a98fe58ab482981857e738a3afa",
+      "NativeUiBridgeProbe.dll": "18614c8841ccdf8c9325c28bdd29cebfad97d8e39b5476372e410e543a838c8e"
+    }
+  },
+  "evidence": {
+    "parser_render_run": ".artifacts/native-ui-markdown-verification/runs/20261002T142815970Z/",
+    "host_run": ".artifacts/native-ui-markdown-verification/host-runs/20261002T143015054Z/",
+    "old_records_preserved": ".artifacts/native-ui-markdown-history/audit-before-20261002T140413Z/",
+    "old_snapshot_not_retrospectively_bound": true
+  },
+  "gates": {
+    "production_integrated": false,
+    "operation_registered": false,
+    "markdown_dependency_removed": false,
+    "fifteen_package_artifact_retirement_verified": false,
+    "native_in_progress_reader_cancellation_verified": false,
+    "native_release_import_audit_verified": false,
+    "five_target_release_verified": false,
+    "prepared_registration_uses_live_reader_token": false
+  },
+  "notes": [
+    "The prepared dispatch uses AtomicBool(false); managed canceled wait is separate from native CPU cancellation.",
+    "Current retained Fluent source builds with the old Markdown caller/package still present.",
+    "Historical oracle data preserves prior content without restoring retired product features."
+  ]
+}
