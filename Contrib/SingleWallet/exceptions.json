@@ -30,12 +30,6 @@
     "reason": "One explicitly forbidden negative audit fixture."
   },
   {
-    "path": "Contrib/Tests/regtest-coinjoin-test.sh",
-    "line": 66,
-    "line_sha256": "c14f299e25ff85396d63f107b9a1b429416728fc259d3aac0f071b883328589d",
-    "reason": "Bitcoin Core's independent wallet-management interface."
-  },
-  {
     "path": "Contrib/Tests/test-single-wallet-process.py",
     "line": 168,
     "line_sha256": "65095ab5ede43fe5b6d33b7e4ab21727a29a10e940d8e0d7d3bb88870467d304",

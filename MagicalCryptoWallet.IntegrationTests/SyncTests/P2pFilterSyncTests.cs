@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using MagicalCryptoWallet.IntegrationTests.Infrastructure;
 using Xunit;
@@ -66,8 +67,17 @@ public class P2pFilterSyncTests
 	{
 		// Arrange
 		await using var env = await RegTestEnvironment.CreateAsync(_fixture);
+		var peersBeforeSync = (await env.RpcClient.GetPeersInfoAsync()).Length;
 
 		await env.SyncFiltersP2PAsync(TestContext.Current.CancellationToken);
+		// A completed synchronization must retire its peer and event subscriptions.
+		// Otherwise another sync races the old worker against the same filter-header store.
+		var peerDeadline = DateTime.UtcNow + TimeSpan.FromSeconds(10);
+		while ((await env.RpcClient.GetPeersInfoAsync()).Length > peersBeforeSync && DateTime.UtcNow < peerDeadline)
+		{
+			await Task.Delay(100, TestContext.Current.CancellationToken);
+		}
+		Assert.Equal(peersBeforeSync, (await env.RpcClient.GetPeersInfoAsync()).Length);
 		var initialTip = env.FilterStore.GetTip();
 		Assert.NotNull(initialTip);
 

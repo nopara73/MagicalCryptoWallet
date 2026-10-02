@@ -31,7 +31,9 @@ public sealed class DesktopActivation : IAsyncDisposable
 	{
 		var path = Path.TrimEndingDirectorySeparator(Path.GetFullPath(directory));
 		if (OperatingSystem.IsWindows()) { path = path.ToUpperInvariant(); }
-		return "mcw-activate-" + Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(Environment.UserName + "\0" + path)))[..32];
+		var hash = SHA256.HashData(Encoding.UTF8.GetBytes(Environment.UserName + "\0" + path));
+		// Keep all 128 identity bits while fitting macOS's long per-user temporary directory.
+		return "mcw-" + Convert.ToBase64String(hash[..16]).TrimEnd('=').Replace('+', '-').Replace('/', '_');
 	}
 	public void Bind(Action show)
 	{
@@ -41,13 +43,15 @@ public sealed class DesktopActivation : IAsyncDisposable
 	}
 	private async Task ListenAsync(CancellationToken cancel)
 	{
+		using var server = new NamedPipeServerStream(_pipeName, PipeDirection.InOut, 1,
+			PipeTransmissionMode.Byte, PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly);
 		while (!cancel.IsCancellationRequested)
 		{
+			bool connected = false;
 			try
 			{
-				using var server = new NamedPipeServerStream(_pipeName, PipeDirection.InOut, 1,
-					PipeTransmissionMode.Byte, PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly);
 				await server.WaitForConnectionAsync(cancel).ConfigureAwait(false);
+				connected = true;
 				using var requestTimeout = CancellationTokenSource.CreateLinkedTokenSource(cancel);
 				requestTimeout.CancelAfter(TimeSpan.FromSeconds(2));
 				var request = new byte[64];
@@ -61,9 +65,12 @@ public sealed class DesktopActivation : IAsyncDisposable
 					show?.Invoke();
 				}
 				await server.WriteAsync(new byte[] { valid ? (byte)1 : (byte)0 }, requestTimeout.Token).ConfigureAwait(false);
+				// Do not close the peer before it finishes credential checks and reads our acknowledgement.
+				await server.ReadExactlyAsync(new byte[1], requestTimeout.Token).ConfigureAwait(false);
 			}
 			catch (OperationCanceledException) when (cancel.IsCancellationRequested) { break; }
 			catch (Exception ex) when (ex is IOException or OperationCanceledException) { Logger.LogDebug(ex); }
+			finally { if (connected) { server.Disconnect(); } }
 		}
 	}
 	public static async Task<bool> RequestAsync(string directory, Network network, bool silent)
@@ -80,9 +87,10 @@ public sealed class DesktopActivation : IAsyncDisposable
 			await client.WriteAsync(packet, timeout.Token).ConfigureAwait(false);
 			var response = new byte[1];
 			await client.ReadExactlyAsync(response, timeout.Token).ConfigureAwait(false);
+			await client.WriteAsync(response, timeout.Token).ConfigureAwait(false);
 			return response[0] == 1;
 		}
-		catch (Exception ex) when (ex is IOException or OperationCanceledException or UnauthorizedAccessException) { return false; }
+		catch (Exception ex) when (ex is IOException or OperationCanceledException or UnauthorizedAccessException) { Logger.LogInfo(ex); return false; }
 	}
 	public async ValueTask DisposeAsync()
 	{

@@ -98,6 +98,9 @@ jobs:
           suffix=''
           case "$bitcoin_rid" in osx-*) bitcoin_rid=osx64 ;; win-*) suffix=.exe ;; esac
           python Contrib/Tests/test-single-wallet-process.py --package '.artifacts/packages/${{ matrix.rid }}/MagicalCryptoWallet' --bitcoind "MagicalCryptoWallet.IntegrationTests/bin/Release/net10.0/BundledApps/Binaries/$bitcoin_rid/bitcoind$suffix"
+      - name: Send authorizes automatic CoinJoin across five isolated encrypted clients
+        if: matrix.rid == 'linux-x64'
+        run: python Contrib/Tests/test-single-wallet-coinjoin.py --package .artifacts/packages/linux-x64/MagicalCryptoWallet --bitcoind MagicalCryptoWallet.IntegrationTests/bin/Release/net10.0/BundledApps/Binaries/linux-x64/bitcoind
       - name: Retired single-wallet interfaces, generated code, symbols and package contents
         run: python Contrib/SingleWallet/audit.py --artifacts .artifacts/packages/${{ matrix.rid }}/MagicalCryptoWallet
       - name: Removal audit negative fixtures and CLI syntax
@@ -136,6 +139,8 @@ jobs:
             .artifacts/single-wallet/process/**/*.log
             .artifacts/single-wallet/process/**/results.json
             .artifacts/single-wallet/process/**/*.png
+            .artifacts/single-wallet/coinjoin/**/*.log
+            .artifacts/single-wallet/coinjoin/**/results.json
           compression-level: 0
           if-no-files-found: error
   container:
