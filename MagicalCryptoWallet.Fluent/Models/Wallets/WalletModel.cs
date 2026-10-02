@@ -90,7 +90,7 @@ public partial class WalletModel : ReactiveObject, IWalletModel, IDisposable
 		Wallet = wallet;
 		AmountProvider = amountProvider;
 
-		Auth = new WalletAuthorizationModel(services.WalletSession, Wallet);
+		Auth = new WalletAuthorizationModel(Wallet);
 		_sessionStatus = services.WalletSession.Snapshot;
 		Status = Observable.Create<WalletSessionSnapshot>(observer => services.WalletSession.Subscribe(observer.OnNext))
 			.ObserveOn(RxApp.MainThreadScheduler).Replay(1).RefCount();
