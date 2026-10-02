@@ -3,11 +3,9 @@
 using System;
 using System.Buffers.Binary;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Win32.SafeHandles;
 
 internal static class ContentRawHost
 {
@@ -109,15 +107,12 @@ internal static class ContentRawHost
     }
 
     private sealed record Frame(byte Kind, ulong Id, ushort Operation, byte[] Payload);
-    [DllImport("kernel32.dll", SetLastError = true)]
-    private static extern IntPtr GetStdHandle(int handle);
     private static void CloseOutput(Stream output)
     {
         // Console streams need not own their OS descriptor. Close this child's
         // real pipe endpoint so native EOF occurs while its input stays open.
         output.Dispose();
-        using var descriptor = new SafeFileHandle(OperatingSystem.IsWindows() ? GetStdHandle(-11) : new IntPtr(1), true);
-        Check(!descriptor.IsInvalid, "Owned stdout descriptor required for EOF");
+        ProbePipe.CloseOutput();
     }
     private static async Task<Frame> Read(Stream input, CancellationToken token)
     {

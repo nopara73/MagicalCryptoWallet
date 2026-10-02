@@ -112,8 +112,9 @@ def main():
     assert 'pub mod content_service;' in (root / 'mcw/src/lib.rs').read_text()
     assert 'McwContentDecodingHandler' in factory.read_text() and 'DecompressionMethods.None' in factory.read_text()
     pinned = sources(root)
-    tests = (fixture_root / 'compression_content_host_fixture.cs',
-             fixture_root / 'compression_fixtures/content_raw_host.cs', Path(__file__).resolve())
+    compiled_tests = (fixture_root / 'compression_content_host_fixture.cs',
+                      fixture_root / 'compression_fixtures/content_raw_host.cs', root / 'Contrib/Mcw/ProbePipe.cs')
+    tests = (*compiled_tests, Path(__file__).resolve())
     test_hashes = {str(path): sha(path) for path in tests}
     binary_hash = sha(native)
     out.mkdir(parents=True)
@@ -135,7 +136,7 @@ def main():
         ET.SubElement(properties, name).text = value
     items = ET.SubElement(project, 'ItemGroup')
     ET.SubElement(items, 'ProjectReference', {'Include': str(root / 'MagicalCryptoWallet/MagicalCryptoWallet.csproj')})
-    for path in (root / 'MagicalCryptoWallet.Client/Application/ManagedApplicationHost.cs', *tests[:2]):
+    for path in (root / 'MagicalCryptoWallet.Client/Application/ManagedApplicationHost.cs', *compiled_tests):
         ET.SubElement(items, 'Compile', {'Include': str(path)})
     ET.indent(project)
     project_path = out / 'ContentActualHost.csproj'

@@ -42,6 +42,7 @@ def main():
     files.discard("mcw/tests/compression_content_inbox_tests.rs")
     files.add("mcw/tests/compression_fixtures/content_inbox_tests.rs")
     files.add("mcw/tests/compression_fixtures/content_raw_host.cs")
+    files.add("Contrib/Mcw/ProbePipe.cs")
     files = {p for p in files if not p.startswith((
         "MagicalCryptoWallet/BundledApps/Binaries/", "MagicalCryptoWallet/Tor/Geoip/"))}
     for directory in ("mcw/src/content_service", "MagicalCryptoWallet/Mcw/Content"):
@@ -93,6 +94,7 @@ def main():
     ET.SubElement(items, "Compile", {"Include": "../MagicalCryptoWallet.Client/Application/ManagedApplicationHost.cs"})
     ET.SubElement(items, "Compile", {"Include": "../mcw/tests/compression_content_host_fixture.cs"})
     ET.SubElement(items, "Compile", {"Include": "../mcw/tests/compression_fixtures/content_raw_host.cs"})
+    ET.SubElement(items, "Compile", {"Include": "../Contrib/Mcw/ProbePipe.cs"})
     ET.indent(project)
     ET.ElementTree(project).write(fixture / "ContentActualHost.csproj", encoding="unicode")
     record = {

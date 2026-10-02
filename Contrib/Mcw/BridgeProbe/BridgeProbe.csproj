@@ -4,6 +4,7 @@
     <DisableImplicitNamespaceImports>true</DisableImplicitNamespaceImports>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="../ProbePipe.cs" Link="ProbePipe.cs" />
     <ProjectReference Include="../../../MagicalCryptoWallet.Fluent/MagicalCryptoWallet.Fluent.csproj" />
     <PackageReference Include="QRackers" PrivateAssets="all" />
   </ItemGroup>

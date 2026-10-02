@@ -72,11 +72,13 @@ static class Program
         var cases = JsonSerializer.Deserialize<List<Symbol>>(File.ReadAllText(args[0]))!;
         var tested = await CheckSymbols(cases);
         var retained = await CheckRetainedImages(args[2]);
-        var pixels = new byte[2048 * 1024];
+        var pixels = new byte[4096 * 4096];
         new Random(7331).NextBytes(pixels);
         using var cancellation = new CancellationTokenSource();
-        var pending = McwQrDecoder.DecodeLuminanceAsync(2048, 1024, 2048, pixels, cancellation.Token);
-        await Task.Delay(40);
+        var pending = McwQrDecoder.DecodeLuminanceAsync(4096, 4096, 4096, pixels, cancellation.Token);
+        // Cancel an incomplete upload. A decode that already finished before a
+        // wall-clock delay is valid success, not ignored cancellation.
+        Require(!pending.IsCompleted, "Synthetic upload completed before cancellation injection.");
         cancellation.Cancel();
         var cancelled = false;
         try { await pending; } catch (OperationCanceledException) { cancelled = true; }
@@ -85,7 +87,7 @@ static class Program
             "Actual host transport failed after cancellation.");
         File.WriteAllText(args[1], JsonSerializer.Serialize(new { production_caller_leaf_cases = tested, retained_repository_images = retained,
             actual_managed_transport = true, patched_host_dispatch_verified = true, cancellation_verified = cancelled,
-            cancellation_scope = "40 ms delay before caller cancellation; not synchronized to in-progress FINISH",
+            cancellation_scope = "incomplete multi-chunk upload; immediate caller cancellation; no native FINISH checkpoint",
             diagnostic_redaction_verified = true,
             capture_backend_replaced = false, camera_activated = false, shipping_host_dispatch_verified = false }));
     }
