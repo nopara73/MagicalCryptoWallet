@@ -532,3 +532,20 @@ hook remains a review patch for the idle host owner; NBitcoin, other filter
 responsibilities, full managed-suite/release acceptance and the four other target
 runs remain explicitly retained/unverified. No additional dependency/task scope
 or shared-host edits are authorized by this evidence.
+
+### Retained GUI launcher contract
+
+The preceding caller proof is historical evidence pinned to
+`96afc8ee20ed8c2af101a9ae14652e714c00a576`; its original logs, results and
+source manifest remain preserved. The current fixture copies only its synthetic
+friend-assembly apphost to `magicalcryptowallet.exe` and launches it through
+`mcw gui`, matching the retained GUI host's executable discovery and argument
+contract. The managed assembly name, actual caller cases, retained test sources
+and singleton observer are unchanged.
+
+For current-source verification, the default verifier prepares a fresh snapshot,
+applies the same review patch only there, and records its source pin and hashes
+in the new `caller-verification.json`. Successful host exit is still required.
+The removal audit and its negative fixtures apply without new exceptions or
+exclusions. This launcher correction does not activate the production matching
+caller or dispatch; shared host integration remains with its owner.

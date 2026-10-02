@@ -76,8 +76,9 @@ try {
         Tee-Object -FilePath (Join-Path $taskEvidence 'actual-client-and-caller-probe-build.txt')
     if ($LASTEXITCODE -ne 0) { throw 'Actual Client and actual retained-test/caller probe compilation failed' }
     # Friend-assembly name grants existing test access. The copied apphost still
-    # loads that same assembly; this synthetic alias is never shipped.
-    Copy-Item -LiteralPath (Join-Path $taskBin 'MagicalCryptoWallet.Tests.exe') -Destination (Join-Path $taskBin 'magicalcryptowalletd.exe')
+    # loads that same assembly through the retained GUI child name; this
+    # synthetic alias is never shipped.
+    Copy-Item -LiteralPath (Join-Path $taskBin 'MagicalCryptoWallet.Tests.exe') -Destination (Join-Path $taskBin 'magicalcryptowallet.exe')
     Copy-Item -LiteralPath (Join-Path $env:CARGO_TARGET_DIR 'debug/mcw.exe') -Destination $taskBin
     # A short ignored state path keeps unchanged retained SQLite tests below
     # the native Windows path limit; the source snapshot remains isolated.
@@ -85,7 +86,7 @@ try {
     $taskStateRoot = [IO.Path]::GetFullPath((Join-Path $taskSharedWorkspace ('.artifacts/cfs-' + [Guid]::NewGuid().ToString('N').Substring(0,8))))
     if (-not $taskStateRoot.StartsWith($taskSharedWorkspace + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase) -or
         (Test-Path -LiteralPath $taskStateRoot)) { throw 'Synthetic state path is not a fresh workspace-owned directory' }
-    $taskArguments = @('daemon',('"' + $taskReport + '"'),('"' + $taskStateRoot + '"'))
+    $taskArguments = @('gui',('"' + $taskReport + '"'),('"' + $taskStateRoot + '"'))
     $taskHost = Start-Process -FilePath (Join-Path $taskBin 'mcw.exe') -ArgumentList $taskArguments -WorkingDirectory $taskBin -PassThru -WindowStyle Hidden -RedirectStandardOutput (Join-Path $taskEvidence 'caller-host-stdout.txt') -RedirectStandardError (Join-Path $taskEvidence 'caller-host-stderr.txt')
     try {
         $taskElapsed = [Diagnostics.Stopwatch]::StartNew()
