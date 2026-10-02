@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>MagicalCryptoWallet.Fluent.Desktop</AssemblyName>
+    <IsPackable>false</IsPackable>
+    <McwHostSourceRoot Condition="'$(McwHostSourceRoot)' == ''">$(MSBuildProjectDirectory)/../../..</McwHostSourceRoot>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../../MagicalCryptoWallet/MagicalCryptoWallet.csproj" />
+    <Compile Include="$(McwHostSourceRoot)/MagicalCryptoWallet.Client/Application/ManagedApplicationHost.cs" Link="ActualManagedApplicationHost.cs" />
+  </ItemGroup>
+</Project>
