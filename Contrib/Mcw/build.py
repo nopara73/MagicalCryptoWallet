@@ -50,9 +50,12 @@ def build(rid, version="99.99.99", test=False):
         env.pop("CARGO_ENCODED_RUSTFLAGS", None)
         linker_key = "CARGO_TARGET_" + target.upper().replace("-", "_") + "_LINKER"
         env.setdefault("MCW_NATIVE_LINKER", env.get(linker_key, "cc"))
-        env[linker_key] = str(ROOT / "Contrib/Mcw/link-linux.sh")
+        # Compiler build helpers use the toolchain's prebuilt unwinding std.
+        # Apply the shipping-only runtime policy to the final mcw link alone.
+        env[linker_key] = env["MCW_NATIVE_LINKER"]
         subprocess.run([cargo, "-Z", "build-std=std,panic_abort", "-Z", "build-std-features=",
-                        "build", "--release", "--target", target, "--locked"], cwd=cwd, env=env, check=True)
+                        "rustc", "--release", "--target", target, "--locked", "--bin", "mcw",
+                        "--", "-C", "linker=" + str(ROOT / "Contrib/Mcw/link-linux.sh")], cwd=cwd, env=env, check=True)
     else:
         subprocess.run([cargo, "build", "--release", "--target", target, "--locked", "--offline"], cwd=cwd, env=env, check=True)
     binary = Path(env["CARGO_TARGET_DIR"]) / target / "release" / ("mcw.exe" if rid.startswith("win") else "mcw")

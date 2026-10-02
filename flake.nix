@@ -62,7 +62,7 @@
             export MCW_VERSION=99.99.99
             export RUSTC_BOOTSTRAP=1
             export RUSTFLAGS="-C panic=abort -C default-linker-libraries=no"
-            export CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_LINKER="${pkgs.writeShellScript "mcw-link-linux" (builtins.readFile ./Contrib/Mcw/link-linux.sh)}"
+            mcwShippingLinker="${pkgs.writeShellScript "mcw-link-linux" (builtins.readFile ./Contrib/Mcw/link-linux.sh)}"
             mkdir -p .cargo
             cat > .cargo/config.toml <<EOF
             [source.crates-io]
@@ -70,7 +70,7 @@
             [source.compiler-std]
             directory = "${rustStdVendor}"
             EOF
-            cargo -Z build-std=std,panic_abort -Z build-std-features= build --target x86_64-unknown-linux-gnu --release --locked --offline
+            cargo -Z build-std=std,panic_abort -Z build-std-features= rustc --target x86_64-unknown-linux-gnu --release --locked --offline --bin mcw -- -C "linker=$mcwShippingLinker"
           '';
           doCheck = true;
           checkPhase = ''

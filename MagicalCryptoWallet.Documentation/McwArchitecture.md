@@ -32,6 +32,8 @@ Linux release builds also rebuild the pinned standard library with aborting pani
 
 The Linux compiler driver omits the aborting, backtrace-free standard library's unused `-lgcc_s` request and applies early `--as-needed`. This prevents GNU ARM linkers from retaining an empty GCC runtime dependency. With default linker libraries disabled, a genuinely needed unwinder symbol fails linking; the runtime audit also remains strict.
 
+The shipping linker policy is passed through `cargo rustc` only to the final `mcw` binary. Compiler build helpers use the normal native compiler and the toolchain's prebuilt unwinding standard library; these build-only executables are never packaged.
+
 ## Bridge v1
 
 Production adapters in `MagicalCryptoWallet/Mcw/<Service>/` depend on the core
