@@ -1,0 +1,151 @@
+diff --git a/mcw/src/app.rs b/mcw/src/app.rs
+--- a/mcw/src/app.rs
++++ b/mcw/src/app.rs
+@@ -263,6 +263,16 @@
+             frame.reply(Vec::new()).write(output)
+         }
+         bridge::QR => bridge::encode_qr(frame).write(output),
++        crate::socks5::probe_service::PROBE => {
++            match crate::socks5::probe_service::execute(
++                frame.operation,
++                &frame.payload,
++                &crate::socks5::transport::Cancellation::new(),
++            ) {
++                Ok(response) => frame.reply(response.to_vec()).write(output),
++                Err(cause) => frame.error(cause.code(), cause.message()).write(output),
++            }
++        }
+         bridge::RESTART | bridge::CRASH | bridge::UPDATE => {
+             let args = match bridge::strings(&frame.payload) {
+                 Ok(args) => args,
+diff --git a/MagicalCryptoWallet/Mcw/Network/McwSocksProbe.cs b/MagicalCryptoWallet/Mcw/Network/McwSocksProbe.cs
+new file mode 100644
+--- /dev/null
++++ b/MagicalCryptoWallet/Mcw/Network/McwSocksProbe.cs
+@@ -0,0 +1,49 @@
++using System;
++using System.Buffers.Binary;
++using System.IO;
++using System.Net;
++using System.Threading;
++using System.Threading.Tasks;
++
++namespace MagicalCryptoWallet.Mcw.Network;
++
++public enum SocksProbeFailure : byte
++{
++    None = 0, Io = 1, TimedOut = 2, InvalidVersion = 3, MethodRejected = 4,
++    UnexpectedEof = 5, Closed = 6, Cancelled = 7, Protocol = 8
++}
++
++public readonly record struct SocksProbeResult(bool IsReady, SocksProbeFailure Failure);
++
++/// <summary>Typed transitional adapter; Rust owns the socket and SOCKS bytes.</summary>
++public static class McwSocksProbe
++{
++    public const ushort Operation = 0x0805;
++
++    public static async Task<SocksProbeResult> CheckAsync(EndPoint endpoint, CancellationToken cancellationToken)
++    {
++        cancellationToken.ThrowIfCancellationRequested();
++        if (endpoint is not IPEndPoint proxy || !IPAddress.IsLoopback(proxy.Address) ||
++            proxy.Port is < 1 or > ushort.MaxValue || proxy.Address.IsIPv4MappedToIPv6 ||
++            (proxy.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6 && proxy.Address.ScopeId != 0))
++        {
++            throw new InvalidOperationException("The Tor SOCKS5 probe requires a literal loopback endpoint.");
++        }
++        var address = proxy.Address.GetAddressBytes();
++        if (address.Length is not (4 or 16)) { throw new InvalidOperationException("Unsupported Tor SOCKS5 endpoint."); }
++        var payload = new byte[address.Length + 4];
++        payload[0] = 1;
++        payload[1] = address.Length == 4 ? (byte)1 : (byte)4;
++        address.CopyTo(payload, 2);
++        BinaryPrimitives.WriteUInt16BigEndian(payload.AsSpan(address.Length + 2), (ushort)proxy.Port);
++        var response = await McwApplicationServices.Current.RequestAsync(Operation, payload, cancellationToken).ConfigureAwait(false);
++        if (response.Length != 3 || response[0] != 1 || response[1] > 1 || response[2] > 8 ||
++            (response[1] == 1 && response[2] != 0) || (response[1] == 0 && response[2] == 0))
++        {
++            throw new IOException("Invalid SOCKS5 readiness response.");
++        }
++        var failure = (SocksProbeFailure)response[2];
++        if (failure == SocksProbeFailure.Cancelled) { throw new OperationCanceledException(cancellationToken); }
++        return new SocksProbeResult(response[1] == 1, failure);
++    }
++}
+diff --git a/MagicalCryptoWallet/Tor/TorProcessManager.cs b/MagicalCryptoWallet/Tor/TorProcessManager.cs
+--- a/MagicalCryptoWallet/Tor/TorProcessManager.cs
++++ b/MagicalCryptoWallet/Tor/TorProcessManager.cs
+@@ -1,6 +1,6 @@
+ using System.Diagnostics;
+ using System.IO;
+-using System.Net.Sockets;
++using MagicalCryptoWallet.Mcw.Network;
+ using System.Runtime.InteropServices;
+ using MagicalCryptoWallet.BundledApps;
+ using MagicalCryptoWallet.Crypto.Randomness;
+@@ -13,12 +13,6 @@
+ 
+ public class TorProcessManager
+ {
+-	private static readonly byte[] NoAuthHandshakeMsg = [
+-		0x05, // Version
+-		0x01, // One method
+-		0x00, // No authentication
+-	];
+-
+ 	public TorProcessManager(TorSettings settings, EventBus eventBus)
+ 	{
+ 		_settings = settings;
+@@ -79,43 +73,19 @@
+ 	/// </summary>
+ 	public virtual async Task<bool> IsTorRunningAsync(CancellationToken cancellationToken)
+ 	{
+-		if (!_settings.SocksEndpoint.TryGetHostAndPort(out var host, out var port))
+-		{
+-			throw new InvalidOperationException("The Tor SOCKS5 endpoint is not supported.");
+-		}
+-
+ 		try
+ 		{
+-			using var tcp = new TcpClient(_settings.SocksEndpoint.AddressFamily);
+-			await tcp.ConnectAsync(host, port.Value, cancellationToken).ConfigureAwait(false);
+-
+-			var networkStream = tcp.GetStream();
+-
+-			await networkStream.WriteAsync(NoAuthHandshakeMsg, cancellationToken).ConfigureAwait(false);
+-
+-			var response = new byte[2];
+-			await networkStream.ReadExactlyAsync(response, cancellationToken).ConfigureAwait(false);
+-			bool isTorRunning = response is [0x05, 0x00];
+-
+-			_eventBus.Publish(new TorConnectionStateChanged(isTorRunning));
+-			return isTorRunning;
++			var result = await McwSocksProbe.CheckAsync(_settings.SocksEndpoint, cancellationToken).ConfigureAwait(false);
++			if (!result.IsReady)
++			{
++				Logger.LogInfo($"Tor SOCKS5 readiness probe failed: {result.Failure}.");
++			}
++			_eventBus.Publish(new TorConnectionStateChanged(result.IsReady));
++			return result.IsReady;
+ 		}
+-		catch (SocketException socketException) when (socketException.SocketErrorCode == SocketError.TimedOut && cancellationToken.IsCancellationRequested)
++		catch (IOException)
+ 		{
+-			// The expectation is that if the conditions are met that the user really canceled the operation. Rarely it might not be true but it's a reasonable assumption.
+-			throw new OperationCanceledException("The operation was canceled.", socketException);
+-		}
+-		catch (SocketException ex)
+-		{
+-			// Any other socket error means Tor is not usable right now.
+-			Logger.LogInfo($"Failed to connect to {_settings.SocksEndpoint}. Socket error code was {ex.SocketErrorCode} ({ex.ErrorCode}): {ex.Message}");
+-			_eventBus.Publish(new TorConnectionStateChanged(false));
+-			return false;
+-		}
+-		catch (IOException ex)
+-		{
+-			// Handles reading and writing operations of the network stream.
+-			Logger.LogInfo($"SOCKS5 handshake with {_settings.SocksEndpoint} failed: {ex.Message}");
++			Logger.LogInfo("Tor SOCKS5 readiness service is unavailable.");
+ 			_eventBus.Publish(new TorConnectionStateChanged(false));
+ 			return false;
+ 		}

@@ -9,6 +9,9 @@
 //! This is the RFC1928 TCP subset used by Tor, plus RFC1929 authentication and
 //! Tor RESOLVE/RESOLVE_PTR. GSSAPI, BIND and UDP ASSOCIATE are not implemented.
 
+#[path = "socks5/probe_service.rs"]
+pub mod probe_service;
+
 pub mod wire {
     use std::fmt;
 
