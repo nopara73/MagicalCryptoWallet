@@ -522,5 +522,11 @@
     "line": 41,
     "line_sha256": "96449cfd828af3ff95e5612c7ec7a472d4ff695dde886cb651c91508bef7b55d",
     "reason": "Immutable historical Markdown parser evidence; no retired runtime or packaged content."
+  },
+  {
+    "path": "Contrib/McwMigration/Handoffs/json-current-core-windows.json",
+    "line": 37,
+    "line_sha256": "b00fbd3197a27d260ab1ef16c02bc5d5180c35fe3639848d4f9868a17289edff",
+    "reason": "Recorded verifier process ID; this number is not a retired listener port."
   }
 ]

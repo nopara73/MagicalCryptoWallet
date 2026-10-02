@@ -8,6 +8,12 @@ set -eu
 if [ "${CARGO_BIN_NAME:-}" != mcw ]; then
     exec "${MCW_NATIVE_LINKER:-cc}" -Wl,--as-needed "$@"
 fi
+# Debug and test binaries can also have this name and use unwinding std.
+for argument in "$@"; do
+    case "$argument" in
+        */libpanic_unwind-*.rlib) exec "${MCW_NATIVE_LINKER:-cc}" -Wl,--as-needed "$@" ;;
+    esac
+done
 remaining=$#
 while [ "$remaining" -gt 0 ]; do
     argument=$1
