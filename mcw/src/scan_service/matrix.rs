@@ -45,7 +45,7 @@ const BLOCKS: [[u8; 41]; 4] = [
     ],
 ];
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq)]
 pub struct Decoded {
     pub text: String,
     pub version: u8,
@@ -55,6 +55,18 @@ pub struct Decoded {
     pub structured: Option<StructuredAppend>,
     /// XOR of decoded input bytes, for structured-append parity verification.
     pub parity: u8,
+}
+impl std::fmt::Debug for Decoded {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Decoded")
+            .field("text", &"<redacted>")
+            .field("version", &self.version)
+            .field("level", &self.level)
+            .field("corrected_symbols", &self.corrected_symbols)
+            .field("structured", &self.structured)
+            .field("parity", &self.parity)
+            .finish()
+    }
 }
 
 fn invalid() -> Error {

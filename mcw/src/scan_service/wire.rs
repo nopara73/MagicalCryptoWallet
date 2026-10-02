@@ -150,7 +150,9 @@ impl Reader {
         self.state.decoder.clear();
     }
     /// Called for a scan request immediately after shared Frame::read, before
-    /// enqueueing it. Request IDs are connection-scoped and may not be reused.
+    /// enqueueing it. The managed caller allocates unique connection-scoped IDs.
+    /// This registry rejects active duplicates; completed-ID reuse rejection is
+    /// a shared-host acceptance gate, not an enforcement claim of this map.
     pub fn register(&self, id: u64, operation: u16) -> Result<()> {
         if id == 0 || !handles(operation) {
             return Err(invalid());
@@ -174,7 +176,8 @@ impl Reader {
         );
         Ok(())
     }
-    /// Late cancellation is harmless. Never cancel a reused ID/other operation.
+    /// Late cancellation is harmless under the caller's non-reused ID contract.
+    /// An operation mismatch never cancels an active request.
     pub fn cancel(&self, id: u64, operation: u16) {
         if let Ok(requests) = self.state.requests.lock()
             && let Some(request) = requests.get(&id).filter(|r| r.operation == operation)

@@ -8,7 +8,11 @@ using System.Threading.Tasks;
 namespace MagicalCryptoWallet.Mcw.Scanning;
 
 public sealed record QrDecodedText(string Text, byte Version, byte ErrorCorrectionLevel, ushort CorrectedSymbols,
-    byte? StructuredIndex, byte? StructuredTotal, byte? StructuredParity);
+    byte? StructuredIndex, byte? StructuredTotal, byte? StructuredParity)
+{
+    public override string ToString() =>
+        $"QrDecodedText {{ Text = <redacted>, Version = {Version}, ErrorCorrectionLevel = {ErrorCorrectionLevel}, CorrectedSymbols = {CorrectedSymbols}, StructuredIndex = {StructuredIndex}, StructuredTotal = {StructuredTotal}, StructuredParity = {StructuredParity} }}";
+}
 
 /// <summary>Temporary pixel adapter. The sole QR decoding implementation is mcw.</summary>
 public static class McwQrDecoder

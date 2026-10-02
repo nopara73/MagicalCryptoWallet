@@ -1,11 +1,12 @@
-param([string]$SharedRoot='C:\Users\user\OneDrive\Documents\ChatGPT\MagicalCryptoWallet',[switch]$CheckPatchesOnly)
+param([string]$SharedRoot='C:\Users\user\OneDrive\Documents\ChatGPT\MagicalCryptoWallet',[switch]$CheckPatchesOnly,[string]$SharedRevision='')
 $ErrorActionPreference='Stop'
 $repoRoot=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
 $evidence=Join-Path $repoRoot '.artifacts/qr-scanning/managed-harness'
 New-Item -ItemType Directory -Force -Path $evidence | Out-Null
 $sharedSources=Join-Path $repoRoot '.artifacts/qr-scanning/shared-src'
 New-Item -ItemType Directory -Force -Path $sharedSources | Out-Null
-$sharedRevision=(& git -C $repoRoot rev-parse origin/master).Trim()
+$sharedRef=if($SharedRevision){$SharedRevision}else{'origin/master'}
+$sharedRevision=(& git -C $repoRoot rev-parse ($sharedRef+'^{commit}')).Trim()
 if($LASTEXITCODE -ne 0){throw 'Cannot identify the retained shared bridge revision'}
 foreach($export in @(
     @('mcw/src/bridge.rs',(Join-Path $sharedSources 'bridge.rs')),

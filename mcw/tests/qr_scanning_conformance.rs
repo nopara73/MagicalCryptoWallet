@@ -8,6 +8,30 @@ use std::sync::atomic::AtomicBool;
 use std::time::{Duration, Instant};
 
 #[test]
+fn diagnostic_formatting_redacts_text_without_changing_the_payload() {
+    let marker = "MCW_QR_PRIVATE_MARKER_4e21";
+    let payload = format!("{marker}\0雪");
+    let decoded = matrix::Decoded {
+        text: payload.clone(),
+        version: 40,
+        level: 3,
+        corrected_symbols: 17,
+        structured: None,
+        parity: 0,
+    };
+    for diagnostic in [
+        format!("{decoded:?}"),
+        format!("{decoded:#?}"),
+        format!("{:?}", Ok::<_, Error>(vec![decoded.clone()])),
+    ] {
+        assert!(!diagnostic.contains(marker));
+        assert!(diagnostic.contains("<redacted>"));
+        assert!(diagnostic.contains("version: 40"));
+    }
+    assert_eq!(decoded.text, payload);
+}
+
+#[test]
 fn independent_golden_symbols_and_rasters() {
     for row in include_str!("qr_scanning_fixtures/golden.tsv").lines() {
         let fields = row.split('\t').collect::<Vec<_>>();

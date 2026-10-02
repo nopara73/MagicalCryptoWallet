@@ -19,7 +19,7 @@ mod platform;
 fn main() {
     platform::attach_console();
     let args = std::env::args_os().skip(1).collect();
-    match app::run(app::Mode::Gui, args) {
+    match app::run(args) {
         Ok(status) => std::process::exit(status),
         Err(error) => { eprintln!("host fixture: {error}"); std::process::exit(1); }
     }

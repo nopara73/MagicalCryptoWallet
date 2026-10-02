@@ -14,6 +14,7 @@ static class Program
 {
     public static async Task Main(string[] args)
     {
+        VerifyDiagnosticRedaction();
         if (Environment.GetEnvironmentVariable("MCW_HOSTED") == "1")
         {
             await RunHosted(args);
@@ -44,7 +45,7 @@ static class Program
         var cancellationObserved = false;
         try { await cancelled; } catch (OperationCanceledException) { cancellationObserved = true; }
         timer.Stop();
-        Require(cancellationObserved && timer.Elapsed < TimeSpan.FromSeconds(2), "Decode cancellation did not complete within its bound.");
+        Require(cancellationObserved && timer.Elapsed < TimeSpan.FromSeconds(2), "Decode cancellation exceeded this fixture's observation limit.");
         service.CorruptNextFinish = true;
         var badReplyRejected = false;
         try { await McwQrDecoder.DecodeLuminanceAsync(32, 32, 32, Enumerable.Repeat((byte)255, 1024).ToArray()); }
@@ -55,6 +56,8 @@ static class Program
         Console.WriteLine(JsonSerializer.Serialize(new { production_caller_leaf_cases = tested, retained_repository_images = retained,
             multi_chunk = true, maximum_resolution = true,
             malformed_image_rejected = malformed, cancellation_verified = cancellationObserved, cancellation_ms = timer.Elapsed.TotalMilliseconds,
+            cancellation_scope = "FINISH-dispatch marker synchronized, non-saturated Frame fixture; one request-return observation",
+            diagnostic_redaction_verified = true,
             malformed_reply_rejected = badReplyRejected, capture_backend_replaced = false, camera_activated = false,
             shipping_host_dispatch_verified = false }));
     }
@@ -77,7 +80,22 @@ static class Program
             "Actual host transport failed after cancellation.");
         File.WriteAllText(args[1], JsonSerializer.Serialize(new { production_caller_leaf_cases = tested, retained_repository_images = retained,
             actual_managed_transport = true, patched_host_dispatch_verified = true, cancellation_verified = cancelled,
+            cancellation_scope = "40 ms delay before caller cancellation; not synchronized to in-progress FINISH",
+            diagnostic_redaction_verified = true,
             capture_backend_replaced = false, camera_activated = false, shipping_host_dispatch_verified = false }));
+    }
+    private static void VerifyDiagnosticRedaction()
+    {
+        const string marker = "MCW_QR_PRIVATE_MARKER_4e21";
+        var payload = marker + "\0雪";
+        var decoded = new QrDecodedText(payload, 40, 3, 17, 0, 2, 91);
+        foreach (var diagnostic in new[] { decoded.ToString(), $"{(object)decoded}", (decoded with { Text = payload + "CLONE" }).ToString() })
+        {
+            Require(!diagnostic.Contains(marker, StringComparison.Ordinal) && diagnostic.Contains("<redacted>", StringComparison.Ordinal),
+                "Decoded QR text appeared in an ordinary diagnostic.");
+            Require(diagnostic.Contains("Version = 40", StringComparison.Ordinal), "Redaction discarded useful format metadata.");
+        }
+        Require(decoded.Text == payload, "Diagnostic redaction changed the decoded payload.");
     }
     private static async Task<int> CheckRetainedImages(string directory)
     {

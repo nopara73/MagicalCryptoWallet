@@ -32,7 +32,8 @@ caller change. `qr-scanning-host.patch` adds the Rust module and a connection-ow
 `wire::Runtime` in the existing application host. Both patches must be
 incorporated together by the shared host owner. Their initial base is
 `8a438c9737926887a1491e45bb0d82a718ca0fc0`. The actual-host test applied them
-successfully to shared revision `556fc1a18a89029bab272c3d5c64d77f55de0501`.
+successfully to shared revision `6e8bf58cbf1c60fa95729ea0ea317bc6d330ba95`
+for the privacy-audit rerun, using that revision's current host entry point.
 Their scoped Git attributes preserve LF on Windows. The verifier can check both
 patches against the current retained sources with `-CheckPatchesOnly`, without
 acquiring a build slot or rebuilding the unchanged decoder.
@@ -62,8 +63,10 @@ width and at most 16384, and total pixels/bytes are at most 16777216. Exact
 `stride * height` bytes are required; no downsampling is performed. Four uploads
 are permitted per connection, each expiring ten seconds after BEGIN. The managed
 adapter aborts failed/cancelled transfers; expiry and connection-owner cleanup
-are additional boundaries. Decode has a two-second deadline and cooperative
-reader cancellation. Runtime limits are independent of the bridge's one-MiB
+are additional boundaries. Decode has a cooperative two-second deadline measured
+from handler execution and reader cancellation. These do not establish an
+end-to-end cancellation or cleanup bound under dispatcher queue saturation.
+Runtime limits are independent of the bridge's one-MiB
 frame limit because pixel uploads use bounded chunks.
 
 ACK/no-symbol is exactly `[1,0,0,0]`. A successful FINISH has a 16-byte header:
@@ -87,8 +90,12 @@ ECI character maps are generated data from Python's development-only codecs;
 the runtime does not depend on Python, a codec library, or an external Cargo
 crate. Unsupported explicit ECIs are rejected. Candidate decode failures cannot
 substitute guessed payment text. Multiple different valid symbols are rejected
-as ambiguous. Requests/results/errors do not echo image bytes or decoded text
-into diagnostics.
+as ambiguous. Error diagnostics do not echo image bytes or decoded text. Rust
+`Decoded::Debug` and C# `QrDecodedText.ToString()` redact text while retaining
+format metadata; marker tests cover ordinary/nested Rust formatting and managed
+record/object/clone formatting without changing the returned payload. The public
+text fields remain available to callers, so this does not claim that arbitrary
+reflection-based serializers or application logging redact those fields.
 
 ## Verification and remaining obligations
 
@@ -100,11 +107,11 @@ damaged symbols, raster transforms, modes/Unicode, perspective, and the five
 retained repository QR fixtures. Fixture provenance and oracle hashes are in
 `mcw/tests/qr_scanning_fixtures/SOURCES.md`.
 
-Final Windows x64 development verification passed strict Clippy, 10 debug and
-10 optimized tests, 1817 independent matrix cases (591 corrected symbols),
+Final Windows x64 development verification passed strict Clippy, 11 debug and
+11 optimized tests, 1817 independent matrix cases (591 corrected symbols),
 74 raster cases, 42 content/mode/Unicode cases, 12 perspective cases, and all
 five retained repository images. Every independent corpus ran against oracle
-binary SHA256 `9ce3a392731016da47ab3576f719e40248bd72e2e7f3d041aad7a1e957f6b027`.
+binary SHA256 `fdf8f43fe35dde23a1efbc1d5e4c7ab59099be3f620d81454ac708bdaeb202a6`.
 `qr-scanning-evidence.json` preserves the source hashes and bounded results.
 
 `qr_scanning_managed_verify.ps1` compiles the actual patched `QrCodeReader`,
@@ -115,8 +122,11 @@ the actual `ManagedApplicationHost.Connect/RequestAsync/Dispose` transport.
 Both managed paths passed all 42 generated symbols and all five original image
 fixtures through the actual patched capture-decode leaf. The direct Frame path
 also passed a 4096-square chunked upload, malformed image/reply rejection, and
-in-progress reader cancellation (2.489 ms to return in the final run). The
-actual managed transport/host path passed cancellation and subsequent decoding.
+reader cancellation synchronized to the fixture's FINISH-dispatch marker. Its
+request-return latency is a single observation recorded in the evidence, not a
+general decoder/host bound. The actual managed transport/host path passed caller
+cancellation and subsequent decoding after a 40 ms delay; that test is not
+synchronized to in-progress FINISH and does not prove mid-decode cancellation.
 Its unused `BindTermination` parameter has a test-only type shim; full wallet
 termination behavior is not claimed. Generated images are synthetic, and no
 camera is opened. The portable test tools use static CRT solely for development;
@@ -128,6 +138,15 @@ current checkout, run the host's required CI/package checks, and confirm actual
 production execution before setting `production_integrated` or
 `old_implementation_retired`. Camera hardware, Linux/ARM/macOS execution, and
 packaged release runtime/import verification remain unverified here.
+
+Shared acceptance gates also remain for saturated-queue cancellation/EOF
+delivery, adversarial reuse of completed request IDs, and disconnect during an
+in-progress decode. The bounded reader's synchronous queue send can block before
+it reads CANCEL or EOF. The ordinary managed caller allocates unique monotonic
+IDs and drains late replies; the scanner registry rejects active duplicates but
+does not enforce completed-ID non-reuse. Do not generalize the unsaturated
+fixture observations beyond that caller contract. Static-CRT development tools
+remain distinct from shipping rebuilt-stdlib and package verification.
 
 `QRackers` cannot be removed by this bounded task: its single assembly also
 contains the retained FlashCap capture implementation. Its production package
