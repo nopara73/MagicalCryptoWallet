@@ -1,9 +1,25 @@
 # JSON engine integration handoff
 
-Status: implementation and independent component verification complete;
-production caller integration and package removal remain pending. This is an
-internal module for the one `mcw` executable, not a new Cargo package, library
-distribution, managed service or companion executable.
+Status: portable implementation and independent component verification complete.
+Retained caller integration and package retirement remain with their existing
+owners. This is an internal module for the one `mcw` executable, not a new Cargo
+package, library distribution, managed service or companion executable.
+
+The bounded application RPC assignment is complete by retirement. Cleanup commit
+`6af4217e820dcfa689e745f011d8df88d159202e` removes the obsolete managed adapter,
+unregistered native RPC service, probe, helper and activation patches after the
+intentional application feature removal. No RPC caller switch or host
+registration remains pending. The generic JSON engine is retained unchanged;
+configuration, key, cache and coordinator serialization drafts remain outside
+this assignment.
+
+`json-current-core-windows.json` records the actual retained-core Release build
+and the 29 existing JSON conformance tests on the cleanup source. It uses the
+existing source-built WabiSabi artifact through `NativeLibraryPath`. The former
+95-case RPC candidate proof is historical, recoverable from Git at
+`88f916aa0084a14c5a9bdf646d18602a02216f5b` and preserved in ignored worker
+artifacts. It does not establish current production activation. Deleted RPC
+files and executable probes have not been reintroduced.
 
 Owner: JSON worker `01a0fc27-0df2-75e3-b877-1ab40561bb59`.
 Coordinator: `01a0fc1e-7c20-76d3-bf81-cb1f68c9adb7`.
@@ -42,8 +58,9 @@ Newtonsoft 13.0.3 is a minimum pin; it is not the resolved version.
 
 ## Interface and representation
 
-The integrator adds `pub mod json;` in its own module declarations. No other
-module is needed beyond the owned `json/compat.rs` child.
+Current `master` already declares `pub mod json;`. Retained schema-specific
+routes require the corresponding owners' verified host support. No other module
+is needed beyond the owned `json/compat.rs` child.
 
 | API | Contract |
 | --- | --- |
@@ -223,7 +240,7 @@ Before accepting integration/removal:
    in integrator-owned files; retain all current ownership and fail-closed wallet
    authorization/storage rules. Verify the bridge with actual module bytes.
 2. Run schema-specific tests for every caller group, including decimals/strings,
-   exact RPC ID types, missing/null/default fields, unknowns, case collisions,
+   exact numeric tokens, missing/null/default fields, unknowns, case collisions,
    dates/offsets, cryptographic codecs, malformed data and caller body limits.
    Require synthetic import/export preservation and durable journal behavior;
    parser tests alone do not authorize rewriting existing wallets.
