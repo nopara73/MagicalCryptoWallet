@@ -30,6 +30,8 @@ The Rust host and managed application share `ClientVersion` (development default
 
 Linux release builds also rebuild the pinned standard library with aborting panics and backtrace support disabled. This removes the GCC unwinder runtime instead of bundling or statically linking it. OS libc remains the native baseline; the extracted ELF dependency audit rejects libgcc_s, libstdc++, OpenSSL and other non-OS libraries in the mcw executable.
 
+The Linux compiler driver applies `--as-needed` before Rust's native library arguments. GNU ARM linkers otherwise retain the standard library's unused `libgcc_s` directive even when the executable references no unwinder symbols. The runtime audit remains strict; a genuinely needed non-OS library still fails the build.
+
 ## Bridge v1
 
 Production adapters in `MagicalCryptoWallet/Mcw/<Service>/` depend on the core

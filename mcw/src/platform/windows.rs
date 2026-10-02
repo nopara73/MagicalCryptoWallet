@@ -118,7 +118,8 @@ impl Drop for ChildLifetime {
 }
 pub fn start_installer(path: &str) -> io::Result<()> {
     let installer = std::path::Path::new(path);
-    if !installer.is_file()
+    if !installer.is_absolute()
+        || !installer.is_file()
         || installer
             .extension()
             .is_none_or(|extension| !extension.eq_ignore_ascii_case("msi"))

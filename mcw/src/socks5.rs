@@ -615,6 +615,13 @@ pub mod transport {
         fn poll_timeout(&self, stage: Stage) -> Result<Duration, Error> {
             Ok(self.remaining(stage)?.min(self.poll_interval))
         }
+
+        fn wait(&self, stage: Stage) -> Result<(), Error> {
+            // An explicit abort must also be observed promptly when the caller
+            // selected a long poll interval. Smaller intervals stay intact.
+            std::thread::sleep(self.poll_timeout(stage)?.min(DEFAULT_POLL_INTERVAL));
+            self.remaining(stage).map(|_| ())
+        }
     }
 
     #[derive(Clone, Copy, Debug)]
@@ -654,15 +661,17 @@ pub mod transport {
         stage: Stage,
     ) -> Result<usize, Error> {
         loop {
-            stream
-                .set_read_timeout(Some(control.poll_timeout(stage)?))
-                .map_err(|cause| io_error(stage, cause))?;
+            control.remaining(stage)?;
             if bytes.is_empty() {
                 return Ok(0);
             }
             match stream.read(bytes) {
                 Ok(count) => return Ok(count),
-                Err(cause) if retryable(&cause) => continue,
+                Err(cause) if retryable(&cause) => {
+                    if cause.kind() != io::ErrorKind::Interrupted {
+                        control.wait(stage)?;
+                    }
+                }
                 Err(cause) => {
                     control.remaining(stage)?;
                     return Err(io_error(stage, cause));
@@ -697,13 +706,15 @@ pub mod transport {
     ) -> Result<(), Error> {
         control.remaining(stage)?;
         while !bytes.is_empty() {
-            stream
-                .set_write_timeout(Some(control.poll_timeout(stage)?))
-                .map_err(|cause| io_error(stage, cause))?;
+            control.remaining(stage)?;
             match stream.write(bytes) {
                 Ok(0) => return Err(error(stage, ErrorKind::WriteZero)),
                 Ok(count) => bytes = &bytes[count..],
-                Err(cause) if retryable(&cause) => continue,
+                Err(cause) if retryable(&cause) => {
+                    if cause.kind() != io::ErrorKind::Interrupted {
+                        control.wait(stage)?;
+                    }
+                }
                 Err(cause) => {
                     control.remaining(stage)?;
                     return Err(io_error(stage, cause));
@@ -813,7 +824,7 @@ pub mod transport {
         let result = TcpStream::connect_timeout(&proxy, timeout);
         if let Err(cause) = control.remaining(Stage::ProxyConnect) {
             if let Ok(stream) = result {
-                let _ = stream.shutdown(Shutdown::Both);
+                let _ = shutdown_stream(&stream, Shutdown::Both);
             }
             return Err(cause);
         }
@@ -827,8 +838,11 @@ pub mod transport {
                 io_error(Stage::ProxyConnect, cause)
             }
         })?;
+        // Darwin rejects setsockopt after both halves have received/sent FIN,
+        // even while unread data remains. Poll nonblocking I/O against the
+        // absolute deadline instead of changing socket timeouts on each read.
         stream
-            .set_nonblocking(false)
+            .set_nonblocking(true)
             .map_err(|cause| io_error(Stage::ProxyConnect, cause))?;
         stream
             .set_nodelay(true)
@@ -864,7 +878,7 @@ pub mod transport {
         match result {
             Ok(bound) => Ok((stream, bound)),
             Err(cause) => {
-                let _ = stream.shutdown(Shutdown::Both);
+                let _ = shutdown_stream(&stream, Shutdown::Both);
                 Err(cause)
             }
         }
@@ -879,7 +893,7 @@ pub mod transport {
         cancellation: &Cancellation,
     ) -> Result<(), Error> {
         let (stream, _) = exchange(proxy, authentication, None, options, cancellation)?;
-        let _ = stream.shutdown(Shutdown::Both);
+        let _ = shutdown_stream(&stream, Shutdown::Both);
         Ok(())
     }
 
@@ -895,7 +909,7 @@ pub mod transport {
         let packet = wire::encode_resolve(domain);
         let (stream, bound) =
             exchange(proxy, authentication, Some(&packet), options, cancellation)?;
-        let _ = stream.shutdown(Shutdown::Both);
+        let _ = shutdown_stream(&stream, Shutdown::Both);
         match bound.map(|endpoint| endpoint.address) {
             Some(address @ (Address::Ipv4(_) | Address::Ipv6(_))) => Ok(address),
             _ => Err(error(Stage::Resolve, ErrorKind::UnexpectedResolveAddress)),
@@ -912,10 +926,26 @@ pub mod transport {
         let packet = wire::encode_resolve_ptr(ipv4);
         let (stream, bound) =
             exchange(proxy, authentication, Some(&packet), options, cancellation)?;
-        let _ = stream.shutdown(Shutdown::Both);
+        let _ = shutdown_stream(&stream, Shutdown::Both);
         match bound.map(|endpoint| endpoint.address) {
             Some(Address::Domain(domain)) => Ok(domain),
             _ => Err(error(Stage::Resolve, ErrorKind::UnexpectedResolveAddress)),
+        }
+    }
+
+    fn shutdown_stream(stream: &TcpStream, direction: Shutdown) -> io::Result<()> {
+        let half = |direction| match stream.shutdown(direction) {
+            Err(cause) if cause.kind() == io::ErrorKind::NotConnected => Ok(()),
+            result => result,
+        };
+        if direction == Shutdown::Both {
+            // Darwin's SHUT_RDWR stops before shutting down writes if peer EOF
+            // has already closed reads. Always attempt both halves separately.
+            let write = half(Shutdown::Write);
+            let read = half(Shutdown::Read);
+            write.and(read)
+        } else {
+            half(direction)
         }
     }
 
@@ -945,7 +975,7 @@ pub mod transport {
             self.aborted.store(true, Ordering::Release);
             self.read_closed.store(true, Ordering::Release);
             self.write_closed.store(true, Ordering::Release);
-            let _ = self.abort_stream.shutdown(Shutdown::Both);
+            let _ = shutdown_stream(&self.abort_stream, Shutdown::Both);
         }
 
         fn shutdown(&self, direction: Shutdown) -> Result<(), Error> {
@@ -964,26 +994,21 @@ pub mod transport {
             if done {
                 return Ok(());
             }
-            match self.abort_stream.shutdown(direction) {
-                // Linux can report ENOTCONN after both peers have finished their
-                // halves. The requested shutdown is already complete in that case.
-                Err(cause) if cause.kind() == io::ErrorKind::NotConnected => Ok(()),
-                result => result.map_err(|cause| {
-                    // The state remains closed even if native shutdown failed.
-                    io_error(Stage::Shutdown, cause)
-                }),
-            }
+            // The state remains closed even if native shutdown failed.
+            shutdown_stream(&self.abort_stream, direction)
+                .map_err(|cause| io_error(Stage::Shutdown, cause))
         }
     }
 
     impl Drop for SocketState {
         fn drop(&mut self) {
-            let _ = self.abort_stream.shutdown(Shutdown::Both);
+            let _ = shutdown_stream(&self.abort_stream, Shutdown::Both);
         }
     }
 
-    /// A wake-up handle for the host to abort established blocking I/O from a
-    /// different thread. It cannot read, write, reconnect, or expose addresses.
+    /// A handle for the host to abort established synchronous I/O from another
+    /// thread. Operations observe closure within their bounded polling interval.
+    /// It cannot read, write, reconnect, or expose addresses.
     #[derive(Clone)]
     pub struct AbortHandle(Arc<SocketState>);
 

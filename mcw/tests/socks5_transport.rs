@@ -682,18 +682,20 @@ fn cancellation_during_stalled_method_read_closes_the_socket() {
 
 #[test]
 fn total_handshake_deadline_does_not_reset_between_stages() {
+    // Leave enough scheduling headroom to reach authentication on busy runners.
+    // Each stage fits separately; their combined delay exceeds the total budget.
     let (proxy, task) = server(|mut stream| {
         assert_eq!(bytes(&mut stream, 3), [5, 1, 2]);
-        thread::sleep(Duration::from_millis(80));
+        thread::sleep(Duration::from_millis(300));
         stream.write_all(&[5, 2]).unwrap();
         assert_eq!(bytes(&mut stream, 5), [1, 1, b'u', 1, b'p']);
-        thread::sleep(Duration::from_millis(80));
+        thread::sleep(Duration::from_millis(300));
         let _ = stream.write_all(&[1, 0]);
         assert_closed_without_application_data(&mut stream);
     });
     let credentials = Credentials::new(b"u", b"p").unwrap();
     let mut short = options();
-    short.total_timeout = Duration::from_millis(130);
+    short.total_timeout = Duration::from_millis(500);
     let start = Instant::now();
     let failure = SocksConnection::connect(
         proxy,

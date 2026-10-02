@@ -48,6 +48,9 @@ def build(rid, version="99.99.99", test=False):
         env["RUSTC_BOOTSTRAP"] = "1"
         env["RUSTFLAGS"] = "-C panic=abort -C default-linker-libraries=no"
         env.pop("CARGO_ENCODED_RUSTFLAGS", None)
+        linker_key = "CARGO_TARGET_" + target.upper().replace("-", "_") + "_LINKER"
+        env.setdefault("MCW_NATIVE_LINKER", env.get(linker_key, "cc"))
+        env[linker_key] = str(ROOT / "Contrib/Mcw/link-linux.sh")
         subprocess.run([cargo, "-Z", "build-std=std,panic_abort", "-Z", "build-std-features=",
                         "build", "--release", "--target", target, "--locked"], cwd=cwd, env=env, check=True)
     else:

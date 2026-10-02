@@ -22,6 +22,13 @@ impl ChildLifetime {
     }
 }
 pub fn start_installer(path: &str) -> std::io::Result<()> {
+    let installer = std::path::Path::new(path);
+    if !installer.is_absolute() || !installer.is_file() {
+        return Err(std::io::Error::new(
+            std::io::ErrorKind::InvalidInput,
+            "invalid update installer",
+        ));
+    }
     #[cfg(target_os = "macos")]
     {
         Command::new("/usr/bin/open").arg(path).spawn()?;

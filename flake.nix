@@ -62,6 +62,7 @@
             export MCW_VERSION=99.99.99
             export RUSTC_BOOTSTRAP=1
             export RUSTFLAGS="-C panic=abort -C default-linker-libraries=no"
+            export CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_LINKER="${pkgs.writeShellScript "mcw-link-linux" (builtins.readFile ./Contrib/Mcw/link-linux.sh)}"
             mkdir -p .cargo
             cat > .cargo/config.toml <<EOF
             [source.crates-io]
@@ -117,6 +118,7 @@
           dontDotnetFixup = true;
 
           preFixup = ''
+            mkdir -p $out/bin
             cp ${mcwHost}/bin/mcw $out/lib/${pname}/mcw
             ln -s $out/lib/${pname}/mcw $out/bin/mcw
             wrapDotnetProgram $out/lib/${pname}/MagicalCryptoWallet.Fluent.Desktop $out/bin/magicalcryptowallet
