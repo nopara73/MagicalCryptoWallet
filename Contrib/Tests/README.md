@@ -6,7 +6,7 @@ The harnesses hold a shared temporary-file lock for port 18444 across checkouts.
 
 ## Automatic CoinJoin authorization
 
-`test-single-wallet-coinjoin.py` starts Bitcoin Core, a local coordinator and five independent encrypted single-wallet daemons. Each loads and synchronizes without a passphrase. Sending a synthetic payment authorizes automatic CoinJoin; a subsequent incorrect passphrase is rejected. The test requires an actual broadcast CoinJoin and confirmed mixed outputs in every participant. It never issues an application load or manual CoinJoin-start command.
+`test-single-wallet-coinjoin.py` starts Bitcoin Core, a local coordinator and seven independent encrypted single-wallet daemons. Each loads and synchronizes without a passphrase. Sending a synthetic payment authorizes automatic CoinJoin; a subsequent incorrect passphrase is rejected. Each client receives at least four independently funded confirmed inputs after Send. The test uses the fixed 21-input policy without overrides, requires an actual broadcast with at least 21 inputs and confirmed outputs with anonymity score at least 2 in every participant, and reconciles a first-round payment exactly once for every client. It never issues an application load or manual CoinJoin-start command.
 
 ```powershell
 python Contrib/Tests/test-single-wallet-coinjoin.py --package .artifacts/packages/win-x64/MagicalCryptoWallet --bitcoind MagicalCryptoWallet.IntegrationTests/bin/Release/net10.0/BundledApps/Binaries/win-x64/bitcoind.exe

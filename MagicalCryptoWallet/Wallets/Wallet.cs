@@ -91,9 +91,7 @@ public class Wallet : BackgroundService
 
 	public CoinsRegistry Coins { get; }
 
-	public bool NonPrivateCoinIsolation => KeyManager.NonPrivateCoinIsolation;
 
-	public bool OnlyUsePrivateFundsForPayments => KeyManager.OnlyUsePrivateFundsForPayments;
 
 	public Network Network { get; }
 	public TransactionProcessor TransactionProcessor { get; }
@@ -109,8 +107,7 @@ public class Wallet : BackgroundService
 	public OutputProvider OutputProvider { get; }
 	public PaymentBatch BatchedPayments { get; }
 
-	public int AnonScoreTarget => KeyManager.AnonScoreTarget;
-	public bool ConsolidationMode { get; set; }
+	public int AnonScoreTarget => Constants.AnonymityScoreTarget;
 
 	public Money PlebStopThreshold => KeyManager.PlebStopThreshold;
 
@@ -200,11 +197,10 @@ public class Wallet : BackgroundService
 
 	public int GetPrivacyPercentage()
 	{
-		var currentPrivacyScore = Coins.Sum(x => x.Amount.Satoshi * Math.Min(x.AnonymitySet - 1, x.IsPrivate(AnonScoreTarget) ? AnonScoreTarget - 1 : AnonScoreTarget - 2));
-		var maxPrivacyScore = Coins.TotalAmount().Satoshi * (AnonScoreTarget - 1);
-		int pcPrivate = maxPrivacyScore == 0M ? 0 : (int)(currentPrivacyScore * 100 / maxPrivacyScore);
-
-		return pcPrivate;
+		var coins = Coins.ToArray();
+		var total = coins.Sum(x => x.Amount.Satoshi);
+		var privateAmount = coins.Where(x => x.IsPrivate(Constants.AnonymityScoreTarget)).Sum(x => x.Amount.Satoshi);
+		return total == 0 ? 0 : (int)(privateAmount * 100m / total);
 	}
 
 	public void InitializeLocalState()

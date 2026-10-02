@@ -4,7 +4,6 @@ using System.Linq;
 using MagicalCryptoWallet.Blockchain.Analysis.Clustering;
 using MagicalCryptoWallet.Blockchain.BlockFilters;
 using MagicalCryptoWallet.Blockchain.Keys;
-using MagicalCryptoWallet.CoinJoinProfiles;
 using MagicalCryptoWallet.Models;
 using MagicalCryptoWallet.Tests.Helpers;
 using MagicalCryptoWallet.WabiSabi.Client;
@@ -86,12 +85,6 @@ public class KeyManagerTests
 		Assert.Equal(manager.MinGapLimit, newLastKey.Index - lastKey.Index);
 	}
 
-	[Fact]
-	public void OnlyUsePrivateFundsForPaymentsIsOffByDefault()
-	{
-		Assert.False(KeyManager.CreateNew(out _, "", Network.Main).OnlyUsePrivateFundsForPayments);
-		Assert.True(new PrivacyProfiles.MaximizePrivacy().OnlyUsePrivateFundsForPayments);
-	}
 
 	[Fact]
 	public void CanSerialize()

@@ -28,26 +28,29 @@ public partial class WalletCoinjoinModel : ReactiveObject, IDisposable
 		_coinJoinManager = coinjoinManager;
 
 		StatusUpdated = Observable.Create<StatusChangedEventArgs>(observer => coinjoinManager.SubscribeStatus(observer.OnNext)).ObserveOn(RxApp.MainThreadScheduler);
-		var snapshots = Observable.Create<CoinJoinSnapshot>(observer => coinjoinManager.Subscribe(observer.OnNext)).ObserveOn(RxApp.MainThreadScheduler);
-		IsRunning = snapshots.Select(snapshot => snapshot.IsRunning).DistinctUntilChanged();
-		IsStarted = snapshots.Select(snapshot => snapshot.State != CoinJoinClientState.Idle).DistinctUntilChanged();
+		Snapshots = Observable.Create<CoinJoinSnapshot>(observer => coinjoinManager.Subscribe(observer.OnNext)).ObserveOn(RxApp.MainThreadScheduler);
+		IsRunning = Snapshots.Select(snapshot => snapshot.IsRunning).DistinctUntilChanged();
+		IsStarted = Snapshots.Select(snapshot => snapshot.State != CoinJoinClientState.Idle).DistinctUntilChanged();
 		IsRunning.BindTo(this, x => x.IsCoinjoining).DisposeWith(_lifetime);
 	}
 
 	public IObservable<StatusChangedEventArgs> StatusUpdated { get; }
+	public IObservable<CoinJoinSnapshot> Snapshots { get; }
 
 	public IObservable<bool> IsRunning { get; }
 
 	public IObservable<bool> IsStarted { get; }
 
-	public async Task StartAsync(bool stopWhenAllMixed, bool overridePlebStop)
+	public Task StartAsync(bool overridePlebStop)
 	{
-		_coinJoinManager.RequestCoinJoinStart( stopWhenAllMixed, overridePlebStop);
+		_coinJoinManager.RequestCoinJoinStart(overridePlebStop);
+		return Task.CompletedTask;
 	}
 
-	public async Task StopAsync()
+	public Task StopAsync()
 	{
 		_coinJoinManager.RequestCoinJoinStop();
+		return Task.CompletedTask;
 	}
 	public void Dispose() { _lifetime.Dispose();  }
 

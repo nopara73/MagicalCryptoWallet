@@ -28,7 +28,6 @@ public record PersistentConfig(
 	string FeeRateEstimationProvider,
 	string ExternalTransactionBroadcaster,
 	decimal MaxCoinJoinMiningFeeRate,
-	int AbsoluteMinInputCount,
 	int MaxDaysInMempool,
 	ValueList<string> ExperimentalFeatures,
 	int ConfigVersion,

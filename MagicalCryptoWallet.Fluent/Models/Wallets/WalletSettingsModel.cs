@@ -20,11 +20,7 @@ public partial class WalletSettingsModel : ReactiveObject, IDisposable
 	private readonly KeyManager _keyManager;
 	private bool _isDirty;
 
-	[AutoNotify] private bool _autoCoinjoin;
 	[AutoNotify] private Money _plebStopThreshold;
-	[AutoNotify] private int _anonScoreTarget;
-	[AutoNotify] private bool _nonPrivateCoinIsolation;
-	[AutoNotify] private bool _onlyUsePrivateFundsForPayments;
 	[AutoNotify] private ScriptType _defaultReceiveScriptType;
 	[AutoNotify] private PreferredScriptPubKeyType _changeScriptPubKeyType;
 
@@ -34,22 +30,14 @@ public partial class WalletSettingsModel : ReactiveObject, IDisposable
 		_keyManager = keyManager;
 
 
-		_autoCoinjoin = _keyManager.AutoCoinJoin;
 		_plebStopThreshold = _keyManager.PlebStopThreshold ?? KeyManager.DefaultPlebStopThreshold;
-		_anonScoreTarget = _keyManager.AnonScoreTarget;
-		_nonPrivateCoinIsolation = _keyManager.NonPrivateCoinIsolation;
-		_onlyUsePrivateFundsForPayments = _keyManager.OnlyUsePrivateFundsForPayments;
 
 		_defaultReceiveScriptType = ScriptType.FromEnum(_keyManager.DefaultReceiveScriptType);
 		_changeScriptPubKeyType = _keyManager.ChangeScriptPubKeyType;
 
 
 		this.WhenAnyValue(
-				x => x.AutoCoinjoin,
-				x => x.PlebStopThreshold,
-				x => x.AnonScoreTarget,
-				x => x.NonPrivateCoinIsolation,
-				x => x.OnlyUsePrivateFundsForPayments)
+				x => x.PlebStopThreshold)
 			.Skip(1)
 			.Do(_ => SetValues())
 			.Subscribe().DisposeWith(_lifetime);
@@ -62,6 +50,8 @@ public partial class WalletSettingsModel : ReactiveObject, IDisposable
 	}
 
 
+	public int AnonScoreTarget => Constants.AnonymityScoreTarget;
+
 	public int MinGapLimit => _keyManager.MinGapLimit;
 
 
@@ -73,11 +63,7 @@ public partial class WalletSettingsModel : ReactiveObject, IDisposable
 
 	private void SetValues()
 	{
-		_keyManager.AutoCoinJoin = AutoCoinjoin;
 		_keyManager.PlebStopThreshold = PlebStopThreshold;
-		_keyManager.AnonScoreTarget = AnonScoreTarget;
-		_keyManager.NonPrivateCoinIsolation = NonPrivateCoinIsolation;
-		_keyManager.OnlyUsePrivateFundsForPayments = OnlyUsePrivateFundsForPayments;
 		_keyManager.DefaultReceiveScriptType = ScriptType.ToScriptPubKeyType(DefaultReceiveScriptType);
 		_keyManager.ChangeScriptPubKeyType = ChangeScriptPubKeyType;
 		_isDirty = true;

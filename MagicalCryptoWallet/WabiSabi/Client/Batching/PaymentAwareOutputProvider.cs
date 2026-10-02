@@ -18,19 +18,8 @@ public class PaymentAwareOutputProvider(
 		RoundParameters roundParameters,
 		IEnumerable<Money> registeredCoinEffectiveValues,
 		IEnumerable<Money> theirCoinEffectiveValues,
-		int availableVsize,
-		bool arePaymentsAllowed)
+		int availableVsize)
 	{
-		if (!arePaymentsAllowed)
-		{
-			if (batchedPayments.AreTherePendingPayments)
-			{
-				Logger.LogInfo("There are pending payments but they cannot be funded with non-private coins.");
-			}
-
-			return base.GetOutputs(roundId, roundParameters, registeredCoinEffectiveValues, theirCoinEffectiveValues, availableVsize, arePaymentsAllowed);
-		}
-
 		return GetOutputsIncludingPayments(roundId, roundParameters, registeredCoinEffectiveValues, theirCoinEffectiveValues, availableVsize);
 	}
 

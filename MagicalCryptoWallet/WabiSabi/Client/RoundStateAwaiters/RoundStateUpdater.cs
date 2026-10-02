@@ -75,7 +75,11 @@ public static class RoundStateUpdater
 				break;
 			case RoundUpdateMessage.CreateRoundAwaiter m:
 				var roundStateAwaiter = new RoundStateAwaiter(m.Predicate, m.RoundId, m.Phase, cancellationToken);
-				state = state with {Awaiters = state.Awaiters.Add(roundStateAwaiter)};
+				var canUseCachedRound = m.RoundId is null || state.Rounds.ContainsKey(m.RoundId);
+				if (!canUseCachedRound || !roundStateAwaiter.IsCompleted(state.Rounds))
+				{
+					state = state with { Awaiters = state.Awaiters.Add(roundStateAwaiter) };
+				}
 				m.ReplayChannel.Reply(roundStateAwaiter.Task);
 				break;
 		}
@@ -97,12 +101,6 @@ public static class RoundStateUpdater
 		var response = await arenaRequestHandler.GetStatusAsync(request, linkedCts.Token).ConfigureAwait(false);
 		RoundState[] roundStates = response.RoundStates;
 
-		var updatedRoundStates = roundStates
-			.Where(rs => state.Rounds.ContainsKey(rs.Id))
-			.Select(rs => (NewRoundState: rs, CurrentRoundState: state.Rounds[rs.Id]))
-			.Select(x => x.NewRoundState with { CoinjoinState = x.NewRoundState.CoinjoinState.AddPreviousStates(x.CurrentRoundState.CoinjoinState, x.NewRoundState.Id) })
-			.ToList();
-
 		var newRoundStates = roundStates
 			.Where(rs => !state.Rounds.ContainsKey(rs.Id));
 
@@ -114,7 +112,9 @@ public static class RoundStateUpdater
 
 		// Don't use ToImmutable dictionary, because that ruins the original order and makes the server unable to suggest a round preference.
 		// ToDo: ToDictionary doesn't guarantee the order by design so .NET team might change this out of our feet, so there's room for improvement here.
-		var finalRoundStates = newRoundStates.Concat(updatedRoundStates).ToDictionary(x => x.Id, x => x);
+		var finalRoundStates = roundStates.ToDictionary(x => x.Id, x => state.Rounds.TryGetValue(x.Id, out var previous)
+			? x with { CoinjoinState = x.CoinjoinState.AddPreviousStates(previous.CoinjoinState, x.Id) }
+			: x);
 
 		var completedAwaiters = state.Awaiters.Where(awaiter => awaiter.IsCompleted(finalRoundStates)).ToArray();
 		return (Rounds: finalRoundStates, Awaiters: state.Awaiters.RemoveRange(completedAwaiters));
