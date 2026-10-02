@@ -241,6 +241,63 @@ public static class NBitcoinExtensions
 		return null;
 	}
 
+	/// <summary>
+	/// Tries to equip the PSBT with input and output keypaths on best effort.
+	/// </summary>
+	public static void AddKeyPaths(this PSBT psbt, KeyManager keyManager)
+	{
+		if (keyManager.MasterFingerprint.HasValue)
+		{
+			var fp = keyManager.MasterFingerprint.Value;
+
+			// Add input keypaths.
+			foreach (var script in psbt.Inputs.Select(x => x.WitnessUtxo?.ScriptPubKey).ToArray())
+			{
+				if (script is { })
+				{
+					if (keyManager.TryGetKeyForScriptPubKey(script, out HdPubKey? hdPubKey))
+					{
+						psbt.AddKeyPath(fp, hdPubKey, script);
+					}
+				}
+			}
+
+			// Add output keypaths.
+			foreach (var script in psbt.Outputs.Select(x => x.ScriptPubKey).ToArray())
+			{
+				if (keyManager.TryGetKeyForScriptPubKey(script, out HdPubKey? hdPubKey))
+				{
+					psbt.AddKeyPath(fp, hdPubKey, script);
+				}
+			}
+		}
+	}
+
+	public static void AddKeyPath(this PSBT psbt, HDFingerprint fp, HdPubKey hdPubKey, Script script)
+	{
+		var rootKeyPath = new RootedKeyPath(fp, hdPubKey.FullKeyPath);
+		psbt.AddKeyPath(hdPubKey.PubKey, rootKeyPath, script);
+	}
+
+	/// <summary>
+	/// Tries to equip the PSBT with previous transactions with best effort. Always <see cref="AddKeyPaths"/> first otherwise the prev tx won't be added.
+	/// </summary>
+	public static void AddPrevTxs(this PSBT psbt, ITransactionStore transactionStore)
+	{
+		// Fill out previous transactions.
+		foreach (var psbtInput in psbt.Inputs)
+		{
+			if (transactionStore.TryGetTransaction(psbtInput.PrevOut.Hash, out var tx))
+			{
+				psbtInput.NonWitnessUtxo = tx.Transaction;
+			}
+			else
+			{
+				Logger.LogDebug($"Transaction id: {psbtInput.PrevOut.Hash} is missing from the {nameof(transactionStore)}. Ignoring...");
+			}
+		}
+	}
+
 	public static FeeRate GetSanityFeeRate(this MemPoolInfo me)
 	{
 		var mempoolMinFee = (decimal)me.MemPoolMinFee;
