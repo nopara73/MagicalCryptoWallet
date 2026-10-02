@@ -200,7 +200,7 @@ public partial class CopyablePasswordTextBox : TextBox
 		{
 			if (!owner.IsEffectivelyEnabled || IsReadOnly)
 			{
-				throw new InvalidOperationException("The passphrase field cannot be edited.");
+				throw new InvalidOperationException("The password field cannot be edited.");
 			}
 			owner.SetCurrentValue(TextProperty, value);
 		}

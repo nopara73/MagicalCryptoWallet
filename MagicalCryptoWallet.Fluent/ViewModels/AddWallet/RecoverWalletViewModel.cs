@@ -62,7 +62,7 @@ public partial class RecoverWalletViewModel : RoutableViewModel
 	private async Task OnNextAsync(WalletCreationOptions.RecoverWallet options)
 	{
 
-		var password = await Navigate().To().CreatePasswordDialog("Add Passphrase", "If you used a passphrase when you created your wallet you must type it below, otherwise leave this empty.").GetResultAsync();
+		var password = await Navigate().To().CreatePasswordDialog("Add Password", "Enter your wallet's original password, or leave this empty if it had none.").GetResultAsync();
 		if (password is not { } || CurrentMnemonics is not { IsValidChecksum: true } currentMnemonics)
 		{
 			return;

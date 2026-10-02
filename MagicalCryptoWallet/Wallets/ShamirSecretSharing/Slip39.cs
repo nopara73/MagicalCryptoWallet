@@ -408,7 +408,7 @@ public record Shamir
 
 	private static string CheckPassphrase(string passphrase) =>
 		passphrase.Any(char.IsControl)
-			? throw new NotSupportedException("Passphrase should only contain printable ASCII.")
+			? throw new NotSupportedException("The password cannot contain control characters.")
 			: passphrase;
 
 	private static uint8[] Crypt(

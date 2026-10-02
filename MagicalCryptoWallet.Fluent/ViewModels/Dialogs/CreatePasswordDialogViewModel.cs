@@ -6,7 +6,7 @@ using MagicalCryptoWallet.Userfacing;
 
 namespace MagicalCryptoWallet.Fluent.ViewModels.Dialogs;
 
-[NavigationMetaData(Title = "Add Passphrase", NavigationTarget = NavigationTarget.CompactDialogScreen)]
+[NavigationMetaData(Title = "Add Password", NavigationTarget = NavigationTarget.CompactDialogScreen)]
 public partial class CreatePasswordDialogViewModel : DialogViewModelBase<string?>
 {
 	[AutoNotify] private string? _confirmPassword;
