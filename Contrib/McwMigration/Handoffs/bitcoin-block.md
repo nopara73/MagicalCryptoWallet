@@ -1,7 +1,8 @@
-# Bitcoin block checkpoint and synchronization workstream
+# Bitcoin block and Merkle checkpoint
 
-State (2026-10-02, Asia/Singapore): **block/Merkle component ready for integration;
-expanded Bitcoin peer synchronization workstream in progress**. This checkpoint
+State (2026-10-02, Asia/Singapore): **block/Merkle component ready for bounded
+caller integration; full synchronization migration stopped by the human scope
+correction**. This checkpoint
 does not replace the retained NBitcoin synchronization backend, remove its
 package, authenticate headers, or constitute a production wallet release.
 
@@ -163,42 +164,45 @@ claiming a currently migrated BIP37 production path.
 
 NBitcoin 10.0.13 and NBitcoin.Secp256k1 3.1.6 remain in central versions, direct
 projects and locked/transitive consumers. Other keys/curve/scripts/PSBT/RPC/P2P/
-transaction consumers are assigned to larger peer workstreams. NBitcoin's managed
+transaction consumers remain separate retained responsibilities. NBitcoin's managed
 JSON/logging transitive dependencies remain; Nito.AsyncEx/Rx/Tor and other retained
 managed synchronization responsibilities are not linked by this Rust codec and
 are not removed by publishing it. Only when all relevant callers, locks and
 packaged references are gone may an upstream package be marked removed.
 
-## Shared integration proposal and expanded ownership
+## Bounded integration proposal and scope correction
 
 Reserve `0x0E00–0x0EFF`; proposed checkpoint operations: 0x0E00 header parse/hash,
 0x0E01 block framing/sizes/txids, 0x0E02 root/mutation, 0x0E03 proof build,
 0x0E04 proof verify, 0x0E05 partial parse/extract/serialize, 0x0E06 partial build,
 0x0E07 merkleblock payload, 0x0E08 compact target interpretation/encoding.
-0x0E20 onward is reserved for the expanded peer service proposal. These are
-domain/API proposals, not implemented host operations. QR owns frame dispatch,
+These are domain/API proposals, not implemented host operations. The former
+0x0E20 peer-service proposal is stopped and must not be registered. QR owns frame dispatch,
 module registration/manifests, shared managed bridge and platform/lifecycle/
 packaging changes. Large blocks cannot fit a smaller bridge frame: design a
 bounded streaming/handle path or reject oversized frames before allocating;
 never truncate or silently fall back to a managed implementation.
 
-New assigned directories: `mcw/src/sync_service/` and
-`MagicalCryptoWallet/Mcw/Sync/`. Proposed existing caller ownership was declared
-to coordinator and QR before editing: BitcoinP2p/{BlockHeadersChainBehavior,
-CompactFilterBehavior,FilterSynchronizationState}.cs and
-Services/NodesManagement/P2pConnectionManager.cs. Transaction and HTTP/network
-owners confirmed no overlap. JSON owner owns PeerAddressCache.cs's JSON-only leaf;
-the cache format stays unchanged. Root/shared caller overlap still requires
-coordination before edits. Raw P2P reuses actual published SOCKS transport with
-one outer absolute operation deadline, remote DNS and no direct fallback.
+The human scope correction revoked the full sync, peer, Tor, storage-engine,
+wallet-cryptography, transaction-engine and script migrations. No managed sync
+or P2P caller was edited in this workstream. The proposed ownership of
+BitcoinP2p/{BlockHeadersChainBehavior,CompactFilterBehavior,
+FilterSynchronizationState}.cs and Services/NodesManagement/P2pConnectionManager.cs
+is withdrawn. The uncommitted `sync_service/{mod,math,chain,protocol}.rs` draft
+and its test scripts remain preserved in `.artifacts/mcw-bitcoin-block-handoff`.
+Its ignored `bitcoin-block-sync-evidence/preserved-scope.json` records source
+hashes and the incomplete Clippy verification. It is not production code and
+must not be included in host registration or a cutover.
 
-Expanded completion requires actual Rust peer lifecycle/handshake/P2P messages,
-proof/difficulty/header chain rules, compact filter synchronization, reorg/error/
-retry/privacy behavior, production caller cutover, synthetic peer/chain/filter
-failure cleanup and runtime/package compatibility verification. Tor remains
-explicitly transitional until the separate privacy implementation is migrated.
-One authoritative chain/filter/wallet state owner must be preserved throughout.
+A bounded candidate is exact 80-byte header hashing for the existing block
+cache filenames, plus read identity verification against the requested hash.
+`Wallets/FileSystemBlockRepository.cs` still uses NBitcoin Block mapping and
+retains its existing storage format. This candidate requires narrow caller
+ownership coordination, a typed native service leaf, actual host dispatch and
+synthetic cache compatibility/error tests before a production replacement can
+be claimed. No package retirement, whole sync replacement or changed consensus
+validation is implied. In particular, `Block.Check` remains unchanged.
 
 The coordinator alone dispatches incorporation when QR is idle. A machine handoff
-record identifies this component as ready while the full workstream remains
-in progress; it is not a dependency-removal or workstream-completion claim.
+record identifies this component as ready while bounded caller integration
+awaits assignment; it is not a dependency-removal or workstream-completion claim.
