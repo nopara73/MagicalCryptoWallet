@@ -149,7 +149,7 @@ def main():
         def waiting_for_round(url):
             info = rpc(url, "getwalletinfo")
             return info if (info["synchronized"] and info["syncHeight"] >= confirmation_height
-                and info["coinjoinStatus"] == "InProgress") else False
+                and info["coinjoinStatus"] == "In progress") else False
         for index, (_, url) in enumerate(clients):
             wait_for(lambda: waiting_for_round(url), timeout=360)
             print(f"Client {index}: synchronized at {confirmation_height}; automatic CoinJoin is waiting for a round.", flush=True)
