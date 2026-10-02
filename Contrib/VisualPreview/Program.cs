@@ -40,6 +40,11 @@ Console.WriteLine("Headless UI scheduler check passed: background callbacks retu
 string destination = args.FirstOrDefault(x => !x.StartsWith("--", StringComparison.Ordinal)) ?? ".artifacts/rebrand/screenshots";
 Directory.CreateDirectory(destination);
 var context = (UiContext)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(UiContext));
+if (args.Contains("--history-dates-only"))
+{
+    HistoryDateChecks.Run(context, destination);
+    return;
+}
 if (args.Contains("--fees-only"))
 {
     var feeServices = (Services)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(Services));
