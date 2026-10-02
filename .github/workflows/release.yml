@@ -12,6 +12,7 @@ on:
         default: false
 permissions:
   contents: read
+  actions: read
 jobs:
   packages:
     uses: ./.github/workflows/build.yml

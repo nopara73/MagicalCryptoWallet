@@ -49,7 +49,9 @@ def trace(variant: str) -> dict:
                 red, green, blue = pixels[x, y]
                 inside = max(red, green, blue) < 50 if variant == "compact" else green > 70
                 output[x - left, y - top] = 0 if inside else 1
-    with tempfile.TemporaryDirectory(dir=ROOT / ".artifacts/rebrand") as temporary:
+    work = ROOT / ".artifacts/rebrand"
+    work.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(dir=work) as temporary:
         bitmap = Path(temporary) / "mark.pbm"
         vector = Path(temporary) / "mark.svg"
         mask.save(bitmap)
