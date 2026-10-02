@@ -18,6 +18,26 @@ namespace MagicalCryptoWallet.Tests.UnitTests;
 
 public class WalletOperationAuthorizationTests
 {
+	[Fact]
+	public async Task UnacceptedUiAuthorizationCannotStartCoinJoinAndWrongPasswordsRemainRejectedAsync()
+	{
+		await using var app = new SingleWalletTests.SyntheticApplication(await Common.GetEmptyWorkDirAsync());
+		var wallet = app.Session.Configure(app.NewKeys("secret"));
+		var model = new MagicalCryptoWallet.Fluent.Models.Wallets.WalletAuthorizationModel(wallet);
+		using (var dismissed = await model.TryAuthorizeAsync("secret"))
+		{
+			Assert.NotNull(dismissed);
+			Assert.True(app.Session.Snapshot.CoinJoinRequiresAuthorization);
+			Assert.Null(app.Session.CoinJoinKeyChain);
+		}
+		Assert.True(app.Session.Snapshot.CoinJoinRequiresAuthorization);
+		using var accepted = await model.TryAuthorizeAsync("secret");
+		Assert.NotNull(accepted);
+		app.Session.CompleteOperationAuthorization(accepted);
+		Assert.False(app.Session.Snapshot.CoinJoinRequiresAuthorization);
+		Assert.NotNull(app.Session.CoinJoinKeyChain);
+		Assert.Null(await model.TryAuthorizeAsync("wrong"));
+	}
 	[Theory]
 	[InlineData("secret")]
 	[InlineData("")]

@@ -108,166 +108,66 @@ public class WabiSabiHttpApiIntegrationTests : IClassFixture<WabiSabiApiApplicat
 		Assert.True(inputBannedData.BannedUntil > DateTimeOffset.UtcNow);
 	}
 
-	[Theory]
-	[InlineData(new long[] { 10_000_000, 20_000_000, 30_000_000, 40_000_000, 100_000_000 })]
-	public async Task SoloCoinJoinTestAsync(long[] amounts)
+	[Fact]
+	public async Task UndersizedRoundsNeverRegisterOrBroadcastAsync()
 	{
-		int inputCount = amounts.Length;
-
-		// At the end of the test a coinjoin transaction has to be created and broadcasted.
-		var transactionCompleted = new TaskCompletionSource<Transaction>();
-
-		// Create a key manager and use it to create fake coins.
-		_output.WriteLine("Creating key manager...");
-		KeyManager keyManager = KeyManager.CreateNew(out _, password: "", Network.Main);
-
-		var coins = GenerateSmartCoins(keyManager, amounts, inputCount);
-
-		_output.WriteLine("Coins were created successfully");
-
-		var httpClient = _apiApplicationFactory.WithWebHostBuilder(builder =>
-			builder.AddMockRpcClient(
-				coins,
-				rpc =>
-
-					// Make the coordinator believe that the transaction is being
-					// broadcasted using the RPC interface. Once we receive this tx
-					// (the `SendRawTransactionAsync` was invoked) we stop waiting
-					// and finish the waiting tasks to finish the test successfully.
-					rpc.OnSendRawTransactionAsync = (tx) =>
-					{
-						transactionCompleted.SetResult(tx);
-						return tx.GetHash();
-					})
-			.ConfigureServices(services =>
-			{
-				// Instruct the coordinator DI container to use these two scoped
-				// services to build everything (WabiSabi controller, arena, etc)
-				services.AddSingleton(s => new WabiSabiConfig
-				{
-					MaxInputCountByRound = inputCount - 1,  // Make sure that at least one IR fails for WrongPhase
-					StandardInputRegistrationTimeout = TimeSpan.FromSeconds(20),
-					ConnectionConfirmationTimeout = TimeSpan.FromSeconds(20),
-					OutputRegistrationTimeout = TimeSpan.FromSeconds(20),
-					TransactionSigningTimeout = TimeSpan.FromSeconds(20),
-					MaxSuggestedAmountBase = Money.Satoshis(ProtocolConstants.MaxAmountPerAlice)
-				});
-			})).CreateClient();
-
-		// Create the coinjoin client
-		var apiClient = _apiApplicationFactory.CreateWabiSabiHttpApiClient(httpClient);
-
-		// Total test timeout.
-		using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(200));
-		cts.Token.Register(() => transactionCompleted.TrySetCanceled(), useSynchronizationContext: false);
-
-		using var roundStateUpdater = RoundStateUpdaterForTesting.Create(apiClient);
-		var roundStateProvider = new RoundStateProvider(roundStateUpdater);
-
-		var coinJoinClient = WabiSabiFactory.CreateTestCoinJoinClient(_ => apiClient, keyManager, roundStateProvider);
-
-		// Run the coinjoin client task.
-		var coinjoinResult = await coinJoinClient.StartCoinJoinAsync(() => coins, cts.Token);
-		Assert.True(coinjoinResult is SuccessfulCoinJoinResult);
-
-		var broadcastedTx = await transactionCompleted.Task; // wait for the transaction to be broadcasted.
-		Assert.NotNull(broadcastedTx);
+		var keys = KeyManager.CreateNew(out _, "", Network.Main);
+		var coins = GenerateSmartCoins(keys, [10_000_000, 20_000_000], 2);
+		bool broadcast = false;
+		using var http = _apiApplicationFactory.WithWebHostBuilder(builder => builder
+			.AddMockRpcClient(coins, rpc => rpc.OnSendRawTransactionAsync = tx => { broadcast = true; return tx.GetHash(); })
+			.ConfigureServices(services => services.AddSingleton(_ => new WabiSabiConfig { MaxInputCountByRound = 20 }))).CreateClient();
+		var api = _apiApplicationFactory.CreateWabiSabiHttpApiClient(http);
+		using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+		using var updater = RoundStateUpdaterForTesting.Create(api, timeout.Token);
+		var provider = new RoundStateProvider(updater);
+		var client = WabiSabiFactory.CreateTestCoinJoinClient(_ => api, keys, provider);
+		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => client.StartCoinJoinAsync(() => coins, timeout.Token));
+		Assert.False(broadcast);
 	}
 
 	[Fact]
 	public async Task FailToRegisterOutputsCoinJoinTestAsync()
 	{
-		long[] amounts = [10_000_000, 20_000_000, 30_000_000];
-		int inputCount = amounts.Length;
-
-		// At the end of the test a coinjoin transaction has to be created and broadcasted.
-		var transactionCompleted = new TaskCompletionSource<Transaction>();
-
-		// Create a key manager and use it to create fake coins.
-		_output.WriteLine("Creating key manager...");
-		KeyManager keyManager = KeyManager.CreateNew(out _, password: "", Network.Main);
-
-		var coins = GenerateSmartCoins(keyManager, amounts, inputCount);
-
-		_output.WriteLine("Coins were created successfully");
-
-		keyManager.AssertLockedInternalKeysIndexedAndPersist(21, false);
-		keyManager.AssertLockedInternalKeysIndexedAndPersist(21, true);
-
-		var keysCandidates = keyManager.GetNextCoinJoinKeys().ToArray();
-		var outputScriptCandidates = keysCandidates
-			.SelectMany(x => new[] {x.PubKey.GetScriptPubKey(ScriptPubKeyType.Segwit), x.PubKey.GetScriptPubKey(ScriptPubKeyType.TaprootBIP86)})
-			.ToImmutableArray();
-
-		var httpClient = _apiApplicationFactory.WithWebHostBuilder(builder =>
-			builder
-			.AddMockRpcClient(coins, _ => { })
+		using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(90));
+		var keys = Enumerable.Range(0, 3).Select(i => KeyManager.CreateNew(out _, "", Network.Main)).ToArray();
+		var coins = keys.Select(key => GenerateSmartCoins(key, Enumerable.Repeat(10_000_000L, 7).ToArray(), 7)).ToArray();
+		foreach (var key in keys)
+		{
+			key.AssertLockedInternalKeysIndexedAndPersist(21, false);
+			key.AssertLockedInternalKeysIndexedAndPersist(21, true);
+		}
+		var usedScripts = keys.SelectMany(key => key.GetNextCoinJoinKeys())
+			.SelectMany(key => new[] { key.PubKey.GetScriptPubKey(ScriptPubKeyType.Segwit), key.PubKey.GetScriptPubKey(ScriptPubKeyType.TaprootBIP86) }).ToImmutableArray();
+		bool broadcast = false;
+		using var http = _apiApplicationFactory.WithWebHostBuilder(builder => builder
+			.AddMockRpcClient(coins.SelectMany(x => x).ToImmutableList(), rpc => rpc.OnSendRawTransactionAsync = tx => { broadcast = true; return tx.GetHash(); })
 			.ConfigureServices(services =>
 			{
-				// Instruct the coordinator DI container to use this scoped
-				// services to build everything (WabiSabi controller, arena, etc)
 				services.AddSingleton(_ => new WabiSabiConfig
 				{
-					MaxInputCountByRound = inputCount,
+					MaxInputCountByRound = 21, MinInputCountByRoundMultiplier = 1,
 					StandardInputRegistrationTimeout = TimeSpan.FromSeconds(20),
 					ConnectionConfirmationTimeout = TimeSpan.FromSeconds(20),
 					OutputRegistrationTimeout = TimeSpan.FromSeconds(20),
 					TransactionSigningTimeout = TimeSpan.FromSeconds(20),
 					MaxSuggestedAmountBase = Money.Satoshis(ProtocolConstants.MaxAmountPerAlice)
 				});
-
-				// Emulate that all our outputs had been already used in the past.
-				// the server will prevent the registration and fail with a WabiSabiProtocolError.
-				services.AddSingleton(_ => new CoinJoinScriptStore(outputScriptCandidates));
+				services.AddSingleton(_ => new CoinJoinScriptStore(usedScripts));
 			})).CreateClient();
-
-		// Create the coinjoin client
-		var apiClient = _apiApplicationFactory.CreateWabiSabiHttpApiClient(httpClient);
-
-		// Total test timeout.
-		using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(90));
-		cts.Token.Register(() => transactionCompleted.TrySetCanceled(), useSynchronizationContext: false);
-
-		using var roundStateUpdater = RoundStateUpdaterForTesting.Create(apiClient, cts.Token);
-		var roundStateProvider = new RoundStateProvider(roundStateUpdater);
-
-		var coinJoinClient = WabiSabiFactory.CreateTestCoinJoinClient(_=> apiClient, keyManager, roundStateProvider);
-
-		// Run the coinjoin client task.
-		var coinjoinResultTask = coinJoinClient.StartCoinJoinAsync(() => coins, cts.Token);
-
-		// If we see a blame round that means that the original round failed
-		var blameRoundWaiterTask = roundStateProvider.CreateRoundAwaiterAsync(r => r.IsBlame, cts.Token);
-
-		var finishedTask = await Task.WhenAny(coinjoinResultTask, blameRoundWaiterTask);
-		if (finishedTask == coinjoinResultTask)
-		{
-			try
-			{
-				var coinjoinResult = await coinjoinResultTask;
-				if (coinjoinResult is SuccessfulCoinJoinResult successfulCoinJoinResult)
-				{
-					var scripts = successfulCoinJoinResult.UnsignedCoinJoin.Outputs.Select(x => x.ScriptPubKey);
-					var common = outputScriptCandidates.Intersect(scripts);
-					Assert.Empty(common);
-					throw new Exception("Coinjoin should have never finished successfully.");
-				}
-			}
-			catch (InvalidOperationException e) when(e.Message.StartsWith("No valid output denominations found"))
-			{
-				// ignore. There is a rare case for this
-			}
-		}
-		else
-		{
-			// Task.WhenAny does not propagate cancellation or failures from the winning task.
-			// Await it so a timeout fails the test instead of passing without a blame round.
-			await blameRoundWaiterTask;
-		}
+		var api = _apiApplicationFactory.CreateWabiSabiHttpApiClient(http);
+		using var updater = RoundStateUpdaterForTesting.Create(api, timeout.Token);
+		var provider = new RoundStateProvider(updater);
+		var round = await provider.CreateRoundAwaiterAsync(r => r.Phase == Phase.InputRegistration, timeout.Token);
+		var tasks = keys.Select((key, i) => WabiSabiFactory.CreateTestCoinJoinClient(_ => api, key, provider)
+			.StartRoundAsync(coins[i], UnrestrictedRound.Instance, round, timeout.Token)).ToArray();
+		var results = await Task.WhenAll(tasks);
+		Assert.All(results, result => Assert.IsNotType<SuccessfulCoinJoinResult>(result));
+		Assert.False(broadcast);
 	}
 
 	[Theory]
-	[InlineData(new long[] { 30_000_000, 40_000_000 }, new long[] { 50_000_000, 60_000_000 }, new long[] { 70_000_000, 80_000_000 })]
+	[InlineData(new long[] { 30_000_000, 31_000_000, 32_000_000, 33_000_000, 34_000_000, 35_000_000, 36_000_000 }, new long[] { 50_000_000, 51_000_000, 52_000_000, 53_000_000, 54_000_000, 55_000_000, 56_000_000 }, new long[] { 70_000_000, 71_000_000, 72_000_000, 73_000_000, 74_000_000, 75_000_000, 76_000_000 })]
 	public async Task CoinJoinWithBlameRoundTestAsync(long[] satAmounts1, long[] satAmounts2, long[] satAmounts3)
 	{
 		int inputCount = satAmounts1.Length;
@@ -282,15 +182,17 @@ public class WabiSabiHttpApiIntegrationTests : IClassFixture<WabiSabiApiApplicat
 		KeyManager keyManager1 = KeyManager.CreateNew(out var _, password: "", Network.Main);
 		KeyManager keyManager2 = KeyManager.CreateNew(out var _, password: "", Network.Main);
 		KeyManager keyManager3 = KeyManager.CreateNew(out var _, password: "", Network.Main);
+		KeyManager keyManager4 = KeyManager.CreateNew(out _, "", Network.Main);
 
-		// There are three participants. The second participant will fail to register outputs and will enforce a blame round.
+		// Four participants supply 28 inputs. One withholds signatures, leaving 21 in blame.
 		var participant1Coins = GenerateSmartCoins(keyManager1, satAmounts1, inputCount);
 		var participant2CoinsBad = GenerateSmartCoins(keyManager2, satAmounts2, inputCount);
 		var participant3Coins = GenerateSmartCoins(keyManager3, satAmounts3, inputCount);
+		var participant4Coins = GenerateSmartCoins(keyManager4, satAmounts1, inputCount);
 
 		var coordinatorApp = _apiApplicationFactory.WithWebHostBuilder(builder =>
 			builder.AddMockRpcClient(
-				Enumerable.Concat(participant1Coins, participant2CoinsBad).Concat(participant3Coins).ToImmutableList(),
+				Enumerable.Concat(participant1Coins, participant2CoinsBad).Concat(participant3Coins).Concat(participant4Coins).ToImmutableList(),
 				rpc =>
 				{
 					rpc.OnGetRawTransactionAsync = (txid, throwIfNotFound) =>
@@ -317,11 +219,15 @@ public class WabiSabiHttpApiIntegrationTests : IClassFixture<WabiSabiApiApplicat
 				{
 					AllowP2trInputs = true,
 					AllowP2trOutputs = true,
-					MaxInputCountByRound = 3 * inputCount,
-					StandardInputRegistrationTimeout = TimeSpan.FromSeconds(10),
-					BlameInputRegistrationTimeout = TimeSpan.FromSeconds(10),
-					ConnectionConfirmationTimeout = TimeSpan.FromSeconds(10),
-					OutputRegistrationTimeout = TimeSpan.FromSeconds(10),
+					MaxInputCountByRound = 4 * inputCount,
+					MinInputCountByRoundMultiplier = 0.75,
+					MinInputCountByBlameRoundMultiplier = 0.75,
+					// The coordinator opens another round in the final minute. Leave
+					// enough time for all four clients to choose this normal round.
+					StandardInputRegistrationTimeout = TimeSpan.FromMinutes(2),
+					BlameInputRegistrationTimeout = TimeSpan.FromSeconds(30),
+					ConnectionConfirmationTimeout = TimeSpan.FromSeconds(30),
+					OutputRegistrationTimeout = TimeSpan.FromSeconds(30),
 					TransactionSigningTimeout = TimeSpan.FromSeconds(4 * inputCount),
 					MaxSuggestedAmountBase = Money.Satoshis(ProtocolConstants.MaxAmountPerAlice)
 				})));
@@ -354,27 +260,19 @@ public class WabiSabiHttpApiIntegrationTests : IClassFixture<WabiSabiApiApplicat
 
 		var apiClient2Bad = _apiApplicationFactory.CreateWabiSabiHttpApiClient(nonSigningHttpClientMock);
 		var apiClient3 = _apiApplicationFactory.CreateWabiSabiHttpApiClient(coordinatorApp.CreateClient());
+		var apiClient4 = _apiApplicationFactory.CreateWabiSabiHttpApiClient(coordinatorApp.CreateClient());
 
 		var coinJoinClient1 = WabiSabiFactory.CreateTestCoinJoinClient(_ => apiClient1, keyManager1, roundStateProvider);
 		var coinJoinClient2Bad = WabiSabiFactory.CreateTestCoinJoinClient(_ => apiClient2Bad, keyManager2, roundStateProvider);
 		var coinJoinClient3 = WabiSabiFactory.CreateTestCoinJoinClient(_ => apiClient3, keyManager3, roundStateProvider);
+		var coinJoinClient4 = WabiSabiFactory.CreateTestCoinJoinClient(_ => apiClient4, keyManager4, roundStateProvider);
 
 		var participant1CoinjoinTask = coinJoinClient1.StartCoinJoinAsync(() => participant1Coins, cts.Token);
 		var participant2CoinjoinTaskBad = coinJoinClient2Bad.StartRoundAsync(participant2CoinsBad, UnrestrictedRound.Instance, roundState, cts.Token);
 		var participant3CoinjoinTask = coinJoinClient3.StartCoinJoinAsync(() => participant3Coins, cts.Token);
+		var participant4CoinjoinTask = coinJoinClient4.StartCoinJoinAsync(() => participant4Coins, cts.Token);
 
-		try
-		{
-			await Task.WhenAll(new Task[] { participant2CoinjoinTaskBad, participant1CoinjoinTask, participant3CoinjoinTask });
-		}
-		catch (InvalidOperationException e) when (e.Message.Contains("No valid output denominations found.")
-		                                         || e.Message.Contains("Not enough coins registered to participate in the coinjoin."))
-		{
-			// This happens because the `GetFilteredDenominations` removes all coins sometimes,
-			// or the smallest available denomination exceeds a participant's input sum in the blame round.
-			// With fewer participants after blame, denomination selection becomes more constrained.
-			return;
-		}
+		await Task.WhenAll(participant2CoinjoinTaskBad, participant1CoinjoinTask, participant3CoinjoinTask, participant4CoinjoinTask);
 
 		var participant1Result = await participant1CoinjoinTask;
 		var participant2ResultBad = await participant2CoinjoinTaskBad;
@@ -387,12 +285,14 @@ public class WabiSabiHttpApiIntegrationTests : IClassFixture<WabiSabiApiApplicat
 		Assert.IsNotType<SuccessfulCoinJoinResult>(participant2ResultBad);
 
 		Assert.IsType<SuccessfulCoinJoinResult>(participant3Result);
+		Assert.IsType<SuccessfulCoinJoinResult>(await participant4CoinjoinTask);
 
 		var broadcastedTx = await broadcastedTxTcs.Task; // wait for the transaction to be broadcasted.
 		Assert.NotNull(broadcastedTx);
+		Assert.True(broadcastedTx.Inputs.Count >= 21);
 
 		// Only coins of the first and the third participant are expected here. The second one failed to register outputs and was blamed.
-		var expectedInputs = participant1Coins.Concat(participant3Coins)
+		var expectedInputs = participant1Coins.Concat(participant3Coins).Concat(participant4Coins)
 			.Select(x => x.Coin.Outpoint.ToString())
 			.Order()
 			.ToList();
@@ -414,9 +314,9 @@ public class WabiSabiHttpApiIntegrationTests : IClassFixture<WabiSabiApiApplicat
 		// Total test timeout.
 		using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(2));
 
-		const int NumberOfParticipants = 10;
-		const int NumberOfCoinsPerParticipant = 2;
-		const int ExpectedInputNumber = (NumberOfParticipants * NumberOfCoinsPerParticipant) / 2;
+		const int NumberOfParticipants = 21;
+		const int NumberOfCoinsPerParticipant = 1;
+		const int ExpectedInputNumber = NumberOfParticipants * NumberOfCoinsPerParticipant;
 
 		var coinJoinBroadcasted = new TaskCompletionSource<Transaction>();
 		var rpc = BitcoinFactory.GetMockMinimalRpc();
@@ -440,7 +340,8 @@ public class WabiSabiHttpApiIntegrationTests : IClassFixture<WabiSabiApiApplicat
 				services.AddSingleton(s => new WabiSabiConfig(Path.GetTempFileName())
 				{
 					MaxRegistrableAmount = Money.Coins(500m),
-					MaxInputCountByRound = (int)(ExpectedInputNumber / (1 + (10 * (faultInjectorMonkeyAggressiveness + delayInjectorMonkeyAggressiveness)))),
+					MaxInputCountByRound = ExpectedInputNumber,
+					MinInputCountByRoundMultiplier = 1,
 					StandardInputRegistrationTimeout = TimeSpan.FromSeconds(5 * ExpectedInputNumber),
 					BlameInputRegistrationTimeout = TimeSpan.FromSeconds(2 * ExpectedInputNumber),
 					ConnectionConfirmationTimeout = TimeSpan.FromSeconds(2 * ExpectedInputNumber),
@@ -501,6 +402,7 @@ public class WabiSabiHttpApiIntegrationTests : IClassFixture<WabiSabiApiApplicat
 			var coinjoinFromMempool = await rpc.GetRawTransactionAsync(mempool.Single(), cancellationToken: cts.Token);
 
 			Assert.Equal(broadcastedCoinjoinTransaction.GetHash(), coinjoinFromMempool.GetHash());
+			Assert.True(broadcastedCoinjoinTransaction.Inputs.Count >= 21);
 		}
 		else if (finishedTask == participantsFinishedTask)
 		{
@@ -585,14 +487,11 @@ public class WabiSabiHttpApiIntegrationTests : IClassFixture<WabiSabiApiApplicat
 
 	private ImmutableList<SmartCoin> GenerateSmartCoins(KeyManager keyManager, long[] amounts, int inputCount)
 	{
-		var anonscore = 0;
-
-		return keyManager.GetKeys()
+				return keyManager.GetKeys()
 			.Take(inputCount)
 			.Select((x, i) =>
 			{
-				anonscore++;
-				return BitcoinFactory.CreateSmartCoin(x, Money.Satoshis(amounts[i]), true, anonscore);
+				return BitcoinFactory.CreateSmartCoin(x, Money.Satoshis(amounts[i]), true, 1);
 			})
 			.ToImmutableList();
 	}

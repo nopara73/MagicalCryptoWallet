@@ -2,7 +2,6 @@ using ReactiveUI;
 using System.Windows.Input;
 using MagicalCryptoWallet.Fluent.Helpers;
 using MagicalCryptoWallet.Fluent.ViewModels;
-using MagicalCryptoWallet.Fluent.ViewModels.HelpAndSupport;
 using MagicalCryptoWallet.Models;
 using MagicalCryptoWallet.Helpers;
 
@@ -33,7 +32,7 @@ public class CrashReportWindowViewModel : ViewModelBase
 
 	public string Caption => $"A problem has occurred and Magical Crypto Wallet is unable to continue.";
 
-	public string Link => AboutViewModel.BugReportLink;
+	public string Link => "https://github.com/nopara73/MagicalCryptoWallet/issues/new?template=bug-report.md";
 
 	public string Trace => SerializedException.ToString();
 

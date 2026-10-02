@@ -32,13 +32,11 @@ public abstract partial class CoinListModel : ICoinListModel, IDisposable
 		Wallet = wallet;
 		WalletModel = walletModel;
 		var transactionProcessed = walletModel.Transactions.TransactionProcessed;
-		var anonScoreTargetChanged = this.WhenAnyValue(x => x.WalletModel.Settings.AnonScoreTarget).Skip(1).ToSignal();
 		var isCoinjoinRunningChanged = walletModel.IsCoinjoinRunning.ToSignal();
 
 
 		var signals =
 			transactionProcessed
-				.Merge(anonScoreTargetChanged)
 				.Merge(isCoinjoinRunningChanged)
 				.Publish();
 

@@ -49,7 +49,10 @@ public static class Constants
 
 	public const decimal MaximumNumberOfBitcoins = 20999999.9769m;
 
-	public const int SemiPrivateThreshold = 2;
+	public const int AnonymityScoreTarget = 2;
+	public const int CoinJoinMinimumInputCount = 21;
+
+	public const int SemiPrivateThreshold = AnonymityScoreTarget;
 
 	public const int FastestConfirmationTarget = 1;
 	public const int TwentyMinutesConfirmationTarget = 2;
@@ -63,7 +66,6 @@ public static class Constants
 
 	public const decimal DefaultDustThreshold = 0.00001m;
 	public const decimal DefaultMaxCoinJoinMiningFeeRate = 50.0m;
-	public const int DefaultAbsoluteMinInputCount = 21;
 	public const int AbsoluteMinInputCount = 2;
 
 	public const string AlphaNumericCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";

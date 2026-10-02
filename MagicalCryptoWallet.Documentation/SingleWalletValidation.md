@@ -2,9 +2,25 @@
 
 All destructive and signing tests use synthetic wallets and isolated data directories. No public release, announcement, real wallet, or separate repository is modified.
 
-The repository's [CI checks](https://github.com/nopara73/MagicalCryptoWallet/actions/workflows/build.yml) contain the platform results and downloadable unsigned packages. CI builds Windows x64, Linux x64/arm64, and macOS x64/arm64; each platform runs wallet tests, real packaged-process tests, managed/native cryptography and wire interoperability, source/generated/symbol audits, extracted-package inspection, and actual Avalonia rendering. Linux x64 additionally exercises five encrypted clients through Send authorization and a real local CoinJoin. Windows tests the desktop and daemon; other platforms test the daemon.
+Changes are committed and pushed directly to `master`. The repository's [CI checks](https://github.com/nopara73/MagicalCryptoWallet/actions/workflows/build.yml) contain platform results and downloadable unsigned packages. CI builds Windows x64, Linux x64/arm64, and macOS x64/arm64; each platform runs wallet tests, real packaged-process tests, managed/native cryptography and wire interoperability, source/generated/symbol audits, extracted-package inspection, and actual Avalonia rendering. Linux x64 additionally exercises seven encrypted clients through Send authorization and a real local CoinJoin. Windows tests the desktop and daemon; other platforms test the daemon.
 
-## Single-wallet baseline results, 2026-10-02
+## Automatic CoinJoin verification, 2026-10-02
+
+| Verification | Result |
+|---|---|
+| Complete wallet unit suite | 1,194 passed |
+| Setup/operation authorization, actor, RPC, legacy-file and round-cache regressions after reconciling `master` | 72 passed |
+| Bitcoin integration suite | 44 passed |
+| Seven independent encrypted regtest clients | One 35-input CoinJoin broadcast and confirmed; every client's measured anonymity score was 7 |
+| First-round payments | All seven reconciled exactly once in the confirmed CoinJoin |
+| Managed cryptography / native-managed interoperability / native CTest | 125 passed / 34 passed / 1 of 1 passed |
+| Avalonia CoinJoin views and controls | 48 captures, both themes at 100%, 125%, 150% and 200%; pause/resume and critical-phase progress checks passed |
+| Source, active generated code, assembly, symbol and package audits | Passed |
+| Bash helpers and Python harness syntax | Passed |
+
+The seven-client harness uses the fixed target and minimum input count without policy overrides. Encrypted startup requires authorization, Send starts automatic CoinJoin, and a later incorrect passphrase is rejected. All signing and broadcast verification uses synthetic wallets and a local regtest node.
+
+## Previous single-wallet baseline, 2026-10-02
 
 These results describe the preceding single-wallet change. The software-wallet-only change is validated separately by the same platform workflow plus the rejection tests and UI checks described in [SoftwareWallet.md](SoftwareWallet.md).
 
@@ -22,7 +38,7 @@ These results describe the preceding single-wallet change. The software-wallet-o
 
 The process checks cover encrypted first-run setup, zero-height regtest, synchronization without authorization or a visible window, cached offline balance/history, network recovery, operation authorization followed by a wrong passphrase, duplicate silent launches, same-process activation, hide/reopen, exact-network and daemon conflicts, credential reset, clean exit and lock release. Screenshots contain only synthetic masked data. The visual checks include unknown/syncing/offline/faulted dashboards, keyboard access, Chinese masking/IME, first-frame Lurking Wife Mode, and automatic coin selection.
 
-CoinJoin tests cover concurrent starts, fresh trackers after cancellation, overlapping send/shutdown restrictions, canceled restarts, automatic authorization after Send, manual pause and disabled automatic settings. The five-client process harness requires confirmed mixed outputs for every independent client and fails if a prior successful Send bypasses a later incorrect passphrase.
+CoinJoin tests cover the fixed anonymity target of 2, batches up to ten wallet inputs, first-round payments, advertised and actual 21-input boundaries, fee and balance safeguards, immediate authorization/resume, quiet completion, new funds and payments, independent send/shutdown restrictions, pause, and failure backoff. Legacy settings import/save and rejected obsolete RPC/CLI parameters are covered. The seven-client process harness requires at least 21 actual inputs, confirmed mixed outputs for every client, and exactly-once payment reconciliation; it fails if a prior successful Send bypasses a later incorrect password.
 
 Final lifecycle regressions drain queued reorg and mempool work before closing SQLite, reject late callbacks, and retire idle mailbox workers. Each test process has a separate synthetic data root. P2P tests wait for Core's compact-filter index before requesting freshly mined filters. Lock-time boundary tests reject future heights and unsigned underflow on short chains.
 

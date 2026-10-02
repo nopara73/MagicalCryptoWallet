@@ -137,9 +137,9 @@ public class MagicalCryptoWalletJsonRpcService : IJsonRpcService
 		info["walletFile"] = km.FilePath;
 		info["masterKeyFingerprint"] = km.MasterFingerprint?.ToString();
 		info["anonScoreTarget"] = activeWallet.AnonScoreTarget;
-		info["isAutoCoinjoin"] = km.AutoCoinJoin;
-		info["isNonPrivateCoinIsolation"] = km.NonPrivateCoinIsolation;
-		info["onlyUsePrivateFundsForPayments"] = km.OnlyUsePrivateFundsForPayments;
+		info["isAutoCoinjoin"] = true;
+		info["isNonPrivateCoinIsolation"] = false;
+		info["onlyUsePrivateFundsForPayments"] = false;
 		info["accounts"] = new[] { segwit };
 
 		if (km.TaprootExtPubKey is { } taprootExtPubKey)
@@ -471,7 +471,7 @@ public class MagicalCryptoWalletJsonRpcService : IJsonRpcService
 	}
 
 	[JsonRpcMethod("startcoinjoin")]
-	public void StartCoinJoining(string? password = null, bool stopWhenAllMixed = true, bool overridePlebStop = true)
+	public void StartCoinJoining(string? password = null)
 	{
 		var coinJoinManager = GetCoinJoinManager();
 		var activeWallet = Guard.NotNull(nameof(ActiveWallet), ActiveWallet);
@@ -482,7 +482,7 @@ public class MagicalCryptoWalletJsonRpcService : IJsonRpcService
 			using var authorization = Authorize(password ?? "");
 			Global.WalletSession.AuthorizeCoinJoin(authorization);
 		}
-		coinJoinManager.RequestCoinJoinStart(stopWhenAllMixed, overridePlebStop);
+		coinJoinManager.RequestCoinJoinStart(overridePlebStop: true);
 	}
 
 	[JsonRpcMethod("stopcoinjoin")]

@@ -68,7 +68,6 @@ public class PersistentConfigManagerTests
 			  "FeeRateEstimationProvider": "MempoolSpace",
 			  "ExternalTransactionBroadcaster": "MempoolSpace",
 			  "MaxCoinJoinMiningFeeRate": 50.0,
-			  "AbsoluteMinInputCount": 21,
 			  "MaxDaysInMempool": 30,
 			  "ExperimentalFeatures": [],
 			  "ConfigVersion": 4

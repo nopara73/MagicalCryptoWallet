@@ -16,7 +16,7 @@ flowchart LR
   authorization[Scoped authorization] --> sign[Reviewed transaction signing or private information]
   authorization --> cj[Process-lifetime CoinJoin authorization]
   cj --> actor[CoinJoin command processor]
-  actor --> tracker[One tracker and one pending restart]
+  actor --> tracker[One tracker and readiness check]
 ```
 
 Previously the application owned a manager, a repository, a login state, and a loading workflow. A navigation page decided when to load; UI CoinJoin timers decided when to start. Collection wrappers, wallet identities, selection flags, and event filters routed those operations. The new setup service creates drafts; the session owns runtime resources; the dashboard presents state; the CoinJoin service owns orchestration.
@@ -35,9 +35,13 @@ Startup is idempotent and cancellation-aware. Unavailable peers or blocks produc
 
 There is no application-wide password or logged-in shortcut. Wallet Info opens with public data and obtains private data only after authorization. Chinese masking and compatibility passwords remain in the dialogs. Empty-passphrase authorization actually verifies the wallet instead of inspecting an empty in-memory field.
 
-Every successful passphrase authorization, including Send, private information, and RPC signing, also retains a separate CoinJoin scope for the current process. With automatic CoinJoin enabled, it starts when synchronization and send/shutdown restrictions allow. This does not authorize later sends or private-key disclosure: each operation still validates its own passphrase. Manual pause and disabled automatic CoinJoin remain respected. Hiding and showing a window retains CoinJoin authorization; restarting does not. Hidden startup opens no authorization dialog. Empty-passphrase wallets can automatically CoinJoin according to their settings, with the existing randomized startup delay. Retry timing remains unchanged.
+Every successful passphrase authorization, including Send, private information, and RPC signing, also retains a separate CoinJoin scope for the current process. CoinJoin starts immediately when synchronization and send/shutdown restrictions allow. Each later operation still validates its own passphrase. Pause lasts for the current run. Hiding and showing a window retains CoinJoin authorization; restarting does not. Hidden startup opens no authorization dialog. Empty-passphrase wallets can start automatically without a startup delay.
 
-The CoinJoin mailbox serializes start, stop, completion, retry, synchronization, and restriction changes. There is one tracker, restart task, client snapshot, critical coin collection, and coordination state. Sending and shutdown restrictions are independent; releasing one cannot release the other. Sending waits for critical-phase completion and payment reconciliation. Manual stopping cancels pending automatic resumes. Round, participant, input, and output collections remain protocol requirements.
+One fixed strategy aims for anonymity score **at least 2**, batches eligible unmixed coins up to ten inputs per wallet, and includes pending payments from the first round or from already-private funds. Normal rounds, blame rounds, and actual transactions must have at least **21 inputs**. The configured mining fee ceiling and balance safeguard remain; their defaults are 50 sat/vB and 0.005 BTC. Explicit continuation can bypass the balance safeguard. It cannot bypass the fee ceiling or round size.
+
+The CoinJoin mailbox serializes start, pause, completion, authorization, and restriction changes. It owns one tracker and one readiness check. Authorization and release of restrictions trigger that check immediately; a one-second tick detects newly eligible coins and payments. Completed wallets wait quietly. Ordinary completion has no restart delay; transient failures back off for 30 seconds. Sending and shutdown restrictions are independent; releasing one cannot release the other. Sending waits for critical-phase completion and signed-payment reconciliation. Protocol phase timings, registration safety margins, confirmations, bans, cooldowns, and transaction checks are preserved.
+
+RPC `startcoinjoin(password = null)` authorizes and resumes CoinJoin, including explicit continuation below the balance safeguard; `stopcoinjoin()` pauses it for this run. Retired parameters and positional booleans fail with invalid-parameter errors. `getwalletinfo` reports the fixed policy as read-only facts. Old wallet/configuration files remain readable: obsolete strategy fields are ignored and omitted on save, while keys, labels, recovery data, and retained safeguards survive. Minimum-input CLI/environment overrides are rejected.
 
 ## Desktop lifetime
 
