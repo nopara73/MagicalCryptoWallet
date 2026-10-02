@@ -90,11 +90,17 @@ public class Global
 		FilterStore.DisposeUsing(_disposables);
 
 		ExternalSourcesHttpClientFactory = BuildHttpClientFactory();
+		PublicSourcesHttpClientFactory = Config.UseTorForPublicData
+			? ExternalSourcesHttpClientFactory
+			: new DirectHttpClientFactory();
 
 		var p2PDataDir = GetBitcoinP2PNetworkDirectory();
 		_blockHeaders = ConfigureBlockHeaderChain(p2PDataDir);
 
-		_p2pConnectionManager = ConfigureNodeConnectionManager();
+		_p2pConnectionManager = ConfigureNodeConnectionManager(publicSynchronization: false);
+		_publicConnectionManager = Config.UseSeparatePublicPeerPool
+			? ConfigureNodeConnectionManager(publicSynchronization: true)
+			: _p2pConnectionManager;
 		_bitcoinRpcClient = ConfigureBitcoinRpcClient();
 		var cpfpProvider = ConfigureCpfpInfoProvider();
 		var blockProvider = ConfigureBlockProvider(_p2pConnectionManager, fileSystemBlockRepository);
@@ -133,6 +139,9 @@ public class Global
 	private readonly CancellationTokenSource _stoppingCts = new();
 
 	private readonly P2pConnectionManager _p2pConnectionManager;
+	private readonly P2pConnectionManager _publicConnectionManager;
+	private readonly PeerConnectionRegistry _peerReservations = new();
+	private bool _usesRpcFilters;
 	private TorManager? _torManager;
 	private readonly IRPCClient? _bitcoinRpcClient;
 	private CoinPrison? _coinPrison;
@@ -150,6 +159,7 @@ public class Global
 	public FilterStore FilterStore { get; }
 	public AllTransactionStore TransactionStore { get; }
 	public IHttpClientFactory ExternalSourcesHttpClientFactory { get; }
+	public IHttpClientFactory PublicSourcesHttpClientFactory { get; }
 	public Config Config { get; }
 	public WalletSession WalletSession { get; }
 	public TransactionBroadcaster TransactionBroadcaster { get; }
@@ -165,7 +175,11 @@ public class Global
 	private BlockProvider ConfigureBlockProvider(P2pConnectionManager p2pConnectionManager, FileSystemBlockRepository fileSystemBlockRepository)
 	{
 		var fileSystemBlockProvider = BlockProviders.FileSystemBlockProvider(fileSystemBlockRepository);
-		var p2PBlockProvider = BlockProviders.P2pBlockProvider(p2pConnectionManager.GetSingleUseNodeAsync);
+		var p2PBlockProvider = BlockProviders.P2pBlockProvider(async cancellationToken =>
+		{
+			p2pConnectionManager.Start(_stoppingCts.Token);
+			return await p2pConnectionManager.GetSingleUseNodeAsync(cancellationToken).ConfigureAwait(false);
+		});
 
 		BlockProvider[] blockProviders = _bitcoinRpcClient is null
 			? [fileSystemBlockProvider, p2PBlockProvider]
@@ -210,32 +224,35 @@ public class Global
 		}
 	}
 
-	private P2pConnectionManager ConfigureNodeConnectionManager()
+	private P2pConnectionManager ConfigureNodeConnectionManager(bool publicSynchronization)
 	{
 		if (Network == Network.Main)
 		{
 			if (Network.DNSSeeds is List<DNSSeedData> dnsSeeds)
 			{
-				dnsSeeds.Add(new DNSSeedData("petertodd.net", "seed.btc.petertodd.net"));
-				dnsSeeds.Add(new DNSSeedData("sprovoost.nl", "seed.bitcoin.sprovoost.nl"));
-				dnsSeeds.Add(new DNSSeedData("emzy.de", "dnsseed.emzy.de"));
-				dnsSeeds.Add(new DNSSeedData("wiz.biz", "seed.bitcoin.wiz.biz"));
-				dnsSeeds.Add(new DNSSeedData("achownodes.xyz", "seed.mainnet.achownodes.xyz"));
+				AddDnsSeed(dnsSeeds, "petertodd.net", "seed.btc.petertodd.net");
+				AddDnsSeed(dnsSeeds, "sprovoost.nl", "seed.bitcoin.sprovoost.nl");
+				AddDnsSeed(dnsSeeds, "emzy.de", "dnsseed.emzy.de");
+				AddDnsSeed(dnsSeeds, "wiz.biz", "seed.bitcoin.wiz.biz");
+				AddDnsSeed(dnsSeeds, "achownodes.xyz", "seed.mainnet.achownodes.xyz");
 			}
 		}
 		if (Network == Bitcoin.Instance.Signet)
 		{
 			if (Network.DNSSeeds is List<DNSSeedData> dnsSeeds)
 			{
-				dnsSeeds.Add(new DNSSeedData("sprovoost.nl", "seed.signet.bitcoin.sprovoost.nl"));
-				dnsSeeds.Add(new DNSSeedData("achownodes.xyz", "seed.signet.achownodes.xyz"));
+				AddDnsSeed(dnsSeeds, "sprovoost.nl", "seed.signet.bitcoin.sprovoost.nl");
+				AddDnsSeed(dnsSeeds, "achownodes.xyz", "seed.signet.achownodes.xyz");
 			}
 		}
 		if (Network == Network.RegTest)
 		{
 			if (Network.SeedNodes is List<NetworkAddress> addresses)
 			{
-				addresses.Add(new NetworkAddress(IPAddress.Loopback, Network.DefaultPort));
+				if (!addresses.Any(a => a.Endpoint.Equals(new IPEndPoint(IPAddress.Loopback, Network.DefaultPort))))
+				{
+					addresses.Add(new NetworkAddress(IPAddress.Loopback, Network.DefaultPort));
+				}
 			}
 		}
 
@@ -280,30 +297,47 @@ public class Global
 
 			if (Network.SeedNodes is List<NetworkAddress> addresses)
 			{
-				addresses.AddRange(extras.Select(IPEndPoint.Parse).Select(x => new NetworkAddress(x)));
+				var existing = addresses.Select(x => PeerConnectionRegistry.Normalize(x.Endpoint)).ToHashSet();
+				addresses.AddRange(extras.Select(IPEndPoint.Parse).Where(x => existing.Add(PeerConnectionRegistry.Normalize(x))).Select(x => new NetworkAddress(x)));
 			}
 		}
 
-		var torEndpoint = Config.UseTor != TorMode.Disabled ? TorSettings.SocksEndpoint : null;
+		var torEndpoint = Config.UseTor != TorMode.Disabled && (!publicSynchronization || Config.UseTorForPublicData)
+			? TorSettings.SocksEndpoint : null;
 		IDnsResolver dnsResolver = torEndpoint is not null
 			? new DnsSocksResolver(torEndpoint){ StreamIsolation = true }
 			: DnsResolver.Instance;
 
+		var synchronizes = publicSynchronization || !Config.UseSeparatePublicPeerPool;
 		var manager = new P2pConnectionManager(
 			Network,
 			EventBus,
 			dnsResolver,
 			TimeSpan.FromSeconds(15),
-			torSocks5: torEndpoint);
+			torSocks5: torEndpoint,
+			options: new P2pConnectionOptions
+			{
+				Name = publicSynchronization ? "public" : "wallet",
+				TargetConnections = synchronizes ? 6 : 3,
+				MinimumCompactFilterNodes = synchronizes ? 5 : 0,
+				RelayTransactions = !publicSynchronization && !Config.BlockOnlyMode,
+				AllowBlockDownloads = !publicSynchronization,
+				PeerCacheFile = Path.Combine(GetBitcoinP2PNetworkDirectory(), publicSynchronization ? "Peers-public.json" : "Peers-wallet.json")
+			},
+			reservations: _peerReservations);
 
-		if (!Config.BlockOnlyMode)
+		if (!publicSynchronization)
 		{
-			manager.AddBehavior(new BlockHeadersChainBehavior(_blockHeaders, FilterHeaders, EventBus));
-			manager.AddBehavior(new P2pBehavior(_mempoolService));
+			manager.AddBehavior(new P2pBehavior(_mempoolService, listenForTransactions: !Config.BlockOnlyMode));
 		}
 
 		manager.DisposeUsing(_disposables);
 		return manager;
+
+		static void AddDnsSeed(List<DNSSeedData> seeds, string name, string host)
+		{
+			if (!seeds.Any(seed => seed.Host.Equals(host, StringComparison.OrdinalIgnoreCase))) { seeds.Add(new DNSSeedData(name, host)); }
+		}
 	}
 
 	private bool _rpcConnected;
@@ -358,9 +392,9 @@ public class Global
 
 	private void ConfigureFeeRateUpdater(CancellationToken cancellationToken)
 	{
-		var blockFeeProvider = FeeRateProviders.BlockAsync(ExternalSourcesHttpClientFactory);
-		var mempoolSpaceFeeProvider = FeeRateProviders.MempoolSpaceAsync(ExternalSourcesHttpClientFactory);
-		var blockstreamInfoFeeProvider = FeeRateProviders.BlockstreamAsync(ExternalSourcesHttpClientFactory);
+		var blockFeeProvider = FeeRateProviders.BlockAsync(PublicSourcesHttpClientFactory);
+		var mempoolSpaceFeeProvider = FeeRateProviders.MempoolSpaceAsync(PublicSourcesHttpClientFactory);
+		var blockstreamInfoFeeProvider = FeeRateProviders.BlockstreamAsync(PublicSourcesHttpClientFactory);
 		FeeRateProvider feeRateProvider = Config.FeeRateEstimationProvider.ToLower() switch
 		{
 			"blockxyz" => FeeRateProviders.Composed([blockFeeProvider, mempoolSpaceFeeProvider, blockstreamInfoFeeProvider]),
@@ -420,6 +454,8 @@ public class Global
 
 		// A configured node can be temporarily offline during silent startup. Keep its RPC synchronizer so reconnection does not require restarting MCW.
 		var useRpcFilters = _bitcoinRpcClient is not null && (supportsBlockFiltersResult.IsOk || (!supportsBlockFiltersResult.Error && !string.IsNullOrWhiteSpace(Config.BitcoinRpcCredentialString)));
+		_usesRpcFilters = useRpcFilters;
+		if (useRpcFilters) { _p2pConnectionManager.ConfigurePeerTargets(targetConnections: 3, minimumCompactFilterNodes: 0); }
 		var filtersProvider = useRpcFilters
 			? FilterProviders.CreateBitcoinRpcFilterProvider(_bitcoinRpcClient!, _blockHeaders)
 			: supportsBlockFiltersResult
@@ -430,7 +466,8 @@ public class Global
 				{
 					var tip = FilterStore.GetTip()!.Header;
 					var synchronizationState = new FilterSynchronizationState(_blockHeaders, FilterHeaders, tip.Height, EventBus);
-					_p2pConnectionManager.AddBehavior(new CompactFilterBehavior(synchronizationState, _blockHeaders, EventBus));
+					_publicConnectionManager.AddBehavior(new BlockHeadersChainBehavior(_blockHeaders, FilterHeaders, EventBus));
+					_publicConnectionManager.AddBehavior(new CompactFilterBehavior(synchronizationState, _blockHeaders, EventBus));
 
 					return FilterProviders.CreateBitcoinP2pFilterProvider(FilterHeaders, _blockHeaders, synchronizationState);
 				});
@@ -487,16 +524,16 @@ public class Global
 
 	private void ConfigureExchangeRateUpdater(CancellationToken cancellationToken)
 	{
-		var mempoolSpaceExchangeProvider = ExchangeRateProviders.MempoolSpaceAsync(ExternalSourcesHttpClientFactory);
-		var blockchainInfoExchangeProvider = ExchangeRateProviders.BlockchainInfoAsync(ExternalSourcesHttpClientFactory);
-		var coinGeckoExchangeProvider = ExchangeRateProviders.CoinGeckoAsync(ExternalSourcesHttpClientFactory);
-		var geminiExchangeProvider = ExchangeRateProviders.GeminiAsync(ExternalSourcesHttpClientFactory);
+		var mempoolSpaceExchangeProvider = ExchangeRateProviders.MempoolSpaceAsync(PublicSourcesHttpClientFactory);
+		var blockchainInfoExchangeProvider = ExchangeRateProviders.BlockchainInfoAsync(PublicSourcesHttpClientFactory);
+		var coinGeckoExchangeProvider = ExchangeRateProviders.CoinGeckoAsync(PublicSourcesHttpClientFactory);
+		var geminiExchangeProvider = ExchangeRateProviders.GeminiAsync(PublicSourcesHttpClientFactory);
 		ExchangeRateProvider exchangeRateProvider = Config.ExchangeRateProvider.ToLower() switch
 		{
 			"mempoolspace" => ExchangeRateProviders.Composed([mempoolSpaceExchangeProvider, blockchainInfoExchangeProvider, coinGeckoExchangeProvider, geminiExchangeProvider ]),
 			"blockchaininfo" => ExchangeRateProviders.Composed([blockchainInfoExchangeProvider, mempoolSpaceExchangeProvider, coinGeckoExchangeProvider, geminiExchangeProvider]),
 			"coingecko" => ExchangeRateProviders.Composed([coinGeckoExchangeProvider, mempoolSpaceExchangeProvider, blockchainInfoExchangeProvider, geminiExchangeProvider]),
-			"gemini" => ExchangeRateProviders.Composed([geminiExchangeProvider, blockchainInfoExchangeProvider, blockchainInfoExchangeProvider, coinGeckoExchangeProvider, ]),
+			"gemini" => ExchangeRateProviders.Composed([geminiExchangeProvider, blockchainInfoExchangeProvider, mempoolSpaceExchangeProvider, coinGeckoExchangeProvider]),
 			"" or "none" => ExchangeRateProviders.NoneAsync(),
 			var providerName => throw new ArgumentException( $"Not supported exchange rate provider '{providerName}'. Default: '{Constants.DefaultExchangeRateProvider}'")
 		};
@@ -514,21 +551,17 @@ public class Global
 
 	private void ConfigureMagicalCryptoWalletUpdater(CancellationToken cancellationToken)
 	{
-		if (Config.UseTor is TorMode.Disabled)
-		{
-			Logger.LogInfo("Update manager requires Tor. Aborting...");
-			return;
-		}
-
+		if (Network == Network.RegTest) { return; }
 		Uri[] relayUrls = [new ("wss://relay.primal.net"), new("wss://nos.lol"), new("wss://nostr.mom")];
-		var nostrClientFactory = () => NostrClientFactory.Create(relayUrls, TorSettings.SocksEndpoint);
+		var nostrClientFactory = () => NostrClientFactory.Create(relayUrls,
+			Config.UseTorForPublicData && Config.UseTor != TorMode.Disabled ? TorSettings.SocksEndpoint : null);
 
 		// The feature is disabled on linux at the moment because we install Magical Crypto Wallet as a Debian package.
 		var installerDownloader = !Config.DownloadNewVersion
 			? ReleaseDownloader.AutoDownloadOff()
 			: RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && !PlatformInformation.IsDebianBasedOS()
 				? ReleaseDownloader.ForUnsupportedLinuxDistributions()
-				: ReleaseDownloader.ForOfficiallySupportedOSes(ExternalSourcesHttpClientFactory, EventBus);
+				: ReleaseDownloader.ForOfficiallySupportedOSes(PublicSourcesHttpClientFactory, EventBus);
 
 		var magicalcryptowalletVersionUpdater = Spawn("UpdateManager",
 			Service("Magical Crypto Wallet Version AutoUpdater",
@@ -588,8 +621,9 @@ public class Global
 		using (await _networkInitializationLock.LockAsync(cancellationToken).ConfigureAwait(false))
 		{
 			if (_synchronizerStarted) { return; }
-			_p2pConnectionManager.Start(_stoppingCts.Token);
 			await ConfigureSynchronizerAsync(_stoppingCts.Token).ConfigureAwait(false);
+			if (!_usesRpcFilters) { _publicConnectionManager.Start(_stoppingCts.Token); }
+			if (!_usesRpcFilters || !Config.BlockOnlyMode) { _p2pConnectionManager.Start(_stoppingCts.Token); }
 			_synchronizerStarted = true;
 		}
 	}
@@ -620,6 +654,7 @@ public class Global
 		CancellationToken linkedCtsToken = linkedCts.Token;
 
 		ConfigureMagicalCryptoWalletUpdater(_stoppingCts.Token);
+		ConfigureTorStatusChecker(_stoppingCts.Token);
 		ConfigureExchangeRateUpdater(_stoppingCts.Token);
 		ConfigureRpcMonitor(_stoppingCts.Token);
 		ConfigureFeeRateUpdater(_stoppingCts.Token);
@@ -729,16 +764,24 @@ public class Global
 				}
 			}
 
-			var torStatusHttpClient = ExternalSourcesHttpClientFactory.CreateClient("long-live-torproject");
+		}
+	}
+
+	private void ConfigureTorStatusChecker(CancellationToken cancellationToken)
+	{
+		if (Config.UseTor != TorMode.Disabled)
+		{
+			var torStatusHttpClient = PublicSourcesHttpClientFactory.CreateClient("long-live-torproject");
 			var torStatusChecker = Spawn("TorStatusChecker",
 				Periodically(
 					TimeSpan.FromHours(1),
 					Unit.Instance,
 					TorStatusChecker.CreateChecker(torStatusHttpClient, EventBus)),
-				_stoppingCts.Token);
+				cancellationToken);
 			torStatusChecker.DisposeUsing(_disposables);
 			EventBus.Subscribe<Tick>(_ => torStatusChecker.Post(new TorStatusChecker.CheckMessage()))
 				.DisposeUsing(_disposables);
+			torStatusChecker.Post(new TorStatusChecker.CheckMessage());
 		}
 	}
 
@@ -813,9 +856,11 @@ public class Global
 		return InputVerifiers.NoVerification();
 	}
 
-	public ImmutableArray<Node> GetNodes() => _p2pConnectionManager.Nodes;
+	public ImmutableArray<Node> GetNodes() => ReferenceEquals(_p2pConnectionManager, _publicConnectionManager)
+		? _p2pConnectionManager.Nodes
+		: _p2pConnectionManager.Nodes.AddRange(_publicConnectionManager.Nodes);
 	public uint GetBlockHeadersTipHeight() => (uint)(_blockHeaders.Tip?.Height ?? 0);
-	public int GetPeerCount() => _p2pConnectionManager.Nodes.Length;
+	public int GetPeerCount() => GetNodes().Length;
 
 	public async Task DisposeAsync()
 	{

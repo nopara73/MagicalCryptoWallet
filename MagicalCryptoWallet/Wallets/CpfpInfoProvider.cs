@@ -1,4 +1,5 @@
 using NBitcoin;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -66,20 +67,19 @@ public static class CpfpInfoUpdater
 		var uri = network == Network.Main
 			? new Uri("https://mempool.space/api/")
 			: new Uri("https://mempool.space/testnet4/api/");
-		var tasks = new List<Task>();
-		var cache = new Dictionary<uint256, CachedCpfpInfo>();
-		return (msg, _, cancellationToken) => ProcessMessagesAsync(msg, httpClientFactory, uri, tasks, cache, eventBus, cancellationToken);
+		var tasks = new Dictionary<uint256, Task>();
+		var cache = new ConcurrentDictionary<uint256, CachedCpfpInfo>();
+		var pending = new ConcurrentDictionary<uint256, Lazy<Task<Result<CpfpInfo, string>>>>();
+		return (msg, _, cancellationToken) => ProcessMessagesAsync(msg, httpClientFactory, uri, tasks, cache, pending, eventBus, cancellationToken);
 	}
 
-	private static async Task<Unit> ProcessMessagesAsync(CpfpInfoMessage msg, IHttpClientFactory httpClientFactory, Uri uri, List<Task> tasks, Dictionary<uint256, CachedCpfpInfo> cache, EventBus eventBus, CancellationToken cancellationToken)
+	private static async Task<Unit> ProcessMessagesAsync(CpfpInfoMessage msg, IHttpClientFactory httpClientFactory, Uri uri, Dictionary<uint256, Task> tasks, ConcurrentDictionary<uint256, CachedCpfpInfo> cache, ConcurrentDictionary<uint256, Lazy<Task<Result<CpfpInfo, string>>>> pending, EventBus eventBus, CancellationToken cancellationToken)
 	{
 		switch (msg)
 		{
 			case CpfpInfoMessage.UpdateMessage _ :
 				await ProcessFinishedFetchingTasksAsync(tasks, cancellationToken).ConfigureAwait(false);
 				CleanCache(cache);
-				var rescheduledFetchingTasks = RescheduleAll(cache, GetCpfpInfo, cancellationToken);
-				tasks.AddRange(rescheduledFetchingTasks);
 				break;
 			case CpfpInfoMessage.GetCachedCpfpInfo m:
 				m.ReplyChannel.Reply(cache.Values.ToArray());
@@ -89,8 +89,11 @@ public static class CpfpInfoUpdater
 				m.ReplyChannel.Reply(cpfpInfo);
 				break;
 			case CpfpInfoMessage.PreFetchInfoForTransaction m:
-				var scheduledFetchingTask = ScheduleTaskAsync(m.SmartTransaction, GetCpfpInfo, cancellationToken);
-				tasks.Add(scheduledFetchingTask);
+				var txid = m.SmartTransaction.GetHash();
+				if (!cache.ContainsKey(txid) && (!tasks.TryGetValue(txid, out var task) || task.IsCompleted))
+				{
+					tasks[txid] = ScheduleTaskAsync(m.SmartTransaction, GetCpfpInfo, cancellationToken);
+				}
 				break;
 		}
 
@@ -98,7 +101,7 @@ public static class CpfpInfoUpdater
 
 		async Task<Result<CpfpInfo, string>> GetCpfpInfo(SmartTransaction tx)
 		{
-			var result = await GetCpfpInfoAsync(tx, httpClientFactory, uri, cache, cancellationToken).ConfigureAwait(false);
+			var result = await GetCpfpInfoAsync(tx, httpClientFactory, uri, cache, pending, cancellationToken).ConfigureAwait(false);
 			return result.Map(
 				info =>
 				{
@@ -108,31 +111,21 @@ public static class CpfpInfoUpdater
 		}
 	}
 
-	private static async Task ProcessFinishedFetchingTasksAsync(List<Task> tasks, CancellationToken cancellationToken)
+	private static async Task ProcessFinishedFetchingTasksAsync(Dictionary<uint256, Task> tasks, CancellationToken cancellationToken)
 	{
 		cancellationToken.ThrowIfCancellationRequested();
-		var completedTasks = tasks.Where(t => t.IsCompleted).ToArray();
-		await Task.WhenAll(completedTasks).ConfigureAwait(false);
-		tasks.RemoveAll(t => completedTasks.Contains(t));
+		var completedTasks = tasks.Where(t => t.Value.IsCompleted).ToArray();
+		await Task.WhenAll(completedTasks.Select(t => t.Value)).ConfigureAwait(false);
+		foreach (var task in completedTasks) { tasks.Remove(task.Key); }
 	}
 
-	private static void CleanCache(Dictionary<uint256, CachedCpfpInfo> cache)
+	private static void CleanCache(ConcurrentDictionary<uint256, CachedCpfpInfo> cache)
 	{
 		var confirmed = cache.Where(e => e.Value.Transaction.Confirmed).ToArray();
 
 		foreach (var cacheEntry in confirmed)
 		{
-			cache.Remove(cacheEntry.Key);
-		}
-	}
-
-	private static IEnumerable<Task> RescheduleAll(Dictionary<uint256, CachedCpfpInfo> cache, CpfpInfoGetter cpfpGetter, CancellationToken cancellationToken)
-	{
-		var unconfirmed = cache.Where(e => !e.Value.Transaction.Confirmed).ToArray();
-
-		foreach (var cacheEntry in unconfirmed)
-		{
-			yield return ScheduleTaskAsync(cacheEntry.Value.Transaction, cpfpGetter, cancellationToken);
+			cache.TryRemove(cacheEntry.Key, out _);
 		}
 	}
 
@@ -162,7 +155,7 @@ public static class CpfpInfoUpdater
 		}
 	}
 
-	private static async Task<Result<CpfpInfo, string>> GetCpfpInfoAsync(SmartTransaction tx, IHttpClientFactory httpClientFactory, Uri uri, Dictionary<uint256, CachedCpfpInfo> cache, CancellationToken cancellationToken)
+	private static async Task<Result<CpfpInfo, string>> GetCpfpInfoAsync(SmartTransaction tx, IHttpClientFactory httpClientFactory, Uri uri, ConcurrentDictionary<uint256, CachedCpfpInfo> cache, ConcurrentDictionary<uint256, Lazy<Task<Result<CpfpInfo, string>>>> pending, CancellationToken cancellationToken)
 	{
 		var txid = tx.GetHash();
 		if (cache.TryGetValue(txid, out var cachedCpfpInfo))
@@ -170,15 +163,20 @@ public static class CpfpInfoUpdater
 			return cachedCpfpInfo.CpfpInfo;
 		}
 
-		try
+		var request = pending.GetOrAdd(txid, _ => new Lazy<Task<Result<CpfpInfo, string>>>(FetchAsync));
+		try { return await request.Value.ConfigureAwait(false); }
+		finally { pending.TryRemove(new KeyValuePair<uint256, Lazy<Task<Result<CpfpInfo, string>>>>(txid, request)); }
+
+		async Task<Result<CpfpInfo, string>> FetchAsync()
 		{
-			var cpfpInfo = await GetCpfpInfoAsync(txid, httpClientFactory, uri, cancellationToken).ConfigureAwait(false);
-			cache.Add(txid, new CachedCpfpInfo(cpfpInfo, tx));
-			return cpfpInfo;
-		}
-		catch (Exception e)
-		{
-			return Result<CpfpInfo, string>.Fail(e.Message);
+			if (cache.TryGetValue(txid, out var completed)) { return completed.CpfpInfo; }
+			try
+			{
+				var cpfpInfo = await GetCpfpInfoAsync(txid, httpClientFactory, uri, cancellationToken).ConfigureAwait(false);
+				cache.TryAdd(txid, new CachedCpfpInfo(cpfpInfo, tx));
+				return cpfpInfo;
+			}
+			catch (Exception e) { return Result<CpfpInfo, string>.Fail(e.Message); }
 		}
 	}
 
@@ -187,10 +185,10 @@ public static class CpfpInfoUpdater
 		using var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
 		using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);
 
-		var httpClient = httpClientFactory.CreateClient($"mempool.space-{txid}");
+		using var httpClient = httpClientFactory.CreateClient($"mempool.space-{txid}");
 		httpClient.BaseAddress = uri;
 		using var request = new HttpRequestMessage(HttpMethod.Get, $"v1/cpfp/{txid}");
-		var response = await httpClient.SendAsync(request, linkedCts.Token).ConfigureAwait(false);
+		using var response = await httpClient.SendAsync(request, linkedCts.Token).ConfigureAwait(false);
 
 		response.EnsureSuccessStatusCode();
 

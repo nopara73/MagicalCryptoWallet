@@ -115,6 +115,8 @@ public class WabiSabiConfig : ConfigBase
 	public ImmutableSortedSet<ScriptType> AllowedOutputTypes => GetScriptTypes(AllowP2wpkhOutputs, AllowP2trOutputs, AllowP2pkhOutputs, AllowP2shOutputs, AllowP2wshOutputs);
 
 	public bool PublishAsOnionService { get; init; }
+
+	public bool UseTorForPublicData { get; init; }
 	public string? OnionServicePrivateKey { get; set; }
 
 	public Script GetNextCleanCoordinatorScript() => DeriveCoordinatorScript(CoordinatorExtPubKeyCurrentDepth);
