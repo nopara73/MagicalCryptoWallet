@@ -7323,6 +7323,12 @@
       "handoff": "MagicalCryptoWallet.Documentation/McwArchitecture.md"
     },
     {
+      "name": "scan_service",
+      "path": "mcw/src/scan_service/mod.rs",
+      "status": "implementation present; production caller integration pending",
+      "handoff": null
+    },
+    {
       "name": "script_service",
       "path": "mcw/src/script_service/mod.rs",
       "status": "implementation present; production caller integration pending",
