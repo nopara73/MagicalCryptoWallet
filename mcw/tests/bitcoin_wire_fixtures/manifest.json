@@ -1,0 +1,51 @@
+{
+  "reference": "Bitcoin Core v29.0 (MIT); original messages.py plus original stdlib-only utility imports",
+  "references": [
+    {
+      "url": "https://raw.githubusercontent.com/bitcoin/bitcoin/v29.0/src/test/data/tx_valid.json",
+      "sha256": "a85d479081d6fd93188377e27fdfa099fa1a6aefdae565d0f473003c855d1e90"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/bitcoin/bitcoin/v29.0/src/test/data/tx_invalid.json",
+      "sha256": "0c02ce44ff3a880458f9569a25589315a07f924fcaadac828613d4615776ca52"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/bitcoin/bitcoin/v29.0/src/primitives/transaction.h",
+      "sha256": "57769818190672703fb5e1159785a0f7c5b050987b591580450a72eb3fcbba05"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/bitcoin/bitcoin/v29.0/test/functional/test_framework/messages.py",
+      "sha256": "37cdc47790abb64ad909beae0a12ffba99e5123b429a2879ce448414d8139c00"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/bitcoin/bitcoin/v29.0/test/functional/test_framework/crypto/siphash.py",
+      "sha256": "9ebc188ce51969a9757305939f295bbb2ba9a2f79dec19176eb79990b3df34a2"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/bitcoin/bitcoin/v29.0/test/functional/test_framework/util.py",
+      "sha256": "0f166c3d800ad77a348e70f57a4bf36d0a4a6e8d8bceeb249f62977287ae2b5e"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/bitcoin/bitcoin/v29.0/test/functional/test_framework/coverage.py",
+      "sha256": "8888acf9f9c7ef09ec80c23f53c193d0658b86abfa2e7896ace27daa4928fca8"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/bitcoin/bitcoin/v29.0/test/functional/test_framework/authproxy.py",
+      "sha256": "cf945e49b309a11d1fc24bff88f6beb7ff95bb669f4d0676d0c69bcda6e29cae"
+    }
+  ],
+  "retained_source": {
+    "path": "MagicalCryptoWallet.Tests/UnitTests/Transactions/AllTransactionStoreTests.cs",
+    "sha256": "a3dd091972940c889641f5c92fefd39e48eefb52753f79434e723bd5dad1ce01"
+  },
+  "groups": {
+    "tx_valid.json": 120,
+    "tx_invalid.json": 93,
+    "retained-store": 6,
+    "synthetic": 141
+  },
+  "total": 360,
+  "skipped_non_exact_reference_rows": [],
+  "fixture_sha256": "f6d38678b57c88bc372a794aa8d2ff6001ebcebd5b6ef66ba73bd404cbb9f543",
+  "scope": "Wire structure/bytes/hashes/sizes only. Core tx_invalid rows can be structurally valid; consensus validity is not asserted."
+}
