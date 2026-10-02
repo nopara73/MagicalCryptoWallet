@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>14</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <SafeFileCandidatePath Condition="'$(SafeFileCandidatePath)' == ''">../../../MagicalCryptoWallet/Io/SafeFile.cs</SafeFileCandidatePath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="safe_file_managed.cs" />
+    <Compile Include="safe_file_candidate_invoker.cs" />
+    <Compile Include="safe_file_oracle_invoker.cs" />
+    <Compile Include="safe_file_legacy.cs" />
+    <Compile Include="safe_file_io_helpers.cs" />
+    <Compile Include="safe_file_termination_fixture.cs" />
+    <Compile Include="$(SafeFileCandidatePath)" />
+    <Compile Include="../../../MagicalCryptoWallet/Mcw/Storage/McwSafeFile.cs" />
+    <Compile Include="../../../MagicalCryptoWallet/Mcw/IMcwApplicationServices.cs" />
+    <Compile Include="../../../MagicalCryptoWallet.Client/Application/ManagedApplicationHost.cs" />
+  </ItemGroup>
+</Project>

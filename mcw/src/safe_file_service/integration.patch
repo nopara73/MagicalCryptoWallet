@@ -1,0 +1,164 @@
+--- a/mcw/src/app.rs
++++ b/mcw/src/app.rs
+@@ -59,6 +59,7 @@
+ }
+ 
+ type Handoff = Option<(u16, Vec<String>)>;
++type SafeFiles = crate::safe_file_service::payload::Dispatch<platform::safe_file::NativeFileSystem>;
+ fn host(
+     directory: &std::path::Path,
+     args: &[OsString],
+@@ -116,9 +117,11 @@
+     let mut broken = false;
+     let mut closing = false;
+     let mut stopping = None;
++    let mut safe_files = SafeFiles::new(platform::safe_file::NativeFileSystem);
+     let handshake_deadline = Instant::now() + Duration::from_secs(15);
+     loop {
+         if let Some(status) = child.process.try_wait()? {
++            safe_files.close();
+             // Drain already queued handoffs even if the process exited immediately.
+             while let Ok(Ok(Some(frame))) = receive.try_recv() {
+                 // The child waits for each handoff acknowledgement before exiting.
+@@ -130,6 +133,7 @@
+                     &mut handoff,
+                     &mut closing,
+                     bootstrap,
++                    &mut safe_files,
+                 );
+             }
+             return Ok((
+@@ -171,7 +175,9 @@
+                     &mut handoff,
+                     &mut closing,
+                     bootstrap,
++                    &mut safe_files,
+                 ) {
++                    safe_files.close();
+                     eprintln!("mcw: {error}");
+                     broken = true;
+                     let _ = Frame {
+@@ -185,6 +191,7 @@
+                 }
+             }
+             Ok(Ok(None)) | Err(mpsc::RecvTimeoutError::Disconnected) => {
++                safe_files.close();
+                 // Unannounced EOF is the same failure signal observed by the child.
+                 // Do not return early and orphan a child still cleaning up its wallet.
+                 if stopping.is_none() {
+@@ -201,6 +208,7 @@
+                 std::thread::sleep(Duration::from_millis(50));
+             }
+             Ok(Err(error)) => {
++                safe_files.close();
+                 eprintln!("mcw: {error}");
+                 broken = true;
+                 let _ = Frame {
+@@ -224,6 +232,7 @@
+     handoff: &mut Handoff,
+     closing: &mut bool,
+     bootstrap: &[u8],
++    safe_files: &mut SafeFiles,
+ ) -> io::Result<()> {
+     if !*ready {
+         if frame.kind != bridge::HELLO
+@@ -242,6 +251,9 @@
+         && (frame.operation == bridge::QR || frame.operation >= 0x0100)
+         && frame.payload.is_empty()
+     {
++        if (0x1000..=0x10ff).contains(&frame.operation) {
++            safe_files.cancel(frame.id);
++        }
+         return Ok(());
+     }
+     if frame.kind != bridge::REQUEST || frame.id == 0 {
+@@ -250,9 +262,13 @@
+     match frame.operation {
+         bridge::SHUTDOWN if frame.payload.is_empty() => {
+             *closing = true;
++            safe_files.close();
+             frame.reply(Vec::new()).write(output)
+         }
+         bridge::QR => bridge::encode_qr(frame).write(output),
++        0x1000..=0x10ff => frame
++            .reply(safe_files.request(frame.id, frame.operation, &frame.payload))
++            .write(output),
+         bridge::RESTART | bridge::CRASH | bridge::UPDATE => {
+             let args = match bridge::strings(&frame.payload) {
+                 Ok(args) => args,
+--- a/mcw/src/lib.rs
++++ b/mcw/src/lib.rs
+@@ -16,6 +16,7 @@
+ pub mod privacy_service;
+ pub mod psbt;
+ pub mod qr;
++pub mod safe_file_service;
+ pub mod script_service;
+ pub mod socks5;
+ pub mod wallet_hash_service;
+--- a/mcw/src/platform.rs
++++ b/mcw/src/platform.rs
+@@ -17,3 +17,5 @@
+ pub use unix::{ChildLifetime, attach_console, configure_child, initialize, start_installer};
+ #[cfg(windows)]
+ pub use windows::{ChildLifetime, attach_console, configure_child, initialize, start_installer};
++
++pub mod safe_file;
+--- a/MagicalCryptoWallet/Io/SafeFile.cs
++++ b/MagicalCryptoWallet/Io/SafeFile.cs
+@@ -1,6 +1,6 @@
+ using System.IO;
+ using System.Text;
+-using MagicalCryptoWallet.Helpers;
++using MagicalCryptoWallet.Mcw.Storage;
+ 
+ namespace MagicalCryptoWallet.Io;
+ 
+@@ -10,7 +10,7 @@
+ 	{
+ 		public static void SafelyWriteAllText(string filePath, string text, Encoding encoding)
+ 		{
+-			Write(filePath, path => File.WriteAllText(path, text, encoding));
++			McwSafeFile.WriteAllText(filePath, text, encoding);
+ 		}
+ 
+ 		public static string SafelyReadAllText(string filePath, Encoding encoding)
+@@ -20,37 +20,12 @@
+ 
+ 		public static void SafelyWriteAllBytes(string filePath, byte[] content)
+ 		{
+-			Write(filePath, path => File.WriteAllBytes(path, content));
++			McwSafeFile.WriteAllBytes(filePath, content);
+ 		}
+ 
+ 		public static byte[] SafelyReadAllBytes(string filePath)
+ 		{
+ 			return Read(filePath, File.ReadAllBytes);
+-		}
+-
+-		private static void Write(string filePath, Action<string> write)
+-		{
+-			var newFilePath = filePath + ".new";
+-			var oldFilePath = filePath + ".old";
+-			IoHelpers.EnsureContainingDirectoryExists(newFilePath);
+-
+-			write(newFilePath);
+-			if (File.Exists(filePath))
+-			{
+-				if (File.Exists(oldFilePath))
+-				{
+-					File.Delete(oldFilePath);
+-				}
+-
+-				File.Move(filePath, oldFilePath);
+-			}
+-
+-			File.Move(newFilePath, filePath);
+-
+-			if (File.Exists(oldFilePath))
+-			{
+-				File.Delete(oldFilePath);
+-			}
+ 		}
+ 
+ 		private static T Read<T>(string filePath, Func<string, T> read)
