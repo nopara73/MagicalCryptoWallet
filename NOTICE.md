@@ -7,7 +7,7 @@ This project incorporates code and dependencies from the following open source p
 
 ## Avalonia
 **License:** MIT License<br/>
-**Copyright:** Copyright (c) AvaloniaUI OÜ All Rights Reserved<br/>
+**Copyright:** Copyright (c) AvaloniaUI OÃœ All Rights Reserved<br/>
 **Included:** Cross-platform UI framework used for building the application interface.<br/>
 
 ## Coverlet
@@ -25,10 +25,6 @@ This project incorporates code and dependencies from the following open source p
 **Copyright:** Copyright (c) 2024 GingerPrivacy<br/>
 **Included:** Settings layout, Markdown integration, Parts of Release Highlights feature, Most of the Resync Wallet feature, Fixing some Avalonia issues<br/>
 
-## HWI (Hardware Wallet Interface)
-**License:** MIT License<br/>
-**Copyright:** Copyright (c) 2017 Andrew Chow<br/>
-**Included:** Binaries for hardware wallet integration.<br/>
 
 ## Moq
 **License:** BSD 3-Clause License<br/>

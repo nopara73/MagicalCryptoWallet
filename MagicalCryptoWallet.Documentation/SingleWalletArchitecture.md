@@ -1,6 +1,6 @@
 # Application lifetime wallet
 
-The desktop and daemon share one `WalletSession`, configured for one Bitcoin network and one data directory. The session starts after local stores initialize. A window, navigation entry, device connection, and passphrase are unnecessary for public synchronization.
+The desktop and daemon share one `WalletSession`, configured for one Bitcoin network and one data directory. The session starts after local stores initialize. A window, navigation entry, and passphrase are unnecessary for public synchronization.
 
 ```mermaid
 flowchart LR
@@ -31,7 +31,7 @@ Startup is idempotent and cancellation-aware. Unavailable peers or blocks produc
 
 ## Authorization and CoinJoin
 
-`WalletAuthorization` validates each supplied passphrase and owns the decrypted key references for one operation. Ordinary previews and PSBTs use public account data; signing consumes the reviewed PSBT without rebuilding its recipient, inputs, or fee. Silent payments authorize during construction and still show the resulting transaction before sending. PayJoin, normal sending, RBF/CPFP, batching, recovery verification, and private information follow explicit authorization paths. Hardware interaction remains attached to signing; watch-only and hardware accounts synchronize without a connected device.
+`WalletAuthorization` validates each supplied passphrase and owns the decrypted key references for one operation. Ordinary previews and PSBTs use public account data; signing consumes the reviewed PSBT without rebuilding its recipient, inputs, or fee. Silent payments authorize during construction and still show the resulting transaction before sending. PayJoin, normal sending, RBF/CPFP, batching, recovery verification, and private information follow explicit authorization paths. Only software wallets with encrypted private keys and a valid 32-byte chain code are accepted. Every signing operation uses local passphrase authorization.
 
 There is no application-wide password or logged-in shortcut. Wallet Info opens with public data and obtains private data only after authorization. Chinese masking and compatibility passwords remain in the dialogs. Empty-passphrase authorization actually verifies the wallet instead of inspecting an empty in-memory field.
 
@@ -56,6 +56,6 @@ Closing a window with hide-on-close enabled keeps the session. Reopening present
 - Wallet-indexed CoinJoin dictionaries, aggregated state, and UI automatic-start ownership.
 - Explicit application load commands, named endpoint routes, and obsolete Scheme exports.
 
-Wallet file formats, recovery and multi-share backup formats, hardware enumeration, transaction selection, read-only coin presentation, Bitcoin Core test-wallet commands, and independent regtest participants remain supported. WabiSabi cryptographic algorithms, wire formats, domain-separation constants, and published vectors are unchanged.
+Software-wallet file formats, recovery and multi-share backup formats, transaction selection, read-only coin presentation, Bitcoin Core test-wallet commands, and independent regtest participants remain supported. Hardware and watch-only wallets and external PSBT signing are removed; internal PSBTs still support previews, local signing and Payjoin. WabiSabi cryptographic algorithms, wire formats, domain-separation constants, and published vectors are unchanged.
 
 See [storage and API migration](SingleWallet.md) and [verification record](SingleWalletValidation.md).

@@ -25,7 +25,7 @@ public static class BundledAppHelpers
 		}
 	}
 
-	public static string GetBinaryFolder(BundledApp app, OSPlatform? platform = null)
+	public static string GetBinaryFolder(OSPlatform? platform = null)
 	{
 		platform ??= GetCurrentPlatform();
 
@@ -45,10 +45,8 @@ public static class BundledAppHelpers
 		}
 		else if (platform == OSPlatform.OSX)
 		{
-			// Only HWI has a native arm64 build. Tor is universal; bitcoind is x86_64-only (Rosetta).
-			path = app == BundledApp.Hwi && RuntimeInformation.ProcessArchitecture == Architecture.Arm64
-				? Path.Combine(commonPartialPath, "osx-arm64")
-				: Path.Combine(commonPartialPath, "osx64");
+			// Tor is universal; the test-only Bitcoin Core binary uses Rosetta on arm64.
+			path = Path.Combine(commonPartialPath, "osx64");
 		}
 		else
 		{
@@ -61,12 +59,11 @@ public static class BundledAppHelpers
 	public static string GetBinaryPath(BundledApp app)
 	{
 		var platform = GetCurrentPlatform();
-		var binaryFolder = GetBinaryFolder(app, platform);
+		var binaryFolder = GetBinaryFolder(platform);
 
 		var binaryNameWithoutExtension = app switch
 		{
 			BundledApp.Tor => "tor",
-			BundledApp.Hwi => "hwi",
 			BundledApp.Bitcoind => "bitcoind",
 			_ => throw new NotSupportedException($"Bundled app '{app}' is not supported.")
 		};

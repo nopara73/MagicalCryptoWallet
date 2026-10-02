@@ -4,7 +4,6 @@ using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using MagicalCryptoWallet.Blockchain.Transactions;
 using MagicalCryptoWallet.Fluent.Extensions;
 using MagicalCryptoWallet.Fluent.Helpers;
@@ -24,7 +23,7 @@ public class TransactionTreeBuilder
 		_services = services;
 	}
 
-	public async Task<IEnumerable<TransactionModel>> BuildAsync(List<TransactionSummary> summaries, CancellationToken cancellationToken)
+	public IEnumerable<TransactionModel> Build(List<TransactionSummary> summaries, CancellationToken cancellationToken)
 	{
 		var coinjoins = new List<CoinJoinTransactionModel>();
 
@@ -32,16 +31,17 @@ public class TransactionTreeBuilder
 
 		for (var i = 0; i < summaries.Count; i++)
 		{
+			cancellationToken.ThrowIfCancellationRequested();
 			var item = summaries[i];
 
 			if (!item.IsOwnCoinjoin())
 			{
-				result.Add(await CreateRegularAsync(i, item, cancellationToken));
+				result.Add(CreateRegular(i, item));
 			}
 
 			if (item.IsOwnCoinjoin())
 			{
-				coinjoins.Add(await CreateCoinjoinTransactionAsync(i, item, cancellationToken));
+				coinjoins.Add(CreateCoinjoinTransaction(i, item));
 			}
 
 			if (coinjoins.Count > 0 &&
@@ -69,6 +69,7 @@ public class TransactionTreeBuilder
 		// 4. Add the group.
 		foreach (var summary in summaries)
 		{
+			cancellationToken.ThrowIfCancellationRequested();
 			if (summary.Transaction.IsCPFPd)
 			{
 				// Group creation.
@@ -112,7 +113,7 @@ public class TransactionTreeBuilder
 		return found is not null;
 	}
 
-	private async Task<RegularTransactionModel> CreateRegularAsync(int index, TransactionSummary transactionSummary, CancellationToken cancellationToken)
+	private RegularTransactionModel CreateRegular(int index, TransactionSummary transactionSummary)
 	{
 		var itemType = GetItemType(transactionSummary);
 		var date = transactionSummary.FirstSeen.ToLocalTime();
@@ -129,7 +130,7 @@ public class TransactionTreeBuilder
 			OrderIndex = index,
 			Labels = transactionSummary.Labels,
 			Date = date,
-			DateString = date.ToUserFacingFriendlyString(),
+			DateString = date.ToUserFacingString(),
 			DateToolTipString = date.ToUserFacingString(),
 			CanCancelTransaction = transactionSummary.Transaction.IsCancellable(_wallet.KeyManager) && haveFeeEstimations,
 			CanSpeedUpTransaction = transactionSummary.Transaction.IsSpeedupable(_wallet.KeyManager) && haveFeeEstimations,
@@ -138,8 +139,7 @@ public class TransactionTreeBuilder
 			BlockHeight = transactionSummary.Height is Height.ChainHeight(var h) ? h : 0u, // FIXME: this is wrong. Only confirmed txs have a BlockHeigh
 			HexFunction = transactionSummary.Hex,
 			Fee = transactionSummary.GetFee(),
-			FeeRate = transactionSummary.FeeRate(),
-			ConfirmedTooltip = await GetConfirmationToolTipAsync(status, confirmations, transactionSummary.Transaction, cancellationToken),
+			ConfirmedTooltip = GetConfirmationToolTip(status, confirmations),
 		};
 	}
 
@@ -170,17 +170,6 @@ public class TransactionTreeBuilder
 			Children = children,
 		};
 
-		var dates = children.Select(tx => tx.Date).ToImmutableArray();
-		var firstDate = dates.Min().ToLocalTime();
-		var lastDate = dates.Max().ToLocalTime();
-		if (firstDate.Day == lastDate.Day)
-		{
-			foreach (var child in children)
-			{
-				child.DateString = child.Date.ToLocalTime().ToOnlyTimeString();
-			}
-		}
-
 		foreach (var child in children)
 		{
 			child.IsChild = true;
@@ -196,16 +185,10 @@ public class TransactionTreeBuilder
 		var dates = coinjoins.Select(tx => tx.Date).ToImmutableArray();
 		var firstDate = dates.Min().ToLocalTime();
 		var lastDate = dates.Max().ToLocalTime();
-		var isSameDay = firstDate.Day == lastDate.Day;
 
 		foreach (var coinjoin in coinjoins)
 		{
 			coinjoin.IsChild = true;
-
-			if (isSameDay)
-			{
-				coinjoin.DateString = coinjoin.Date.ToLocalTime().ToOnlyTimeString();
-			}
 		}
 
 		return new CoinJoinTransactionGroupModel
@@ -214,10 +197,8 @@ public class TransactionTreeBuilder
 			OrderIndex = first.OrderIndex,
 			Labels = first.Labels,
 			Date = lastDate,
-			DateString = lastDate.ToUserFacingFriendlyString(),
-			DateToolTipString = isSameDay
-				? $"{firstDate.ToUserFacingString(withTime: false)}"
-				: $"{firstDate.ToUserFacingString(withTime: true)} - {lastDate.ToUserFacingString(withTime: true)}",
+			DateString = lastDate.ToUserFacingString(),
+			DateToolTipString = $"{firstDate.ToUserFacingString()} - {lastDate.ToUserFacingString()}",
 			Status = coinjoins.All(x => x.IsConfirmed)
 				? TransactionStatus.Confirmed
 				: TransactionStatus.Pending,
@@ -230,7 +211,7 @@ public class TransactionTreeBuilder
 		};
 	}
 
-	private async Task<CoinJoinTransactionModel> CreateCoinjoinTransactionAsync(int index, TransactionSummary transactionSummary, CancellationToken cancellationToken)
+	private CoinJoinTransactionModel CreateCoinjoinTransaction(int index, TransactionSummary transactionSummary)
 	{
 		var date = transactionSummary.FirstSeen.ToLocalTime();
 		var serverHeight = _services.GetServerTipHeight();
@@ -243,14 +224,13 @@ public class TransactionTreeBuilder
 			Amount = transactionSummary.Amount,
 			OrderIndex = index,
 			Date = date,
-			DateString = date.ToUserFacingFriendlyString(),
+			DateString = date.ToUserFacingString(),
 			DateToolTipString = date.ToUserFacingString(),
 			Labels = transactionSummary.Labels,
 			Status = status,
 			Confirmations = confirmations,
 			HexFunction = transactionSummary.Hex,
-			ConfirmedTooltip = await GetConfirmationToolTipAsync(status, confirmations, transactionSummary.Transaction, cancellationToken),
-			FeeRate = transactionSummary.FeeRate(),
+			ConfirmedTooltip = GetConfirmationToolTip(status, confirmations),
 			CoinjoinCosts = _wallet.KeyManager.CoinjoinCosts.GetValueOrDefault(transactionSummary.GetHash())
 		};
 	}
@@ -291,22 +271,10 @@ public class TransactionTreeBuilder
 		return transactionSummary.IsConfirmed(serverHeight) ? TransactionStatus.Confirmed : TransactionStatus.Pending;
 	}
 
-	private async Task<string> GetConfirmationToolTipAsync(TransactionStatus status, uint confirmations, SmartTransaction smartTransaction, CancellationToken cancellationToken)
+	private static string GetConfirmationToolTip(TransactionStatus status, uint confirmations) => status switch
 	{
-		if (status == TransactionStatus.Confirmed)
-		{
-			return TextHelpers.GetConfirmationText(confirmations);
-		}
-
-		var friendlyString = await TransactionFeeHelper.EstimateConfirmationTimeAsync(_wallet.FeeRateEstimations, _wallet.Network, smartTransaction, _wallet.CpfpInfoProvider, cancellationToken) is { } estimate
-			? TextHelpers.TimeSpanToFriendlyString(estimate)
-			: "";
-
-		return (status, friendlyString != "") switch
-		{
-			(TransactionStatus.Pending, true) => $"Pending (confirming in ≈ {friendlyString})",
-			(TransactionStatus.Pending, false) => "Pending",
-			_ => "Unknown"
-		};
-	}
+		TransactionStatus.Confirmed => TextHelpers.GetConfirmationText(confirmations),
+		TransactionStatus.Pending => "Pending",
+		_ => "Unknown"
+	};
 }

@@ -27,7 +27,7 @@ internal static class LurkingWifeModeChecks
 {
 	private static UiConfig _config = null!;
 
-	public static IDisposable Run(UiContext context, string destination)
+	public static void Initialize(UiContext context, string destination)
 	{
 		_config = new UiConfig(Path.Combine(Path.GetFullPath(destination), "synthetic-ui-config.json"));
 		// Supply only the config required by the real masking controls. Wallet/network services remain unavailable.
@@ -36,6 +36,11 @@ internal static class LurkingWifeModeChecks
 		typeof(Services).GetProperty(nameof(Services.Instance))!.SetValue(null, services);
 		var repository = (WalletSetupService)RuntimeHelpers.GetUninitializedObject(typeof(WalletSetupService));
 		SetBackingField(context, nameof(UiContext.WalletSetupService), repository);
+	}
+
+	public static IDisposable Run(UiContext context, string destination)
+	{
+		Initialize(context, destination);
 
 		foreach (bool initiallyEnabled in new[] { false, true })
 		{

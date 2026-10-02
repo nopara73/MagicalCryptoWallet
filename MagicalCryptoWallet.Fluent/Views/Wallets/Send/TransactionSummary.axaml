@@ -9,10 +9,6 @@
              x:DataType="send:TransactionSummaryViewModel"
              x:Class="MagicalCryptoWallet.Fluent.Views.Wallets.Send.TransactionSummary">
   <UserControl.Resources>
-    <converters:DiffToBrushConverter x:Key="InvertedDiffConverter"
-                                     PositiveBrush="{StaticResource UncertainBrush}"
-                                     NegativeBrush="{StaticResource PositiveBrush}"
-                                     ZeroBrush="{StaticResource UncertainBrush}" />
     <converters:DiffToBrushConverter x:Key="NeutralDiffConverter"
                                      PositiveBrush="{StaticResource UncertainBrush}"
                                      NegativeBrush="{StaticResource UncertainBrush}"
@@ -96,52 +92,20 @@
 
     <Separator />
 
-    <!-- Fee and confirmation time -->
-    <DockPanel>
-      <Button Classes="plain"
-              Command="{Binding Parent.AdjustFeeCommand}"
-              ToolTip.Tip="{Binding Parent.FeeAdjustToolTip}"
-              ToolTip.ShowOnDisabled="True"
-              DockPanel.Dock="Right"
-              Margin="10 0"
-              IsVisible="{Binding !IsPreview}"
-              IsEnabled="{Binding Parent.IsFeeAdjustable}">
-        <Viewbox Height="20">
-          <PathIcon Data="{StaticResource adjust_fee_regular}" Foreground="{DynamicResource SystemAccentColor}" />
-        </Viewbox>
-      </Button>
+    <PreviewItem Icon="{StaticResource paper_cash_regular}"
+                 Label="Total fee"
+                 CopyableContent="{Binding #TotalFeeUsd.Text}"
+                 IsCopyButtonEnabled="{Binding Fee.HasUsdBalance^}">
+      <PrivacyContentControl>
+        <TextBlock x:Name="TotalFeeUsd" Text="{Binding Fee.Usd^, Converter={x:Static converters:MoneyConverters.ToUsdFee}}" />
+      </PrivacyContentControl>
 
-      <StackPanel Spacing="10">
-        <PreviewItem Icon="{StaticResource timer_regular}"
-                       Label="Expected confirmation time"
-                       IsVisible="{Binding !IsCustomFeeUsed}"
-                       Classes.Dimmed="{Binding IsPreview}"
-                       ToolTip.Tip="This is just an estimation based on some data for transactions and blocks. The confirmation time might change.">
-          <TextBlock Text="{Binding ConfirmationTime, Converter={x:Static converters:TimeSpanConverter.ToEstimatedConfirmationTime}, FallbackValue=~20 minutes}" />
-        </PreviewItem>
-        <PreviewItem Icon="{StaticResource paper_cash_regular}"
-                       Label="Fee"
-                       CopyableContent="{Binding Fee.Btc, Converter={x:Static converters:MoneyConverters.ToFeeWithoutUnit}}">
-          <StackPanel Orientation="Horizontal">
-            <AmountControl Classes="WithUsd" Amount="{Binding Fee}" />
-            <TextBlock Margin="8 0" FontWeight="Bold" Foreground="{Binding FeeDiff, Converter={StaticResource InvertedDiffConverter}}" IsVisible="{Binding !!FeeDiff}" VerticalAlignment="Bottom" Text="{Binding FeeDiff, Converter={x:Static converters:MoneyConverters.PercentageDifferenceConverter}}" />
-          </StackPanel>
-
-          <Classes.Dimmed>
-            <MultiBinding Converter="{x:Static BoolConverters.And}">
-              <Binding Path="IsPreview" />
-              <Binding Path="!!FeeDiff" Converter="{x:Static BoolConverters.Not}" />
-            </MultiBinding>
-          </Classes.Dimmed>
-        </PreviewItem>
-
-        <!-- Fee Rate-->
-        <PreviewItem Icon="{StaticResource paper_cash_regular}"
-                     Label="Fee Rate"
-                     CopyableContent="{Binding FeeRate.SatoshiPerByte}">
-         <TextBlock Text="{Binding FeeRate.SatoshiPerByte, Mode=OneWay, Converter={x:Static converters:FeeRateConverters.FeeRateConverter}}" />
-        </PreviewItem>
-      </StackPanel>
-    </DockPanel>
+      <Classes.Dimmed>
+        <MultiBinding Converter="{x:Static BoolConverters.And}">
+          <Binding Path="IsPreview" />
+          <Binding Path="!!FeeDiff" Converter="{x:Static BoolConverters.Not}" />
+        </MultiBinding>
+      </Classes.Dimmed>
+    </PreviewItem>
   </StackPanel>
 </UserControl>

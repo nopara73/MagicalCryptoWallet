@@ -594,40 +594,6 @@ public class TransactionFactoryTests
 	}
 
 	[Fact]
-	public void DoNotSignWatchOnly()
-	{
-		var transactionFactory = ServiceFactory.CreateTransactionFactory(
-			new[]
-			{
-				("Pablo", 0, 1m, confirmed: true, anonymitySet: 1)
-			},
-			watchOnly: true);
-
-		using Key key = new();
-		var payment = new PaymentIntent(key, MoneyRequest.CreateAllRemaining(subtractFee: true));
-		var txParameters = CreateBuilder().SetPayment(payment).SetFeeRate(44.25m).Build();
-		var result = transactionFactory.BuildTransaction(txParameters);
-		Assert.Single(result.OuterWalletOutputs);
-		Assert.False(result.Signed);
-	}
-
-	[Fact]
-	public void DoNotSilentPaymentWithWatchOnly()
-	{
-		var transactionFactory = ServiceFactory.CreateTransactionFactory(
-			new[]
-			{
-				("Pablo", 0, 1m, confirmed: true, anonymitySet: 1)
-			},
-			watchOnly: true);
-
-		var key = SilentPaymentAddress.Parse("sp1qq2exrz9xjumnvujw7zmav4r3vhfj9rvmd0aytjx0xesvzlmn48ctgqnqdgaan0ahmcfw3cpq5nxvnczzfhhvl3hmsps683cap4y696qecs7wejl3", Network.Main);
-		var payment = new PaymentIntent(key, MoneyRequest.CreateAllRemaining(subtractFee: true));
-		var txParameters = CreateBuilder().SetPayment(payment).SetFeeRate(44.25m).Build();
-		Assert.Throws<InvalidOperationException>(() => transactionFactory.BuildTransaction(txParameters));
-	}
-
-	[Fact]
 	public void SilentPaymentAndPayjoinAreMutuallyExclusive()
 	{
 		var transactionFactory = ServiceFactory.CreateTransactionFactory(

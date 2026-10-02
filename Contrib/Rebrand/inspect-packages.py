@@ -90,6 +90,7 @@ else:
 for executable in ('magicalcryptowallet','magicalcryptowalletd','magicalcryptowallet-coordinator'):
     assert (dist/(executable+('.exe' if args.rid.startswith('win') else ''))).is_file()
 run(sys_executable:=__import__('sys').executable,ROOT/'Contrib/Rebrand/audit.py','--artifacts',*payloads)
+run(sys_executable,ROOT/'Contrib/SingleWallet/audit.py','--artifacts',*payloads)
 report={'rid':args.rid,'identities':identities,'extracted_payloads':[str(p.relative_to(ROOT)) for p in payloads],
         'packages':{p.name:sha(p) for p in packages.iterdir() if p.is_file() and p.suffix!='.wixpdb'}}
 (ROOT/'.artifacts/package-inspection'/f'{args.rid}.json').write_text(json.dumps(report,indent=2)+'\n')

@@ -59,37 +59,30 @@
         </ItemsControl.ItemTemplate>
       </ItemsControl>
 
-      <Panel VerticalAlignment="Center" HorizontalAlignment="Center">
-        <ItemsControl ItemsSource="{Binding ConfirmationWords}">
-          <ItemsControl.Styles>
-            <Style Selector="TextBlock.error">
-              <Setter Property="Foreground" Value="{DynamicResource SystemErrorTextColor}" />
-            </Style>
-          </ItemsControl.Styles>
-          <ItemsControl.ItemsPanel>
-            <ItemsPanelTemplate>
-              <WrapPanel MaxHeight="200" Orientation="Vertical" VerticalAlignment="Top" HorizontalAlignment="Center" />
-            </ItemsPanelTemplate>
-          </ItemsControl.ItemsPanel>
-          <ItemsControl.ItemTemplate>
-            <DataTemplate>
-              <StackPanel Orientation="Horizontal" Margin="40 0 40 0" Width="80">
-                <TextBlock Text="{Binding Index, Mode=OneWay, StringFormat={}{0}.}" Opacity="0.5" FontSize="{DynamicResource FontSizeH6}"
-                           Height="42" />
-                <TextBlock Text="{Binding SelectedWord}" FontWeight="SemiBold" Margin="5 0 0 0"
-                           Classes.error="{Binding !IsConfirmed}" FontSize="{DynamicResource FontSizeH6}"
-                           Height="42" />
-              </StackPanel>
-            </DataTemplate>
-          </ItemsControl.ItemTemplate>
-        </ItemsControl>
-
-        <Grid ColumnDefinitions="*,1,*,1,*">
-          <Separator Classes="vertical" Grid.Column="1" Margin="0 0 0 20" />
-          <Separator Classes="vertical" Grid.Column="3" Margin="0 0 0 20" />
-        </Grid>
-      </Panel>
-
+      <ItemsControl ItemsSource="{Binding ConfirmationWords}"
+                    VerticalAlignment="Center" HorizontalAlignment="Center">
+        <ItemsControl.Styles>
+          <Style Selector="TextBlock.error">
+            <Setter Property="Foreground" Value="{DynamicResource SystemErrorTextColor}" />
+          </Style>
+        </ItemsControl.Styles>
+        <ItemsControl.ItemsPanel>
+          <ItemsPanelTemplate>
+            <StackPanel />
+          </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <Grid ColumnDefinitions="36,*" MinWidth="220">
+              <TextBlock Text="{Binding Index, Mode=OneWay, StringFormat={}{0}.}" Opacity="0.5" FontSize="{DynamicResource FontSizeH6}"
+                         Height="42" />
+              <TextBlock Grid.Column="1" Text="{Binding SelectedWord}" FontWeight="SemiBold" Margin="5 0 0 0"
+                         Classes.error="{Binding !IsConfirmed}" FontSize="{DynamicResource FontSizeH6}"
+                         Height="42" />
+            </Grid>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
     </DockPanel>
   </ContentArea>
 </UserControl>

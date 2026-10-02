@@ -4,9 +4,9 @@ MCW opens and synchronizes its configured wallet whenever the application starts
 
 ## Storage and setup
 
-One wallet is configured per active network and data directory. New creation, recovery, hardware connection, and explicit import create unsaved drafts and commit `Wallet.json` through a serialized, recoverable journal. Import sources stay unchanged; destination collisions and concurrent setup cannot overwrite stored keys or accept a second wallet.
+One wallet is configured per active network and data directory. New creation, recovery, and explicit software-wallet import create unsaved drafts and commit `Wallet.json` through a serialized, recoverable journal. Import sources stay unchanged; destination collisions and concurrent setup cannot overwrite stored keys or accept a second wallet.
 
-Existing filenames and the `.wallet` marker stay unchanged. A compatibility reader honors that marker, otherwise adopts the former last-used file if it exists, then the first filename in ordinal order. Additional files remain untouched. Missing, corrupt, invalid, or traversing configured paths produce a recovery error; another file is never substituted. Interrupted setup only rolls forward a file matching the recorded hash.
+Existing filenames and the `.wallet` marker stay unchanged. A compatibility reader honors that marker, otherwise adopts the former last-used file if it exists, then the first filename in ordinal order. Additional files remain untouched. Missing, corrupt, invalid, or traversing configured paths produce a recovery error; another file is never substituted. Interrupted setup only rolls forward a software-wallet file matching the recorded hash and passing key validation. Unsupported wallets and malformed chain codes preserve files, markers and setup journals and enter recovery; retry cannot adopt different keys.
 
 Filenames are storage details. There is no naming, renaming, switching, replacement, or manual loading UI. Use a fresh explicit `--datadir=<path>` and first-run setup for an independently configured wallet. Mainnet uses `Wallets/`; other networks use `Wallets/<network>/`.
 

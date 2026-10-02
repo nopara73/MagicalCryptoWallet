@@ -332,8 +332,7 @@ public class SingleWalletTests
 	}
 	private static KeyManager LegacyKeys(WalletDirectories directories, string stem)
 	{
-		var key = ExtKey.CreateFromSeed(new byte[32]);
-		var keys = KeyManager.CreateNewHardwareWalletWatchOnly(key.Neuter().PubKey.GetHDFingerPrint(), key.Neuter(), null, null, null, Network.RegTest);
+		var keys = KeyManager.CreateNew(new Mnemonic(SyntheticMnemonic), "", Network.RegTest);
 		keys.SetFilePath(Path.Combine(directories.WalletsDir, stem + ".json"));
 		return keys;
 	}

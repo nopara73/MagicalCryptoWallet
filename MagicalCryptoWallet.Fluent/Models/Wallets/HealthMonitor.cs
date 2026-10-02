@@ -15,7 +15,6 @@ public partial class HealthMonitor : ReactiveObject
 {
 	private readonly ObservableAsPropertyHelper<ICollection<Issue>> _torIssues;
 
-	[AutoNotify] private decimal _priorityFee;
 	[AutoNotify] private uint _blockchainTip;
 	[AutoNotify] private uint _clientTip;
 	[AutoNotify] private TorStatus _torStatus;
@@ -39,13 +38,6 @@ public partial class HealthMonitor : ReactiveObject
 
 		var statusMessage = string.IsNullOrWhiteSpace(services.Config.BitcoinRpcUri) ? NoBitcoinRpcConfigured : NoBitcoinRpcDetected;
 		_bitcoinRpcStatus = Result<ConnectedRpcStatus, string>.Fail(statusMessage);
-
-		// Priority Fee
-		services.EventBus.AsObservable<MiningFeeRatesChanged>()
-			.Select(e => e.AllFeeEstimate.Estimations.FirstOrDefault(x => x.Key == 2).Value)
-			.WhereNotNull()
-			.ObserveOn(RxApp.MainThreadScheduler)
-			.Subscribe(priorityFee => PriorityFee = priorityFee.SatoshiPerByte);
 
 		// Blockchain Tip
 		services.EventBus.AsObservable<NetworkTipHeightChanged>()

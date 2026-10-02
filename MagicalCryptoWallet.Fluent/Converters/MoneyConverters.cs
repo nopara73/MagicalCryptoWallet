@@ -112,8 +112,8 @@ public static class MoneyConverters
 			return result + " ";
 		});
 
-	public static readonly IValueConverter ToFeeWithoutUnit =
-		new FuncValueConverter<Money?, string?>(n => n?.ToFeeDisplayUnitRawString());
+	public static readonly IValueConverter ToUsdFee =
+		new FuncValueConverter<decimal, string>(usd => usd > 0m ? usd.ToString("N2", System.Globalization.CultureInfo.InvariantCulture) + " USD" : "—");
 
 	public static readonly IValueConverter PercentageDifferenceConverter =
 			new FuncValueConverter<double, string>(TextHelpers.FormatPercentageDiff );

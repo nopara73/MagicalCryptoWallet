@@ -12,10 +12,6 @@
              x:Class="MagicalCryptoWallet.Fluent.Views.Wallets.Settings.WalletGeneralSettingsView">
 
   <StackPanel Classes="settingsLayout">
-  <DockPanel>
-      <ToggleSwitch IsChecked="{Binding PreferPsbtWorkflow}" />
-    </DockPanel>
-
     <DockPanel IsVisible="{Binding SeveralReceivingScriptTypes}">
       <TextBlock Text="Default Receive Address Type" />
       <ComboBox ItemsSource="{Binding ReceiveScriptTypes}"

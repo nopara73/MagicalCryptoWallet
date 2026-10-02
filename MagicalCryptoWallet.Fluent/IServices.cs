@@ -59,8 +59,6 @@ public interface IServices
 	bool GetAutoPaste();
 	bool GetSendAmountConversionReversed();
 	void SetSendAmountConversionReversed(bool value);
-	int GetFeeTarget();
-	void SetFeeTarget(int value);
 
 	T? GetHostedService<T>() where T : class, Microsoft.Extensions.Hosting.IHostedService;
 

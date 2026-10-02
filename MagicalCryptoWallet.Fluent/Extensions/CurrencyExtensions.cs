@@ -114,7 +114,4 @@ public static class CurrencyExtensions
 		};
 	}
 
-	public static string ToFeeDisplayUnitRawString(this Money? fee) =>
-		fee is null ? "Unknown" : fee.ToString();
-
 }

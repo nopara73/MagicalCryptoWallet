@@ -75,8 +75,6 @@ public static class MagicalCryptoWalletLibGenerator
 
 		// KeyManager accessors (chained via wallet-keymanager)
 		DefineAccessorWithGetter("wallet-path", (KeyManager km) => km.FilePath, "wallet-keymanager");
-		DefineAccessorWithGetter("wallet-watch-only?", (KeyManager km) => km.IsWatchOnly, "wallet-keymanager");
-		DefineAccessorWithGetter("wallet-hardware-wallet?", (KeyManager km) => km.IsHardwareWallet, "wallet-keymanager");
 		DefineAccessorWithGetter("wallet-auto-coinjoin?", (KeyManager km) => km.AutoCoinJoin, "wallet-keymanager");
 		DefineAccessorWithGetter("wallet-non-private-coin-isolation?", (KeyManager km) => km.NonPrivateCoinIsolation, "wallet-keymanager");
 		DefineAccessorWithGetter("wallet-anonscore-target", (KeyManager km) => km.AnonScoreTarget, "wallet-keymanager");

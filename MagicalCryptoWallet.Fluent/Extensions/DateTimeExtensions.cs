@@ -1,10 +1,12 @@
+using System.Globalization;
+
 namespace MagicalCryptoWallet.Fluent.Extensions;
 
 public static class DateTimeExtensions
 {
 	public static string ToUserFacingString(this DateTime value, bool withTime = true)
 	{
-		return value.ToString(withTime ? "HH:mm on MMMM d, yyyy" : "MMMM d, yyyy");
+		return value.ToString(withTime ? "yyyy-MM-dd HH:mm" : "yyyy-MM-dd", CultureInfo.InvariantCulture);
 	}
 
 	public static string ToUserFacingFriendlyString(this DateTime value)

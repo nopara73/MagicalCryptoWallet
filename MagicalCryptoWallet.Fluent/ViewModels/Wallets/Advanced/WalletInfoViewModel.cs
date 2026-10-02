@@ -26,11 +26,9 @@ public partial class WalletInfoViewModel : RoutableViewModel
 	public WalletInfoViewModel(UiContext uiContext, IWalletModel wallet) : base(uiContext)
 	{
 		_model = wallet.GetWalletInfo();
-		IsHardwareWallet = wallet.IsHardwareWallet;
 
 		SetupCancel(enableCancel: true, enableCancelOnEscape: true, enableCancelOnPressed: true);
 
-		EnableCancel = !wallet.IsWatchOnlyWallet;
 
 		NextCommand = ReactiveCommand.Create(() => Navigate().Clear());
 
@@ -72,7 +70,6 @@ public partial class WalletInfoViewModel : RoutableViewModel
 
 	public string? WpkhWalletPolicyFullDescriptor => _model.WpkhWalletPolicy?.FullDescriptor.ToString();
 
-	public bool IsHardwareWallet { get; }
 	protected override void OnNavigatedTo(bool isInHistory, CompositeDisposable disposables)
 	{
 		base.OnNavigatedTo(isInHistory, disposables);

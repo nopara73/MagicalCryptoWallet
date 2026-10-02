@@ -11,10 +11,7 @@ public partial class CoinjoinCostsViewModel : ReactiveObject
 	private readonly Func<Money?, Amount> _createAmount;
 
 	[AutoNotify] private Amount? _totalFeeAmount;
-	[AutoNotify] private Amount? _miningFeeAmount;
-	[AutoNotify] private Amount? _wastedDustAmount;
 	[AutoNotify] private Amount? _paymentsAmount;
-	[AutoNotify] private bool _isBreakdownVisible;
 	[AutoNotify] private bool _arePaymentsVisible;
 
 	public CoinjoinCostsViewModel(Func<Money?, Amount> createAmount)
@@ -27,9 +24,6 @@ public partial class CoinjoinCostsViewModel : ReactiveObject
 		if (coinjoinCosts is { } costs)
 		{
 			TotalFeeAmount = _createAmount(costs.TotalFee);
-			MiningFeeAmount = _createAmount(costs.MiningFee);
-			WastedDustAmount = _createAmount(costs.WastedDust);
-			IsBreakdownVisible = true;
 
 			ArePaymentsVisible = costs.PaymentsTotal != Money.Zero;
 			PaymentsAmount = ArePaymentsVisible ? _createAmount(costs.PaymentsTotal) : null;
@@ -38,9 +32,6 @@ public partial class CoinjoinCostsViewModel : ReactiveObject
 		{
 			// allow backwards compatibility with transactions that were created before the costs were recorded
 			TotalFeeAmount = _createAmount(Math.Abs(amount));
-			MiningFeeAmount = null;
-			WastedDustAmount = null;
-			IsBreakdownVisible = false;
 
 			ArePaymentsVisible = false;
 			PaymentsAmount = null;

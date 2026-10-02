@@ -11,19 +11,13 @@ namespace MagicalCryptoWallet.Fluent.ViewModels.Wallets.Send;
 
 public partial class TransactionSummaryViewModel : ViewModelBase
 {
-	private readonly IWalletModel _wallet;
-	private readonly TransactionInfo _info;
-	private BuildTransactionResult? _transaction;
+	private readonly Network _network;
 	[AutoNotify] private bool _transactionHasChange;
-	[AutoNotify] private TimeSpan? _confirmationTime;
-	[AutoNotify] private string _feeText = "";
-	[AutoNotify] private bool _isCustomFeeUsed;
 	[AutoNotify] private bool _isOtherPocketSelectionPossible;
 	[AutoNotify] private LabelsArray _labels = LabelsArray.Empty;
 	[AutoNotify] private LabelsArray _recipient = LabelsArray.Empty;
 	[AutoNotify] private Amount? _fee;
 	[AutoNotify] private Amount? _amount;
-	[AutoNotify] private FeeRate? _feeRate;
 	[AutoNotify] private double? _amountDiff;
 	[AutoNotify] private double? _feeDiff;
 	[AutoNotify] private IReadOnlyList<RecipientSummaryViewModel> _recipients = Array.Empty<RecipientSummaryViewModel>();
@@ -31,11 +25,10 @@ public partial class TransactionSummaryViewModel : ViewModelBase
 	public TransactionSummaryViewModel(UiContext uiContext, TransactionPreviewViewModel parent, IWalletModel wallet, TransactionInfo info, bool isPreview = false) : base(uiContext)
 	{
 		Parent = parent;
-		_wallet = wallet;
-		_info = info;
+		_network = wallet.Network;
 		IsPreview = isPreview;
 		IsPayToMany = info.IsPayToMany;
-		AddressText = info.Destination.ToString(_wallet.Network);
+		AddressText = info.Destination.ToString(_network);
 		PayJoinUrl = info.PayJoinClient?.PaymentUrl.AbsoluteUri;
 		IsPayJoin = PayJoinUrl is not null;
 	}
@@ -54,14 +47,10 @@ public partial class TransactionSummaryViewModel : ViewModelBase
 
 	public void UpdateTransaction(BuildTransactionResult transactionResult, TransactionInfo info)
 	{
-		_transaction = transactionResult;
-
-		ConfirmationTime = _wallet.Transactions.TryEstimateConfirmationTime(info);
-
 		Money destinationAmount;
 		if (info.IsPayToMany)
 		{
-			var fee = _transaction.Fee;
+			var fee = transactionResult.Fee;
 			var hasSubtractFee = info.AllRecipients.Any(r => r.IsSubtractFee);
 
 			// For pay-to-many, show per-recipient amounts. If a recipient used "Max" (SubtractFee),
@@ -71,7 +60,7 @@ public partial class TransactionSummaryViewModel : ViewModelBase
 				var displayAmount = r.IsSubtractFee ? r.Amount - fee : r.Amount;
 				return new RecipientSummaryViewModel(
 					UiContext,
-					r.Destination.ToString(_wallet.Network),
+					r.Destination.ToString(_network),
 					UiContext.AmountProvider.Create(displayAmount),
 					r.Label);
 			}).ToList();
@@ -83,15 +72,13 @@ public partial class TransactionSummaryViewModel : ViewModelBase
 		}
 		else
 		{
-			destinationAmount = _transaction.CalculateDestinationAmount(info.Destination);
+			destinationAmount = transactionResult.CalculateDestinationAmount(info.Destination);
 		}
 
 		Amount = UiContext.AmountProvider.Create(destinationAmount);
-		Fee = UiContext.AmountProvider.Create(_transaction.Fee);
-		FeeRate = info.FeeRate;
+		Fee = UiContext.AmountProvider.Create(transactionResult.Fee);
 
 		Recipient = info.Recipient;
-		IsCustomFeeUsed = info.IsCustomFeeUsed;
 		IsOtherPocketSelectionPossible = info.IsOtherPocketSelectionPossible;
 		AmountDiff = DiffOrNull(Amount, Parent.CurrentTransactionSummary.Amount);
 		FeeDiff = DiffOrNull(Fee, Parent.CurrentTransactionSummary.Fee);

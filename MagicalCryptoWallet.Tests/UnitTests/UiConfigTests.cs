@@ -1,5 +1,6 @@
 using System.IO;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using MagicalCryptoWallet.Fluent;
 using MagicalCryptoWallet.Tests.Helpers;
@@ -9,6 +10,29 @@ namespace MagicalCryptoWallet.Tests.UnitTests;
 
 public class UiConfigTests
 {
+	[Fact]
+	public void RemovedFeePreferenceIsIgnoredWithoutResettingOtherSettings()
+	{
+		string workDir = Common.GetWorkDir();
+		Directory.CreateDirectory(workDir);
+		string filePath = Path.Combine(workDir, $"{Guid.NewGuid():N}.json");
+		var config = new UiConfig(filePath) { PrivacyMode = true, Autocopy = false, Oobe = false };
+		config.ToFile();
+		var legacyConfig = JsonNode.Parse(File.ReadAllText(filePath))!.AsObject();
+		Assert.False(legacyConfig.ContainsKey("FeeTarget"));
+		legacyConfig["FeeTarget"] = 1008;
+		File.WriteAllText(filePath, legacyConfig.ToJsonString());
+
+		var reopened = UiConfig.LoadFile(filePath);
+		Assert.True(reopened.PrivacyMode);
+		Assert.False(reopened.Autocopy);
+		Assert.False(reopened.Oobe);
+		reopened.ToFile();
+		using var saved = JsonDocument.Parse(File.ReadAllText(filePath));
+		Assert.False(saved.RootElement.TryGetProperty("FeeTarget", out _));
+		Assert.True(UiConfig.LoadFile(filePath).PrivacyMode);
+	}
+
 	[Fact]
 	public async Task LoadingSettingsDoesNotScheduleUnrequestedWritesAsync()
 	{
