@@ -24,6 +24,11 @@ Executable and library hashes describe exact file bytes. License notices use UTF
 
 Parallel work has supplied portable JSON, Bitcoin encoding/wire, payment URI, PSBT, compact-filter, SOCKS5 and PNG modules. Available [integration handoffs](../Contrib/McwMigration/Handoffs) record component evidence; the inventory leaves missing handoffs empty. Their production caller integration is pending. The inventory records them as implemented components; it continues to retain their managed/native dependencies. They are not substitutes for a migrated application responsibility until the host owner wires and verifies every caller.
 
+The later daemon/automation API removal superseded the proposed RPC migration.
+Retiring its unused adapters and activation patches is obsolete-code removal;
+it does not replace Newtonsoft.Json. The generic Rust JSON component remains
+prepared, with retained production callers and dependencies still recorded.
+
 Mark a dependency removed only when **all callers, copied source, transitive inclusion, generated bindings, native imports and packaged references are gone**. Check every shipped target, including dependencies statically embedded in Tor/native credential libraries and those carried by NuGet native bundles. Preserve upstream license notices where attribution remains applicable.
 
 Record a migration's source commit, portable API, managed callers switched, input/output compatibility, independent standards/vectors, synthetic behavior tests, runtime graph and extracted package evidence. A codec that is merely compiled into `mcw` is “implemented, callers retained”; it is not package removal. Keep error, cancellation and ownership contracts versioned during transition. Reserve operation ranges through the host owner before wiring a new service; never create a second IPC connection or executable for a migrated dependency.

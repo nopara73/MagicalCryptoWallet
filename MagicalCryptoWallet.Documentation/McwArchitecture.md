@@ -30,7 +30,7 @@ The Rust host and managed application share `ClientVersion` (development default
 
 Linux release builds also rebuild the pinned standard library with aborting panics and backtrace support disabled. This removes the GCC unwinder runtime instead of bundling or statically linking it. OS libc remains the native baseline; the extracted ELF dependency audit rejects libgcc_s, libstdc++, OpenSSL and other non-OS libraries in the mcw executable.
 
-The Linux compiler driver applies `--as-needed` before Rust's native library arguments. GNU ARM linkers otherwise retain the standard library's unused `libgcc_s` directive even when the executable references no unwinder symbols. The runtime audit remains strict; a genuinely needed non-OS library still fails the build.
+The Linux compiler driver omits the aborting, backtrace-free standard library's unused `-lgcc_s` request and applies early `--as-needed`. This prevents GNU ARM linkers from retaining an empty GCC runtime dependency. With default linker libraries disabled, a genuinely needed unwinder symbol fails linking; the runtime audit also remains strict.
 
 ## Bridge v1
 
@@ -63,7 +63,7 @@ callers. Completed portable codec ranges `0x0200` to
 
 | Service | Operation range | Rust service / managed adapter leaves |
 |---|---|---|
-| JSON value codecs | 0x0100–0x01FF | JSON engine; schema adapters pending |
+| JSON value codecs | 0x0100–0x01FF | Reserved; JSON engine present, retained-caller schema adapters pending |
 | Transactions | 0x0600–0x06FF | `transaction_service` / `Mcw/Transactions` |
 | Content decoding | 0x0900–0x09FF | `content_service` / `Mcw/Content` |
 | Wallet cryptography/recovery | 0x0A00–0x0AFF | `wallet_crypto` / `Mcw/Crypto` |
@@ -76,6 +76,13 @@ callers. Completed portable codec ranges `0x0200` to
 | Native UI | 0x1100–0x11FF | `native_ui` / `Mcw/NativeUi` |
 | CoinJoin | 0x1200–0x12FF | `coinjoin_service` / `Mcw/CoinJoin` |
 | Scanning | 0x1300–0x13FF | `scan_service` / `Mcw/Scanning` |
+
+The former RPC candidate for this range is retired with the daemon/automation
+API removal. It has no active caller or registered service; its old activation
+patches must not be applied. The portable `json` engine remains a
+prepared formats component; Newtonsoft.Json remains retained. Replacing a
+retained JSON caller requires a new bounded compatibility proof and an atomic
+caller/host integration.
 
 Native UI/camera binding leaves belong under `mcw/src/platform/native_ui/` and
 `mcw/src/platform/camera/`; storage byte-range locks belong under
