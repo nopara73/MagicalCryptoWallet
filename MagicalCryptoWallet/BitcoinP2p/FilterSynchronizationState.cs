@@ -48,6 +48,11 @@ public class FilterSynchronizationState
 		assignment = null;
 		lock (_lock)
 		{
+			if (!IsFilterHeaderTipCurrentNoLock())
+			{
+				return false;
+			}
+
 			RewindTrackersToFilterHeaderTipNoLock();
 
 			// Check for and release any stale header assignments
@@ -124,6 +129,12 @@ public class FilterSynchronizationState
 	{
 		lock (_lock)
 		{
+			if (!IsFilterHeaderTipCurrentNoLock() || !IsRangeCurrent(assignment))
+			{
+				_headerTracker.RemoveActiveAssignment(assignment.StartHeight);
+				return new HeaderValidationResult.Stale();
+			}
+
 			// Recalculate the expected previous filter header from the chain
 			if (!TryGetPreviousFilterHeader(assignment.StartHeight, network, out var expectedPreviousFilterHeader))
 			{
@@ -316,6 +327,11 @@ public class FilterSynchronizationState
 		assignment = null;
 		lock (_lock)
 		{
+			if (!IsFilterHeaderTipCurrentNoLock())
+			{
+				return false;
+			}
+
 			RewindTrackersToFilterHeaderTipNoLock();
 
 			// Check for and release any stale filter assignments
@@ -400,6 +416,13 @@ public class FilterSynchronizationState
 	{
 		return _filterHeaderChain[height]?.BlockFilterHeader;
 	}
+
+	internal bool IsRangeCurrent(RangeRequest assignment) =>
+		_blockHeaderChain.GetBlock((int)assignment.StopHeight)?.HashBlock == assignment.StopHash;
+
+	private bool IsFilterHeaderTipCurrentNoLock() =>
+		_filterHeaderChain.Tip is not { } tip ||
+		_blockHeaderChain.GetBlock((int)(uint)tip.Height)?.HashBlock == tip.BlockHash;
 
 	public bool IsReorg(uint fromHeight, uint256 fromHash)
 	{
@@ -534,6 +557,9 @@ public class FilterSynchronizationState
 
 		/// <summary>Previous filter header not available yet - buffer and retry later.</summary>
 		public record NotReadyYet : HeaderValidationResult;
+
+		/// <summary>The block chain changed while the request was in flight; retry after rollback.</summary>
+		public record Stale : HeaderValidationResult;
 
 		/// <summary>Validation failed - peer sent invalid data.</summary>
 		public record Invalid(string Reason) : HeaderValidationResult;

@@ -82,6 +82,35 @@ public class SynchronizerReorgTests(ITestOutputHelper output)
 		Assert.Equal(fork.Winner, next.StopHash);
 	}
 
+	[Fact]
+	public void FilterRequests_WaitForStoreRollbackInsteadOfUsingOrphanedHeaders()
+	{
+		var fork = Fork.Create();
+		var header = Network.RegTest.Consensus.ConsensusFactory.CreateBlockHeader();
+		header.HashPrevBlock = fork.BlockHeaders.Tip.HashBlock;
+		fork.BlockHeaders.SetTip(new ChainedBlock(header, header.GetHash(), fork.BlockHeaders.Tip));
+
+		Assert.False(fork.SyncState.TryAssignHeaderRange(Network.RegTest, out _));
+		Assert.False(fork.SyncState.TryAssignFilterRange(out _));
+		fork.FiltersOnOrphan.RemoveTip();
+		Assert.True(fork.SyncState.TryAssignHeaderRange(Network.RegTest, out var next));
+		Assert.Equal(fork.Height, next!.StartHeight);
+	}
+
+	[Fact]
+	public void HeaderResponse_FromReplacedChainIsRetriedWithoutAcceptingIt()
+	{
+		var fork = Fork.Create();
+		var stale = new RangeRequest(fork.Height, fork.Height, fork.Orphan);
+		Assert.IsType<FilterSynchronizationState.HeaderValidationResult.Stale>(
+			fork.SyncState.ValidateFilterHeaders(stale, [uint256.One], uint256.Zero, Network.RegTest));
+		fork.FiltersOnOrphan.RemoveTip();
+		Assert.True(fork.SyncState.TryAssignHeaderRange(Network.RegTest, out var current));
+		// A wrong commitment on the current chain is still rejected.
+		Assert.IsType<FilterSynchronizationState.HeaderValidationResult.Invalid>(
+			fork.SyncState.ValidateFilterHeaders(current!, [uint256.One], uint256.Zero, Network.RegTest));
+	}
+
 	/// <summary>
 	/// <code>
 	///            orphan (filters still here)
